@@ -16,11 +16,21 @@
 
 ## 🎬 效果预览
 
-| 皇帝时间线 | 地图探索 |
-| --- | --- |
-| ![](docs/demo/timeline.gif) | ![](docs/demo/map.gif) |
-| **案件卡** | **历史侦探** |
-| ![](docs/demo/cases.gif) | ![](docs/demo/detective.gif) |
+**皇帝时间线** —— 横向卡片流，点开看生平时间线、人物关系图、趣味冷知识
+
+![皇帝时间线](docs/demo/timeline.gif)
+
+**地图探索** —— 各朝疆域轮廓 + 事件古地名点 + 行军 / 航海路线动画
+
+![地图探索](docs/demo/map.gif)
+
+**案件卡** —— 著名历史疑案拆解（名称由来、经过、结果、影响、史料出处）
+
+![案件卡](docs/demo/cases.gif)
+
+**历史侦探** —— 解谜式查证，线索逐条带来源，再写下你的回答
+
+![历史侦探](docs/demo/detective.gif)
 
 ---
 
