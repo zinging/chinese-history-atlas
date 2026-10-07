@@ -1,0 +1,131 @@
+{
+  "id": "ming-emperor-xiaozong",
+  "name": "朱祐樘",
+  "templeName": "孝宗",
+  "eraName": [
+    "弘治"
+  ],
+  "reign": {
+    "start": "1487",
+    "end": "1505"
+  },
+  "intro": "出身坎坷却勤政仁厚、只娶一个皇后的皇帝",
+  "timeline": [
+    {
+      "date": "1470",
+      "title": "出生",
+      "description": "宪宗与宫女所生，生母地位低，他小时候在冷宫里躲着长大。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1475",
+      "title": "被立为太子",
+      "description": "宪宗晚年才知道有这个儿子，立他为太子。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1487",
+      "title": "登基称帝",
+      "description": "宪宗驾崩，他即位，年号弘治。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1488",
+      "title": "弘治中兴",
+      "description": "他登基后清除了成化朝的奸佞势力，罢免了一大批靠花钱买来的'传奉官'，任用李东阳、谢迁等贤臣，减轻赋税、赈济灾民、平反冤案，还废除了一些苛法。史称'弘治中兴'。",
+      "sources": [
+        "mingshi",
+        "xiaozongji"
+      ]
+    },
+    {
+      "date": "1505",
+      "title": "驾崩",
+      "description": "在位十八年病逝，一生只娶了张皇后一个人。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "弘治中兴",
+      "summary": "孝宗任用贤臣、减轻赋税、整顿吏治，让朝政一度清明。",
+      "impact": "被史家称为明朝中后期难得的好时期。",
+      "sources": [
+        "mingshi",
+        "xiaozongji"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "张皇后",
+      "relation": "皇后",
+      "note": "他唯一的皇后，两人感情很好。"
+    },
+    {
+      "name": "李东阳、谢迁",
+      "relation": "大臣",
+      "note": "他重用的贤臣，帮他把国家打理得不错。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "皇帝一生只娶一个皇后，你觉得是优点还是缺点？",
+      "context": "古代皇帝大多三宫六院，朱祐樘却只娶一个皇后。",
+      "viewpoints": [
+        "有人说是优点：专情、家庭和睦，也不给后宫干政的机会。",
+        "有人说是风险：子嗣太少，儿子只有一个，后来皇位传承就出问题。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱祐樘小时候被万贵妃迫害，被藏在冷宫里，六岁前都没见过父亲。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "朱祐樘是明朝皇帝里难得一夫一妻的，历史上有'弘治皇帝'好丈夫的美谈。",
+      "sources": [
+        "mingshi",
+        "xiaozongji"
+      ]
+    },
+    {
+      "fact": "朱祐樘幼年被藏在冷宫时，全靠太监张敏和宫女偷偷把他养大，连父亲宪宗都不知道自己还有个活着的儿子。",
+      "sources": [
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "北京",
+      "modernName": "北京",
+      "note": "弘治朝的首都。",
+      "lat": 39.9,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "xiaozongji",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "xiaozong.jpg"
+}

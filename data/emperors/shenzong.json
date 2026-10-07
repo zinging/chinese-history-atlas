@@ -1,0 +1,209 @@
+{
+  "id": "ming-emperor-shenzong",
+  "name": "朱翊钧",
+  "templeName": "神宗",
+  "eraName": [
+    "万历"
+  ],
+  "reign": {
+    "start": "1572",
+    "end": "1620"
+  },
+  "intro": "在位最久的明朝皇帝，前半生励精图治、后半生二十年不上朝",
+  "timeline": [
+    {
+      "date": "1563",
+      "title": "出生",
+      "description": "穆宗第三子，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1572",
+      "title": "十岁登基",
+      "description": "穆宗驾崩，十岁的朱翊钧即位，年号万历，由张居正辅政。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1573",
+      "title": "张居正改革",
+      "description": "张居正推行一条鞭法、整顿吏治，国家财政好转。",
+      "sources": [
+        "mingshi",
+        "zhangjuzheng"
+      ]
+    },
+    {
+      "date": "1582",
+      "title": "张居正去世后被清算",
+      "description": "张居正一死，万历帝翻脸清算，改革成果大打折扣。",
+      "sources": [
+        "mingshi",
+        "zhangjuzheng"
+      ]
+    },
+    {
+      "date": "1582",
+      "title": "戚继光镇守北方",
+      "description": "张居正时期，抗倭名将戚继光被调往北方镇守蓟州，修筑长城、整顿边防，北边多年没有大战。张居正一死，失去支持的戚继光被调离，晚年郁郁而终。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "date": "1586",
+      "title": "国本之争，郑贵妃牵动朝局",
+      "description": "他宠爱郑贵妃，想立她的儿子为太子，大臣坚持立长子，双方僵持十五年。这场'国本之争'让朝臣分成两派互相攻击，皇帝和大臣彻底闹翻。",
+      "sources": [
+        "mingshi",
+        "wanli"
+      ]
+    },
+    {
+      "date": "1592",
+      "title": "万历三大征",
+      "description": "宁夏哱拜之乱、抗倭援朝、播州杨应龙之乱，明朝接连打了三场动用数万大军的硬仗，合称'万历三大征'。三战全胜，保住了边疆与属国，但也耗尽了国力。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "date": "1600",
+      "title": "开始长期不上朝",
+      "description": "因立太子之争与大臣怄气，他此后二十多年几乎不上朝。",
+      "sources": [
+        "mingshi",
+        "wanli"
+      ]
+    },
+    {
+      "date": "1615",
+      "title": "梃击案",
+      "description": "有人拿木棍闯进太子宫殿，'明宫三大案'之一，朝堂更乱。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1620",
+      "title": "驾崩",
+      "description": "在位四十八年，是明朝在位最久的皇帝。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "张居正改革",
+      "summary": "首辅张居正推行一条鞭法，把杂税合并、按田亩收税。",
+      "impact": "国家财政收入大增，是明朝中后期最重要的改革。",
+      "sources": [
+        "mingshi",
+        "zhangjuzheng"
+      ]
+    },
+    {
+      "name": "万历三大征",
+      "summary": "宁夏哱拜之乱、援朝抗倭、播州杨应龙之乱，三战全胜。",
+      "impact": "保住了边疆和属国，但三场大战耗空了国库。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "name": "国本之争",
+      "summary": "万历帝想立宠妃的儿子为太子，大臣坚持立长子，僵持十五年。",
+      "impact": "朝臣分成两派互相攻击，皇帝和大臣彻底闹翻，此后长期不上朝。",
+      "sources": [
+        "mingshi",
+        "wanli"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "张居正",
+      "relation": "老师兼首辅",
+      "note": "万历前十年实际掌权者，改革家，死后被清算。"
+    },
+    {
+      "name": "郑贵妃",
+      "relation": "宠妃",
+      "note": "万历最宠的妃子，'国本之争'和她有关。"
+    },
+    {
+      "name": "戚继光",
+      "relation": "名将",
+      "note": "张居正时期驻守北方的抗倭名将。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "万历二十年不上朝，可国家居然还撑了二十年——你怎么看这件事？",
+      "context": "他和大臣怄气，索性不上朝，明朝就在这种状态下又拖了二十年。",
+      "viewpoints": [
+        "有人说他是消极怠工：皇帝摆烂，朝廷空转，亡国的种子就是这时候埋下的。",
+        "有人说他也没完全不管：奏章照批、大事照办，不上朝不等于不干活。"
+      ],
+      "sources": [
+        "mingshi",
+        "wanli"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "万历帝在位48年，是明朝在位最久的皇帝，一个人就占了明朝近三分之一的时间。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "朱翊钧小时候贪玩，张居正给他安排一堆功课，朱翊钧长大后特别恨这个老师。",
+      "sources": [
+        "zhangjuzheng",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "万历三大征光打仗就花掉白银七百多万两，抵得上当时全国一年赋税的好几倍——明朝从此穷了。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "北京",
+      "modernName": "北京",
+      "note": "万历朝的首都。",
+      "lat": 39.9,
+      "lng": 116.4
+    },
+    {
+      "name": "定陵",
+      "modernName": "北京昌平十三陵",
+      "note": "万历帝的陵墓，1956年被考古发掘。",
+      "lat": 40.29,
+      "lng": 116.22
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "zhangjuzheng",
+    "wanli",
+    "zhongguotongshi",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "shenzong.jpg"
+}

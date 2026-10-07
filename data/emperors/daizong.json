@@ -1,0 +1,146 @@
+{
+  "id": "ming-emperor-daizong",
+  "name": "朱祁钰",
+  "templeName": "代宗",
+  "eraName": [
+    "景泰"
+  ],
+  "reign": {
+    "start": "1449",
+    "end": "1457"
+  },
+  "intro": "临危受命守住北京的皇帝，最后却被哥哥抢回了皇位",
+  "timeline": [
+    {
+      "date": "1428",
+      "title": "出生",
+      "description": "英宗的弟弟，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1449",
+      "title": "土木堡之变后即位",
+      "description": "哥哥被瓦剌俘虏，他临危受命即位，年号景泰。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1449",
+      "title": "北京保卫战",
+      "description": "瓦剌兵临北京城下，他支持于谦组织保卫战，打退了敌人。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1450",
+      "title": "哥哥被放回",
+      "description": "瓦剌把英宗放回，他尊哥哥为太上皇，实际软禁在南宫（今北京故宫以南）。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1452",
+      "title": "废太子，立自己儿子",
+      "description": "他废掉哥哥的儿子、改立自己的儿子为太子，埋下矛盾。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1457",
+      "title": "病重，被夺门",
+      "description": "他病重时，哥哥发动'夺门之变'复位，他不久去世。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "北京保卫战",
+      "summary": "瓦剌带着英宗打到北京城下，于谦指挥军民守城，打退敌人。",
+      "impact": "保住了北京，也保住了明朝，是明代最关键的守城战之一。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "于谦",
+      "relation": "大臣",
+      "note": "代宗最信任的大臣，北京保卫战的总指挥。"
+    },
+    {
+      "name": "英宗（朱祁镇）",
+      "relation": "哥哥",
+      "note": "被他软禁多年的哥哥，后来复位抢回皇位。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "哥哥回来了，该把皇位还给他吗？如果你是景泰帝会怎么办？",
+      "context": "英宗被放回来后，景泰帝既不肯让位，又不让哥哥自由，还废了哥哥儿子的太子位。",
+      "viewpoints": [
+        "有人说皇位不该还：北京保卫战是他打下的，国家正需要他。",
+        "有人说该还或该善待：哥哥是前皇帝，软禁他、废他儿子，迟早出乱子。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱祁钰的哥哥是被他软禁在南宫（今北京故宫以南）七年，连门都很少出的皇帝。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "朱祁钰死后庙号被哥哥改成'郕王'，后来明朝又恢复称'代宗'，称呼几经波折。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "景泰帝是明朝唯一一位'挽救了国家却被夺位'的皇帝——他守住了北京，却没能保住身后的名声和陵墓（他的陵后来被哥哥拆了）。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "北京",
+      "modernName": "北京",
+      "note": "景泰帝即位和保卫战发生的地方。",
+      "lat": 39.9,
+      "lng": 116.4
+    },
+    {
+      "name": "南宫",
+      "modernName": "北京（故宫以南）",
+      "note": "软禁太上皇英宗的地方。",
+      "lat": 39.9,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "daizong.jpg"
+}

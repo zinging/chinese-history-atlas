@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ming-journey/person.schema.json",
+  "title": "明史人物条目",
+  "description": "人物库单条契约。人物是皇帝条目 people 的展开版。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "lifespan", "role", "era", "intro", "bio", "feats", "sources"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^ming-person-[a-z0-9-]+$" },
+    "name": { "type": "string" },
+    "lifespan": { "type": "string", "description": "在世年份，如 1360-1424 或 约1360-1424" },
+    "role": { "type": "string", "description": "身份，如 皇帝/名将/大臣/航海家" },
+    "era": { "type": "string", "description": "主要活跃时期，如 永乐" },
+    "intro": { "type": "string", "description": "一句话简介，小学生能懂" },
+    "bio": { "type": "string", "description": "生平叙述（3-5 句）" },
+    "feats": {
+      "type": "array",
+      "description": "主要事迹/成就",
+      "items": { "type": "string" }
+    },
+    "sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

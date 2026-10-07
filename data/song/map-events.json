@@ -1,0 +1,218 @@
+{
+  "meta": {
+    "title": "宋代事件地图点位",
+    "updated": "2026-10-02"
+  },
+  "events": [
+    {
+      "eventId": "song-event-chenqiao",
+      "name": "陈桥兵变",
+      "date": "960",
+      "kind": "coup",
+      "lat": 35.05,
+      "lng": 114.45,
+      "note": "赵匡胤黄袍加身处",
+      "summary": "后周大将赵匡胤在陈桥驿被部下黄袍加身，回师开封建宋。",
+      "place": {
+        "name": "陈桥驿",
+        "modern": "河南封丘县陈桥镇",
+        "note": "赵匡胤在陈桥驿被部下黄袍加身，回师开封建宋。"
+      }
+    },
+    {
+      "eventId": "song-event-yongxi",
+      "name": "陈家谷·杨业战死",
+      "date": "986",
+      "kind": "battle",
+      "lat": 39.05,
+      "lng": 112.05,
+      "note": "山西朔州南，雍熙北伐西路军溃败",
+      "summary": "杨业在陈家谷力战被俘，绝食而死，成为杨家将故事原型。",
+      "place": {
+        "name": "陈家谷",
+        "modern": "山西朔州一带",
+        "note": "杨业在陈家谷战败被俘，绝食殉国。"
+      }
+    },
+    {
+      "eventId": "song-event-chanyuan",
+      "name": "澶渊之盟",
+      "date": "1005",
+      "kind": "coup",
+      "lat": 35.76,
+      "lng": 115.03,
+      "note": "河南濮阳，宋辽订百年和平之约",
+      "summary": "寇准力劝真宗亲征，宋辽订澶渊之盟，换得百年和平。",
+      "place": {
+        "name": "澶州",
+        "modern": "河南濮阳",
+        "note": "宋真宗亲征澶州，与辽订澶渊之盟。"
+      }
+    },
+    {
+      "eventId": "song-event-wanganshi",
+      "name": "王安石变法",
+      "date": "1069",
+      "kind": "reform",
+      "lat": 34.8,
+      "lng": 114.35,
+      "note": "北宋东京开封",
+      "summary": "宋神宗用王安石推行青苗、募役、保甲等新法，引发新旧党争。",
+      "place": {
+        "name": "开封",
+        "modern": "河南开封",
+        "note": "王安石在汴京推行变法。"
+      }
+    },
+    {
+      "eventId": "song-event-jiakang",
+      "name": "靖康之变·东京陷落",
+      "date": "1127",
+      "kind": "siege",
+      "lat": 34.8,
+      "lng": 114.35,
+      "note": "金兵攻破开封，徽钦二帝被掳",
+      "summary": "1127年金兵攻破东京开封，掳徽钦二帝北去，北宋亡。",
+      "place": {
+        "name": "东京",
+        "modern": "河南开封",
+        "note": "金兵攻破东京开封，北宋灭亡，靖康之变。"
+      }
+    },
+    {
+      "eventId": "song-event-nandu",
+      "name": "建炎南渡",
+      "date": "1127",
+      "kind": "coup",
+      "lat": 30.27,
+      "lng": 120.15,
+      "note": "浙江杭州（临安）",
+      "summary": "宋高宗一路南逃，1138年定都临安，南宋偏安开始。",
+      "place": {
+        "name": "临安",
+        "modern": "浙江杭州",
+        "note": "宋高宗南渡定都临安，史称建炎南渡。"
+      }
+    },
+    {
+      "eventId": "song-event-yuefei",
+      "name": "郾城大捷",
+      "date": "1140",
+      "kind": "battle",
+      "lat": 33.59,
+      "lng": 113.99,
+      "note": "河南漯河郾城，岳家军破铁浮图",
+      "summary": "岳飞在郾城大破金军精锐铁浮图、拐子马，进至朱仙镇。",
+      "place": {
+        "name": "郾城",
+        "modern": "河南漯河郾城区",
+        "note": "岳飞在郾城大破金军铁浮屠。"
+      }
+    },
+    {
+      "eventId": "song-event-shaoxing-heyi",
+      "name": "风波亭·岳飞遇害",
+      "date": "1142",
+      "kind": "coup",
+      "lat": 30.25,
+      "lng": 120.16,
+      "note": "杭州临安大理寺",
+      "summary": "岳飞被秦桧以'莫须有'罪名杀害于临安风波亭，年三十九。",
+      "place": {
+        "name": "风波亭",
+        "modern": "浙江杭州",
+        "note": "岳飞被以莫须有罪名害死在风波亭。"
+      }
+    },
+    {
+      "eventId": "song-event-longxing",
+      "name": "符离之溃",
+      "date": "1163",
+      "kind": "battle",
+      "lat": 33.58,
+      "lng": 116.98,
+      "note": "安徽宿州北，隆兴北伐溃败",
+      "summary": "李显忠、邵宏渊不和，宋军在符离被金军击溃，隆兴北伐失败。",
+      "place": {
+        "name": "符离",
+        "modern": "安徽宿州符离集",
+        "note": "隆兴北伐，宋军符离之溃。"
+      }
+    },
+    {
+      "eventId": "song-event-kaixi",
+      "name": "开禧北伐·宿州溃",
+      "date": "1206",
+      "kind": "battle",
+      "lat": 33.63,
+      "lng": 116.97,
+      "note": "安徽宿州",
+      "summary": "韩侂胄北伐，宋军在宿州溃败，金反攻，韩侂胄后被史弥远政变杀害。",
+      "place": {
+        "name": "宿州",
+        "modern": "安徽宿州",
+        "note": "开禧北伐，宋军兵溃宿州。"
+      }
+    },
+    {
+      "eventId": "song-event-duanping",
+      "name": "端平入洛",
+      "date": "1234",
+      "kind": "battle",
+      "lat": 34.62,
+      "lng": 112.45,
+      "note": "河南洛阳",
+      "summary": "宋军收复洛阳，被蒙古伏击，给蒙古侵宋口实。",
+      "place": {
+        "name": "洛阳",
+        "modern": "河南洛阳",
+        "note": "端平入洛，宋军收复洛阳旋即失败。"
+      }
+    },
+    {
+      "eventId": "song-event-xiangfan",
+      "name": "襄樊之战",
+      "date": "1273",
+      "kind": "siege",
+      "lat": 32.01,
+      "lng": 112.12,
+      "note": "湖北襄阳",
+      "summary": "吕文焕守襄阳六年，樊城破后降元，南宋门户洞开。",
+      "place": {
+        "name": "襄樊",
+        "modern": "湖北襄阳樊城",
+        "note": "襄阳保卫战坚守六年，城破南宋门户失守。"
+      }
+    },
+    {
+      "eventId": "song-event-yashan",
+      "name": "崖山海战",
+      "date": "1279",
+      "kind": "battle",
+      "lat": 22.26,
+      "lng": 113.05,
+      "note": "广东江门新会",
+      "summary": "陆秀夫负帝昺投海，十万军民殉国，宋亡。",
+      "place": {
+        "name": "崖山",
+        "modern": "广东江门新会",
+        "note": "崖山海战宋军覆没，陆秀夫负帝蹈海，南宋亡。"
+      }
+    },
+    {
+      "eventId": "song-event-wentianxiang",
+      "name": "文天祥就义",
+      "date": "1283",
+      "kind": "coup",
+      "lat": 39.9,
+      "lng": 116.4,
+      "note": "元大都柴市（今北京）",
+      "summary": "文天祥被俘三年不屈，在大都柴市就义，留《正气歌》。",
+      "place": {
+        "name": "大都",
+        "modern": "北京",
+        "note": "文天祥被俘押到大都，宁死不降，就义于此。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "id": "ming-emperor-xuanzong",
+  "name": "朱瞻基",
+  "templeName": "宣宗",
+  "eraName": [
+    "宣德"
+  ],
+  "reign": {
+    "start": "1425",
+    "end": "1435"
+  },
+  "intro": "能文能武、会写字画画还爱斗蛐蛐的皇帝",
+  "timeline": [
+    {
+      "date": "1399",
+      "title": "出生",
+      "description": "仁宗朱高炽长子，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1411",
+      "title": "立为皇太孙",
+      "description": "朱棣很喜欢这个孙子，把他立为皇太孙。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1425",
+      "title": "登基，三杨辅政",
+      "description": "父亲洪熙帝病逝，他即位，年号宣德。杨士奇、杨荣、杨溥三位大臣（合称'三杨'）辅政，把国家治理得井井有条。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1426",
+      "title": "平定汉王叛乱",
+      "description": "叔叔汉王朱高煦起兵谋反，宣德帝御驾亲征。大军还没到。朱高煦部下就纷纷倒戈，朱高煦出城投降，本想偷袭宣德帝却因腿脚不便被侍卫当场抓住，后来被处以极刑。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1433",
+      "title": "郑和最后一次下西洋返航",
+      "description": "宣德年间重启过一次下西洋，这趟回来后就再没出过远洋。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1435",
+      "title": "驾崩",
+      "description": "在位十年病逝，史书说他和父亲开创了'仁宣之治'。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "平定汉王叛乱",
+      "summary": "叔叔汉王谋反，宣德帝亲征，几天就拿下。",
+      "impact": "稳住了皇位，也让'藩王造反'没再重演。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "仁宣之治",
+      "summary": "他延续父亲的休养政策，轻徭薄赋，任用贤臣。",
+      "impact": "明朝进入难得的安定富足时期，被称为'仁宣之治'。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "杨士奇、杨荣、杨溥",
+      "relation": "大臣",
+      "note": "三位姓杨的名臣，合称'三杨'，帮他把国家打理得井井有条。"
+    },
+    {
+      "name": "郑和",
+      "relation": "航海家",
+      "note": "宣德年间郑和又出过一次海，这是他最后一次下西洋。"
+    },
+    {
+      "name": "朱高煦",
+      "relation": "叔叔（汉王）",
+      "note": "永乐帝次子，效仿父亲造反，被宣德帝亲征平定。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "宣德帝喜欢斗蛐蛐还让百姓进贡，你觉得皇帝的个人爱好该不该纵容？",
+      "context": "他爱斗蟋蟀，大臣就派人到处搜罗好蛐蛐进贡，闹出不少事。",
+      "viewpoints": [
+        "有人说爱好无妨：他能干活、国家太平，玩玩蛐蛐不算错。",
+        "有人说上行下效：皇帝一爱，下面的人就借机折腾百姓，爱好就成了祸害。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱瞻基是皇帝里少有的书画家，画的老鼠和猫特别有名。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "朱瞻基因为爱斗蛐蛐，被人起了个别号叫'促织天子'。",
+      "sources": [
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "宣德年间造的'宣德炉'是铜香炉里的名品，铜色古雅、传世稀少，后来的仿品都能卖出天价。",
+      "sources": [
+        "zhongguotongshi"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "北京",
+      "modernName": "北京",
+      "note": "宣德朝的首都，他在这里登基理政。",
+      "lat": 39.9,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "zhongguotongshi",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "xuanzong.jpg"
+}

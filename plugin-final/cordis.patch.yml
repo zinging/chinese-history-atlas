@@ -1,0 +1,7 @@
+- insert:
+    - id: ming-journey
+      name: '@ming/journey'
+      config:
+        dataDir: 'D:/quant/dsh_his/data'
+        llmProvider: ''
+        llmModel: ''

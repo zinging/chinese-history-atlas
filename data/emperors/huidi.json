@@ -1,0 +1,156 @@
+{
+  "id": "ming-emperor-huidi",
+  "name": "朱允炆",
+  "templeName": "惠帝",
+  "eraName": [
+    "建文"
+  ],
+  "reign": {
+    "start": "1398",
+    "end": "1402"
+  },
+  "intro": "想削掉叔叔们兵权、最后皇位被叔叔抢走的年轻皇帝",
+  "timeline": [
+    {
+      "date": "1377",
+      "title": "出生",
+      "description": "朱元璋的孙子、太子朱标之子，出生在应天。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1392",
+      "title": "父亲去世，成为皇太孙",
+      "description": "太子朱标病逝，朱元璋把朱允炆立为皇太孙。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1398",
+      "title": "登基称帝",
+      "description": "朱元璋驾崩，朱允炆即位，年号建文。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1399",
+      "title": "方孝孺辅政",
+      "description": "方孝孺是建文帝的老师和重臣，帮他起草诏书、整顿朝政，是削藩主张最坚定的人。朱棣攻入南京后让他写即位诏书，他宁死不从，被灭族，牵连极广。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1399",
+      "title": "开始削藩",
+      "description": "建文帝和大臣齐泰、黄子澄商议削藩，先拿几个较小的藩王开刀：周王朱橚被废为庶人，迁到云南；湘王朱柏不愿受辱，自焚而死；代王、齐王、岷王也被废或削去护卫。等到刀口对准最强的燕王朱棣时，他起兵反抗。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1399",
+      "title": "靖难之役爆发",
+      "description": "燕王朱棣在北平（今北京）起兵，打出的旗号是'清君侧，靖国难'，意思是替皇帝清除身边祸国的小人。'靖难'两个字就出自这句口号，这场战事因此得名'靖难之役'。战事打了四年，朱棣先在东昌之战中损失惨重，后来借粮道断绝之机绕过济南，直取南京。1402年南京城破，宫城起火，朱允炆下落不明。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1402",
+      "title": "南京城破，下落不明",
+      "description": "朱棣攻进南京，皇宫起火，朱允炆下落不明。有人说他死于火中，也有人说他趁乱逃出城削发为僧，成为明朝一大谜案。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "削藩",
+      "summary": "建文帝要把叔叔们的封地和兵权收归朝廷。",
+      "impact": "削藩直接逼反了燕王朱棣，引发四年靖难之役。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "靖难之役",
+      "summary": "朱棣以'清君侧'为名起兵，最后攻进南京。",
+      "impact": "皇位从建文帝手里转到朱棣手里，明朝政治格局大变。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "方孝孺",
+      "relation": "大臣",
+      "note": "建文帝的老师兼重臣，朱棣让他写即位诏书，他宁死不肯，被杀。"
+    },
+    {
+      "name": "齐泰、黄子澄",
+      "relation": "大臣",
+      "note": "帮建文帝出主意削藩的两位大臣，靖难后被处死。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "如果你是建文帝，削藩你会怎么削？",
+      "context": "叔叔们兵权太重，可一刀切地削藩，直接逼反了最厉害的朱棣。",
+      "viewpoints": [
+        "有人说该慢慢来：先稳住最强的燕王，分化瓦解，别一上来就激怒他。",
+        "有人说削藩本身没错：藩王坐大迟早出事，错在动手太急、太直。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "建文帝是明朝唯一'下落不明'的皇帝——有人说他烧死了，有人说他逃出去当了和尚。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "建文帝削藩时废掉的五位藩王全是他的叔叔，其中湘王朱柏才二十九岁就自焚而死。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "传说建文帝化装成和尚逃出南京后，还曾出现在云南、贵州一带，'建文踪迹'成了明朝一大谜案。",
+      "sources": [
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "应天府",
+      "modernName": "南京",
+      "note": "建文帝即位和被攻破的首都。",
+      "lat": 32.06,
+      "lng": 118.8
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "huidi.jpg"
+}

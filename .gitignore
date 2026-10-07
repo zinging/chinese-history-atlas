@@ -1,0 +1,19 @@
+# 依赖与本地工具
+node_modules/
+web/.tools/
+web/.npm-cache/
+
+# 本地敏感配置（含 API Key，绝不推送）
+web/llm-config.json
+
+# 浏览器 headless 临时文件
+web/.chrome-profile/
+web/.tmp-*
+web/.check-*
+web/.diag-*
+web/.verify-*
+
+# 系统
+.DS_Store
+Thumbs.db
+*.log

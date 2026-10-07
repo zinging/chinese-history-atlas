@@ -1,0 +1,282 @@
+{
+  "meta": {
+    "title": "宋朝十八帝索引",
+    "description": "北宋九帝+南宋九帝，file指向本目录下条目文件。",
+    "updated": "2026-10-02"
+  },
+  "emperors": [
+    {
+      "id": "song-emp-taizu",
+      "name": "赵匡胤",
+      "templeName": "太祖",
+      "eraName": [
+        "建隆",
+        "乾德",
+        "开宝"
+      ],
+      "reign": {
+        "start": "960",
+        "end": "976"
+      },
+      "file": "taizu.json"
+    },
+    {
+      "id": "song-emp-taizong",
+      "name": "赵光义",
+      "templeName": "太宗",
+      "eraName": [
+        "太平兴国",
+        "雍熙",
+        "端拱",
+        "淳化",
+        "至道"
+      ],
+      "reign": {
+        "start": "976",
+        "end": "997"
+      },
+      "file": "taizong.json"
+    },
+    {
+      "id": "song-emp-zhenzong",
+      "name": "赵恒",
+      "templeName": "真宗",
+      "eraName": [
+        "咸平",
+        "景德",
+        "大中祥符",
+        "天禧",
+        "乾兴"
+      ],
+      "reign": {
+        "start": "997",
+        "end": "1022"
+      },
+      "file": "zhenzong.json"
+    },
+    {
+      "id": "song-emp-renzong",
+      "name": "赵祯",
+      "templeName": "仁宗",
+      "eraName": [
+        "天圣",
+        "明道",
+        "景祐",
+        "宝元",
+        "康定",
+        "庆历",
+        "皇祐",
+        "至和",
+        "嘉祐"
+      ],
+      "reign": {
+        "start": "1022",
+        "end": "1063"
+      },
+      "file": "renzong.json"
+    },
+    {
+      "id": "song-emp-yingzong",
+      "name": "赵曙",
+      "templeName": "英宗",
+      "eraName": [
+        "治平"
+      ],
+      "reign": {
+        "start": "1063",
+        "end": "1067"
+      },
+      "file": "yingzong.json"
+    },
+    {
+      "id": "song-emp-shenzong",
+      "name": "赵顼",
+      "templeName": "神宗",
+      "eraName": [
+        "熙宁",
+        "元丰"
+      ],
+      "reign": {
+        "start": "1067",
+        "end": "1085"
+      },
+      "file": "shenzong.json"
+    },
+    {
+      "id": "song-emp-shezong",
+      "name": "赵煦",
+      "templeName": "哲宗",
+      "eraName": [
+        "元祐",
+        "绍圣",
+        "元符"
+      ],
+      "reign": {
+        "start": "1085",
+        "end": "1100"
+      },
+      "file": "shezong.json"
+    },
+    {
+      "id": "song-emp-huizong",
+      "name": "赵佶",
+      "templeName": "徽宗",
+      "eraName": [
+        "建中靖国",
+        "崇宁",
+        "大观",
+        "政和",
+        "重和",
+        "宣和"
+      ],
+      "reign": {
+        "start": "1100",
+        "end": "1126"
+      },
+      "file": "huizong.json"
+    },
+    {
+      "id": "song-emp-qinzong",
+      "name": "赵桓",
+      "templeName": "钦宗",
+      "eraName": [
+        "靖康"
+      ],
+      "reign": {
+        "start": "1126",
+        "end": "1127"
+      },
+      "file": "qinzong.json"
+    },
+    {
+      "id": "song-emp-gaozong",
+      "name": "赵构",
+      "templeName": "高宗",
+      "eraName": [
+        "建炎",
+        "绍兴"
+      ],
+      "reign": {
+        "start": "1127",
+        "end": "1162"
+      },
+      "file": "gaozong.json"
+    },
+    {
+      "id": "song-emp-xiaozong",
+      "name": "赵昚",
+      "templeName": "孝宗",
+      "eraName": [
+        "隆兴",
+        "乾道",
+        "淳熙"
+      ],
+      "reign": {
+        "start": "1162",
+        "end": "1189"
+      },
+      "file": "xiaozong.json"
+    },
+    {
+      "id": "song-emp-guangzong",
+      "name": "赵惇",
+      "templeName": "光宗",
+      "eraName": [
+        "绍熙"
+      ],
+      "reign": {
+        "start": "1189",
+        "end": "1194"
+      },
+      "file": "guangzong.json"
+    },
+    {
+      "id": "song-emp-ningzong",
+      "name": "赵扩",
+      "templeName": "宁宗",
+      "eraName": [
+        "庆元",
+        "嘉泰",
+        "开禧",
+        "嘉定"
+      ],
+      "reign": {
+        "start": "1194",
+        "end": "1224"
+      },
+      "file": "ningzong.json"
+    },
+    {
+      "id": "song-emp-lizong",
+      "name": "赵昀",
+      "templeName": "理宗",
+      "eraName": [
+        "宝庆",
+        "绍定",
+        "端平",
+        "嘉熙",
+        "淳祐",
+        "宝祐",
+        "开庆",
+        "景定"
+      ],
+      "reign": {
+        "start": "1224",
+        "end": "1264"
+      },
+      "file": "lizong.json"
+    },
+    {
+      "id": "song-emp-duzong",
+      "name": "赵禥",
+      "templeName": "度宗",
+      "eraName": [
+        "咸淳"
+      ],
+      "reign": {
+        "start": "1264",
+        "end": "1274"
+      },
+      "file": "duzong.json"
+    },
+    {
+      "id": "song-emp-gongdi",
+      "name": "赵㬎",
+      "templeName": "恭帝",
+      "eraName": [
+        "德祐"
+      ],
+      "reign": {
+        "start": "1274",
+        "end": "1276"
+      },
+      "file": "gongdi.json"
+    },
+    {
+      "id": "song-emp-duanzong",
+      "name": "赵昰",
+      "templeName": "端宗",
+      "eraName": [
+        "景炎"
+      ],
+      "reign": {
+        "start": "1276",
+        "end": "1278"
+      },
+      "file": "duanzong.json"
+    },
+    {
+      "id": "song-emp-bing",
+      "name": "赵昺",
+      "templeName": "帝昺",
+      "eraName": [
+        "祥兴"
+      ],
+      "reign": {
+        "start": "1278",
+        "end": "1279"
+      },
+      "file": "bing.json"
+    }
+  ]
+}

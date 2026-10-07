@@ -1,0 +1,132 @@
+{
+  "id": "ming-emperor-muzong",
+  "name": "朱载坖",
+  "templeName": "穆宗",
+  "eraName": [
+    "隆庆"
+  ],
+  "reign": {
+    "start": "1567",
+    "end": "1572"
+  },
+  "intro": "只当六年皇帝、重用贤臣开启'隆庆新政'的皇帝",
+  "timeline": [
+    {
+      "date": "1537",
+      "title": "出生",
+      "description": "世宗第三子，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1567",
+      "title": "登基，用高拱张居正",
+      "description": "世宗驾崩，他即位，年号隆庆。他放手任用能干的大臣：首辅高拱整顿边防、推动俺答封贡，张居正参与政务，后来成了万历前期的实际掌权者。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1570",
+      "title": "隆庆和议",
+      "description": "他和蒙古俺答汗议和，开放互市，北边边境安定下来。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1572",
+      "title": "驾崩",
+      "description": "在位六年病逝，留下年幼的儿子朱翊钧，也就是万历帝。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "隆庆和议",
+      "summary": "穆宗同意与蒙古俺答汗互市，双方结束多年战争。",
+      "impact": "北方边境几十年没有大战，是难得的和平红利。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "重用贤臣",
+      "summary": "穆宗任用高拱、张居正等大臣，整顿朝政。",
+      "impact": "为后来张居正改革打下基础，史称'隆庆新政'。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "高拱",
+      "relation": "大臣",
+      "note": "隆庆朝的首辅，办事雷厉风行。"
+    },
+    {
+      "name": "张居正",
+      "relation": "大臣",
+      "note": "隆庆朝的次辅，后来成了万历前期的实际掌权者。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "和'敌人'讲和、开放互市，你觉得这是软弱还是智慧？",
+      "context": "隆庆帝和打了多年的蒙古俺答汗议和，开放边境贸易。",
+      "viewpoints": [
+        "有人说软弱：跟敌人做生意，好像丢了面子。",
+        "有人说智慧：打了几十年没打赢，互市让两边都受益，边境反而太平了。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱载坖是嘉靖的第三子，前面两个哥哥早夭，皇位才轮到他。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "隆庆和议后，明朝北边几十年没大打，边境百姓过了难得的安稳日子。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "1567年隆庆帝下令开放海禁（民间叫'隆庆开关'），准许民间私人出海贸易——此前明朝禁止民间出海已近百年。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "北京",
+      "modernName": "北京",
+      "note": "隆庆朝的首都。",
+      "lat": 39.9,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "zhongguotongshi",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "muzong.jpg"
+}

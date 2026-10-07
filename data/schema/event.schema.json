@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ming-journey/event.schema.json",
+  "title": "明史重大事件条目",
+  "description": "事件库单条契约。事件是皇帝条目 majorEvents 的展开版，供 RAG 检索与测验生成。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "era", "date", "summary", "narrative", "impact", "participants", "sources", "controversies", "funFacts"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^ming-event-[a-z0-9-]+$" },
+    "name": { "type": "string", "description": "事件名" },
+    "era": { "type": "string", "description": "所属明朝皇帝时期，如 永乐" },
+    "date": { "type": "string", "pattern": "^\\d{4}(-\\d{2})?$", "description": "起始年份或年月" },
+    "summary": { "type": "string", "description": "一句话简述，小学生能懂，不超过 40 字" },
+    "narrative": { "type": "string", "description": "展开叙述（3-5 句），交代起因经过结果，小学生能懂" },
+    "impact": { "type": "string", "description": "影响（含对后续的影响）" },
+    "participants": {
+      "type": "array",
+      "description": "关键参与人物/势力",
+      "items": { "type": "string" }
+    },
+    "sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "controversies": {
+      "type": "array",
+      "description": "开放讨论题，至少 1 个，每个含双视角",
+      "items": {
+        "type": "object",
+        "required": ["question", "context", "viewpoints"],
+        "additionalProperties": false,
+        "properties": {
+          "question": { "type": "string" },
+          "context": { "type": "string" },
+          "viewpoints": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 2
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "funFacts": {
+      "type": "array",
+      "description": "趣味冷知识",
+      "items": { "type": "string" }
+    }
+  }
+}

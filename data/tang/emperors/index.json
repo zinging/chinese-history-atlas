@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "title": "唐朝皇帝库",
+    "updated": "2026-10-02"
+  },
+  "emperors": [
+    {
+      "id": "tang-emp-gaozu",
+      "name": "李渊",
+      "templeName": "高祖",
+      "file": "gaozu.json",
+      "era": "武德",
+      "reign": "618-626",
+      "portrait": "tang-gaozu.jpg"
+    },
+    {
+      "id": "tang-emp-taizong",
+      "name": "李世民",
+      "templeName": "太宗",
+      "file": "taizong.json",
+      "era": "贞观",
+      "reign": "626-649",
+      "portrait": "tang-taizong.jpg"
+    },
+    {
+      "id": "tang-emp-gaozong",
+      "name": "李治",
+      "templeName": "高宗",
+      "file": "gaozong.json",
+      "era": "永徽等",
+      "reign": "649-683",
+      "portrait": "tang-gaozong.jpg"
+    },
+    {
+      "id": "tang-emp-wu",
+      "name": "武曌",
+      "templeName": "则天大圣皇帝",
+      "file": "wuzeitian.json",
+      "era": "天授等",
+      "reign": "690-705",
+      "portrait": "tang-wu.jpg"
+    },
+    {
+      "id": "tang-emp-zhongzong",
+      "name": "李显",
+      "templeName": "中宗",
+      "file": "zhongzong.json",
+      "era": "嗣圣",
+      "reign": "683-710",
+      "portrait": "tang-zhongzong.jpg"
+    },
+    {
+      "id": "tang-emp-ruizong",
+      "name": "李旦",
+      "templeName": "睿宗",
+      "file": "ruizong.json",
+      "era": "文明",
+      "reign": "684-712",
+      "portrait": "tang-ruizong.jpg"
+    },
+    {
+      "id": "tang-emp-xuanzong",
+      "name": "李隆基",
+      "templeName": "玄宗",
+      "file": "xuanzong.json",
+      "era": "开元/天宝",
+      "reign": "712-756",
+      "portrait": "tang-xuanzong.jpg"
+    },
+    {
+      "id": "tang-emp-suzong",
+      "name": "李亨",
+      "templeName": "肃宗",
+      "file": "suzong.json",
+      "era": "至德",
+      "reign": "756-762",
+      "portrait": "tang-suzong.jpg"
+    },
+    {
+      "id": "tang-emp-daizong",
+      "name": "李豫",
+      "templeName": "代宗",
+      "file": "daizong.json",
+      "era": "广德",
+      "reign": "762-779",
+      "portrait": "tang-daizong.jpg"
+    },
+    {
+      "id": "tang-emp-deizong",
+      "name": "李适",
+      "templeName": "德宗",
+      "file": "deizong.json",
+      "era": "建中",
+      "reign": "779-805",
+      "portrait": "tang-deizong.jpg"
+    },
+    {
+      "id": "tang-emp-xianzong",
+      "name": "李纯",
+      "templeName": "宪宗",
+      "file": "xianzong.json",
+      "era": "元和",
+      "reign": "805-820",
+      "portrait": "tang-xianzong.jpg"
+    },
+    {
+      "id": "tang-emp-wuzong",
+      "name": "李炎",
+      "templeName": "武宗",
+      "file": "wuzong.json",
+      "era": "会昌",
+      "reign": "840-846",
+      "portrait": "tang-wuzong.jpg"
+    },
+    {
+      "id": "tang-emp-xuizong2",
+      "name": "李忱",
+      "templeName": "宣宗",
+      "file": "xuizong2.json",
+      "era": "大中",
+      "reign": "846-859",
+      "portrait": "tang-xuizong2.jpg"
+    },
+    {
+      "id": "tang-emp-xuizong",
+      "name": "李儇",
+      "templeName": "僖宗",
+      "file": "xuizong.json",
+      "era": "乾符",
+      "reign": "873-888",
+      "portrait": "tang-xuizong.jpg"
+    }
+  ]
+}

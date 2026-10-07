@@ -1,0 +1,11 @@
+{
+  "meta": { "title": "五代索引", "note": "这里的「皇帝卡片」其实是五个中原王朝，不是一姓家天下。" },
+  "emperors": [
+    { "id": "wudai-laterliang", "name": "朱温·后梁", "file": "liang.json" },
+    { "id": "wudai-latertang", "name": "李存勖·后唐", "file": "tang.json" },
+    { "id": "wudai-laterjin", "name": "石敬瑭·后晋", "file": "jin.json" },
+    { "id": "wudai-laterhan", "name": "刘知远·后汉", "file": "han.json" },
+    { "id": "wudai-laterzhou", "name": "郭威·后周", "file": "zhou.json" },
+    { "id": "wudai-laterzhou-shizong", "name": "柴荣·后周", "file": "chairong.json" }
+  ]
+}

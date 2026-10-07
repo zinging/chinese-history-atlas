@@ -1,0 +1,13 @@
+{
+  "name": "@ming/journey",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "明朝演变学习 · 教学编排层（Phase 1）",
+  "exports": {
+    ".": "./index.js"
+  },
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" }
+  }
+}

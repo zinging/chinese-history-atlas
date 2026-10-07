@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ming-journey/institution.schema.json",
+  "title": "明代制度条目",
+  "description": "制度库单条契约。制度是分龄讲解的框架素材。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "category", "era", "intro", "howItWorks", "impact", "childAngle", "sources"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^ming-institution-[a-z0-9-]+$" },
+    "name": { "type": "string" },
+    "category": { "type": "string", "enum": ["政治", "军事", "经济", "文化", "社会", "宫廷"] },
+    "era": { "type": "string", "description": "主要时期，如 明初/永乐/嘉靖" },
+    "intro": { "type": "string", "description": "一句话简介，小学生能懂" },
+    "howItWorks": { "type": "string", "description": "怎么运转（3-5 句）" },
+    "impact": { "type": "string", "description": "影响" },
+    "childAngle": { "type": "string", "description": "给孩子的类比/视角，帮孩子理解抽象制度" },
+    "sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

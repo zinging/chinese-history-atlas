@@ -1,0 +1,654 @@
+{
+  "meta": {
+    "title": "明代事件地图点位",
+    "description": "把 events.json 里有明确地理位置的重大战事/事件标到地图上。kind: battle=战役 / coup=宫廷政变 / siege=兵临城下 / reform=制度改革。前端渲染为彩色⚔标记，点击弹窗显示 events.json 对应摘要。",
+    "updated": "2026-10-01"
+  },
+  "events": [
+    {
+      "eventId": "ming-event-poyang",
+      "name": "鄱阳湖之战",
+      "date": "1363",
+      "kind": "battle",
+      "lat": 29.1,
+      "lng": 116.2,
+      "note": "朱元璋大战陈友谅，以少胜多，为明朝建国奠定基础。",
+      "summary": "朱元璋在鄱阳湖以火攻大败陈友谅的大军，这是明朝建立前最关键的一仗。",
+      "place": {
+        "name": "鄱阳湖",
+        "modern": "江西鄱阳湖",
+        "note": "朱元璋在此火攻大败陈友谅，奠定建国基础。"
+      }
+    },
+    {
+      "eventId": "ming-event-hongwu-yimin",
+      "name": "洪洞大槐树移民",
+      "date": "1370",
+      "kind": "reform",
+      "lat": 36.25,
+      "lng": 111.7,
+      "note": "明初大移民起点",
+      "summary": "洪武年间政府组织从山西洪洞大槐树向华北、中原移民，很多北方人的家谱都写着'祖上来自洪洞大槐树'。",
+      "place": {
+        "name": "洪洞大槐树",
+        "modern": "山西洪洞县",
+        "note": "明初大移民的集合出发地，很多北方人祖籍都写这里。"
+      }
+    },
+    {
+      "eventId": "ming-event-jingnan",
+      "name": "靖难之役·南京登基",
+      "date": "1402",
+      "kind": "coup",
+      "lat": 32,
+      "lng": 118.8,
+      "note": "燕王朱棣夺位",
+      "summary": "燕王朱棣从北平起兵，打了四年攻入南京，建文帝失踪，朱棣即位为明成祖（永乐帝）。",
+      "place": {
+        "name": "南京",
+        "modern": "江苏南京",
+        "note": "朱棣从北平打到南京，攻入皇宫登基。"
+      }
+    },
+    {
+      "eventId": "ming-event-pingding-hanwang",
+      "name": "平定汉王叛乱",
+      "date": "1426",
+      "kind": "battle",
+      "lat": 37.27,
+      "lng": 117.45,
+      "note": "宣德帝亲征乐安",
+      "summary": "永乐帝的次子朱高煦效仿父亲造反，宣德帝朱瞻基亲征到山东乐安，汉王投降，被处死。",
+      "place": {
+        "name": "乐安",
+        "modern": "山东惠民县一带",
+        "note": "宣德帝亲征乐安，擒获造反的汉王朱高煦。"
+      }
+    },
+    {
+      "eventId": "ming-event-tumu",
+      "name": "土木堡之变",
+      "date": "1449",
+      "kind": "battle",
+      "lat": 40.4,
+      "lng": 115.52,
+      "note": "英宗亲征被俘处",
+      "summary": "1449年，英宗在太监王振怂恿下匆匆亲征，在土木堡被瓦剌包围，数十万大军溃败，皇帝被俘。",
+      "place": {
+        "name": "土木堡",
+        "modern": "河北怀来县土木堡一带",
+        "note": "英宗亲征在此被瓦剌包围俘虏。"
+      }
+    },
+    {
+      "eventId": "ming-event-beijing-fangwei",
+      "name": "北京保卫战",
+      "date": "1449",
+      "kind": "battle",
+      "lat": 39.95,
+      "lng": 116.38,
+      "note": "于谦死守北京（德胜门）",
+      "summary": "英宗被俘后，于谦率军民死守北京，打退瓦剌，保住了明朝。",
+      "place": {
+        "name": "北京",
+        "modern": "北京",
+        "note": "于谦率军民死守北京城，打退瓦剌。"
+      }
+    },
+    {
+      "eventId": "ming-event-duomen",
+      "name": "夺门之变",
+      "date": "1457",
+      "kind": "coup",
+      "lat": 39.9,
+      "lng": 116.4,
+      "note": "英宗复辟（南宫）",
+      "summary": "被软禁七年的太上皇英宗趁弟弟景泰帝病重，发动政变重新登基，随后冤杀于谦。",
+      "place": {
+        "name": "南宫",
+        "modern": "北京",
+        "note": "英宗被软禁的南宫，夺门之变后复辟。"
+      }
+    },
+    {
+      "eventId": "ming-event-chenghua-liting",
+      "name": "成化犁庭",
+      "date": "1467",
+      "kind": "battle",
+      "lat": 41.9,
+      "lng": 124.2,
+      "note": "明军犁平建州女真（辽东东部）",
+      "summary": "成化帝派大军征讨建州女真（后来清朝的祖先），斩首数百，犁庭扫穴，暂时稳住辽东。",
+      "place": {
+        "name": "建州",
+        "modern": "辽宁东部新宾一带",
+        "note": "成化年间明军犁平建州女真，史称成化犁庭。"
+      }
+    },
+    {
+      "eventId": "ming-event-yingzhou-dajie",
+      "name": "应州大捷",
+      "date": "1517",
+      "kind": "battle",
+      "lat": 39.55,
+      "lng": 113.19,
+      "note": "武宗亲征",
+      "summary": "武宗自封'威武大将军'，在山西应州击退蒙古骑兵。",
+      "place": {
+        "name": "应州",
+        "modern": "山西应县",
+        "note": "武宗自称大将军亲征，在此击退蒙古骑兵。"
+      }
+    },
+    {
+      "eventId": "ming-event-gengxu",
+      "name": "庚戌之变",
+      "date": "1550",
+      "kind": "siege",
+      "lat": 40.2,
+      "lng": 116.6,
+      "note": "俺答兵临北京（城北）",
+      "summary": "蒙古俺答汗突破长城，一直打到北京城下，明朝被迫开放互市。",
+      "place": {
+        "name": "北京",
+        "modern": "北京",
+        "note": "俺答汗兵临北京城下，明廷求和，史称庚戌之变。"
+      }
+    },
+    {
+      "eventId": "ming-event-taizhou",
+      "name": "台州大捷",
+      "date": "1561",
+      "kind": "battle",
+      "lat": 28.7,
+      "lng": 121.4,
+      "note": "戚继光抗倭",
+      "summary": "戚继光率戚家军在浙江台州九战九捷，沉重打击倭寇。",
+      "place": {
+        "name": "台州",
+        "modern": "浙江台州",
+        "note": "戚继光率戚家军在台州九战九捷抗倭。"
+      }
+    },
+    {
+      "eventId": "ming-event-zhangjuzheng",
+      "name": "张居正改革",
+      "date": "1573",
+      "kind": "reform",
+      "lat": 39.9,
+      "lng": 116.1,
+      "note": "一条鞭法·十年新政（城西）",
+      "summary": "万历初年首辅张居正推行一条鞭法、清丈田亩、整顿边防，十年间国家财政好转，死后被清算。",
+      "place": {
+        "name": "北京",
+        "modern": "北京",
+        "note": "张居正任首辅推行一条鞭法等改革，十年新政。"
+      }
+    },
+    {
+      "eventId": "ming-event-kangwo-yuanchao",
+      "name": "抗倭援朝·平壤",
+      "date": "1593",
+      "kind": "battle",
+      "lat": 39,
+      "lng": 125.7,
+      "note": "万历三大征之一（境外）",
+      "summary": "明朝出兵朝鲜，击败丰臣秀吉的日军，李如松收复平壤。",
+      "place": {
+        "name": "平壤",
+        "modern": "朝鲜平壤",
+        "note": "万历援朝抗倭，李如松收复平壤。"
+      }
+    },
+    {
+      "eventId": "ming-event-saerhu",
+      "name": "萨尔浒之战",
+      "date": "1619",
+      "kind": "battle",
+      "lat": 41.87,
+      "lng": 124.15,
+      "note": "明金兴亡之战",
+      "summary": "努尔哈赤的后金在萨尔浒以少胜多，大败明朝四路大军，辽东战局从此逆转。",
+      "place": {
+        "name": "萨尔浒",
+        "modern": "辽宁抚顺东",
+        "note": "努尔哈赤在萨尔浒大破明军四路，明金兴亡之战。"
+      }
+    },
+    {
+      "eventId": "ming-event-wei-zhongxian",
+      "name": "魏忠贤专权",
+      "date": "1621",
+      "kind": "coup",
+      "lat": 39.78,
+      "lng": 116.25,
+      "note": "阉党乱政（城西南）",
+      "summary": "天启帝沉迷木工，太监魏忠贤把持朝政，被呼为'九千九百岁'，东林党人被残酷打压。",
+      "place": {
+        "name": "北京",
+        "modern": "北京",
+        "note": "魏忠贤把持朝政，阉党乱政的中心。"
+      }
+    },
+    {
+      "eventId": "ming-event-ningyuan",
+      "name": "宁远大捷",
+      "date": "1626",
+      "kind": "battle",
+      "lat": 40.6,
+      "lng": 120.7,
+      "note": "袁崇焕守孤城",
+      "summary": "袁崇焕在宁远（今辽宁兴城）用红夷大炮击退努尔哈赤，是明朝对后金少有的胜仗。",
+      "place": {
+        "name": "宁远",
+        "modern": "辽宁兴城",
+        "note": "袁崇焕坚守宁远孤城，炮伤努尔哈赤。"
+      }
+    },
+    {
+      "eventId": "ming-event-shanhaiguan",
+      "name": "山海关之战",
+      "date": "1644",
+      "kind": "battle",
+      "lat": 40,
+      "lng": 119.8,
+      "note": "吴三桂引清军入关",
+      "summary": "吴三桂在山海关降清，联合多尔衮击溃李自成，清军由此入关。",
+      "place": {
+        "name": "山海关",
+        "modern": "河北秦皇岛山海关",
+        "note": "吴三桂引清军入关的关口，明亡清兴。"
+      }
+    },
+    {
+      "eventId": "ming-event-chongzhen-ziyi",
+      "name": "崇祯自缢煤山",
+      "date": "1644",
+      "kind": "coup",
+      "lat": 39.92,
+      "lng": 116.4,
+      "note": "明朝灭亡（景山）",
+      "summary": "李自成攻破北京，崇祯帝在煤山（今景山）自缢，明朝灭亡。",
+      "place": {
+        "name": "煤山",
+        "modern": "北京景山",
+        "note": "李自成破北京，崇祯帝在此自缢，明朝灭亡。"
+      }
+    },
+    {
+      "eventId": "ming-event-fengyang-qibing",
+      "name": "朱元璋濠州起兵",
+      "date": "1352",
+      "kind": "battle",
+      "lat": 32.9,
+      "lng": 117.55,
+      "note": "皇觉寺和尚投红巾军",
+      "summary": "25岁的朱元璋在皇觉寺当和尚，加入郭子兴的红巾军，从此开始打天下。",
+      "place": {
+        "name": "濠州",
+        "modern": "安徽凤阳",
+        "note": "朱元璋在濠州投红巾军，从此起兵。"
+      }
+    },
+    {
+      "eventId": "ming-event-ke-dadu",
+      "name": "徐达攻克元大都",
+      "date": "1368",
+      "kind": "battle",
+      "lat": 39.95,
+      "lng": 116.2,
+      "note": "元顺帝北逃",
+      "summary": "洪武元年，徐达率军攻入元大都（今北京），元顺帝北逃上都，元朝在中原的统治结束。",
+      "place": {
+        "name": "大都",
+        "modern": "北京",
+        "note": "徐达攻克元大都，元顺帝北逃，元朝灭亡。"
+      }
+    },
+    {
+      "eventId": "ming-event-buyuerhai",
+      "name": "捕鱼儿海之战",
+      "date": "1388",
+      "kind": "battle",
+      "lat": 48,
+      "lng": 117.5,
+      "note": "蓝玉扫灭北元王庭",
+      "summary": "蓝玉率15万大军在捕鱼儿海（今贝尔湖）突袭北元主力，俘虏元主次子、妃嫔、官属数千，北元从此一蹶不振。",
+      "place": {
+        "name": "捕鱼儿海",
+        "modern": "内蒙古贝尔湖一带",
+        "note": "蓝玉在此扫灭北元王庭。"
+      }
+    },
+    {
+      "eventId": "ming-event-hu-weiyong",
+      "name": "胡惟庸案",
+      "date": "1380",
+      "kind": "coup",
+      "lat": 32,
+      "lng": 118.8,
+      "note": "废丞相·杀3万人",
+      "summary": "朱元璋以谋反罪杀丞相胡惟庸，借机废除丞相制度，前后株连3万余人，是明初四大案之首。",
+      "place": {
+        "name": "南京",
+        "modern": "江苏南京",
+        "note": "胡惟庸案爆发，朱元璋废丞相，株连数万人。"
+      }
+    },
+    {
+      "eventId": "ming-event-longchang",
+      "name": "王阳明龙场悟道",
+      "date": "1508",
+      "kind": "reform",
+      "lat": 26.8,
+      "lng": 106.6,
+      "note": "知行合一诞生",
+      "summary": "王阳明被贬到贵州龙场驿，在石棺中静坐悟道，悟出'心即理''知行合一'，开创阳明心学。",
+      "place": {
+        "name": "龙场",
+        "modern": "贵州修文县",
+        "note": "王阳明被贬龙场驿，悟出知行合一。"
+      }
+    },
+    {
+      "eventId": "ming-event-ningwang",
+      "name": "宁王之乱·王阳明平叛",
+      "date": "1519",
+      "kind": "battle",
+      "lat": 28.68,
+      "lng": 115.86,
+      "note": "43天平叛",
+      "summary": "宁王朱宸濠在南昌起兵造反，王阳明临时凑义兵，43天就活捉宁王，平定叛乱。",
+      "place": {
+        "name": "南昌",
+        "modern": "江西南昌",
+        "note": "宁王朱宸濠从南昌起兵，王阳明43天平叛。"
+      }
+    },
+    {
+      "eventId": "ming-event-daliyi",
+      "name": "左顺门哭谏",
+      "date": "1524",
+      "kind": "coup",
+      "lat": 39.95,
+      "lng": 116.5,
+      "note": "大礼议·134人被廷杖",
+      "summary": "嘉靖帝要追尊亲生父亲为皇考，200多官员在左顺门跪哭抗议，嘉靖大怒，廷杖134人，16人被打死。",
+      "place": {
+        "name": "左顺门",
+        "modern": "北京故宫午门外",
+        "note": "大礼议之争，官员在左顺门哭谏被廷杖。"
+      }
+    },
+    {
+      "eventId": "ming-event-renyin",
+      "name": "壬寅宫变",
+      "date": "1542",
+      "kind": "coup",
+      "lat": 39.93,
+      "lng": 116.4,
+      "note": "宫女勒嘉靖",
+      "summary": "16名宫女趁嘉靖熟睡用黄绫抹布勒他脖子，差点勒死，事后全部被凌迟处死。嘉靖从此搬到西苑不再回大内。",
+      "place": {
+        "name": "乾清宫",
+        "modern": "北京故宫",
+        "note": "壬寅宫变，宫女们夜里想勒死嘉靖帝。"
+      }
+    },
+    {
+      "eventId": "ming-event-zhenggong",
+      "name": "宁波争贡之役",
+      "date": "1523",
+      "kind": "battle",
+      "lat": 29.87,
+      "lng": 121.55,
+      "note": "日本大名使节互斗",
+      "summary": "日本两个大名的使团在宁波为争朝贡资格大打出手，追打绍兴、掳掠百姓，成为嘉靖倭患的导火索之一。",
+      "place": {
+        "name": "宁波",
+        "modern": "浙江宁波",
+        "note": "日本两拨使节在宁波为争贡互斗，引发争贡之役。"
+      }
+    },
+    {
+      "eventId": "ming-event-ningxia-zhi",
+      "name": "宁夏之役·平哱拜",
+      "date": "1592",
+      "kind": "battle",
+      "lat": 38.47,
+      "lng": 106.27,
+      "note": "万历三大征之一",
+      "summary": "致仕副总兵哱拜在宁夏起兵造反，李如松、麻贵等筑堤引黄河水灌宁夏镇城，城破后哱拜自焚，宁夏平定。",
+      "place": {
+        "name": "宁夏",
+        "modern": "宁夏银川",
+        "note": "宁夏之役，万历派兵平定哱拜叛乱。"
+      }
+    },
+    {
+      "eventId": "ming-event-bozhou-zhi",
+      "name": "播州之役·平杨应龙",
+      "date": "1600",
+      "kind": "battle",
+      "lat": 27.7,
+      "lng": 106.9,
+      "note": "万历三大征之一",
+      "summary": "播州土司杨应龙造反，李化龙率24万八路围剿，攻破海龙囤，杨应龙自缢，播州改土归流。",
+      "place": {
+        "name": "播州",
+        "modern": "贵州遵义一带",
+        "note": "播州之役，万历平定杨应龙之乱。"
+      }
+    },
+    {
+      "eventId": "ming-event-hetuala",
+      "name": "努尔哈赤赫图阿拉称汗",
+      "date": "1616",
+      "kind": "coup",
+      "lat": 41.7,
+      "lng": 125,
+      "note": "后金建立",
+      "summary": "建州女真首领努尔哈赤在赫图阿拉（今辽宁新宾）称汗，国号大金（史称后金），建元天命，为清朝前身。",
+      "place": {
+        "name": "赫图阿拉",
+        "modern": "辽宁新宾",
+        "note": "努尔哈赤在赫图阿拉建后金称汗。"
+      }
+    },
+    {
+      "eventId": "ming-event-jisi",
+      "name": "己巳之变·袁崇焕被捕",
+      "date": "1629",
+      "kind": "battle",
+      "lat": 40.1,
+      "lng": 116.5,
+      "note": "皇太极兵临北京",
+      "summary": "皇太极绕道蒙古破喜峰口，直逼北京。袁崇焕千里回援，崇祯帝中反间计，将袁崇焕下狱，次年凌迟处死。",
+      "place": {
+        "name": "北京",
+        "modern": "北京",
+        "note": "己巳之变，皇太极绕道入关兵临北京城下。"
+      }
+    },
+    {
+      "eventId": "ming-event-wuqiao",
+      "name": "吴桥兵变·孔有德降清",
+      "date": "1631",
+      "kind": "battle",
+      "lat": 37.63,
+      "lng": 116.38,
+      "note": "登州兵变·带火炮降后金",
+      "summary": "孔有德率辽兵在河北吴桥哗变，回攻登州，后从海上投降后金，带去了红夷大炮和工匠，明清军力对比逆转。",
+      "place": {
+        "name": "吴桥",
+        "modern": "河北吴桥县",
+        "note": "吴桥兵变，孔有德叛明降清，带去火炮。"
+      }
+    },
+    {
+      "eventId": "ming-event-zhangxianzhong",
+      "name": "张献忠成都称帝",
+      "date": "1644",
+      "kind": "coup",
+      "lat": 30.67,
+      "lng": 104.07,
+      "note": "大西政权",
+      "summary": "李自成破北京同年，张献忠攻入成都，建立大西政权，后在西充凤凰山被清军射杀。",
+      "place": {
+        "name": "成都",
+        "modern": "四川成都",
+        "note": "张献忠在成都称帝，建立大西政权。"
+      }
+    },
+    {
+      "eventId": "ming-event-yangzhou",
+      "name": "扬州十日·史可法殉国",
+      "date": "1645",
+      "kind": "battle",
+      "lat": 32.39,
+      "lng": 119.42,
+      "note": "南明抗清",
+      "summary": "史可法死守扬州，城破后多铎下令屠城十天，史称'扬州十日'，史可法殉国。",
+      "place": {
+        "name": "扬州",
+        "modern": "江苏扬州",
+        "note": "清军攻扬州十日屠城，史可法殉国。"
+      }
+    },
+    {
+      "eventId": "ming-event-jiangyin",
+      "name": "江阴八十一日",
+      "date": "1645",
+      "kind": "battle",
+      "lat": 31.9,
+      "lng": 120.27,
+      "note": "平民抗清典范",
+      "summary": "江阴百姓推阎应元为首，抗清八十一日，城破后全城殉难无一人降，是南明抗清最悲壮的一页。",
+      "place": {
+        "name": "江阴",
+        "modern": "江苏江阴",
+        "note": "江阴百姓坚守八十一日抗清，宁死不降。"
+      }
+    },
+    {
+      "eventId": "ming-event-longqing-kaiguan",
+      "name": "隆庆开关·月港",
+      "date": "1567",
+      "kind": "reform",
+      "lat": 24.4,
+      "lng": 117.8,
+      "note": "海澄月港·开海禁",
+      "summary": "隆庆帝解除海禁，准许福建漳州月港（今海澄）民间对外通商，全世界白银大量流入中国。",
+      "place": {
+        "name": "月港",
+        "modern": "福建漳州海澄",
+        "note": "隆庆开关，开放月港为唯一对外通商口岸。"
+      }
+    },
+    {
+      "eventId": "ming-event-yongle-dadian",
+      "name": "永乐大典成书",
+      "date": "1408",
+      "kind": "culture",
+      "lat": 32,
+      "lng": 118.8,
+      "note": "世界最大百科全书",
+      "summary": "解缙主编的《永乐大典》在南京修成，22937卷，3.7亿字，是当时世界上最大的百科全书。",
+      "place": {
+        "name": "南京",
+        "modern": "江苏南京",
+        "note": "永乐大典在此编成，世界最大百科全书。"
+      }
+    },
+    {
+      "eventId": "ming-event-tangsair",
+      "name": "唐赛儿起义",
+      "date": "1420",
+      "kind": "uprising",
+      "lat": 36.68,
+      "lng": 118.48,
+      "note": "山东蒲台女起义",
+      "summary": "山东蒲台女子唐赛儿以白莲教组织农民起义，攻克莒州、即墨，震动京师，后被明军镇压。",
+      "place": {
+        "name": "蒲台",
+        "modern": "山东滨州蒲台县",
+        "note": "唐赛儿在山东蒲台起义，明初女起义领袖。"
+      }
+    },
+    {
+      "eventId": "ming-event-nuergan",
+      "name": "奴儿干都司设立",
+      "date": "1409",
+      "kind": "culture",
+      "lat": 52.93,
+      "lng": 139.75,
+      "note": "管辖黑龙江流域",
+      "summary": "永乐帝在黑龙江下游特林（今俄罗斯庙街）设奴儿干都司，管辖黑龙江、乌苏里江流域，官兵轮换驻守。",
+      "place": {
+        "name": "奴儿干",
+        "modern": "黑龙江下游特林",
+        "note": "明设奴儿干都司管辖黑龙江流域。"
+      }
+    },
+    {
+      "eventId": "ming-event-zhenghe-qihang",
+      "name": "郑和太仓起锚",
+      "date": "1405",
+      "kind": "diplomacy",
+      "lat": 31.45,
+      "lng": 121.13,
+      "note": "刘家港首航",
+      "summary": "郑和率27800余人、62艘宝船从太仓刘家港起锚，开始第一次下西洋，船队最远到达印度古里。",
+      "place": {
+        "name": "刘家港",
+        "modern": "江苏太仓",
+        "note": "郑和船队从刘家港起锚，七下西洋。"
+      }
+    },
+    {
+      "eventId": "ming-event-caoshi",
+      "name": "曹石之乱",
+      "date": "1461",
+      "kind": "coup",
+      "lat": 39.9,
+      "lng": 116.55,
+      "note": "曹吉祥石亨叛乱",
+      "summary": "夺门之变功臣石亨、太监曹吉祥骄横谋反，被明英宗镇压，石亨死于狱中，曹吉祥被凌迟。",
+      "place": {
+        "name": "北京",
+        "modern": "北京",
+        "note": "曹吉祥、石亨在京城发动叛乱，被平定。"
+      }
+    },
+    {
+      "eventId": "ming-event-hongzhi-zhongxing",
+      "name": "弘治中兴",
+      "date": "1488",
+      "kind": "reform",
+      "lat": 39.9,
+      "lng": 116.4,
+      "note": "明孝宗更新庶政",
+      "summary": "明孝宗朱祐樘即位后驱逐奸佞、重用刘大夏等贤臣，减轻赋税，明朝出现短暂的政治清明时期，史称'弘治中兴'。",
+      "place": {
+        "name": "北京",
+        "modern": "北京",
+        "note": "明孝宗在京城刷新庶政，史称弘治中兴。"
+      }
+    },
+    {
+      "eventId": "ming-event-liudaxia-he",
+      "name": "刘大夏治黄河",
+      "date": "1496",
+      "kind": "reform",
+      "lat": 34.65,
+      "lng": 115.1,
+      "note": "疏浚黄陵冈",
+      "summary": "弘治年间刘大夏主持疏浚黄陵冈黄河故道，筑长堤，水患暂息，是明代著名的治河工程。",
+      "place": {
+        "name": "黄陵冈",
+        "modern": "河南兰考县一带",
+        "note": "刘大夏在此主持治理黄河水患。"
+      }
+    }
+  ]
+}

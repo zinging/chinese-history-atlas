@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ming-journey/emperor.schema.json",
+  "title": "明朝皇帝条目",
+  "description": "明朝十六帝结构化数据库的单条契约。字段对齐 data/emperors/*.json。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "templeName", "eraName", "reign", "intro", "timeline", "majorEvents", "people", "controversies", "funFacts", "places", "sources"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^ming-emperor-[a-z]+$" },
+    "name": { "type": "string", "description": "本名" },
+    "templeName": { "type": "string", "description": "庙号，如 成祖" },
+    "portrait": {
+      "type": "string",
+      "description": "画像文件名（放 data/portraits/ 下），如 yongle.jpg。可为空，前端回退 emoji 占位。",
+      "default": ""
+    },
+    "eraName": {
+      "type": "array",
+      "description": "年号，按使用顺序",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "reign": {
+      "type": "object",
+      "required": ["start", "end"],
+      "additionalProperties": false,
+      "properties": {
+        "start": { "type": "string", "pattern": "^\\d{4}$" },
+        "end": { "type": "string", "pattern": "^\\d{4}$" }
+      }
+    },
+    "intro": { "type": "string", "description": "一句话简介，小学生能懂，不超过 40 字" },
+    "timeline": {
+      "type": "array",
+      "description": "生平关键事件，按 date 升序",
+      "items": {
+        "type": "object",
+        "required": ["date", "title", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "date": { "type": "string", "pattern": "^\\d{4}(-\\d{2})?$" },
+          "approx": { "type": "string", "description": "无精确日期时的说明" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "sources": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "引用 data/sources/sources.json 中的 id"
+          }
+        }
+      }
+    },
+    "majorEvents": {
+      "type": "array",
+      "description": "重大事件",
+      "items": {
+        "type": "object",
+        "required": ["name", "summary", "impact", "sources"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "summary": { "type": "string", "description": "简述，小学生能懂" },
+          "impact": { "type": "string", "description": "影响，与 summary 分开写" },
+          "sources": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "people": {
+      "type": "array",
+      "description": "关键人物",
+      "items": {
+        "type": "object",
+        "required": ["name", "relation", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "relation": { "type": "string", "description": "与皇帝的关系，如 谋士/宦官/大臣" },
+          "note": { "type": "string", "description": "一句说明，小学生能懂" }
+        }
+      }
+    },
+    "controversies": {
+      "type": "array",
+      "description": "开放讨论题，非应试",
+      "items": {
+        "type": "object",
+        "required": ["question", "context", "viewpoints"],
+        "additionalProperties": false,
+        "properties": {
+          "question": { "type": "string", "description": "开放问题，用'你觉得为什么''如果是你会怎么做'句式" },
+          "context": { "type": "string", "description": "问题背景，一句" },
+          "viewpoints": {
+            "type": "array",
+            "description": "至少两个视角，不判对错",
+            "items": { "type": "string" },
+            "minItems": 2
+          }
+        }
+      }
+    },
+    "funFacts": {
+      "type": "array",
+      "description": "趣味冷知识",
+      "items": {
+        "type": "object",
+        "required": ["fact", "sources"],
+        "additionalProperties": false,
+        "properties": {
+          "fact": { "type": "string" },
+          "sources": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "places": {
+      "type": "array",
+      "description": "古今地名对照",
+      "items": {
+        "type": "object",
+        "required": ["name", "modernName", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "description": "明代地名" },
+          "modernName": { "type": "string", "description": "今地名" },
+          "note": { "type": "string", "description": "一句说明" },
+          "lat": { "type": "number", "description": "纬度，可选" },
+          "lng": { "type": "number", "description": "经度，可选" }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "description": "整条目的史料出处汇总",
+      "items": { "type": "string" }
+    }
+  }
+}

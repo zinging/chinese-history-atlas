@@ -1,0 +1,22 @@
+{
+  "meta": { "title": "唐朝关键人物库", "updated": "2026-10-02" },
+  "people": [
+    { "id": "tang-p-lishimin", "name": "李世民", "era": "初唐", "role": "唐太宗", "birthDeath": "598-649", "note": "贞观天子，千古明君" },
+    { "id": "tang-p-weizheng", "name": "魏征", "era": "初唐", "role": "谏议大夫", "birthDeath": "580-643", "note": "以人为镜可以明得失" },
+    { "id": "tang-p-fangxuanling", "name": "房玄龄", "era": "初唐", "role": "尚书左仆射", "birthDeath": "579-648", "note": "贞观贤相，房谋杜断" },
+    { "id": "tang-p-duruhui", "name": "杜如晦", "era": "初唐", "role": "尚书右仆射", "birthDeath": "585-630", "note": "房谋杜断" },
+    { "id": "tang-p-wu", "name": "武曌", "era": "武周", "role": "则天大圣皇帝", "birthDeath": "624-705", "note": "中国唯一女皇帝" },
+    { "id": "tang-p-direnjie", "name": "狄仁杰", "era": "武周", "role": "宰相", "birthDeath": "630-700", "note": "北斗以南一人而已" },
+    { "id": "tang-p-yaochong", "name": "姚崇", "era": "盛唐", "role": "宰相", "birthDeath": "650-721", "note": "救时宰相" },
+    { "id": "tang-p-songjing", "name": "宋璟", "era": "盛唐", "role": "宰相", "birthDeath": "663-737", "note": "有脚阳春" },
+    { "id": "tang-p-yangguifei", "name": "杨玉环", "era": "盛唐", "role": "贵妃", "birthDeath": "719-756", "note": "一骑红尘妃子笑" },
+    { "id": "tang-p-anshan", "name": "安禄山", "era": "盛唐", "role": "范阳节度使", "birthDeath": "703-757", "note": "胡人，安史之乱发动者" },
+    { "id": "tang-p-guoziyi", "name": "郭子仪", "era": "中唐", "role": "汾阳王", "birthDeath": "697-781", "note": "再造唐朝，功高不震主" },
+    { "id": "tang-p-liguangbi", "name": "李光弼", "era": "中唐", "role": "临淮王", "birthDeath": "708-764", "note": "与郭子仪齐名" },
+    { "id": "tang-p-lihuai", "name": "李愬", "era": "中唐", "role": "唐邓节度使", "birthDeath": "773-821", "note": "雪夜入蔡州" },
+    { "id": "tang-p-huangchao", "name": "黄巢", "era": "晚唐", "role": "大齐皇帝", "birthDeath": "?-884", "note": "满城尽带黄金甲" },
+    { "id": "tang-p-zhuanhuan", "name": "玄奘", "era": "初唐", "role": "三藏法师", "birthDeath": "602-664", "note": "西行取经，著《大唐西域记》" },
+    { "id": "tang-p-dufu", "name": "杜甫", "era": "盛唐/中唐", "role": "诗人", "birthDeath": "712-770", "note": "诗圣，三吏三别" },
+    { "id": "tang-p-libai", "name": "李白", "era": "盛唐", "role": "诗人", "birthDeath": "701-762", "note": "诗仙，斗酒诗百篇" }
+  ]
+}

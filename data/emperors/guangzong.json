@@ -1,0 +1,156 @@
+{
+  "id": "ming-emperor-guangzong",
+  "name": "朱常洛",
+  "templeName": "光宗",
+  "eraName": [
+    "泰昌"
+  ],
+  "reign": {
+    "start": "1620",
+    "end": "1620"
+  },
+  "intro": "苦等十九年才当上皇帝、一个月就去世的'短命皇帝'",
+  "timeline": [
+    {
+      "date": "1582",
+      "title": "出生",
+      "description": "万历帝长子，母亲是宫女，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1601",
+      "title": "被立为太子",
+      "description": "万历在'国本之争'中最终立他为太子，但一直不受宠爱。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1615",
+      "title": "梃击案",
+      "description": "一个叫张差的男子手持木棍闯进他的慈庆宫，打伤太监后被擒。审问时供词忽疯忽醒，还牵连到郑贵妃的宫人，朝堂大哗。万历出面草草结案，把张差当疯子处死，但'太子之位不稳'的真相已人尽皆知。是'明宫三大案'第一案。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1620",
+      "title": "登基称帝",
+      "description": "万历驾崩，他终于即位，年号泰昌。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1620",
+      "title": "红丸案，驾崩",
+      "description": "他病中服下鸿胪寺丞进献的红色药丸，起初好转，再服一颗却一命呜呼，在位仅29天。朝臣为药丸是补是毒吵成一团，始终没查清，是'明宫三大案'之一。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1620",
+      "title": "移宫案",
+      "description": "他死后，宠妃李选侍赖在乾清宫不肯搬走，想挟持小皇帝把持朝政。大臣们联合施压，她才被迫搬出。此案与梃击案、红丸案合称'明宫三大案'。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "梃击案",
+      "summary": "有人持木棍闯入太子宫殿，被守卫拿下，朝堂大哗。",
+      "impact": "太子地位之争浮出水面，'明宫三大案'由此开始。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "name": "红丸案",
+      "summary": "光宗病重，服下鸿胪寺丞进献的'红丸'，几天后驾崩。",
+      "impact": "继位一个月就暴亡，留下'红丸案'疑团，成为明宫三大案之一。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "移宫案",
+      "summary": "光宗死后，宠妃李选侍赖在乾清宫不肯走，被大臣们逼着搬出。",
+      "impact": "是'明宫三大案'之一，小皇帝（熹宗）的监护权之争就此落幕。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "郑贵妃",
+      "relation": "父亲（万历）的宠妃",
+      "note": "一直想让自己儿子当太子的人，与朱常洛势同水火。"
+    },
+    {
+      "name": "李选侍",
+      "relation": "宠妃",
+      "note": "光宗死后她赖在乾清宫不肯走，引发'移宫案'。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "光宗吃了几颗'红丸'就去世了——你觉得这是太医害人、药物中毒，还是另有隐情？",
+      "context": "他病重时吃了进献的红色药丸，几天后去世，大家吵成一团。",
+      "viewpoints": [
+        "有人说药物有毒：红丸是烈性补药，重病之人吃了反而送命。",
+        "有人说有人故意害他：他挡了很多人的路，死得这么巧，背后可能有阴谋。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱常洛当太子等了19年，当皇帝只当了29天，是明朝在位最短的皇帝。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "朱常洛这一年有两个年号：先算万历四十八年，又改泰昌元年，史称'万历泰昌'并立。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "光宗吃的第一副药是郑贵妃亲信崔文昇进献的'通利药'，上吐下泻后更虚了，接着才吃了红丸——所以有人怀疑是郑贵妃一步步设计害他。",
+      "sources": [
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "北京",
+      "modernName": "北京",
+      "note": "泰昌朝的首都。",
+      "lat": 39.9,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "guangzong.jpg"
+}

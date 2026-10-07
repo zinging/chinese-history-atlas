@@ -1,0 +1,209 @@
+{
+  "id": "ming-emperor-shizong",
+  "name": "朱厚熜",
+  "templeName": "世宗",
+  "eraName": [
+    "嘉靖"
+  ],
+  "reign": {
+    "start": "1521",
+    "end": "1567"
+  },
+  "intro": "从藩王变皇帝、二十多年不上朝却掌控朝政的皇帝",
+  "timeline": [
+    {
+      "date": "1507",
+      "title": "出生",
+      "description": "宪宗之孙、兴献王之子，出生在湖北安陆（今钟祥）。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1521",
+      "title": "藩王入继大统",
+      "description": "武宗无子驾崩，他以堂弟身份进京即位，年号嘉靖。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1521",
+      "title": "大礼议",
+      "description": "他坚持要追尊自己的生父为皇帝，和大臣吵了三年，史称'大礼议'。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1542",
+      "title": "壬寅宫变",
+      "description": "宫女们趁他熟睡想用黄绫布勒死他，慌乱中打了个死结，他侥幸逃过一劫。这年按干支纪年是壬寅年，又发生在皇宫里，所以史称'壬寅宫变'。此后他更加迷信道教，搬去西苑（今北京中南海一带）居住。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1544",
+      "title": "开始不上朝，严嵩把持朝政",
+      "description": "他长期住在西苑（今北京中南海一带）修道，二十多年不上朝，但朝政仍被他遥控。上传的奏章由内阁票拟、严嵩把持——严嵩写青词讨好皇帝，趁机结党营私、卖官敛税，把持朝政近二十年。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "date": "1550",
+      "title": "庚戌之变",
+      "description": "蒙古俺答汗率军突破长城，一直打到北京城下，包围京城数日。这年按干支纪年是庚戌年，史称'庚戌之变'。明军不敢出战，俺答汗抢掠一番后退走，事后明朝被迫答应开放边境互市。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1561",
+      "title": "戚继光扫平东南倭寇",
+      "description": "倭寇（日本浪人＋中国海盗）在东南沿海烧杀抢掠。戚继光招募义乌矿工和农民训练成'戚家军'，1561年在台州九战九捷，斩首数千而自身伤亡极小，基本肃清东南倭患。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1566",
+      "title": "徐阶扳倒严嵩",
+      "description": "内阁次辅徐阶隐忍多年，暗中布局，借嘉靖对严嵩父子不满，联合大臣弹劾，终于把把持朝政近二十年的严嵩扳倒。他接任首辅后平反冤狱、提拔人才。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1566",
+      "title": "海瑞上书骂皇帝",
+      "description": "海瑞上书直言，把他气得半死，却没杀海瑞。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1567",
+      "title": "驾崩",
+      "description": "他因长期服用丹药中毒去世，享年六十。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "大礼议",
+      "summary": "嘉靖帝要把自己生父追尊为皇帝，与满朝大臣争论三年。",
+      "impact": "他赢了大臣，从此更强势，也开启了明朝皇帝与文官集团的拉锯。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "严嵩专权",
+      "summary": "嘉靖后期宠信大臣严嵩，严嵩把持朝政近二十年。",
+      "impact": "朝政腐败、边事败坏，是嘉靖中后期的大问题。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "name": "庚戌之变",
+      "summary": "蒙古俺答汗兵临北京城下，明朝被迫开放互市。",
+      "impact": "暴露明朝北方边防的虚弱，互市后边境反而安定了一阵。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "严嵩",
+      "relation": "大臣",
+      "note": "把持朝政近二十年的权臣，贪腐闻名，后被徐阶扳倒。"
+    },
+    {
+      "name": "徐阶",
+      "relation": "大臣",
+      "note": "隐忍多年，最终扳倒严嵩的首辅，嘉靖末年接班人。"
+    },
+    {
+      "name": "海瑞",
+      "relation": "大臣",
+      "note": "备棺上书骂皇帝的直臣，嘉靖气极却没杀他。"
+    },
+    {
+      "name": "戚继光",
+      "relation": "名将",
+      "note": "嘉靖朝抗倭名将，训练'戚家军'扫平东南倭患。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "嘉靖二十多年不上朝，国家却还在转——你觉得皇帝不露面，算不算失职？",
+      "context": "他不理早朝，却靠批奏章遥控大臣，朝政照常运转。",
+      "viewpoints": [
+        "有人说失职：皇帝不露面，大臣就会钻空子，严嵩专权就是后果。",
+        "有人说形式不重要：他人在深宫也批阅奏章，决定都是他做的，不能只看表面。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "嘉靖是明朝唯一一个'大行皇帝无子'时被文官集团挑中、从藩王直接当皇帝的人。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "朱厚熜特别信道教，给道士封官，还因为吃丹药中毒，把命吃没了。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "嘉靖晚年吃的'红铅丹'其实是重金属粉末，越吃身体越差，最后就是被自己信的'仙丹'害死的。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "安陆",
+      "modernName": "湖北钟祥",
+      "note": "嘉靖帝的出生地和就藩地。",
+      "lat": 31.17,
+      "lng": 112.59
+    },
+    {
+      "name": "西苑",
+      "modernName": "北京中南海一带",
+      "note": "他晚年修道不上朝时居住的地方。",
+      "lat": 39.91,
+      "lng": 116.38
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "zhongguotongshi",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "shizong.jpg"
+}

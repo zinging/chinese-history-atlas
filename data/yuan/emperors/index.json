@@ -1,0 +1,13 @@
+{
+  "meta": { "title": "元朝皇帝库", "updated": "2026-10-02" },
+  "emperors": [
+    { "id": "yuan-emp-shizu", "name": "忽必烈", "templeName": "世祖", "file": "shizu.json", "era": "至元", "reign": "1271-1294", "portrait": "yuan-shizu.jpg" },
+    { "id": "yuan-emp-chengzong", "name": "铁穆耳", "templeName": "成宗", "file": "chenzong.json", "era": "元贞/大德", "reign": "1294-1307", "portrait": "yuan-chenzong.jpg" },
+    { "id": "yuan-emp-wuzong", "name": "海山", "templeName": "武宗", "file": "wuzong.json", "era": "至大", "reign": "1307-1311", "portrait": "yuan-wuzong.jpg" },
+    { "id": "yuan-emp-renzeng", "name": "爱育黎拔力八达", "templeName": "仁宗", "file": "renzong.json", "era": "皇庆/延祐", "reign": "1311-1320", "portrait": "yuan-renzong.jpg" },
+    { "id": "yuan-emp-yingzong", "name": "硕德八剌", "templeName": "英宗", "file": "yingzong.json", "era": "至治", "reign": "1320-1323", "portrait": "yuan-yingzong.jpg" },
+    { "id": "yuan-emp-taiding", "name": "也孙铁木儿", "templeName": "泰定帝", "file": "taiding.json", "era": "泰定/致和", "reign": "1323-1328", "portrait": "yuan-taiding.jpg" },
+    { "id": "yuan-emp-wenzong", "name": "图帖睦尔", "templeName": "文宗", "file": "wenzong.json", "era": "天历/至顺", "reign": "1328-1332", "portrait": "yuan-wenzong.jpg" },
+    { "id": "yuan-emp-shundi", "name": "妥懽帖睦尔", "templeName": "惠宗（顺帝）", "file": "shundi.json", "era": "元统/至正", "reign": "1333-1368", "portrait": "yuan-shundi.jpg" }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "meta": { "title": "隋朝皇帝索引", "updated": "2026-10-03" },
+  "emperors": [
+    { "id": "sui-emp-wendi", "name": "杨坚", "file": "wendi.json" },
+    { "id": "sui-emp-yangdi", "name": "杨广", "file": "yangdi.json" },
+    { "id": "sui-emp-gongdi", "name": "杨侑", "file": "gongdi.json" }
+  ]
+}

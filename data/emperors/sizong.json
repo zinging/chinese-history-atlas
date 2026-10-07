@@ -1,0 +1,193 @@
+{
+  "id": "ming-emperor-sizong",
+  "name": "朱由检",
+  "templeName": "思宗",
+  "eraName": [
+    "崇祯"
+  ],
+  "reign": {
+    "start": "1627",
+    "end": "1644"
+  },
+  "intro": "勤勤恳恳想挽救明朝、最后在煤山（今景山）自缢的末代皇帝",
+  "timeline": [
+    {
+      "date": "1611",
+      "title": "出生",
+      "description": "光宗第五子，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1627",
+      "title": "十七岁登基",
+      "description": "哥哥熹宗驾崩，他即位，年号崇祯。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1627",
+      "title": "铲除魏忠贤",
+      "description": "他一上台就扳倒魏忠贤，人心一度大振。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1628",
+      "title": "陕北农民起义爆发",
+      "description": "陕西大旱饥荒，李自成等起义军揭竿而起，越滚越大。",
+      "sources": [
+        "mingshi",
+        "chongzhen"
+      ]
+    },
+    {
+      "date": "1629",
+      "title": "己巳之变，袁崇焕下狱",
+      "description": "皇太极绕过关宁防线直逼北京，袁崇焕千里回援，却被怀疑与后金勾结，被崇祯下狱。",
+      "sources": [
+        "mingshi",
+        "chongzhen"
+      ]
+    },
+    {
+      "date": "1630",
+      "title": "袁崇焕被凌迟处死",
+      "description": "崇祯以'通敌'罪名把袁崇焕凌迟处死，天下震动。史家多认为这是崇祯自毁长城，是明末一大冤案。",
+      "sources": [
+        "mingshi",
+        "chongzhen"
+      ]
+    },
+    {
+      "date": "1636",
+      "title": "皇太极称帝，建大清",
+      "description": "后金改国号为大清，与明朝争天下的对手正式成形。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "date": "1644",
+      "title": "李自成攻破北京，自缢煤山（今景山）",
+      "description": "李自成大军入京，朱由检在煤山（今景山）自缢，明朝灭亡。镇守山海关的吴三桂原本想投降李自成，听说家产被抄、爱妾被抢，转身引清军入关，改写了天下大势。",
+      "sources": [
+        "mingshi",
+        "chongzhen"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "铲除魏忠贤",
+      "summary": "崇祯帝一上台就清除魏忠贤集团，清算阉党。",
+      "impact": "天下称快，但他刚愎多疑，清完阉党又换了一批又一批大臣。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "name": "袁崇焕案",
+      "summary": "崇祯以'通敌'罪名凌迟处死守辽名将袁崇焕，是明末最大冤案之一。",
+      "impact": "明朝再无良将守辽东，关宁防线从此瓦解，加速了亡国。",
+      "sources": [
+        "mingshi",
+        "chongzhen"
+      ]
+    },
+    {
+      "name": "崇祯末年的内外困局",
+      "summary": "关外清军压境、关内起义军蔓延、国库空虚、天灾不断。",
+      "impact": "勤政救不了危局，明朝最终在他手上灭亡。",
+      "sources": [
+        "mingshi",
+        "chongzhen"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "李自成",
+      "relation": "对手（起义军领袖）",
+      "note": "推翻明朝的起义军领袖，攻入北京。"
+    },
+    {
+      "name": "皇太极",
+      "relation": "对手（清）",
+      "note": "建立大清的皇帝，明朝关外最强大的敌人。"
+    },
+    {
+      "name": "袁崇焕",
+      "relation": "名将",
+      "note": "守辽东的名将，被崇祯帝以通敌罪名处死，千古冤案。"
+    },
+    {
+      "name": "吴三桂",
+      "relation": "辽东总兵",
+      "note": "镇守山海关的大将，崇祯死后引清军入关，改变了历史。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "崇祯很勤快却亡了国，而嘉靖不上朝却坐稳江山——勤快和当得好，是一回事吗？",
+      "context": "崇祯每天批奏章到深夜，可明朝还是亡了；有人说他越勤越坏事。",
+      "viewpoints": [
+        "有人说勤快不够：他疑心重、换大臣像换衣服，越插手越乱。",
+        "有人说大势已去：天灾、起义、清军三面夹击，谁来都难救。"
+      ],
+      "sources": [
+        "mingshi",
+        "chongzhen"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱由检临死前在衣服上写'诸臣误我'，怪大臣们误了国事，自己不肯承认责任。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "朱由检死后葬在思陵，是十三陵里最小的陵墓，因为他是亡国之君。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "崇祯临死前留下的遗言是'任贼分裂朕尸，勿伤百姓一人'——他自己死了也想着不牵连百姓。",
+      "sources": [
+        "mingshi",
+        "chongzhen"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "煤山",
+      "modernName": "北京景山",
+      "note": "崇祯帝自缢的地方。",
+      "lat": 39.92,
+      "lng": 116.4
+    },
+    {
+      "name": "北京",
+      "modernName": "北京",
+      "note": "明末首都，1644年被李自成攻破。",
+      "lat": 39.9,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "chongzhen",
+    "zhongguotongshi",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "sizong.jpg"
+}

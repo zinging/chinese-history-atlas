@@ -1,0 +1,180 @@
+{
+  "id": "ming-emperor-yingzong",
+  "name": "朱祁镇",
+  "templeName": "英宗",
+  "eraName": [
+    "正统",
+    "天顺"
+  ],
+  "reign": {
+    "start": "1435",
+    "end": "1464"
+  },
+  "intro": "当了两次皇帝、曾被瓦剌俘虏又复位的传奇皇帝",
+  "timeline": [
+    {
+      "date": "1427",
+      "title": "出生",
+      "description": "宣德帝长子，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1435",
+      "title": "九岁登基",
+      "description": "宣德帝驾崩，九岁的朱祁镇即位，年号正统。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1449",
+      "title": "土木堡之变，被俘",
+      "description": "瓦剌首领也先率大军南下，王振劝他御驾亲征。明军约五十万大军浩浩荡荡出发，走到土木堡（今河北怀来）时，粮道被断，军队扎营缺水缺粮，人心大乱。也先趁明军立足未稳佯攻又撤退，朱祁镇判断失误，率大军仓皇转移途中遭瓦剌铁骑追击，五十万大军几乎全军覆没，他本人被俘，王振被愤怒的将士打死。这场突变发生在土木堡，史称'土木堡之变'。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1449",
+      "title": "于谦守北京",
+      "description": "他被俘后，于谦力主保卫北京，组织军民死守德胜门，打退瓦剌大军，保住了明朝——于谦是明朝的大功臣，后来却被他冤杀。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1449",
+      "title": "弟弟即位",
+      "description": "他被俘后，弟弟朱祁钰在北京即位，年号景泰。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1450",
+      "title": "被放回，软禁",
+      "description": "瓦剌把他放回来，他被尊为太上皇，实际上被软禁在南宫（今北京故宫以南）。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1457",
+      "title": "夺门之变，复位",
+      "description": "弟弟朱祁钰病重时，石亨、曹吉祥等密谋拥立他复位。他们趁夜用斧头砍开宫门（因此叫'夺门'），打开宫门把英宗簇拥上殿复位，他改元天顺。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1464",
+      "title": "驾崩，废除殉葬",
+      "description": "临终前他下诏废除宫人殉葬制度，这是他留下的好名声。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "土木堡之变",
+      "summary": "英宗听信太监王振，御驾亲征瓦剌，在土木堡全军覆没，自己当了俘虏。",
+      "impact": "明朝由盛转衰的标志：精锐军队损失惨重，皇帝被俘，朝廷元气大伤。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "夺门之变",
+      "summary": "英宗被放回后软禁多年，趁弟弟病重发动政变复位。",
+      "impact": "皇帝换人、功臣被杀，明朝政治从此多了内斗的阴影。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "废除殉葬",
+      "summary": "英宗临终下诏：以后宫人不再殉葬。",
+      "impact": "结束了明朝残忍的殉葬制度，是他晚年最大的善举。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "王振",
+      "relation": "太监",
+      "note": "英宗最信任的太监，教他御驾亲征，导致土木堡惨败。"
+    },
+    {
+      "name": "于谦",
+      "relation": "大臣",
+      "note": "土木堡之变后组织北京保卫战的大功臣，后来被英宗冤杀。"
+    },
+    {
+      "name": "也先",
+      "relation": "对手（瓦剌首领）",
+      "note": "俘虏英宗的瓦剌首领，后来把英宗放了回来。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "英宗被俘又复位后，杀了保卫北京的功臣于谦——你觉得他为什么要这么做？",
+      "context": "于谦在英宗被俘时另立新君、保卫了北京，可英宗复位后第一件事就是杀他。",
+      "viewpoints": [
+        "有人说英宗记恨：于谦拥立弟弟当皇帝，让他这个'老皇帝'成了多余的人。",
+        "有人说这是权力逻辑：新班子要站稳脚跟，于谦这个前朝功臣挡了路。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱祁镇是中国历史上少数当过俘虏的皇帝，被抓去瓦剌还住了快一年。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "朱祁镇是明朝唯一一个当了两任皇帝的人（正统、天顺），中间隔着一个弟弟。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "朱祁镇被软禁的南宫（今北京故宫以南）有一道锁，钥匙只有宦官头领和看守各拿一把，朱祁镇想尽办法才逃出来复了位。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "土木堡",
+      "modernName": "河北怀来县土木堡一带",
+      "note": "1449年明军惨败、英宗被俘的地方。",
+      "lat": 40.4,
+      "lng": 115.52
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "yingzong.jpg"
+}

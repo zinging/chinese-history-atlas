@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ming-journey/route.schema.json",
+  "title": "明朝关键路线条目",
+  "description": "前端地图动画箭头路线契约。示意路线，非精确路径。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "color", "desc", "points"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "name": { "type": "string" },
+    "year": { "type": "integer", "description": "路线主要年份，用于按朝代筛选" },
+    "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "desc": { "type": "string" },
+    "points": {
+      "type": "array",
+      "description": "途经点，按顺序连线；前端画动画箭头",
+      "items": {
+        "type": "object",
+        "required": ["name", "lat", "lng"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "modern": { "type": "string", "description": "今地名，古今异名时用于显示'（今xx）'" },
+          "lat": { "type": "number" },
+          "lng": { "type": "number" },
+          "note": { "type": "string" }
+        }
+      },
+      "minItems": 2
+    }
+  }
+}

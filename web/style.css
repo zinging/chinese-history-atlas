@@ -1,0 +1,698 @@
+/* 明朝大冒险 · 儿童交互层样式
+   原则：大字体、圆角、高对比、暖色，孩子看得懂、点得动。 */
+
+:root {
+  --bg: #fdf6e9;
+  --card: #ffffff;
+  --ink: #3a2e1f;
+  --muted: #8a7a5c;
+  --primary: #c0392b;
+  --accent: #247bc1;
+  --gold: #f0c75e;
+  --border: #eadfc8;
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+#app { max-width: 1080px; margin: 0 auto; padding: 12px 16px 40px; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  padding: 14px 6px 10px;
+}
+/* 右上角 LLM 配置（已迁移到历史侦探页卡片，保留 btn 通用样式备用） */
+.llm-btn { margin-left: 6px; }
+/* AI 回答/点评展示 */
+.llm-answer { white-space: pre-wrap; line-height: 1.7; }
+.create-actions { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+.create-ai-result { margin-top: 10px; }
+
+/* ---- 历史侦探页 · AI老师配置（可折叠 + 模型 combobox） ---- */
+.detective-ai { margin-top: 16px; }
+.detective-ai-card {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+}
+.ai-config-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.ai-field {
+  display: block; font-size: 14px; font-weight: 600; color: #5c5140;
+  flex: 1 1 240px; margin-bottom: 8px;
+}
+.ai-field input {
+  width: 100%; margin-top: 5px; border: 2px solid var(--border);
+  border-radius: 8px; padding: 9px 11px; font-size: 15px; font-family: inherit;
+  background: #fff; font-weight: 400; box-sizing: border-box;
+}
+.ai-field-model { flex: 2 1 340px; }
+.ai-field-btns { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+.ai-save-msg { font-size: 13px; }
+
+/* 折叠面板：标题行 + chevron */
+.ai-config-card { padding: 0; overflow: hidden; }
+.ai-config-toggle {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  padding: 15px 20px; background: none; border: none; cursor: pointer;
+  text-align: left; font-family: inherit;
+}
+.ai-config-toggle:hover { background: #fbf3e0; }
+.ai-config-toggle-title { font-size: 18px; font-weight: 800; color: #8a4b1f; }
+.ai-config-toggle-sub { font-size: 13px; color: var(--muted); flex: 1; }
+.ai-config-chevron { font-size: 18px; color: #8a4b1f; transition: transform .25s ease; }
+.ai-config-toggle.open .ai-config-chevron { transform: rotate(180deg); }
+.ai-config-body { padding: 6px 20px 18px; }
+.ai-config-body.collapsed { display: none; }
+
+/* 模型 combobox：输入框 + 拉取按钮 + 下拉按钮 + 浮层菜单 */
+.model-combo { position: relative; margin-top: 5px; display: flex; gap: 6px; align-items: stretch; }
+.model-combo > input {
+  flex: 1; min-width: 0; margin-top: 0; border: 2px solid var(--border);
+  border-radius: 8px; padding: 9px 11px; font-size: 15px; font-family: inherit; background: #fff;
+}
+.model-icon-btn {
+  flex: 0 0 auto; width: 42px; border: 2px solid var(--border); background: #fbf3e0;
+  border-radius: 8px; font-size: 16px; cursor: pointer; color: #8a4b1f;
+  display: flex; align-items: center; justify-content: center;
+}
+.model-icon-btn:hover { background: #f5e6c4; }
+.model-icon-btn.spinning { animation: dsh-spin 0.9s linear infinite; }
+@keyframes dsh-spin { to { transform: rotate(360deg); } }
+.model-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60;
+  background: #fff; border: 2px solid var(--border); border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.15); overflow: hidden;
+}
+.model-search {
+  width: 100%; box-sizing: border-box; border: none; border-bottom: 1px solid var(--border);
+  padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none;
+}
+.model-options { max-height: 240px; overflow-y: auto; }
+.model-option {
+  display: block; width: 100%; text-align: left; border: none; background: none;
+  padding: 9px 12px; font-size: 14px; font-family: inherit; cursor: pointer; color: #333;
+}
+.model-option:hover { background: #fbf3e0; }
+.model-empty { padding: 12px; color: var(--muted); font-size: 13px; }
+
+/* ---- 历史侦探页 · AI 史老师问答面板 ---- */
+.detective-ask { margin-bottom: 16px; }
+.detective-ask-card {
+  background: var(--card); border: 2px solid var(--gold);
+  border-radius: var(--radius); padding: 16px 20px;
+}
+.ask-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.ask-head-title { font-size: 18px; font-weight: 800; color: #8a4b1f; }
+.ask-head-sub { font-size: 13px; color: var(--muted); }
+.ask-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.ask-chip {
+  border: 1.5px solid #e0b96a; background: #fbf3e0; color: #8a4b1f;
+  border-radius: 999px; padding: 7px 14px; font-size: 14px; font-family: inherit; cursor: pointer;
+}
+.ask-chip:hover { background: #f5e6c4; }
+.ask-result .ask-answer-q { font-weight: 700; margin-bottom: 6px; }
+.ask-result .llm-answer { line-height: 1.75; }
+.ask-loading { color: #8a7a5c; }
+.ask-error { line-height: 1.7; }
+
+/* 侦探页「上一案 / 下一案」导航 */
+.detective-nav { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.detective-count { font-size: 14px; color: var(--muted); font-weight: 600; }
+.brand { display: none; }
+.tabs {
+  display: flex; flex-direction: column; gap: 10px;
+  position: fixed; right: 16px; top: 50%; transform: translateY(-50%);
+  z-index: 50;
+}
+.tabs .tab {
+  border-radius: 12px; padding: 12px 20px; white-space: nowrap;
+  font-size: 18px; font-weight: 700;
+}
+
+.dynasty-switch {
+  display: flex; gap: 0; padding: 0;
+  background: #efe6d0; border-radius: 6px;
+  border: 1px solid #c9b88a;
+  overflow: hidden;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.dynasty-btn {
+  flex: 1 1 0;
+  border: none; background: transparent; cursor: pointer;
+  font-size: 18px; font-weight: 700; color: #6b5432;
+  padding: 14px 8px; border-radius: 0;
+  transition: all .2s ease;
+  border-right: 1px solid #d9c9a3;
+  text-align: center;
+  white-space: nowrap;
+}
+.dynasty-btn:last-child { border-right: none; }
+.dynasty-btn:hover { background: #e5d7b8; color: #3d2f1a; }
+.dynasty-btn.active {
+  background: #2c3e50; color: #f5e6c8;
+  box-shadow: inset 0 -3px 0 #c9a96a;
+}
+.tab {
+  border: 2px solid var(--border); background: var(--card);
+  color: var(--ink); font-size: 16px; font-weight: 600;
+  padding: 8px 18px; border-radius: 999px; cursor: pointer;
+  transition: all .15s;
+}
+.tab:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.08); }
+.tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.page-title { font-size: 24px; margin: 18px 0 2px; text-align: center; }
+.page-sub { color: var(--muted); margin: 2px 0 18px; font-size: 15px; text-align: center; }
+.hidden { display: none !important; }
+
+/* ---- 时间线 ---- */
+.timeline-wrap {
+  position: relative; display: flex; align-items: center; gap: 8px;
+  padding: 10px 0 18px;
+}
+.timeline-scroll {
+  flex: 1; display: flex; gap: 0; overflow-x: auto;
+  scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.timeline-scroll::-webkit-scrollbar { display: none; }
+.timeline-arrow {
+  flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--primary); background: var(--card); color: var(--primary);
+  font-size: 14px; cursor: pointer; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s;
+  z-index: 2; align-self: center;
+}
+.timeline-arrow:hover:not(:disabled) { background: var(--primary); color: #fff; }
+.timeline-arrow:disabled { opacity: .25; cursor: not-allowed; }
+.emp-card {
+  flex: 0 0 168px; scroll-snap-align: start;
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 14px 12px;
+  cursor: pointer; text-align: center; position: relative;
+  transition: transform .15s, box-shadow .15s;
+}
+.emp-card:not(:last-child)::after {
+  content: "➜"; position: absolute; right: -14px; top: 50%;
+  transform: translateY(-50%); color: var(--primary); font-size: 18px;
+  font-weight: 700; z-index: 2; background: #fff;
+  width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+}
+.emp-card:hover { transform: translateY(-4px); box-shadow: 0 8px 18px rgba(0,0,0,.10); }
+.emp-card.active { background: #c0392b; border-color: #c0392b; }
+.emp-card.active .name, .emp-card.active .era, .emp-card.active .reign { color: #fff; }
+.emp-card.active::after { background: #c0392b; color: #fff; }
+.emp-portrait {
+  width: 84px; height: 84px; margin: 0 auto 8px;
+  border-radius: 50%; background: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px; user-select: none;
+  object-fit: cover; /* 图片时圆形裁剪 */
+}
+.emp-card .name { font-size: 18px; font-weight: 700; }
+.emp-card .era { color: var(--muted); font-size: 14px; }
+.emp-card .reign { color: var(--muted); font-size: 13px; }
+
+/* ---- 皇帝详情 ---- */
+.emperor-detail {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 22px; margin-top: 6px;
+}
+.detail-head { display: flex; gap: 22px; align-items: flex-start; flex-wrap: nowrap; }
+.detail-portrait {
+  width: 120px; height: 120px; border-radius: 50%;
+  background: var(--gold); display: flex; align-items: center; justify-content: center;
+  font-size: 46px; flex: 0 0 auto;
+  object-fit: cover; /* 图片时圆形裁剪 */
+}
+.detail-head .meta { flex: 1 1 auto; min-width: 0; }
+.detail-head .meta h3 { margin: 0 0 6px; font-size: 26px; }
+.detail-head .meta .intro { color: var(--ink); font-size: 16px; margin: 4px 0 8px; }
+.detail-head .meta .tags { color: var(--muted); font-size: 14px; margin-top: 6px; line-height: 1.8; word-break: break-word; }
+/* 年号/在位/关键人物的值：加粗变棕，与字段名的灰色区分开 */
+.detail-head .meta .tags .tag-val { color: #8a4b1f; font-weight: 700; }
+.entry-grid { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+.entry-chip {
+  border: none; border-radius: 999px; padding: 9px 18px;
+  font-size: 15px; font-weight: 700; cursor: pointer; color: #fff;
+  opacity: 1; transition: opacity .15s;
+}
+.entry-chip.dim { opacity: .45; }
+.entry-chip.dim:hover { opacity: .7; }
+.entry-chip.active { box-shadow: 0 0 0 3px rgba(192, 57, 43, .25); }
+.chip-facts { background: var(--gold); color: var(--ink); }
+.chip-open { background: var(--primary); }
+.chip-make { background: var(--accent); }
+.entry-block { margin-top: 6px; }
+
+.detail-panel { border-top: 2px dashed var(--border); padding-top: 16px; margin-top: 6px; }
+.detail-panel h4 { margin: 0 0 10px; font-size: 18px; }
+.timeline-list { list-style: none; padding: 0; margin: 0; position: relative; }
+.timeline-list::before {
+  content: ""; position: absolute; left: 8px; top: 4px; bottom: 4px;
+  width: 3px; background: var(--gold); border-radius: 2px;
+}
+.timeline-list li { position: relative; padding: 0 0 14px 34px; }
+.timeline-list li::before {
+  content: ""; position: absolute; left: 2px; top: 6px;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--primary); border: 3px solid var(--bg);
+}
+.timeline-list .t-date { font-weight: 800; color: var(--primary); font-size: 15px; }
+.timeline-list .t-title { font-weight: 700; }
+.timeline-list .t-desc { color: #5c5140; font-size: 15px; }
+
+.fact-list, .open-list, .make-list { padding-left: 20px; }
+.fact-list li, .open-list li, .make-list li { margin-bottom: 10px; }
+.open-list .q { font-weight: 700; }
+.open-list .ctx { color: var(--muted); font-size: 14px; }
+.viewpoints { margin-top: 6px; padding: 10px 12px; background: #fbf3e0; border-radius: 10px; font-size: 15px; }
+.viewpoints p { margin: 4px 0; }
+
+/* ---- 案件卡 ---- */
+.case-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin: 4px 0 18px; padding-bottom: 4px;
+}
+.case-tab {
+  border: 2px solid var(--border); background: var(--card);
+  border-radius: 999px; padding: 8px 18px;
+  font-size: 15px; font-weight: 700; color: var(--muted);
+  cursor: pointer; font-family: inherit;
+}
+.case-tab:hover { border-color: var(--gold); color: #8a4b1f; }
+.case-tab.active {
+  background: var(--primary); border-color: var(--primary);
+  color: #fff;
+}
+.case-tab-n {
+  display: inline-block; margin-left: 6px;
+  background: rgba(0, 0, 0, 0.12); border-radius: 999px;
+  padding: 0 7px; font-size: 12px;
+}
+.case-tab.active .case-tab-n { background: rgba(255, 255, 255, 0.25); }
+.cases-list { display: flex; flex-direction: column; gap: 18px; }
+.case-category { display: flex; flex-direction: column; gap: 14px; }
+.case-cat-title {
+  margin: 0; font-size: 22px; color: var(--primary);
+  border-left: 6px solid var(--gold); padding-left: 12px;
+}
+.case-cat-note { margin: -6px 0 0 18px; color: var(--muted); font-size: 14px; }
+.case-card {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+}
+.case-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.case-title { font-size: 20px; font-weight: 800; color: #8a4b1f; }
+.case-date { font-size: 14px; color: var(--muted); }
+.case-summary {
+  margin: 8px 0 12px; padding: 10px 14px;
+  background: #fbf3e0; border-radius: 10px; font-size: 15px;
+}
+.case-section { margin-top: 12px; }
+.case-section > b {
+  display: inline-block; color: var(--primary); font-size: 15px;
+  background: #fdecea; border-radius: 8px; padding: 2px 10px; margin-bottom: 4px;
+}
+.case-section > p { margin: 4px 0 0; font-size: 15px; color: #4d4234; }
+.case-people { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.case-person {
+  background: #f7f1e4; border-radius: 10px; padding: 8px 12px; font-size: 15px;
+}
+.case-person-role {
+  margin-left: 8px; font-size: 12px; color: var(--accent);
+  background: #eaf3fb; border-radius: 999px; padding: 1px 8px;
+}
+.case-person-note { color: #5c5140; font-size: 14px; }
+.case-question { margin-top: 8px; }
+.case-question .q { font-weight: 700; }
+.case-question .ctx { color: var(--muted); font-size: 14px; }
+.case-src { margin-top: 14px; font-size: 12px; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 8px; }
+
+/* ---- 路线详情 ---- */
+.route-panel { margin: 10px 0 0; }
+.route-detail {
+  margin: 10px 0 0; padding: 14px 18px;
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+.route-detail-head {
+  display: flex; align-items: baseline; gap: 10px;
+  border-left: 5px solid; padding-left: 10px; margin-bottom: 8px;
+}
+.route-detail-name { font-size: 18px; font-weight: 800; color: #8a4b1f; }
+.route-detail-year { font-size: 13px; color: var(--muted); }
+.route-detail-desc { font-size: 15px; color: #4d4234; margin-bottom: 8px; }
+.route-detail-path {
+  font-size: 15px; background: #fbf3e0; border-radius: 10px;
+  padding: 8px 12px; margin-bottom: 10px;
+}
+.route-detail-path b { color: var(--primary); }
+.route-detail-stops { margin: 0; padding-left: 22px; font-size: 14px; color: #5c5140; }
+.route-detail-stops li { margin-bottom: 6px; }
+.route-detail-stops b { color: #3a2e1f; }
+
+/* ---- 地图（Leaflet）---- */
+.map-wrap {
+  position: relative;
+  background: #eaf0e4;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+#map-leaf {
+  width: 100%;
+  height: 540px;
+  display: block;
+}
+.map-unavailable {
+  padding: 80px 20px; text-align: center; color: var(--muted); font-size: 16px;
+}
+/* 底图瓦片加载失败提示（历史图层仍可用） */
+.map-tile-warn {
+  position: absolute; left: 50%; top: 12px; transform: translateX(-50%);
+  z-index: 450; max-width: 90%;
+  background: rgba(255, 248, 236, 0.95); border: 2px solid var(--gold);
+  border-radius: 10px; padding: 8px 14px; font-size: 13px; color: #8a4b1f;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14);
+}
+/* 历史图层文字标签：浅色底板，避免被瓦片淹没 */
+.map-label-inner {
+  background: rgba(255, 252, 240, 0.8);
+  border: 1px solid rgba(150, 120, 60, 0.3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #7a4a22;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+/* 行政区划区块名：弱化，不抢城市/邻国标签 */
+.map-label-region .map-label-inner {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(90, 60, 20, 0.55);
+}
+/* 城市点：圆点 + 名字 */
+.map-place-inner {
+  display: flex; align-items: center; gap: 3px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.2px solid;
+  border-radius: 999px;
+  padding: 0 6px 0 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #3a2e1f;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+.map-place-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.map-place-modern { font-size: 9px; color: #8a7a5c; font-weight: 400; }
+/* 事件点：古地名标记（⚑ 红色圆点 + 古地名 + 今地名） */
+.map-event-inner {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1.5px solid #c0392b;
+  border-radius: 999px;
+  padding: 1px 8px 1px 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #3a2e1f;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+}
+.map-event-icon {
+  width: 14px; height: 14px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #c0392b; color: #fff; font-size: 10px;
+  flex: 0 0 auto;
+}
+.map-event-name { font-weight: 700; }
+.map-event-modern { font-size: 9px; color: #8a7a5c; font-weight: 400; }
+/* 聚合角标：同地点多个事件的数量 */
+.map-event-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  background: #c0392b; color: #fff;
+  border-radius: 999px; font-size: 10px; font-weight: 700;
+  margin-left: 2px;
+}
+/* 聚合弹窗：同地点事件列表 */
+.popup-event-list { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
+.popup-event-row {
+  text-align: left; border: 1.5px solid var(--border); background: #fff;
+  border-radius: 10px; padding: 8px 12px; cursor: pointer; font-family: inherit;
+  display: flex; flex-direction: column; gap: 2px; transition: all .12s;
+}
+.popup-event-row b { color: var(--primary); font-size: 14px; }
+.popup-event-row .popup-event-summ { color: #5c5140; font-size: 12px; }
+.popup-event-row:hover { border-color: var(--primary); background: #fdecea; }
+/* 该朝事件汇总面板：古地名 chips */
+.evt-summary-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+}
+.evt-summary-chip {
+  border: 1.5px solid var(--border); background: #fff;
+  border-radius: 999px; padding: 5px 12px;
+  font-size: 13px; cursor: pointer; font-family: inherit; color: #3a2e1f;
+  transition: all .12s;
+}
+.evt-summary-chip b { color: var(--primary); margin-right: 4px; }
+.evt-summary-chip .evt-summary-name { color: var(--muted); font-size: 12px; margin-left: 4px; }
+.evt-summary-chip:hover { border-color: var(--primary); background: #fdecea; transform: translateY(-1px); }
+.evt-summary-chip.on { background: #c0392b; border-color: #c0392b; color: #fff; }
+.evt-summary-chip.on b { color: #ffd9d9; }
+.evt-summary-chip.on .evt-summary-name { color: #ffd9d9; }
+/* 城市/事件标记可点击（配合全局 --cur-pointer） */
+.leaflet-marker-icon { cursor: var(--cur-pointer); }
+/* Leaflet 默认控件配色与站点圆点跟随主题 */
+.leaflet-container { font-family: inherit; }
+.leaflet-popup-content { font-size: 14px; line-height: 1.6; color: #3a2e1f; }
+.leaflet-popup-content h4 { margin: 0 0 6px; font-size: 16px; color: var(--primary); }
+.leaflet-popup-content p { margin: 0; font-size: 14px; color: #5c5140; }
+.leaflet-tooltip { font-size: 12px; color: #3a2e1f; }
+/* 路线起/终点常显地名标签：白底圆角，字色与图例一致（起=绿，终=深红） */
+.route-pt-tip {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #2e7d32;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2e7d32;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+.route-pt-tip::before { display: none; }
+/* 终点标签在下（direction: bottom）→ 深红，与图例"路线终点"一致 */
+.leaflet-tooltip-bottom.route-pt-tip {
+  border-color: #a0251c;
+  color: #a0251c;
+}
+
+.map-popup {
+  position: absolute; top: 16px; left: 16px; z-index: 500;
+  max-width: 300px; background: #fff; border: 2px solid var(--border);
+  border-radius: 12px; padding: 14px 16px; box-shadow: 0 8px 20px rgba(0,0,0,.18);
+}
+.map-popup h4 { margin: 0 0 6px; font-size: 18px; color: var(--primary); }
+.map-popup p { margin: 0; font-size: 15px; color: #5c5140; }
+.map-popup .close { position: absolute; top: 6px; right: 10px; border: none; background: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+.map-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: 14px; color: #5c5140; }
+.map-legend-float {
+  position: absolute; top: 12px; right: 12px; z-index: 800;
+  background: rgba(255, 252, 240, 0.92);
+  border: 1px solid rgba(150, 120, 60, 0.35);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 0;
+  font-size: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.legend-item .note { color: var(--muted); }
+/* 事件古地名图例：与地图上的事件胶囊同款（⚑ 红点 + 红边白底胶囊） */
+.legend-item .event-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: #fff; border: 1.5px solid #c0392b;
+  border-radius: 999px; padding: 0 6px 0 1px;
+  font-size: 10px; font-weight: 700; color: #3a2e1f;
+  line-height: 14px;
+}
+.legend-item .event-badge i {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #c0392b; display: inline-flex;
+  align-items: center; justify-content: center;
+  color: #fff; font-size: 7px; font-style: normal;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15); }
+.dot-capital { background: #c0392b; }
+.dot-city { background: #247bc1; }
+.dot-site { background: #f0a500; }
+.dot-overseas { background: #8e44ad; }
+.dot-event { background: #c0392b; }
+.dot-route-start { background: #2e7d32; }
+.dot-route-end { background: #a0251c; }
+
+/* 事件点闪烁动画（点"该朝事件"时触发） */
+@keyframes map-flash-kf {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.8); opacity: 0.5; }
+}
+.map-flash { animation: map-flash-kf 0.9s ease-in-out 2; transform-origin: center; }
+
+.route-toggle { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.route-btn {
+  border: 2px solid var(--border); background: var(--card);
+  padding: 7px 14px; border-radius: 999px; font-size: 14px; cursor: pointer; font-weight: 600;
+}
+.route-btn.on { color: #fff; border-color: transparent; }
+
+/* ---- 历史侦探 ---- */
+.detective-week, .detective-clues, .detective-create {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px;
+}
+.detective-week h3 { margin: 0 0 8px; font-size: 20px; }
+.detective-week .quest { font-size: 18px; font-weight: 700; }
+.detective-week .open-question {
+  margin-top: 10px; padding: 10px 14px; border-radius: 8px;
+  background: #eef4fb; border: 1px dashed #9db8d6;
+  font-size: 13.5px; line-height: 1.7; color: #44607d;
+}
+.detective-week .open-question .open-tag { font-weight: 700; color: #2f5d8a; margin-right: 6px; }
+.detective-week .open-question .open-q { font-weight: 600; color: #33475e; }
+.detective-week .open-question .open-views { display: block; margin-top: 4px; color: #6b8299; font-size: 12.5px; }
+.detective-clues h4, .detective-create h4 { margin: 0 0 8px; font-size: 17px; }
+.clue-card {
+  border-left: 4px solid var(--gold); background: #fbf3e0;
+  padding: 10px 14px; border-radius: 8px; margin-bottom: 10px; font-size: 15px;
+}
+.clue-card .clue-title { font-weight: 700; }
+.clue-card .clue-src { color: var(--muted); font-size: 13px; }
+.ask-box { border-top: 2px dashed var(--gold); margin-top: 14px; padding-top: 12px; }
+.ask-title { font-weight: 700; margin-bottom: 6px; }
+.ask-row { display: flex; gap: 8px; }
+.ask-row input { flex: 1; border: 2px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 15px; font-family: inherit; }
+.ask-hint { color: var(--muted); font-size: 14px; margin-top: 6px; }
+.ask-hit { background: #fbf3e0; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 14px; }
+.create-box {
+  border: 2px dashed var(--gold); border-radius: 12px; padding: 14px;
+  text-align: center; color: var(--muted);
+}
+.create-box input, .create-box textarea {
+  width: 100%; border: 2px solid var(--border); border-radius: 10px;
+  padding: 10px; font-size: 15px; font-family: inherit; margin-top: 8px;
+}
+.create-box textarea { min-height: 90px; resize: vertical; }
+.create-save {
+  margin-top: 10px; background: var(--primary); color: #fff; border: none;
+  padding: 9px 22px; border-radius: 999px; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.create-saved { color: #2e7d32; font-weight: 700; margin-top: 8px; }
+
+.footer { margin-top: 32px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* ---- 朝代时间线 ---- */
+.era-strip {
+  flex: 1; display: flex; gap: 6px; overflow-x: auto;
+  padding: 8px 0 12px; scroll-behavior: smooth; scrollbar-width: none;
+  border-bottom: 2px dashed var(--border);
+}
+.era-strip::-webkit-scrollbar { display: none; }
+.era-btn {
+  flex: 0 0 auto; border: 2px solid var(--border); background: var(--card);
+  border-radius: 10px; padding: 8px 14px; cursor: pointer; font-size: 15px;
+  font-family: inherit; text-align: center; line-height: 1.3; position: relative;
+}
+.era-btn:not(:last-child)::after {
+  content: "➜"; position: absolute; right: -10px; top: 50%;
+  transform: translateY(-50%); color: var(--primary); font-size: 12px;
+  font-weight: 700; z-index: 2; background: #fff;
+  width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+}
+.era-btn .era-name { font-weight: 700; color: var(--primary); display: block; font-size: 15px; }
+.era-btn .era-years { font-size: 12px; color: var(--muted); }
+.era-btn.active { background: var(--primary); border-color: var(--primary); }
+.era-btn.active .era-name, .era-btn.active .era-years { color: #fff; }
+
+.era-info {
+  background: #fbf3e0; border: 2px solid var(--gold); border-radius: 12px;
+  padding: 12px 16px; margin-bottom: 12px; font-size: 14px;
+}
+.era-info h4 { margin: 0 0 6px; font-size: 16px; color: var(--primary); }
+.era-info .era-row { margin: 3px 0; }
+.era-info .era-row b { color: var(--ink); }
+.era-info .era-events { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--gold); }
+.era-info .era-event-chip {
+  display: inline-block; background: #fff; border: 1px solid var(--border);
+  border-radius: 999px; padding: 2px 10px; margin: 2px 4px 2px 0; font-size: 12px;
+  cursor: pointer;
+}
+.era-info .era-event-chip:hover { background: var(--primary); color: #fff; }
+.era-info .era-event-chip.active { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+/* ===== 自定义光标：浅蓝色灵动大箭头 ===== */
+:root {
+  /* 默认箭头：浅蓝填充 + 白色描边 + 淡蓝外发光，尖端在 (3,2) */
+  --cur-default: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M4 3 L4 23 L10 18 L14.5 27 L17.5 25.5 L13.5 17 L21 17 Z' fill='%237cc4f5' fill-opacity='0.35' transform='translate(1.4,1.4)'/><path d='M4 3 L4 23 L10 18 L14.5 27 L17.5 25.5 L13.5 17 L21 17 Z' fill='%235bb4f0' stroke='%23ffffff' stroke-width='2.6' stroke-linejoin='round'/><path d='M6.5 6 L6.5 18' stroke='%23ffffff' stroke-width='1.4' stroke-linecap='round' opacity='0.55'/></svg>") 3 2, auto;
+  /* 可点击态：箭头略大、末端带一颗暖黄光点，表示"点这里" */
+  --cur-pointer: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='38' height='38' viewBox='0 0 38 38'><path d='M4 3 L4 26 L11 20.5 L16 30 L19.5 28 L15 19.5 L23.5 19.5 Z' fill='%233a9be0' fill-opacity='0.3' transform='translate(1.6,1.6)'/><path d='M4 3 L4 26 L11 20.5 L16 30 L19.5 28 L15 19.5 L23.5 19.5 Z' fill='%233a9be0' stroke='%23ffffff' stroke-width='2.8' stroke-linejoin='round'/><circle cx='8' cy='7' r='2.6' fill='%23ffd166' stroke='%23ffffff' stroke-width='1'/></svg>") 3 2, pointer;
+  /* 可拖拽态：小手 */
+  --cur-grab: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'><path d='M9 13 V6.5 a1.8 1.8 0 0 1 3.6 0 V12 V5.5 a1.8 1.8 0 0 1 3.6 0 V12 V6.8 a1.8 1.8 0 0 1 3.6 0 V13.5 c0 4.5-1.8 9-5.5 10.5 c-2.6 1.1-5.6.2-7.6-2.2 c-1.2-1.5-2.5-3.6-2.5-5.3 V9 a1.8 1.8 0 0 1 3.6 0 V13 Z' fill='%235bb4f0' stroke='%23ffffff' stroke-width='2' stroke-linejoin='round'/></svg>") 10 8, grab;
+}
+html, body { cursor: var(--cur-default); }
+a, button, [role='button'], .tab, .timeline-arrow, .era-chip, .place, .route-btn, .entry-chip,
+.case-card, .clickable, label, select, .era-event-chip, .map-popup .close, .create-save, .ask-btn,
+.map-event, .map-route, .portrait-card, .person-node {
+  cursor: var(--cur-pointer) !important;
+}
+input, textarea { cursor: text; }
+.timeline-arrow:disabled { cursor: not-allowed !important; }
+/* 时间线头像/年号行可拖拽 */
+.drag-hover, .dragging { cursor: var(--cur-grab) !important; }
+/* 十国甘特图 */
+.shiguo-gantt { margin: 18px 0 8px; background: #f5ead2; border: 1px solid #d9c08c; border-radius: 14px; padding: 18px 20px; }
+.shiguo-gantt h3 { margin: 0 0 4px; font-size: 18px; color: #6b4a1f; }
+.shiguo-gantt .gantt-sub { margin: 0 0 14px; font-size: 13px; color: #8a6d3b; }
+.gantt-axis { position: relative; height: 26px; margin-left: 130px; border-bottom: 2px solid #c9a96a; }
+.gantt-axis .tick { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; color: #8a6d3b; }
+.gantt-row { display: flex; align-items: center; height: 44px; margin: 4px 0; }
+.gantt-label { width: 130px; font-size: 13px; color: #5a4020; padding-right: 10px; text-align: right; flex: 0 0 auto; line-height: 1.2; }
+.gantt-label b { display: block; font-size: 14px; color: #4a3020; }
+.gantt-label .gantt-label-years { font-size: 11px; color: #8a6d3b; font-weight: 600; }
+.gantt-track { position: relative; flex: 1; height: 26px; }
+.gantt-king {
+  position: absolute; top: 0; height: 26px; border-radius: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 11px; color: #fff; cursor: pointer; white-space: nowrap;
+  transition: transform .15s; overflow: hidden;
+}
+/* 极窄任期（如一年）最小可见宽度，不改变坐标位置，仅保证肉眼可见 */
+.gantt-king { min-width: 14px; }
+.gantt-king:hover { transform: scaleY(1.3); z-index: 3; }
+.gantt-king .gantt-king-name { font-weight: 700; line-height: 1; font-size: 10px; }
+.gantt-king.song { background: linear-gradient(180deg, #c8553d, #b04836); }
+.gantt-king.song.alt { background: linear-gradient(180deg, #d97a63, #c05d48); }
+.gantt-king.tang-internal { background: linear-gradient(180deg, #6b8e6b, #57795a); }
+.gantt-king.tang-internal.alt { background: linear-gradient(180deg, #86a886, #6f916f); }
+.gantt-note { margin-top: 10px; font-size: 12px; color: #8a6d3b; }
+.gantt-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: #5a4020; }
+.gantt-legend .sw { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }

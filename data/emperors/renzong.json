@@ -1,0 +1,148 @@
+{
+  "id": "ming-emperor-renzong",
+  "name": "朱高炽",
+  "templeName": "仁宗",
+  "eraName": [
+    "洪熙"
+  ],
+  "reign": {
+    "start": "1424",
+    "end": "1425"
+  },
+  "intro": "体胖心善、只当了十个月皇帝却留下好名声的人",
+  "timeline": [
+    {
+      "date": "1378",
+      "title": "出生",
+      "description": "朱棣长子，出生在北平（今北京）。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1399",
+      "title": "留守北平（今北京）",
+      "description": "靖难期间父亲在外打仗，他留守北平（今北京）守住大后方。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1404",
+      "title": "立为太子，儿子朱瞻基受器重",
+      "description": "朱棣即位后立他为太子，但父子和兄弟之间矛盾不断。他的儿子朱瞻基深得爷爷朱棣喜爱，被立为皇太孙，父子俩后来合称'仁宣之治'。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1424",
+      "title": "登基，重用'三杨'",
+      "description": "朱棣驾崩后继位，年号洪熙。他重用杨士奇、杨荣、杨溥三位大臣（合称'三杨'），靠他们辅政推行仁政。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1424",
+      "title": "停止下西洋，赦免旧案",
+      "description": "他一即位就停止郑和下西洋，赦免了很多被永乐朝牵连的人。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "date": "1425",
+      "title": "驾崩",
+      "description": "在位仅十个月就病逝，但他推行的仁政让他留下好名声。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "停止远洋，休养生息",
+      "summary": "洪熙帝停掉郑和下西洋等大工程，让百姓歇一歇。",
+      "impact": "国家从永乐朝的忙碌转向休养，为'仁宣之治'打基础。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "name": "平反冤案",
+      "summary": "他宽宥建文旧臣家属，释放被囚禁的人。",
+      "impact": "缓和了明初严酷的政治气氛，赢得'仁'的庙号。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "朱瞻基",
+      "relation": "儿子（太子）",
+      "note": "他的儿子，后来的宣德皇帝，父子俩合称'仁宣之治'。"
+    },
+    {
+      "name": "杨士奇、杨荣、杨溥（三杨）",
+      "relation": "大臣",
+      "note": "帮他出主意的大臣，后来成为名臣'三杨'。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "朱高炽一上台就停下西洋、让国家休养，你觉得这决定聪明吗？",
+      "context": "他父亲朱棣是大刀阔斧干大事的人，他却马上踩了刹车。",
+      "viewpoints": [
+        "有人说聪明：连年征战远航太费钱，让百姓喘口气才是福气。",
+        "有人说可惜：郑和船队就这么停了，明朝后来再没能继续远航。"
+      ],
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱高炽是个大胖子，走路都要人扶，据说连朱元璋都嫌孙子胖。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "朱高炽在位只有十个月，是明朝在位最短的皇帝之一。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "朱高炽的庙号叫'仁宗'，是因为他施仁政：一上台就赦免建文旧臣家属、给被流放的人平反，史书因此夸他'仁'。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "北平",
+      "modernName": "北京",
+      "note": "他出生和当燕王世子时生活的地方。",
+      "lat": 39.9,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "zhongguotongshi",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "renzong.jpg"
+}

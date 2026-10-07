@@ -1,0 +1,250 @@
+{
+  "id": "ming-emperor-chengzu",
+  "name": "朱棣",
+  "templeName": "成祖",
+  "portrait": "yongle.jpg",
+  "eraName": [
+    "永乐"
+  ],
+  "reign": {
+    "start": "1402",
+    "end": "1424"
+  },
+  "intro": "把首都搬到北京、派郑和下西洋的皇帝",
+  "timeline": [
+    {
+      "date": "1360",
+      "title": "出生",
+      "description": "朱元璋的第四个儿子，出生在应天府（今南京）。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1370",
+      "title": "封燕王",
+      "description": "十岁的朱棣被封为燕王，封地在北平（今北京）一带。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1380",
+      "title": "就藩北平（今北京）",
+      "description": "朱棣搬到封地北平（今北京），开始镇守北边，防备北元。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1399",
+      "title": "靖难起兵",
+      "description": "朱棣以'清君侧'为名在北平（今北京）起兵，军师姚广孝（道衍）从头到尾替他谋划，是靖难之役的'总导演'。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    },
+    {
+      "date": "1402",
+      "title": "即位，改元永乐",
+      "description": "朱棣攻进南京，当了皇帝，第二年改年号为永乐。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1403",
+      "title": "下令修《永乐大典》",
+      "description": "召集天下才子编一部超级大书，把能收集到的书都抄进去。主编解缙是当时的才子之首，他带着三千多人花了五年编成。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    },
+    {
+      "date": "1405",
+      "title": "郑和首航",
+      "description": "派郑和带着船队下西洋，这是中国古代规模最大的远洋航行。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    },
+    {
+      "date": "1408",
+      "title": "《永乐大典》成书",
+      "description": "大典编成，共有两万多卷，是世界上最大的百科全书之一。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    },
+    {
+      "date": "1421",
+      "title": "迁都北京",
+      "description": "把首都从南京搬到北京，紫禁城就是这时候建起来的。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    },
+    {
+      "date": "1424",
+      "title": "驾崩",
+      "description": "朱棣第五次北征回来的路上，病死在榆木川（今内蒙古多伦县一带）。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "靖难之役",
+      "summary": "朱棣起兵和侄儿建文帝打了四年，最后攻进南京当上皇帝。",
+      "impact": "改变了皇位继承的顺序，也让'皇帝该不该削藩'成了明代反复出现的难题。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "迁都北京",
+      "summary": "朱棣把首都从南京搬到北京，修建了紫禁城。",
+      "impact": "北京从此成为政治中心，一直延续到今天。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    },
+    {
+      "name": "郑和下西洋",
+      "summary": "朱棣派郑和七次率船队远航，最远到过非洲东海岸。",
+      "impact": "让明朝和东南亚、印度、非洲很多地方建立了联系，也留下了很多故事。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    },
+    {
+      "name": "修《永乐大典》",
+      "summary": "召集才子把当时能找到的书都抄进一部大书，全书两万多卷。",
+      "impact": "保存了大量古代典籍，是中华文化的宝藏（可惜后来大部分失散了）。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "姚广孝",
+      "relation": "谋士",
+      "note": "和尚出身的军师，靖难之役的'总导演'。"
+    },
+    {
+      "name": "郑和",
+      "relation": "航海家",
+      "note": "宦官出身的航海家，七下西洋的船队统帅。"
+    },
+    {
+      "name": "解缙",
+      "relation": "大臣",
+      "note": "才子大臣，《永乐大典》的主编。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "迁都北京，你觉得是对的还是错的？",
+      "context": "朱棣把首都从南京搬到北京，还下令修建紫禁城，动用了大量人力物力。",
+      "viewpoints": [
+        "有人说对：北京离北方边境更近，皇帝坐镇北方，边境更安全，这叫'天子守国门'。",
+        "有人说错：搬一次家花掉无数人力物力，远离富庶的江南，也给国家背上重担。"
+      ],
+      "sources": [
+        "mingshi",
+        "zhuanshu",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "question": "朱棣从侄儿手里抢走皇位——这算'篡位'，还是他有自己的理由？",
+      "context": "建文帝是他侄儿，朱棣起兵打了四年，最后攻进南京当了皇帝。",
+      "viewpoints": [
+        "有人说这是篡位：皇位本该是侄儿的，他用武力抢了过来。",
+        "有人说这叫'靖难'：他宣称是帮建文帝清除身边想害他的坏人，保住自己的权力。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱棣是明朝唯一一个以藩王身份造反成功的皇帝。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    },
+    {
+      "fact": "郑和第一次下西洋是1405年，比哥伦布到达美洲早了87年。",
+      "sources": [
+        "zhuanshu",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "紫禁城是朱棣下令修建的，1420年建成，可他搬进去住了不到4年就去世了。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    },
+    {
+      "fact": "朱棣的年号'永乐'取自《尚书》里'永乐康乂'一句，意思是永远安乐。朱棣本是燕王，'永乐'却是当上皇帝之后才改的年号。",
+      "sources": [
+        "mingshi",
+        "zhuanshu"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "应天府",
+      "modernName": "南京",
+      "note": "明初首都，朱棣出生和即位的地方。",
+      "lat": 32.06,
+      "lng": 118.8
+    },
+    {
+      "name": "北平",
+      "modernName": "北京",
+      "note": "燕王封地，后来成为明朝新首都。",
+      "lat": 39.9,
+      "lng": 116.4
+    },
+    {
+      "name": "榆木川",
+      "modernName": "内蒙古自治区多伦县一带",
+      "note": "朱棣最后一次北征回程途中驾崩的地方。",
+      "lat": 42.2,
+      "lng": 116.48
+    },
+    {
+      "name": "紫禁城",
+      "modernName": "北京故宫",
+      "note": "朱棣迁都北京后居住的皇宫。",
+      "lat": 39.91,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "zhuanshu",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ]
+}

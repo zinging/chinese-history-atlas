@@ -1,0 +1,174 @@
+{
+  "id": "ming-emperor-xizong",
+  "name": "朱由校",
+  "templeName": "熹宗",
+  "eraName": [
+    "天启"
+  ],
+  "reign": {
+    "start": "1620",
+    "end": "1627"
+  },
+  "intro": "爱做木工不爱上朝、把大权交给太监魏忠贤的皇帝",
+  "timeline": [
+    {
+      "date": "1605",
+      "title": "出生",
+      "description": "光宗长子，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1620",
+      "title": "十五岁登基",
+      "description": "父亲光宗暴亡，他即位，年号天启。登基前，宠妃李选侍赖在乾清宫想挟持他，被大臣们赶出宫，史称'移宫案'。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1621",
+      "title": "魏忠贤掌权，阉党崛起",
+      "description": "熹宗宠信太监魏忠贤。东林党人杨涟、左光斗等拥立他即位，本可主导朝政，却因为弹劾魏忠贤失败，反被魏忠贤联合朝中官员（史称'阉党'）打压，朝政逐渐落入魏忠贤手中。他的乳母客氏与魏忠贤结盟，把持后宫。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1625",
+      "title": "清洗东林党",
+      "description": "魏忠贤指使阉党大兴冤狱，杨涟、左光斗、高攀龙等东林党骨干被抓被打，死于诏狱，无数东林官员被罢官、流放。这是明末党争最惨烈的一页。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1626",
+      "title": "辽东前线溃败",
+      "description": "努尔哈赤的军队在辽东不断进攻，明军节节败退。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "date": "1627",
+      "title": "驾崩",
+      "description": "他落水染病去世，没有儿子，皇位传给弟弟朱由检。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "阉党与东林党之争",
+      "summary": "东林党人拥立熹宗后主导朝政，魏忠贤联合阉党反扑，最终清洗东林党。",
+      "impact": "明末党争最惨烈的一页：无数正直官员被杀被逐，朝廷元气大伤，为亡国埋下伏笔。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "魏忠贤专权",
+      "summary": "熹宗沉迷木工，太监魏忠贤趁机把持朝政，号称'九千岁'。",
+      "impact": "朝政黑暗、正直官员被杀被逐，明朝元气大伤。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "辽东战事",
+      "summary": "后金（后来的清朝）在辽东不断扩张，明军接连失利。",
+      "impact": "明朝东北防线崩溃，为亡国埋下伏笔。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "魏忠贤",
+      "relation": "太监",
+      "note": "天启朝权倾朝野的太监，人称'九千岁'，阉党之首。"
+    },
+    {
+      "name": "客氏",
+      "relation": "乳母",
+      "note": "熹宗的乳母，和魏忠贤勾结，把持后宫。"
+    },
+    {
+      "name": "杨涟",
+      "relation": "东林党大臣",
+      "note": "弹劾魏忠贤二十四大罪的东林党领袖，后被阉党杀害。"
+    },
+    {
+      "name": "左光斗",
+      "relation": "东林党大臣",
+      "note": "东林党骨干，与杨涟一同弹劾魏忠贤，死于诏狱。"
+    },
+    {
+      "name": "高攀龙",
+      "relation": "东林党大臣",
+      "note": "东林书院领袖，被阉党逮捕前投水自尽。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "皇帝爱做木工不爱当皇帝，把大权交给太监——你说这是谁的错？",
+      "context": "朱由校手艺很好，但把国家大事全丢给魏忠贤。",
+      "viewpoints": [
+        "有人说怪皇帝：他沉迷爱好、用人不当，等于亲手把权力送给太监。",
+        "有人说魏忠贤才是罪魁：太监结党营私，把皇帝蒙在鼓里，皇帝未必知道有多糟。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱由校的木工手艺据说很好，会做床、做房子模型，宫里人称'木匠皇帝'。",
+      "sources": [
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "朱由校死后，弟弟朱由检一上台就铲除了魏忠贤，可明朝已经快撑不住了。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "传说朱由校做木工时，会拿刨花当'奏章'，太监魏忠贤就趁他低头刨木头时，把政事拿来悄悄定夺。",
+      "sources": [
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "北京",
+      "modernName": "北京",
+      "note": "天启朝的首都。",
+      "lat": 39.9,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "zhongguotongshi",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "xizong.jpg"
+}

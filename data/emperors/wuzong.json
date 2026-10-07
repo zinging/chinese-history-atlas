@@ -1,0 +1,161 @@
+{
+  "id": "ming-emperor-wuzong",
+  "name": "朱厚照",
+  "templeName": "武宗",
+  "eraName": [
+    "正德"
+  ],
+  "reign": {
+    "start": "1505",
+    "end": "1521"
+  },
+  "intro": "爱玩爱打仗、不想当皇帝想当将军的'顽皮皇帝'",
+  "timeline": [
+    {
+      "date": "1491",
+      "title": "出生",
+      "description": "孝宗独生子，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1505",
+      "title": "十五岁登基",
+      "description": "孝宗驾崩，他即位，年号正德。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1507",
+      "title": "搬进豹房（今北京西苑一带）",
+      "description": "他不爱住皇宫，在宫外建'豹房'（今北京西苑一带），和宠臣一起玩耍。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1510",
+      "title": "铲除刘瑾",
+      "description": "他玩乐不理朝政，太监刘瑾趁机专权，乱改制度、卖官敛财。朝中大臣联合弹劾，刘瑾最终被处死——但武宗随后宠信起别的太监，玩乐依旧。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1517",
+      "title": "自称'威武大将军'亲征",
+      "description": "他给自己封了个'总督军务威武大将军'的头衔，跑去和蒙古人打仗，在应州（今山西应县）打了一场胜仗。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1519",
+      "title": "平定宁王叛乱",
+      "description": "宁王朱宸濠叛乱，被王守仁平定，他非要去'亲征'，走到半路叛乱已经平了。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1521",
+      "title": "驾崩",
+      "description": "他落水受惊后病逝，没有儿子，皇位传给了堂弟朱厚熜。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "豹房与玩乐",
+      "summary": "武宗在宫外建豹房（今北京西苑一带），养野兽、看戏、和宠臣玩，长期不上朝。",
+      "impact": "朝政荒废，太监刘瑾一度专权，朝廷风气变差。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "name": "应州大捷",
+      "summary": "1517年武宗亲征，明军在应州与蒙古小王子交战，勉强取胜。",
+      "impact": "武宗兴奋不已，但此战明军损失也不小，胜得不轻松。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "刘瑾",
+      "relation": "太监",
+      "note": "正德初年权倾朝野的太监，后来被处死。"
+    },
+    {
+      "name": "王守仁（王阳明）",
+      "relation": "大臣/思想家",
+      "note": "平定宁王叛乱的大功臣，也是大学问家'阳明先生'。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "皇帝不想当皇帝、想当将军上阵杀敌，你觉得他是任性还是勇敢？",
+      "context": "朱厚照给自己封将军、亲自打仗，有人说他胡闹，有人说他其实有胆量。",
+      "viewpoints": [
+        "有人说胡闹：放着国家大事不管，跑去玩打仗，太不负责任。",
+        "有人说他有个性：不坐井观天，敢亲自上战场，比只会待在宫里的皇帝强。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱厚照给自己封的官名叫'总督军务威武大将军总兵官'，一口气念完很威风。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "fact": "朱厚照喜欢和士兵同吃同住，还给自己改名'朱寿'，假装是另一个人。",
+      "sources": [
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "朱厚照迷上斗蟋蟀和玩动物，在豹房里养了狮子、大象、豹子，还专门建了'鹌鹑房'和'鹰房'。",
+      "sources": [
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "豹房",
+      "modernName": "北京（西苑一带）",
+      "note": "武宗长期居住玩乐的地方。",
+      "lat": 39.91,
+      "lng": 116.39
+    },
+    {
+      "name": "应州",
+      "modernName": "山西应县",
+      "note": "1517年他亲征大捷的地方。",
+      "lat": 39.55,
+      "lng": 113.19
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "wuzong.jpg"
+}

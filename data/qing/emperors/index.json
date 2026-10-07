@@ -1,0 +1,17 @@
+{
+  "meta": { "title": "清朝皇帝库", "updated": "2026-10-03" },
+  "emperors": [
+    { "id": "qing-emp-taizu", "name": "努尔哈赤", "templeName": "太祖", "file": "taiZu.json", "era": "天命", "reign": "1616-1626", "portrait": "qing-taizu.jpg" },
+    { "id": "qing-emp-taizong", "name": "皇太极", "templeName": "太宗", "file": "taiZong.json", "era": "天聪/崇德", "reign": "1626-1643", "portrait": "qing-taizong.jpg" },
+    { "id": "qing-emp-shizu", "name": "福临", "templeName": "世祖", "file": "shizu.json", "era": "顺治", "reign": "1644-1661", "portrait": "qing-shizu.jpg" },
+    { "id": "qing-emp-shengzu", "name": "玄烨", "templeName": "圣祖", "file": "shengzu.json", "era": "康熙", "reign": "1661-1722", "portrait": "qing-shengzu.jpg" },
+    { "id": "qing-emp-shizong", "name": "胤禛", "templeName": "世宗", "file": "shizong.json", "era": "雍正", "reign": "1722-1735", "portrait": "qing-shizong.jpg" },
+    { "id": "qing-emp-gaozong", "name": "弘历", "templeName": "高宗", "file": "gaozong.json", "era": "乾隆", "reign": "1735-1796", "portrait": "qing-gaozong.jpg" },
+    { "id": "qing-emp-renzong", "name": "颙琰", "templeName": "仁宗", "file": "renzong.json", "era": "嘉庆", "reign": "1796-1820", "portrait": "qing-renzong.jpg" },
+    { "id": "qing-emp-xuanzong", "name": "旻宁", "templeName": "宣宗", "file": "xuanzong.json", "era": "道光", "reign": "1820-1850", "portrait": "qing-xuanzong.jpg" },
+    { "id": "qing-emp-wenzong", "name": "奕詝", "templeName": "文宗", "file": "wenzong.json", "era": "咸丰", "reign": "1850-1861", "portrait": "qing-wenzong.jpg" },
+    { "id": "qing-emp-muzong", "name": "载淳", "templeName": "穆宗", "file": "muzong.json", "era": "同治", "reign": "1861-1875", "portrait": "qing-muzong.jpg" },
+    { "id": "qing-emp-dezong", "name": "载湉", "templeName": "德宗", "file": "dezong.json", "era": "光绪", "reign": "1875-1908", "portrait": "qing-dezong.jpg" },
+    { "id": "qing-emp-xuandi", "name": "溥仪", "templeName": "无（宣统帝）", "file": "xuandi.json", "era": "宣统", "reign": "1908-1912", "portrait": "qing-xuandi.jpg" }
+  ]
+}

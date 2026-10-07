@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "title": "明朝十六帝索引",
+    "description": "按即位顺序排列的十六帝清单，file 指向 data/emperors/ 下的条目文件。",
+    "updated": "2026-10-01"
+  },
+  "emperors": [
+    { "id": "ming-emperor-taizu", "name": "朱元璋", "templeName": "太祖", "eraName": ["洪武"], "reign": { "start": "1368", "end": "1398" }, "file": "taizu.json" },
+    { "id": "ming-emperor-huidi", "name": "朱允炆", "templeName": "惠帝", "eraName": ["建文"], "reign": { "start": "1398", "end": "1402" }, "file": "huidi.json" },
+    { "id": "ming-emperor-chengzu", "name": "朱棣", "templeName": "成祖", "eraName": ["永乐"], "reign": { "start": "1402", "end": "1424" }, "file": "yongle.json" },
+    { "id": "ming-emperor-renzong", "name": "朱高炽", "templeName": "仁宗", "eraName": ["洪熙"], "reign": { "start": "1424", "end": "1425" }, "file": "renzong.json" },
+    { "id": "ming-emperor-xuanzong", "name": "朱瞻基", "templeName": "宣宗", "eraName": ["宣德"], "reign": { "start": "1425", "end": "1435" }, "file": "xuanzong.json" },
+    { "id": "ming-emperor-yingzong", "name": "朱祁镇", "templeName": "英宗", "eraName": ["正统", "天顺"], "reign": { "start": "1435", "end": "1464" }, "file": "yingzong.json" },
+    { "id": "ming-emperor-daizong", "name": "朱祁钰", "templeName": "代宗", "eraName": ["景泰"], "reign": { "start": "1449", "end": "1457" }, "file": "daizong.json" },
+    { "id": "ming-emperor-xianzong", "name": "朱见深", "templeName": "宪宗", "eraName": ["成化"], "reign": { "start": "1464", "end": "1487" }, "file": "xianzong.json" },
+    { "id": "ming-emperor-xiaozong", "name": "朱祐樘", "templeName": "孝宗", "eraName": ["弘治"], "reign": { "start": "1487", "end": "1505" }, "file": "xiaozong.json" },
+    { "id": "ming-emperor-wuzong", "name": "朱厚照", "templeName": "武宗", "eraName": ["正德"], "reign": { "start": "1505", "end": "1521" }, "file": "wuzong.json" },
+    { "id": "ming-emperor-shizong", "name": "朱厚熜", "templeName": "世宗", "eraName": ["嘉靖"], "reign": { "start": "1521", "end": "1567" }, "file": "shizong.json" },
+    { "id": "ming-emperor-muzong", "name": "朱载坖", "templeName": "穆宗", "eraName": ["隆庆"], "reign": { "start": "1567", "end": "1572" }, "file": "muzong.json" },
+    { "id": "ming-emperor-shenzong", "name": "朱翊钧", "templeName": "神宗", "eraName": ["万历"], "reign": { "start": "1572", "end": "1620" }, "file": "shenzong.json" },
+    { "id": "ming-emperor-guangzong", "name": "朱常洛", "templeName": "光宗", "eraName": ["泰昌"], "reign": { "start": "1620", "end": "1620" }, "file": "guangzong.json" },
+    { "id": "ming-emperor-xizong", "name": "朱由校", "templeName": "熹宗", "eraName": ["天启"], "reign": { "start": "1620", "end": "1627" }, "file": "xizong.json" },
+    { "id": "ming-emperor-sizong", "name": "朱由检", "templeName": "思宗", "eraName": ["崇祯"], "reign": { "start": "1627", "end": "1644" }, "file": "sizong.json" }
+  ]
+}

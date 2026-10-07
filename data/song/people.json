@@ -1,0 +1,27 @@
+{
+  "meta": {"title": "宋朝关键人物", "updated": "2026-10-02"},
+  "people": [
+    {"id":"song-p-zhaokuangyin","name":"赵匡胤","era":"北宋","role":"宋太祖","birthDeath":"927-976","note":"陈桥兵变建宋，杯酒释兵权，重文轻武。"},
+    {"id":"song-p-zhaopu","name":"赵普","era":"北宋","role":"宰相","birthDeath":"922-992","note":"开国谋臣，半部论语治天下，金匮之盟。"},
+    {"id":"song-p-yangye","name":"杨业","era":"北宋","role":"云州观察使","birthDeath":"?-986","note":"杨家将原型，雍熙北伐陈家谷（今山西朔州南）战死。"},
+    {"id":"song-p-kouzhun","name":"寇准","era":"北宋","role":"宰相","birthDeath":"961-1023","note":"力劝真宗亲征澶州，订澶渊之盟。"},
+    {"id":"song-p-fanzhongyan","name":"范仲淹","era":"北宋","role":"参知政事","birthDeath":"989-1052","note":"庆历新政主导，《岳阳楼记》先忧后乐。"},
+    {"id":"song-p-baokzheng","name":"包拯","era":"北宋","role":"开封府尹","birthDeath":"999-1062","note":"民间称包青天，铁面无私。"},
+    {"id":"song-p-wanganshi","name":"王安石","era":"北宋","role":"同平章事","birthDeath":"1021-1086","note":"熙宁变法主导，文学家。"},
+    {"id":"song-p-simaguang","name":"司马光","era":"北宋","role":"宰相","birthDeath":"1019-1086","note":"旧党领袖，《资治通鉴》主编。"},
+    {"id":"song-p-sushi","name":"苏轼","era":"北宋","role":"翰林学士","birthDeath":"1037-1101","note":"东坡居士，唐宋八大家，诗书画全才。"},
+    {"id":"song-p-ouyangxiu","name":"欧阳修","era":"北宋","role":"翰林学士","birthDeath":"1007-1072","note":"文坛领袖，《新唐书》《新五代史》。"},
+    {"id":"song-p-ligang","name":"李纲","era":"北宋","role":"尚书右丞","birthDeath":"1083-1140","note":"靖康时主持东京保卫战。"},
+    {"id":"song-p-huizong","name":"赵佶","era":"北宋","role":"宋徽宗","birthDeath":"1082-1135","note":"书画天才创瘦金体，靖康之变被掳。"},
+    {"id":"song-p-gaozong","name":"赵构","era":"南宋","role":"宋高宗","birthDeath":"1107-1187","note":"南京应天府即位，偏安临安，杀岳飞。"},
+    {"id":"song-p-qinhui","name":"秦桧","era":"南宋","role":"宰相","birthDeath":"1090-1155","note":"主和派，杀岳飞，千古奸臣。"},
+    {"id":"song-p-yuefei","name":"岳飞","era":"南宋","role":"枢密副使","birthDeath":"1103-1142","note":"岳家军统帅，郾城（今河南漯河）大捷，风波亭遇害。"},
+    {"id":"song-p-hanshizhong","name":"韩世忠","era":"南宋","role":"宣抚使","birthDeath":"1089-1151","note":"黄天荡（今江苏南京东北）围困金军四十八天。"},
+    {"id":"song-p-luyou","name":"陆游","era":"南宋","role":"诗人","birthDeath":"1125-1210","note":"《示儿》'王师北定中原日，家祭无忘告乃翁'。"},
+    {"id":"song-p-xinqiji","name":"辛弃疾","era":"南宋","role":"安抚使","birthDeath":"1140-1207","note":"词中之龙，《破阵子》《永遇乐·京口北固亭怀古》。"},
+    {"id":"song-p-zhuxi","name":"朱熹","era":"南宋","role":"理学家","birthDeath":"1130-1200","note":"闽学集大成，《四书章句集注》。"},
+    {"id":"song-p-wentianxiang","name":"文天祥","era":"南宋","role":"右丞相","birthDeath":"1236-1283","note":"《正气歌》《过零丁洋》，柴市就义。"},
+    {"id":"song-p-luxiufu","name":"陆秀夫","era":"南宋","role":"丞相","birthDeath":"1236-1279","note":"崖山负帝昺投海。"},
+    {"id":"song-p-zhangshijie","name":"张世杰","era":"南宋","role":"大将","birthDeath":"?-1279","note":"崖山统帅，飓风覆舟殉国。"}
+  ]
+}

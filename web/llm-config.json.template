@@ -1,0 +1,28 @@
+{
+  // =====================================================================
+  // AI 老师本地配置模板（本文件可提交到仓库，不含任何真实密钥）
+  // ---------------------------------------------------------------------
+  // 使用方法：
+  //   1. 复制本文件为同目录下的 llm-config.json
+  //      （cp llm-config.json.template llm-config.json）
+  //   2. 把下面的占位值改成你自己的接口地址 / API Key / 模型
+  //   3. llm-config.json 已在 .gitignore 中，含密钥，不会被推送
+  // 也可以直接在网页「历史侦探 → 🤖 AI老师配置」里填，会自动写回本文件。
+  // =====================================================================
+
+  // OpenAI 兼容接口地址（要写到 chat/completions 这一级）
+  //   DeepSeek   https://api.deepseek.com/v1/chat/completions
+  //   硅基流动   https://api.siliconflow.cn/v1/chat/completions
+  //   OpenAI     https://api.openai.com/v1/chat/completions
+  "baseUrl": "https://api.deepseek.com/v1/chat/completions",
+
+  // 你的 API Key（sk-...），只保存在本机，切勿提交
+  "apiKey": "sk-在这里填你自己的密钥",
+
+  // 模型名：填好 baseUrl 后，可在页面上点 ⬇ 自动拉取模型列表，再从下拉里选
+  //   例：deepseek-chat、deepseek-reasoner、gpt-4o-mini、Qwen/Qwen2.5-7B-Instruct
+  "model": "deepseek-chat",
+
+  // 回答温度：0~1。越低越严谨贴史实，越高越发散；给学生用建议 0.6~0.8
+  "temperature": 0.7
+}

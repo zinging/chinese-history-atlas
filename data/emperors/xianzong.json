@@ -1,0 +1,170 @@
+{
+  "id": "ming-emperor-xianzong",
+  "name": "朱见深",
+  "templeName": "宪宗",
+  "eraName": [
+    "成化"
+  ],
+  "reign": {
+    "start": "1464",
+    "end": "1487"
+  },
+  "intro": "幼年命运坎坷、长大当皇帝却宠信宦官和贵妃的皇帝",
+  "timeline": [
+    {
+      "date": "1447",
+      "title": "出生",
+      "description": "英宗长子，出生在北京。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1449",
+      "title": "父亲被俘，被立又废",
+      "description": "父亲土木堡被俘后，他被叔叔立为太子，后来又被叔叔废掉。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1457",
+      "title": "父亲复位，重立太子",
+      "description": "父亲夺门复位后，他重新当上太子。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1464",
+      "title": "登基称帝",
+      "description": "英宗驾崩，他即位，年号成化。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1467",
+      "title": "成化犁庭",
+      "description": "建州女真首领董山屡次进犯辽东，被明军招抚后入京朝贡，却在返程经过广宁时被明军设计诱杀。随后明军对女真各部大规模清剿，像犁地一样把对方巢穴铲平，史称'成化犁庭'。女真势力被压制，但仇恨也从此埋下。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "date": "1477",
+      "title": "设立西厂",
+      "description": "他宠信太监汪直，设立西厂。锦衣卫是朱元璋创建的、抓人不用审判的特务机构，东厂是朱棣设的、比锦衣卫权限更大（连锦衣卫都归它管）。西厂比这两家都厉害：它能越过锦衣卫和东厂直接抓人，谁都拦不住。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "date": "1482",
+      "title": "商辂带头劝谏",
+      "description": "内阁首辅商辂（明朝唯一连中三元的状元）带头劝谏，说西厂权力太大、乱抓无辜，宪宗才下令撤销西厂（后来汪直又设法恢复）。",
+      "sources": [
+        "mingshi"
+      ]
+    },
+    {
+      "date": "1487",
+      "title": "驾崩",
+      "description": "在位二十三年病逝，他一生最宠的是大他十七岁的万贵妃。",
+      "sources": [
+        "mingshi"
+      ]
+    }
+  ],
+  "majorEvents": [
+    {
+      "name": "设立西厂",
+      "summary": "宪宗设西厂，太监汪直掌权，到处抓人查案。",
+      "impact": "特务政治更凶，官员人人自危，后来西厂被撤又重设。",
+      "sources": [
+        "mingshi",
+        "mingshilu"
+      ]
+    },
+    {
+      "name": "成化犁庭",
+      "summary": "明军诱杀建州女真首领董山，并对其部落大规模清剿，史称'成化犁庭'。",
+      "impact": "女真势力被压制，但仇恨埋下，是后来辽东问题、后金崛起的远因之一。",
+      "sources": [
+        "mingshi",
+        "zhongguotongshi"
+      ]
+    }
+  ],
+  "people": [
+    {
+      "name": "万贵妃",
+      "relation": "贵妃",
+      "note": "比他大十七岁的妃子，他一生最宠爱的人，影响力很大。"
+    },
+    {
+      "name": "汪直",
+      "relation": "太监",
+      "note": "他宠信的太监，掌管西厂，权力一度很大。"
+    },
+    {
+      "name": "商辂",
+      "relation": "大臣",
+      "note": "明朝唯一连中三元的状元，内阁首辅，清廉正直。"
+    }
+  ],
+  "controversies": [
+    {
+      "question": "皇帝专宠一个妃子、还让她干预朝政，你觉得这是为什么？",
+      "context": "万贵妃比宪宗大十七岁，却是他一生唯一深爱的人，朝廷大事她也插得上手。",
+      "viewpoints": [
+        "有人说是因为童年创伤：他被废又复位，只有万贵妃陪着他，感情很深。",
+        "有人说皇帝不该让私情乱国政：再深的感情，也不该让妃子干政。"
+      ],
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "funFacts": [
+    {
+      "fact": "朱见深小时候被叔叔废掉太子，怕得连话都不太敢说，全靠万贵妃护着。",
+      "sources": [
+        "mingshi",
+        "mingshiqinliang"
+      ]
+    },
+    {
+      "fact": "成化年间的'斗彩'瓷器特别精美，是今天拍卖场上的稀世珍宝。",
+      "sources": [
+        "zhongguotongshi"
+      ]
+    },
+    {
+      "fact": "万贵妃比宪宗大十七岁，可从宪宗两岁起就照顾他，朱见深长大后把全部感情都给了她，这在皇帝里极为罕见。",
+      "sources": [
+        "mingshiqinliang"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "北京",
+      "modernName": "北京",
+      "note": "成化朝的首都。",
+      "lat": 39.9,
+      "lng": 116.4
+    }
+  ],
+  "sources": [
+    "mingshi",
+    "mingshilu",
+    "zhongguotongshi",
+    "mingshiqinliang",
+    "zhongguoditu"
+  ],
+  "portrait": "xianzong.jpg"
+}

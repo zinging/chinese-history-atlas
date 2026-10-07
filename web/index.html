@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>明朝大冒险 · 小明的历史之旅</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css?v=gaode14">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand" id="brand">🏮 明朝大冒险</div>
+    <div class="dynasty-switch" id="dynasty-switch" role="tablist" aria-label="朝代切换">
+      <button class="dynasty-btn" data-d="sui">隋 · 581-618</button>
+      <button class="dynasty-btn active" data-d="tang">唐 · 618-907</button>
+      <button class="dynasty-btn" data-d="wudai">五代 · 907-960</button>
+      <button class="dynasty-btn" data-d="song">宋 · 960-1279</button>
+      <button class="dynasty-btn" data-d="yuan">元 · 1271-1368</button>
+      <button class="dynasty-btn" data-d="ming">明 · 1368-1644</button>
+      <button class="dynasty-btn" data-d="qing">清 · 1616-1912</button>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-page="timeline">时间线</button>
+      <button class="tab" data-page="cases">案件卡</button>
+      <button class="tab" data-page="map">地图探索</button>
+      <button class="tab" data-page="detective">历史侦探</button>
+    </nav>
+  </header>
+
+  <!-- 界面一：时间线首页 -->
+  <main id="page-timeline" class="page">
+    <h2 class="page-title">从 1368 到 1644 · 十六位明朝皇帝</h2>
+    <p class="page-sub"></p>
+    <div class="timeline-wrap">
+      <button class="timeline-arrow prev" id="tl-prev" aria-label="上一批">◀</button>
+      <div id="timeline-scroll" class="timeline-scroll"></div>
+      <button class="timeline-arrow next" id="tl-next" aria-label="下一批">▶</button>
+    </div>
+    <div id="shiguo-gantt" class="shiguo-gantt hidden"></div>
+    <div id="emperor-detail" class="emperor-detail hidden"></div>
+  </main>
+
+  <!-- 界面二：案件卡 -->
+  <main id="page-cases" class="page hidden">
+    <div id="case-tabs" class="case-tabs" role="tablist"></div>
+    <div id="cases-list" class="cases-list"></div>
+  </main>
+
+  <!-- 界面三：地图探索页 -->
+  <main id="page-map" class="page hidden">
+    <div class="timeline-wrap">
+      <button class="timeline-arrow prev" id="era-prev" aria-label="上一个年号">◀</button>
+      <div id="era-strip" class="era-strip"></div>
+      <button class="timeline-arrow next" id="era-next" aria-label="下一个年号">▶</button>
+    </div>
+    <div id="era-info" class="era-info hidden"></div>
+    <div class="map-wrap">
+      <div id="map-leaf" role="img" aria-label="示意地图"></div>
+      <div class="map-legend map-legend-float">
+        <span class="legend-item"><i class="dot dot-capital"></i>首都</span>
+        <span class="legend-item"><i class="dot dot-city"></i>城市</span>
+        <span class="legend-item"><i class="dot dot-site"></i>名胜古迹</span>
+        <span class="legend-item"><span class="event-badge"><i>⚑</i>地名</span>事件古地名</span>
+        <span class="legend-item"><i class="dot dot-route-start"></i>路线起点</span>
+        <span class="legend-item"><i class="dot dot-route-end"></i>路线终点</span>
+      </div>
+      <div id="map-popup" class="map-popup hidden"></div>
+    </div>
+  </main>
+
+  <!-- 界面四：历史侦探任务页 -->
+  <main id="page-detective" class="page hidden">
+    <h2 class="page-title">🕵️ 历史侦探任务</h2>
+    <div id="detective-week" class="detective-week"></div>
+    <div id="detective-clues" class="detective-clues"></div>
+    <div id="detective-create" class="detective-create"></div>
+    <div id="detective-ask" class="detective-ask"></div>
+    <div id="detective-ai" class="detective-ai"></div>
+  </main>
+
+  <footer class="footer" id="footer">疆域轮廓据《明史·地理志》示意，非精确边界 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《明史》《明实录》为主要依据</footer>
+</div>
+<script src="search-core.js?v=sc6"></script>
+<script src="vendor/leaflet.js"></script>
+<script>window.__dbg={};</script>
+<script src="app.js?v=gaode35"></script>
+</body>
+</html>
