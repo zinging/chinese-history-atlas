@@ -63,7 +63,7 @@
 环境要求：**Node.js 18+**（自带 `fetch`，无需 `npm install`）。
 
 ```bash
-git clone git@gitee.com:chen_ye_code/dsh_his.git
+git clone git@gitee.com:chen_ye_code/chinese-history-atlas.git
 cd dsh_his
 node web/serve.mjs
 # 浏览器打开 http://127.0.0.1:5173/web/

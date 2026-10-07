@@ -63,7 +63,7 @@ Great for students starting out, and for adults who want to revisit Chinese hist
 **Requirement:** Node.js 18+ (built-in `fetch`; no `npm install` needed).
 
 ```bash
-git clone git@gitee.com:chen_ye_code/dsh_his.git
+git clone git@gitee.com:chen_ye_code/chinese-history-atlas.git
 cd dsh_his
 node web/serve.mjs
 # Open http://127.0.0.1:5173/web/ in your browser
