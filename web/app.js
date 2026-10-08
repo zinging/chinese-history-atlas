@@ -174,37 +174,37 @@ const DYNASTY_LAYOUT = {
 // 各朝文案：品牌名、朝代胶囊副标题（帝数）、地图 aria、图例注、页脚
 const DYNASTY_TEXT = {
   ming: {
-    brand: '🏮 明朝', dynSub: '十六位明朝皇帝', mapAria: '明朝示意地图',
+    brand: '🏮 明朝', dynSub: '十六帝', mapAria: '明朝示意地图',
     legendNote: '省界据《中国历史地图集·明时期》手绘简化示意',
     footer: '疆域轮廓据《明史·地理志》示意，非精确边界 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《明史》《明实录》为主要依据',
   },
   tang: {
-    brand: '🏮 大唐风华', dynSub: '大唐二十一帝', mapAria: '唐朝示意地图',
+    brand: '🏮 大唐风华', dynSub: '二十一帝', mapAria: '唐朝示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·唐时期》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》唐时期示意，非精确边界 · 内容以《旧唐书》《新唐书》《资治通鉴》为主要依据',
   },
   song: {
-    brand: '🏮 大宋风云', dynSub: '两宋十八帝', mapAria: '宋朝示意地图',
+    brand: '🏮 大宋风云', dynSub: '十八帝', mapAria: '宋朝示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·北宋/南宋》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》两宋部分示意，非精确边界 · 人物头像为示意占位 · 内容以《宋史》《续资治通鉴长编》为主要依据',
   },
   yuan: {
-    brand: '🏮 大元兴起', dynSub: '大元十一帝', mapAria: '元朝示意地图',
+    brand: '🏮 大元兴起', dynSub: '十一帝', mapAria: '元朝示意地图',
     legendNote: '省界据《中国历史地图集·元时期》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》元时期示意，非精确边界 · 内容以《元史》《新元史》为主要依据',
   },
   qing: {
-    brand: '🏮 大清三百年', dynSub: '大清十二帝', mapAria: '清朝示意地图',
+    brand: '🏮 大清三百年', dynSub: '十二帝', mapAria: '清朝示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·清时期》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》清时期示意，非精确边界 · 内容以《清史稿》《清实录》为主要依据',
   },
   sui: {
-    brand: '🏮 大隋一统', dynSub: '隋朝三帝', mapAria: '隋朝示意地图',
+    brand: '🏮 大隋一统', dynSub: '三帝', mapAria: '隋朝示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·隋时期》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》隋时期示意，非精确边界 · 内容以《隋书》《资治通鉴》为主要依据',
   },
   wudai: {
-    brand: '🏮 五代十国', dynSub: '五代中原王朝', mapAria: '五代十国示意地图',
+    brand: '🏮 五代十国', dynSub: '五代·十国', mapAria: '五代十国示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·五代十国时期》手绘简化示意',
     footer: '五代十国是唐末到宋初的大分裂时期 · 内容以《新五代史》《资治通鉴》为主要依据',
   },
@@ -2687,12 +2687,12 @@ function applyDynastyText(d) {
   const txt = DYNASTY_TEXT[d] || DYNASTY_TEXT.ming;
   const brand = $('#brand');
   if (brand) brand.textContent = txt.brand;
-  // 朝代胶囊副标题：只在当前选中的朝代按钮里显示帝数（如「隋朝三帝」），居中年号下方
+  // 朝代胶囊副标题：每个按钮都常驻显示本朝帝数（如「隋朝三帝」「大唐二十一帝」）
   document.querySelectorAll('.dynasty-btn').forEach((b) => {
     const sub = b.querySelector('.dyn-sub');
     if (!sub) return;
-    const on = b.dataset.d === d;
-    sub.textContent = on ? (txt.dynSub || '') : '';
+    const own = DYNASTY_TEXT[b.dataset.d];
+    sub.textContent = own ? (own.dynSub || '') : '';
   });
   const mapLeaf = $('#map-leaf');
   if (mapLeaf) mapLeaf.setAttribute('aria-label', txt.mapAria);
