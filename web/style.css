@@ -626,6 +626,36 @@ body {
 .ws-input:focus { outline: none; border-color: var(--gold); }
 .ws-result { margin-top: 10px; }
 
+/* ---- 史论工坊 · 选择题卡片 ---- */
+.qq { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; background: #fffdf7; }
+.qq-q { font-size: 15.5px; font-weight: 700; color: #4a3a1c; margin-bottom: 10px; line-height: 1.5; }
+.qq-opts { display: flex; flex-direction: column; gap: 8px; }
+.qq-opt {
+  display: flex; align-items: flex-start; gap: 10px; text-align: left;
+  border: 2px solid var(--border); background: #fff; border-radius: 10px;
+  padding: 9px 12px; font-size: 15px; line-height: 1.45; cursor: pointer; transition: all .15s;
+}
+.qq-opt:hover { border-color: var(--gold); background: #fdf7e8; }
+.qq-letter {
+  flex: none; width: 24px; height: 24px; border-radius: 50%; line-height: 24px; text-align: center;
+  background: #efe6d0; color: #6a5a38; font-weight: 700; font-size: 13.5px; margin-top: 1px;
+}
+.qq-text { flex: 1; }
+.qq-opt.picked { border-color: var(--gold); background: #f7e9c6; box-shadow: 0 0 0 1px var(--gold); }
+.qq-opt.picked .qq-letter { background: var(--gold); color: #fff; }
+.qq-opt.correct { border-color: #3f8f5a; background: #e8f5ec; }
+.qq-opt.correct .qq-letter { background: #3f8f5a; color: #fff; }
+.qq-opt.wrong { border-color: #c0473f; background: #fbeae8; }
+.qq-opt.wrong .qq-letter { background: #c0473f; color: #fff; }
+.qq-opt:disabled { cursor: default; }
+.qq-explain { margin-top: 10px; border-radius: 8px; padding: 8px 11px; font-size: 14px; line-height: 1.55; }
+.qq-explain.ok { background: #e8f5ec; color: #2c6b42; }
+.qq-explain.bad { background: #fbeae8; color: #96352e; }
+.qq-open { margin-top: 8px; font-size: 13px; color: var(--muted); }
+.quiz-progress, .quiz-score { font-size: 14.5px; font-weight: 700; color: #5a4a2a; margin-bottom: 8px; }
+.quiz-score { font-size: 16px; color: #96352e; }
+.quiz-gen-msg { margin-top: 8px; }
+
 /* ---- 争议话题作答 ---- */
 .debate-item { list-style: none; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; background: #fffdf7; }
 .deb-input {

@@ -234,6 +234,8 @@ async function loadAll() {
   ];
   if (hasMap) urls.push(maybe(p(lay.places)), maybe(p(lay.routes)), maybe(p(lay.mapEvents)));
   if (currentDynasty === 'ming') urls.push(maybe(p('institutions/institutions.json')), maybe(p('sources/sources.json')));
+  const quizPath = currentDynasty === 'ming' ? 'quiz/quiz.json' : 'quiz.json';
+  const quizDoc = await maybe(p(quizPath));
 
   const [empIdx, events, people, casesDoc, places, routes, mapEventsDoc, institutions, sourcesDoc] = await Promise.all(urls);
 
@@ -250,6 +252,7 @@ async function loadAll() {
     mapEvents: (mapEventsDoc && mapEventsDoc.events) || [],
     cases: casesDoc.cases || [],
     caseCategories: casesDoc.categories || [],
+    quiz: (quizDoc && quizDoc.quiz) || [],
   };
   DATA_CACHE[currentDynasty] = DATA;
   // 喂给检索模块（历史侦探/追问框用）
@@ -923,51 +926,96 @@ function renderOpen(cs) {
   }).join('')}</ul>`;
 }
 
-// ---------- 史论工坊（替代旧的「动手做」）：结构化论证 + 因果链推演 ----------
-const WS_ARG_FIELDS = [
-  ['thesis', '核心论点 · 一句话判断', '例：明朝灭亡的主因是财政崩溃，而不只是皇帝个人的问题。'],
-  ['ev1', '史料论据① · 证据 + 它说明了什么', ''],
-  ['ev2', '史料论据② · 证据 + 它说明了什么', ''],
-  ['ev3', '史料论据③（可选）', ''],
-  ['counter', '反方考量 · 先写对立观点，再写你如何回应', ''],
-  ['conclusion', '结论', ''],
-];
-const WS_CHAIN_FIELDS = [
-  ['rootCause', '深层起因 · 早已埋下的结构性问题', ''],
-  ['trigger', '触发点 · 点燃事件的直接导火索', ''],
-  ['nodes', '关键节点 · 过程中的 1-2 个转折', ''],
-  ['outcome', '直接结果 · 事件当时的结局', ''],
-  ['impact', '长远影响 · 对之后几年乃至几十年的影响', ''],
-];
-function wsFieldsHTML(fields) {
-  return fields.map(([f, label, ph]) => `
-    <label class="ws-field"><span class="ws-label">${label}</span>
-      <textarea class="ws-input" data-field="${f}" placeholder="${ph}"></textarea></label>`).join('');
-}
+// ---------- 史论工坊：内置辩证选择题，点卡片作答，AI 只做点评 ----------
+const QUIZ_LETTERS = ['A', 'B', 'C', 'D', 'E'];
+// 两种模式的名称与说明（题目为项目内置，不交给 AI 现出）
+const QUIZ_SPEC = {
+  arg: {
+    label: '论证判断',
+    hint: '点卡片作答：考你哪个判断最有史实依据、哪条才是真证据、怎样有力回应反驳。答完可请 AI 老师点评。',
+  },
+  chain: {
+    label: '因果链',
+    hint: '点卡片作答：帮你分清深层起因、导火索、关键节点、直接结果和长远影响。答完可请 AI 老师点评。',
+  },
+};
 function renderWorkshop(e) {
-  const key = `ws-${currentDynasty}-${e.id || e.name}`;
+  const key = e.id || e.name;
   return `
-  <div class="ws" data-wskey="${key}">
+  <div class="ws" data-emperor="${key}">
     <div class="ws-tabs">
-      <button type="button" class="ws-tab active" data-mode="arg">结构化论证</button>
-      <button type="button" class="ws-tab" data-mode="chain">因果链推演</button>
+      <button type="button" class="ws-tab active" data-mode="arg">${QUIZ_SPEC.arg.label}</button>
+      <button type="button" class="ws-tab" data-mode="chain">${QUIZ_SPEC.chain.label}</button>
     </div>
-    <div class="ws-pane" data-pane="arg">
-      <p class="ws-hint">先亮明判断，再用史料证明，还要能回应反对意见——这是历史论证的基本框架。</p>
-      ${wsFieldsHTML(WS_ARG_FIELDS)}
-      <button type="button" class="create-save llm-btn ws-ai" data-mode="arg">🤖 请 AI 老师点评论证</button>
-      <div class="ws-result" data-result="arg"></div>
-    </div>
-    <div class="ws-pane hidden" data-pane="chain">
-      <p class="ws-hint">历史不是「一件事导致另一件事」那么简单，把深层起因和长远影响也补全。</p>
-      ${wsFieldsHTML(WS_CHAIN_FIELDS)}
-      <button type="button" class="create-save llm-btn ws-ai" data-mode="chain">🤖 请 AI 老师检查因果链</button>
-      <div class="ws-result" data-result="chain"></div>
-    </div>
+    <div class="ws-pane" data-pane="arg"><p class="ws-hint">${QUIZ_SPEC.arg.hint}</p><div class="quiz-slot"></div></div>
+    <div class="ws-pane hidden" data-pane="chain"><p class="ws-hint">${QUIZ_SPEC.chain.hint}</p><div class="quiz-slot"></div></div>
   </div>`;
 }
 
-// 面板重新注入后，从 localStorage 恢复史论工坊与争议话题的草稿
+// 从内置 DATA.quiz 取某皇帝、某模式的题目
+function quizEntry(emperorKey) {
+  return (DATA.quiz || []).find((x) => x.emperor === emperorKey) || null;
+}
+function quizItems(emperorKey, mode) {
+  const entry = quizEntry(emperorKey);
+  if (!entry) return [];
+  return (entry.items || []).filter((it) => (it.mode || 'arg') === mode);
+}
+// 作答状态（只存选择与批改结果，题目本身在数据里）
+function quizStateKey(emperorKey, mode) { return `quiz-${currentDynasty}-${emperorKey}-${mode}`; }
+function loadQuizState(emperorKey, mode) {
+  try { return JSON.parse(localStorage.getItem(quizStateKey(emperorKey, mode)) || 'null'); } catch { return null; }
+}
+function saveQuizState(emperorKey, mode, s) { localStorage.setItem(quizStateKey(emperorKey, mode), JSON.stringify(s)); }
+
+function quizQuestionsHTML(items, st) {
+  return items.map((item, qi) => {
+    const picked = st.selected[qi];
+    const opts = item.options.map((o, oi) => {
+      let cls = 'qq-opt';
+      if (st.graded) {
+        if (o.ok) cls += ' correct';
+        else if (oi === picked) cls += ' wrong';
+      } else if (oi === picked) cls += ' picked';
+      return `<button type="button" class="${cls}" data-qi="${qi}" data-oi="${oi}"${st.graded ? ' disabled' : ''}>
+        <span class="qq-letter">${QUIZ_LETTERS[oi]}</span><span class="qq-text">${o.t || o}</span></button>`;
+    }).join('');
+    const pickedOk = picked != null && item.options[picked] && item.options[picked].ok;
+    const goodLetters = item.options.map((o, i) => (o.ok ? QUIZ_LETTERS[i] : null)).filter(Boolean).join('、');
+    const explain = st.graded
+      ? `<div class="qq-explain ${pickedOk ? 'ok' : 'bad'}">${pickedOk ? '✔ 选得有依据' : '✘ 更有依据的是 ' + goodLetters} · ${item.why || ''}</div>`
+      : (item.open ? '<div class="qq-open">此题偏开放，选项没有绝对对错，但有史实支撑强弱之分；提交后 AI 会具体点评。</div>' : '');
+    return `<div class="qq">
+      <div class="qq-q">${qi + 1}. ${item.q}</div>
+      <div class="qq-opts">${opts}</div>
+      ${explain}
+    </div>`;
+  }).join('');
+}
+// 渲染某模式槽位
+function renderQuizSlot(ws, mode, emperorKey) {
+  const slot = ws.querySelector(`.ws-pane[data-pane="${mode}"] .quiz-slot`);
+  const items = quizItems(emperorKey, mode);
+  if (!items.length) {
+    slot.innerHTML = '<div class="ask-hint">这一部分的题目还在整理中，先看看其他标签或争议话题。</div>';
+    return;
+  }
+  const st = loadQuizState(emperorKey, mode) || { selected: {}, graded: false };
+  const answered = Object.keys(st.selected).length;
+  const correct = st.graded
+    ? items.filter((it, i) => { const p = st.selected[i]; return p != null && it.options[p] && it.options[p].ok; }).length
+    : 0;
+  const footer = st.graded
+    ? `<div class="quiz-score">选对 ${correct} / ${items.length}</div>
+       <button type="button" class="create-save llm-btn quiz-review" data-mode="${mode}">🤖 请 AI 老师点评</button>
+       <button type="button" class="create-save llm-btn quiz-reset" data-mode="${mode}" style="background:#8a7a5c">🔄 重做</button>
+       <div class="ws-result quiz-review-result"></div>`
+    : `<div class="quiz-progress">已选 ${answered} / ${items.length}</div>
+       <button type="button" class="create-save llm-btn quiz-submit" data-mode="${mode}">✅ 提交看答案</button>`;
+  slot.innerHTML = quizQuestionsHTML(items, st) + footer;
+}
+
+// 面板重新注入后，恢复争议话题草稿并渲染选择题槽位
 function hydrateEntryPanels(block) {
   block.querySelectorAll('.deb-input').forEach((ta) => {
     const v = localStorage.getItem(ta.dataset.key);
@@ -975,31 +1023,17 @@ function hydrateEntryPanels(block) {
   });
   const ws = block.querySelector('.ws');
   if (!ws) return;
-  ['arg', 'chain'].forEach((mode) => {
-    let data = {};
-    try { data = JSON.parse(localStorage.getItem(`${ws.dataset.wskey}-${mode}`) || '{}'); } catch { data = {}; }
-    const pane = ws.querySelector(`.ws-pane[data-pane="${mode}"]`);
-    if (!pane) return;
-    pane.querySelectorAll('.ws-input').forEach((i) => { if (data[i.dataset.field] != null) i.value = data[i.dataset.field]; });
-  });
+  const emperorKey = ws.dataset.emperor;
+  ['arg', 'chain'].forEach((mode) => renderQuizSlot(ws, mode, emperorKey));
 }
 
 let currentEmperorKey = '';
-// 史论工坊 + 争议话题的交互（事件委托，面板重注入后仍有效）
+// 史论工坊（内置选择题）+ 争议话题的交互（事件委托，面板重注入后仍有效）
 function wireWorkshop(block, e) {
   const label = DYNASTY_LABEL[currentDynasty] || '';
-  // 草稿自动保存
+  const emperorKey = e.id || e.name;
+  // 争议话题草稿自动保存
   block.addEventListener('input', (ev) => {
-    const wsInput = ev.target.closest('.ws-input');
-    if (wsInput) {
-      const ws = block.querySelector('.ws');
-      const pane = wsInput.closest('.ws-pane');
-      const mode = pane.dataset.pane;
-      const data = {};
-      pane.querySelectorAll('.ws-input').forEach((i) => { data[i.dataset.field] = i.value; });
-      localStorage.setItem(`${ws.dataset.wskey}-${mode}`, JSON.stringify(data));
-      return;
-    }
     const debInput = ev.target.closest('.deb-input');
     if (debInput) localStorage.setItem(debInput.dataset.key, debInput.value);
   });
@@ -1013,37 +1047,64 @@ function wireWorkshop(block, e) {
       ws.querySelectorAll('.ws-pane').forEach((p) => p.classList.toggle('hidden', p.dataset.pane !== tab.dataset.mode));
       return;
     }
-    // 工坊 AI 点评
-    const wsAi = ev.target.closest('.ws-ai');
-    if (wsAi) {
-      const mode = wsAi.dataset.mode;
-      const ws = block.querySelector('.ws');
-      const pane = ws.querySelector(`.ws-pane[data-pane="${mode}"]`);
-      const result = pane.querySelector('.ws-result');
-      const vals = {};
-      pane.querySelectorAll('.ws-input').forEach((i) => { vals[i.dataset.field] = i.value.trim(); });
-      const need = mode === 'arg' ? ['thesis', 'ev1'] : ['rootCause', 'trigger'];
-      if (need.some((f) => !vals[f])) {
-        result.innerHTML = '<div class="ask-hint">先填好必填项（论点 + 至少一条论据 / 起因 + 触发点），AI 才能点评。</div>';
+    const ws = block.querySelector('.ws');
+    if (!ws) return;
+    // 点选某个选项（未提交前可改）
+    const opt = ev.target.closest('.qq-opt');
+    if (opt && !opt.disabled) {
+      const mode = opt.closest('.ws-pane').dataset.pane;
+      const items = quizItems(emperorKey, mode);
+      const st = loadQuizState(emperorKey, mode) || { selected: {}, graded: false };
+      st.selected[Number(opt.dataset.qi)] = Number(opt.dataset.oi);
+      saveQuizState(emperorKey, mode, st);
+      renderQuizSlot(ws, mode, emperorKey);
+      return;
+    }
+    // 提交批改
+    const submit = ev.target.closest('.quiz-submit');
+    if (submit) {
+      const mode = submit.dataset.mode;
+      const items = quizItems(emperorKey, mode);
+      const st = loadQuizState(emperorKey, mode) || { selected: {}, graded: false };
+      if (Object.keys(st.selected).length < items.length) {
+        renderQuizSlot(ws, mode, emperorKey);
+        const slot = ws.querySelector(`.ws-pane[data-pane="${mode}"] .quiz-slot`);
+        slot.insertAdjacentHTML('beforeend', '<div class="ask-hint">还有题没选，全部选完再提交。</div>');
         return;
       }
-      result.innerHTML = '<div class="ask-hint">🤖 AI 老师正在结合史实点评…</div>';
-      const prompt = mode === 'arg'
-        ? `【分析对象】${label}的${e.name}
-【我的核心论点】${vals.thesis}
-【史料论据】①${vals.ev1||''} ②${vals.ev2||''} ③${vals.ev3||'（无）'}
-【反方考量】${vals.counter||'（无）'}
-【结论】${vals.conclusion||'（无）'}
-请点评这份论证：论点是否清晰；论据是否符合史实、能否支撑论点（指出与史实不符或张冠李戴之处）；反方考量是否有力；结论是否成立。通俗简练，分点说。`
-        : `【分析对象】${label}的${e.name}相关事件
-【深层起因】${vals.rootCause}
-【触发点】${vals.trigger}
-【关键节点】${vals.nodes||'（无）'}
-【直接结果】${vals.outcome||'（无）'}
-【长远影响】${vals.impact||'（无）'}
-请检查这条因果链：起因是否触及深层问题、触发点与关键节点有没有混淆、是否遗漏重要环节、结果与影响是否符合史实。通俗简练，分点说。`;
+      st.graded = true;
+      saveQuizState(emperorKey, mode, st);
+      renderQuizSlot(ws, mode, emperorKey);
+      return;
+    }
+    // 重做
+    const reset = ev.target.closest('.quiz-reset');
+    if (reset) {
+      const mode = reset.dataset.mode;
+      saveQuizState(emperorKey, mode, { selected: {}, graded: false });
+      renderQuizSlot(ws, mode, emperorKey);
+      return;
+    }
+    // AI 点评（题目内置，AI 只点评选择是否成立）
+    const review = ev.target.closest('.quiz-review');
+    if (review) {
+      const mode = review.dataset.mode;
+      const items = quizItems(emperorKey, mode);
+      const st = loadQuizState(emperorKey, mode);
+      const out = ws.querySelector(`.ws-pane[data-pane="${mode}"] .quiz-review-result`);
+      const digest = items.map((it, i) => {
+        const p = st.selected[i];
+        const chosen = p != null ? (it.options[p].t || it.options[p]) : '（未选）';
+        const good = it.options.map((o, k) => (o.ok ? (o.t || o) : null)).filter(Boolean).join(' / ');
+        return `第${i + 1}题：${it.q}\n  我选：${chosen}\n  更有依据：${good}\n  史实解析：${it.why || ''}`;
+      }).join('\n');
+      out.innerHTML = '<div class="ask-hint">🤖 AI 老师正在结合史实点评…</div>';
+      const prompt = `下面是关于${label}${e.name}的选择题作答（题目为本项目内置）：
+${digest}
+
+请点评：我选错的题，错在哪个理解误区，用史实讲清楚；选对但题目偏开放的，补充一点我没想到的角度；最后用一句话总结我最该记住的认识。通俗简练，分点说。`;
       const d = await askHistoryTeacher(prompt);
-      result.innerHTML = d.ok
+      out.innerHTML = d.ok
         ? `<div class="ask-hit llm-answer"><b>🤖 AI 老师点评</b>：${formatReply(d.reply)}</div>`
         : `<div class="ask-hint">${escapeHtml(d.error || 'AI 点评失败')}</div>`;
       return;
