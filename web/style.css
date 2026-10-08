@@ -24,6 +24,7 @@ body {
   line-height: 1.6;
 }
 
+/* 正文容器：导航为独立浮层，不占用内容编排空间 */
 #app { max-width: 1080px; margin: 0 auto; padding: 12px 16px 40px; }
 
 .topbar {
@@ -128,14 +129,64 @@ body {
 .detective-nav { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
 .detective-count { font-size: 14px; color: var(--muted); font-weight: 600; }
 .brand { display: none; }
+/* 右侧导航胶囊：碑刻质感——墨底鎏金边，激活为朱印红（独立浮层，不占内容编排空间） */
 .tabs {
   display: flex; flex-direction: column; gap: 10px;
-  position: fixed; right: 16px; top: 50%; transform: translateY(-50%);
+  position: fixed; top: 50%; transform: translateY(-50%);
+  /* 落在正文列（#app 限宽 1080 居中）外侧页边距内、紧贴正文右缘；窄窗口退化为贴窗口边 */
+  right: max(16px, calc(50% - 680px));
   z-index: 50;
 }
 .tabs .tab {
-  border-radius: 12px; padding: 12px 20px; white-space: nowrap;
-  font-size: 18px; font-weight: 700;
+  position: relative;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 19px; font-weight: 700; letter-spacing: 3px;
+  padding: 15px 24px 15px 28px;
+  color: #6b5836;
+  background:
+    linear-gradient(180deg, #fbf3df 0%, #f3e6c8 100%);
+  border: 1.5px solid #b99a55;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.75),
+    inset 0 0 14px rgba(185,154,85,.28),
+    0 3px 8px rgba(90,66,30,.16);
+  transition: color .2s ease, background .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+/* 未选中：淡墨字，悬停时鎏金提亮 */
+.tabs .tab:hover {
+  color: #8a1c1c;
+  background: linear-gradient(180deg, #fdf8ea 0%, #f6ead0 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.85),
+    inset 0 0 16px rgba(185,154,85,.36),
+    0 5px 12px rgba(90,66,30,.22);
+  transform: translateY(-1px);
+}
+/* 选中：朱印红（印章感）＋ 顶部鎏金高光 */
+.tabs .tab.active {
+  color: #fff5e8;
+  background:
+    linear-gradient(180deg, #a8352a 0%, #8c2318 100%);
+  border-color: #6d1a11;
+  box-shadow:
+    inset 0 1px 0 rgba(255,214,150,.55),
+    inset 0 -2px 6px rgba(0,0,0,.28),
+    0 5px 14px rgba(120,32,20,.32);
+  transform: none;
+}
+/* 左侧竖线：未选中为鎏金细线，选中为亮金（像简牍编联） */
+.tabs .tab::before {
+  content: ""; position: absolute; left: 9px; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 26px; border-radius: 2px;
+  background: linear-gradient(180deg, rgba(185,154,85,.35), #b99a55);
+  transition: background .2s ease, box-shadow .2s ease;
+}
+.tabs .tab.active::before {
+  background: linear-gradient(180deg, #f7d774, #d9a441);
+  box-shadow: 0 0 6px rgba(247,215,116,.7);
 }
 
 .dynasty-switch {
@@ -144,19 +195,30 @@ body {
   border: 1px solid #c9b88a;
   overflow: hidden;
   width: 100%;
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
 }
 .dynasty-btn {
   flex: 1 1 0;
   border: none; background: transparent; cursor: pointer;
-  font-size: 18px; font-weight: 700; color: #6b5432;
-  padding: 14px 8px; border-radius: 0;
+  font-size: clamp(13px, 1.25vw, 17px); font-weight: 700; color: #6b5432;
+  padding: 10px 4px; border-radius: 0;
   transition: all .2s ease;
   border-right: 1px solid #d9c9a3;
   text-align: center;
   white-space: nowrap;
+  min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px;
 }
+/* 年号行 */
+.dynasty-btn .dyn-top { display: block; }
+/* 帝数行：仅当前选中朝代显示，居中年号下方 */
+.dynasty-btn .dyn-sub {
+  display: block; height: 15px; line-height: 15px;
+  font-size: 12px; font-weight: 600; color: #8a6d3b; opacity: .85;
+}
+.dynasty-btn.active .dyn-sub { color: #f0c75e; opacity: 1; }
 .dynasty-btn:last-child { border-right: none; }
 .dynasty-btn:hover { background: #e5d7b8; color: #3d2f1a; }
 .dynasty-btn.active {
@@ -307,39 +369,68 @@ body {
 .cases-list { display: flex; flex-direction: column; gap: 18px; }
 .case-category { display: flex; flex-direction: column; gap: 14px; }
 .case-cat-title {
-  margin: 0; font-size: 22px; color: var(--primary);
+  margin: 0 0 6px; font-size: 22px; color: var(--primary);
   border-left: 6px solid var(--gold); padding-left: 12px;
 }
-.case-cat-note { margin: -6px 0 0 18px; color: var(--muted); font-size: 14px; }
+.case-cat-note { margin: -2px 0 12px 18px; color: var(--muted); font-size: 14px; }
 .case-card {
   background: var(--card); border: 2px solid var(--border);
-  border-radius: var(--radius); padding: 18px 20px;
+  border-radius: var(--radius); padding: 18px 22px;
 }
-.case-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.case-title { font-size: 20px; font-weight: 800; color: #8a4b1f; }
+/* 案件卡头部：标题与年代居中 */
+.case-head {
+  display: flex; align-items: baseline; justify-content: center;
+  gap: 12px; flex-wrap: wrap;
+}
+.case-title { font-size: 21px; font-weight: 800; color: #8a4b1f; }
 .case-date { font-size: 14px; color: var(--muted); }
 .case-summary {
   margin: 8px 0 12px; padding: 10px 14px;
   background: #fbf3e0; border-radius: 10px; font-size: 15px;
 }
-.case-section { margin-top: 12px; }
+/* 段落模块化：标题与内容圈在同一背景块内 */
+.case-section {
+  margin-top: 12px;
+  background: #fbf6ea;
+  border: 1px solid #ece0c6;
+  border-left: 5px solid var(--gold);
+  border-radius: 12px;
+  padding: 12px 16px 14px;
+}
 .case-section > b {
-  display: inline-block; color: var(--primary); font-size: 15px;
-  background: #fdecea; border-radius: 8px; padding: 2px 10px; margin-bottom: 4px;
+  display: inline-block; color: #8a4b1f; font-size: 15px;
+  background: #f3e2c0; border-radius: 8px; padding: 2px 12px; margin-bottom: 6px;
+  font-weight: 800;
 }
-.case-section > p { margin: 4px 0 0; font-size: 15px; color: #4d4234; }
-.case-people { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.case-section > p { margin: 4px 0 0; font-size: 15px; color: #4d4234; line-height: 1.75; }
+/* 关键人物：2×2 网格排布（放在模块化段落内） */
+.case-people {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-top: 6px;
+}
+@media (max-width: 640px) { .case-people { grid-template-columns: 1fr; } }
 .case-person {
-  background: #f7f1e4; border-radius: 10px; padding: 8px 12px; font-size: 15px;
+  background: #fff; border: 1px solid #ece0c6; border-radius: 10px;
+  padding: 8px 12px; font-size: 15px;
+  display: flex; flex-direction: column; gap: 3px;
 }
+.case-person-head { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
 .case-person-role {
-  margin-left: 8px; font-size: 12px; color: var(--accent);
+  font-size: 12px; color: var(--accent);
   background: #eaf3fb; border-radius: 999px; padding: 1px 8px;
 }
 .case-person-note { color: #5c5140; font-size: 14px; }
 .case-question { margin-top: 8px; }
-.case-question .q { font-weight: 700; }
-.case-question .ctx { color: var(--muted); font-size: 14px; }
+.case-question .q {
+  font-weight: 700; color: #8a4b1f; background: #f3e2c0;
+  border-radius: 8px; padding: 8px 12px; margin-bottom: 6px;
+}
+.case-question .ctx { color: var(--muted); font-size: 14px; padding: 0 2px; }
+.case-question .viewpoints {
+  background: #fff; border: 1px solid #ece0c6; border-radius: 10px;
+  padding: 8px 12px; margin-top: 6px;
+}
+.case-question .viewpoints p { margin: 3px 0; font-size: 14px; color: #4d4234; }
 .case-src { margin-top: 14px; font-size: 12px; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 8px; }
 
 /* ---- 路线详情 ---- */
