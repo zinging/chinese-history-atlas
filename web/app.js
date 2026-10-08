@@ -1,4 +1,4 @@
-/* 明朝大冒险 · 儿童交互层逻辑
+/* 中国历史图谱 · 交互层逻辑
    消费知识层 data/ 数据：emperors / people / events / places / routes
    纯原生 JS，零依赖。示意地图非精确边界。 */
 
@@ -174,7 +174,7 @@ const DYNASTY_LAYOUT = {
 // 各朝文案：品牌名、时间线标题、地图标题、地图 aria、图例注、页脚
 const DYNASTY_TEXT = {
   ming: {
-    brand: '🏮 明朝大冒险', timelineTitle: '从 1368 到 1644 · 十六位明朝皇帝', mapAria: '明朝示意地图',
+    brand: '🏮 明朝', timelineTitle: '从 1368 到 1644 · 十六位明朝皇帝', mapAria: '明朝示意地图',
     legendNote: '省界据《中国历史地图集·明时期》手绘简化示意',
     footer: '疆域轮廓据《明史·地理志》示意，非精确边界 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《明史》《明实录》为主要依据',
   },

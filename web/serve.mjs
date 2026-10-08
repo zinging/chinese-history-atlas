@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 明朝大冒险 · 本地静态服务器
+ * 中国历史图谱 · 本地静态服务器
  * 用法：node web/serve.mjs [端口]  默认 5173
  * 从项目根服务：/web -> web/，/data -> data/。浏览器打开 http://127.0.0.1:5173/web/
  *
@@ -228,6 +228,6 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`🏮 明朝大冒险已启动： http://127.0.0.1:${PORT}/web/`);
+  console.log(`🏮 中国历史图谱已启动： http://127.0.0.1:${PORT}/web/`);
   console.log(`   数据根目录： ${ROOT}`);
 });
