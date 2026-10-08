@@ -607,6 +607,34 @@ body {
 }
 .create-saved { color: #2e7d32; font-weight: 700; margin-top: 8px; }
 
+/* ---- 史论工坊 ---- */
+.ws { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: #fffdf7; }
+.ws-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
+.ws-tab {
+  border: 1px solid var(--gold); background: #fff; color: #8a6d3b;
+  padding: 8px 20px; border-radius: 999px; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.ws-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.ws-pane.hidden { display: none; }
+.ws-hint { font-size: 14px; color: var(--muted); background: #fbf3e0; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; }
+.ws-field { display: block; margin-bottom: 12px; }
+.ws-label { display: block; font-size: 14px; font-weight: 700; color: #5a4a2a; margin-bottom: 5px; }
+.ws-input {
+  width: 100%; border: 2px solid var(--border); border-radius: 10px;
+  padding: 10px; font-size: 15px; font-family: inherit; min-height: 64px; resize: vertical; line-height: 1.5;
+}
+.ws-input:focus { outline: none; border-color: var(--gold); }
+.ws-result { margin-top: 10px; }
+
+/* ---- 争议话题作答 ---- */
+.debate-item { list-style: none; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; background: #fffdf7; }
+.deb-input {
+  width: 100%; border: 2px solid var(--border); border-radius: 10px;
+  padding: 10px; font-size: 15px; font-family: inherit; min-height: 80px; resize: vertical; margin-top: 10px; line-height: 1.5;
+}
+.deb-input:focus { outline: none; border-color: var(--gold); }
+.deb-result { margin-top: 8px; }
+
 .footer { margin-top: 32px; text-align: center; color: var(--muted); font-size: 13px; }
 
 /* ---- 朝代时间线 ---- */

@@ -845,6 +845,7 @@ function renderRelGraph(e) {
 function showEmperor(e) {
   const d = $('#emperor-detail');
   d.classList.remove('hidden');
+  currentEmperorKey = e.id || e.name;
   // 关键人物只列人名（官位在下方人物关系图中展示）
   const people = (e.people || []).map((p) => p.name).join('、');
   const intro = e.intro || e.summary || '';
@@ -852,7 +853,7 @@ function showEmperor(e) {
   const chips = [
     { cls: 'chip-facts', label: '趣味冷知识', panel: renderFacts(e.funFacts) },
     { cls: 'chip-open', label: '争议话题', panel: renderOpen(e.controversies) },
-    { cls: 'chip-make', label: '动手做', panel: renderMake(e) },
+    { cls: 'chip-make', label: '史论工坊', panel: renderWorkshop(e) },
   ];
   d.innerHTML = `
     <div class="detail-head">
@@ -892,7 +893,11 @@ function showEmperor(e) {
     });
     const oldPanel = block.querySelector('.entry-panel');
     if (oldPanel) oldPanel.innerHTML = c.panel;
+    hydrateEntryPanels(block);
   });
+
+  wireWorkshop(block, e);
+  hydrateEntryPanels(block);
   // 不再自动滚动到详情区，由用户自己看
 }
 
@@ -903,21 +908,165 @@ function renderFacts(facts) {
 
 function renderOpen(cs) {
   if (!cs || !cs.length) return '<p>想想看：如果你是这位皇帝，你会怎么做？</p>';
-  return `<ul class="open-list">${cs.map((c) => `
-    <li class="q">❓ ${c.question}</li>
-    <div class="ctx">${c.context || ''}</div>
-    <div class="viewpoints">${(c.viewpoints || []).map((v) => `<p>• ${v}</p>`).join('')}
-      <p style="font-weight:700;color:#c0392b">你怎么看？没有对错，说说你的理由。</p></div>
-  `).join('')}</ul>`;
+  return `<ul class="open-list">${cs.map((c, i) => {
+    const vp = (c.viewpoints || []).join(' / ');
+    const key = `deb-${currentDynasty}-${currentEmperorKey}-${i}`;
+    return `
+    <li class="debate-item" data-di="${i}" data-q="${escapeHtml(c.question || '')}" data-vp="${escapeHtml(vp)}">
+      <div class="q">❓ ${c.question}</div>
+      <div class="ctx">${c.context || ''}</div>
+      <div class="viewpoints">${(c.viewpoints || []).map((v) => `<p>• ${v}</p>`).join('')}</div>
+      <textarea class="deb-input" data-key="${key}" placeholder="你怎么看？写下你的理由（可以引用上面的视角或史实）…"></textarea>
+      <button type="button" class="create-save llm-btn deb-ai" data-di="${i}">🤖 请 AI 老师点评我的理由</button>
+      <div class="deb-result" data-di="${i}"></div>
+    </li>`;
+  }).join('')}</ul>`;
 }
 
-function renderMake(e) {
-  const ev = (DATA.events || []).filter((x) => (e.majorEvents || []).some((m) => m.name === x.name));
-  return `<ul class="make-list">
-    <li>🎨 画一幅画：画出「${e.name}」最重要的一件事（比如迁都、下西洋）。</li>
-    <li>✍️ 写一段话：假如你是${e.name}身边的小臣，你会给他提什么建议？</li>
-    <li>🗺️ 做一张卡：把「${e.name}」的生平时间线做成一张小卡片送给朋友。</li>
-  </ul>${ev.length ? `<div style="margin-top:10px;font-size:14px;color:#8a7a5c">相关事件：${ev.map((x) => x.name).join('、')}</div>` : ''}`;
+// ---------- 史论工坊（替代旧的「动手做」）：结构化论证 + 因果链推演 ----------
+const WS_ARG_FIELDS = [
+  ['thesis', '核心论点 · 一句话判断', '例：明朝灭亡的主因是财政崩溃，而不只是皇帝个人的问题。'],
+  ['ev1', '史料论据① · 证据 + 它说明了什么', ''],
+  ['ev2', '史料论据② · 证据 + 它说明了什么', ''],
+  ['ev3', '史料论据③（可选）', ''],
+  ['counter', '反方考量 · 先写对立观点，再写你如何回应', ''],
+  ['conclusion', '结论', ''],
+];
+const WS_CHAIN_FIELDS = [
+  ['rootCause', '深层起因 · 早已埋下的结构性问题', ''],
+  ['trigger', '触发点 · 点燃事件的直接导火索', ''],
+  ['nodes', '关键节点 · 过程中的 1-2 个转折', ''],
+  ['outcome', '直接结果 · 事件当时的结局', ''],
+  ['impact', '长远影响 · 对之后几年乃至几十年的影响', ''],
+];
+function wsFieldsHTML(fields) {
+  return fields.map(([f, label, ph]) => `
+    <label class="ws-field"><span class="ws-label">${label}</span>
+      <textarea class="ws-input" data-field="${f}" placeholder="${ph}"></textarea></label>`).join('');
+}
+function renderWorkshop(e) {
+  const key = `ws-${currentDynasty}-${e.id || e.name}`;
+  return `
+  <div class="ws" data-wskey="${key}">
+    <div class="ws-tabs">
+      <button type="button" class="ws-tab active" data-mode="arg">结构化论证</button>
+      <button type="button" class="ws-tab" data-mode="chain">因果链推演</button>
+    </div>
+    <div class="ws-pane" data-pane="arg">
+      <p class="ws-hint">先亮明判断，再用史料证明，还要能回应反对意见——这是历史论证的基本框架。</p>
+      ${wsFieldsHTML(WS_ARG_FIELDS)}
+      <button type="button" class="create-save llm-btn ws-ai" data-mode="arg">🤖 请 AI 老师点评论证</button>
+      <div class="ws-result" data-result="arg"></div>
+    </div>
+    <div class="ws-pane hidden" data-pane="chain">
+      <p class="ws-hint">历史不是「一件事导致另一件事」那么简单，把深层起因和长远影响也补全。</p>
+      ${wsFieldsHTML(WS_CHAIN_FIELDS)}
+      <button type="button" class="create-save llm-btn ws-ai" data-mode="chain">🤖 请 AI 老师检查因果链</button>
+      <div class="ws-result" data-result="chain"></div>
+    </div>
+  </div>`;
+}
+
+// 面板重新注入后，从 localStorage 恢复史论工坊与争议话题的草稿
+function hydrateEntryPanels(block) {
+  block.querySelectorAll('.deb-input').forEach((ta) => {
+    const v = localStorage.getItem(ta.dataset.key);
+    if (v) ta.value = v;
+  });
+  const ws = block.querySelector('.ws');
+  if (!ws) return;
+  ['arg', 'chain'].forEach((mode) => {
+    let data = {};
+    try { data = JSON.parse(localStorage.getItem(`${ws.dataset.wskey}-${mode}`) || '{}'); } catch { data = {}; }
+    const pane = ws.querySelector(`.ws-pane[data-pane="${mode}"]`);
+    if (!pane) return;
+    pane.querySelectorAll('.ws-input').forEach((i) => { if (data[i.dataset.field] != null) i.value = data[i.dataset.field]; });
+  });
+}
+
+let currentEmperorKey = '';
+// 史论工坊 + 争议话题的交互（事件委托，面板重注入后仍有效）
+function wireWorkshop(block, e) {
+  const label = DYNASTY_LABEL[currentDynasty] || '';
+  // 草稿自动保存
+  block.addEventListener('input', (ev) => {
+    const wsInput = ev.target.closest('.ws-input');
+    if (wsInput) {
+      const ws = block.querySelector('.ws');
+      const pane = wsInput.closest('.ws-pane');
+      const mode = pane.dataset.pane;
+      const data = {};
+      pane.querySelectorAll('.ws-input').forEach((i) => { data[i.dataset.field] = i.value; });
+      localStorage.setItem(`${ws.dataset.wskey}-${mode}`, JSON.stringify(data));
+      return;
+    }
+    const debInput = ev.target.closest('.deb-input');
+    if (debInput) localStorage.setItem(debInput.dataset.key, debInput.value);
+  });
+
+  block.addEventListener('click', async (ev) => {
+    // 工坊子标签切换
+    const tab = ev.target.closest('.ws-tab');
+    if (tab) {
+      const ws = tab.closest('.ws');
+      ws.querySelectorAll('.ws-tab').forEach((t) => t.classList.toggle('active', t === tab));
+      ws.querySelectorAll('.ws-pane').forEach((p) => p.classList.toggle('hidden', p.dataset.pane !== tab.dataset.mode));
+      return;
+    }
+    // 工坊 AI 点评
+    const wsAi = ev.target.closest('.ws-ai');
+    if (wsAi) {
+      const mode = wsAi.dataset.mode;
+      const ws = block.querySelector('.ws');
+      const pane = ws.querySelector(`.ws-pane[data-pane="${mode}"]`);
+      const result = pane.querySelector('.ws-result');
+      const vals = {};
+      pane.querySelectorAll('.ws-input').forEach((i) => { vals[i.dataset.field] = i.value.trim(); });
+      const need = mode === 'arg' ? ['thesis', 'ev1'] : ['rootCause', 'trigger'];
+      if (need.some((f) => !vals[f])) {
+        result.innerHTML = '<div class="ask-hint">先填好必填项（论点 + 至少一条论据 / 起因 + 触发点），AI 才能点评。</div>';
+        return;
+      }
+      result.innerHTML = '<div class="ask-hint">🤖 AI 老师正在结合史实点评…</div>';
+      const prompt = mode === 'arg'
+        ? `【分析对象】${label}的${e.name}
+【我的核心论点】${vals.thesis}
+【史料论据】①${vals.ev1||''} ②${vals.ev2||''} ③${vals.ev3||'（无）'}
+【反方考量】${vals.counter||'（无）'}
+【结论】${vals.conclusion||'（无）'}
+请点评这份论证：论点是否清晰；论据是否符合史实、能否支撑论点（指出与史实不符或张冠李戴之处）；反方考量是否有力；结论是否成立。通俗简练，分点说。`
+        : `【分析对象】${label}的${e.name}相关事件
+【深层起因】${vals.rootCause}
+【触发点】${vals.trigger}
+【关键节点】${vals.nodes||'（无）'}
+【直接结果】${vals.outcome||'（无）'}
+【长远影响】${vals.impact||'（无）'}
+请检查这条因果链：起因是否触及深层问题、触发点与关键节点有没有混淆、是否遗漏重要环节、结果与影响是否符合史实。通俗简练，分点说。`;
+      const d = await askHistoryTeacher(prompt);
+      result.innerHTML = d.ok
+        ? `<div class="ask-hit llm-answer"><b>🤖 AI 老师点评</b>：${formatReply(d.reply)}</div>`
+        : `<div class="ask-hint">${escapeHtml(d.error || 'AI 点评失败')}</div>`;
+      return;
+    }
+    // 争议话题 AI 点评
+    const debAi = ev.target.closest('.deb-ai');
+    if (debAi) {
+      const item = debAi.closest('.debate-item');
+      const ta = item.querySelector('.deb-input');
+      const result = item.querySelector('.deb-result');
+      const v = ta.value.trim();
+      if (!v) { result.innerHTML = '<div class="ask-hint">先写下你的理由，AI 才能点评。</div>'; return; }
+      result.innerHTML = '<div class="ask-hint">🤖 AI 老师正在结合史实点评…</div>';
+      const prompt = `【争议问题】${item.dataset.q}
+【常见的两种视角】${item.dataset.vp || '（无）'}
+【我的理由】${v}
+请中立地点评：我的理由是否站得住、用了哪些史实（指出与史实不符处）、有没有忽略对方视角中有力的一点；最后提一个能让我继续思考的问题。通俗简练。`;
+      const d = await askHistoryTeacher(prompt);
+      result.innerHTML = d.ok
+        ? `<div class="ask-hit llm-answer"><b>🤖 AI 老师点评</b>：${formatReply(d.reply)}</div>`
+        : `<div class="ask-hint">${escapeHtml(d.error || 'AI 点评失败')}</div>`;
+    }
+  });
 }
 
 // ---------- 界面三：地图（Leaflet 重绘） ----------
