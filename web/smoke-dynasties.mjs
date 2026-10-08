@@ -71,7 +71,18 @@ const dom = {
     if (sel === '#brand') return { textContent: '' };
     if (sel === '#legend-note') return { textContent: '' };
     if (sel === '#footer') return { textContent: '' };
-    return null;
+    // 通用兜底：其余元素返回可链式对象（测试只校验各朝地图数据层）
+    return {
+      innerHTML: '', textContent: '', value: '', disabled: false, checked: false,
+      classList: { add: () => {}, remove: () => {}, toggle: () => true, contains: () => false },
+      style: {}, dataset: {},
+      addEventListener: () => {}, removeEventListener: () => {},
+      appendChild: () => {}, removeChild: () => {}, insertBefore: () => {},
+      scrollIntoView: () => {}, focus: () => {}, click: () => {},
+      setAttribute: () => {}, getAttribute: () => null,
+      querySelector: () => null, querySelectorAll: () => [],
+      parentNode: { insertBefore: () => {}, appendChild: () => {} },
+    };
   },
   querySelectorAll(sel) { return []; },
   createElement: (tag) => ({
