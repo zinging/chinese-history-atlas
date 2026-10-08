@@ -346,26 +346,46 @@ body {
 
 /* ---- 案件卡 ---- */
 .case-tabs {
-  display: flex; gap: 8px; flex-wrap: wrap;
-  margin: 4px 0 18px; padding-bottom: 4px;
+  display: flex; gap: 10px; flex-wrap: wrap;
+  justify-content: center;
+  margin: 8px 0 20px; padding-bottom: 4px;
 }
 .case-tab {
-  border: 2px solid var(--border); background: var(--card);
-  border-radius: 999px; padding: 8px 18px;
-  font-size: 15px; font-weight: 700; color: var(--muted);
+  position: relative;
+  border: 1.5px solid #b99a55;
+  background: linear-gradient(180deg, #fbf3df 0%, #f3e6c8 100%);
+  border-radius: 3px;
+  padding: 9px 20px;
+  font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  color: #6b5836;
   cursor: pointer; font-family: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.7),
+    inset 0 0 10px rgba(185,154,85,.22),
+    0 2px 6px rgba(90,66,30,.14);
+  transition: all .2s ease;
 }
-.case-tab:hover { border-color: var(--gold); color: #8a4b1f; }
+.case-tab:hover {
+  color: #8a1c1c;
+  background: linear-gradient(180deg, #fdf8ea 0%, #f6ead0 100%);
+  border-color: #8a1c1c;
+  transform: translateY(-1px);
+}
 .case-tab.active {
-  background: var(--primary); border-color: var(--primary);
-  color: #fff;
+  color: #fff5e8;
+  background: linear-gradient(180deg, #a82828 0%, #8a1c1c 100%);
+  border-color: #b99a55;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,220,160,.35),
+    inset 0 0 12px rgba(0,0,0,.18),
+    0 3px 8px rgba(138,28,28,.3);
 }
 .case-tab-n {
   display: inline-block; margin-left: 6px;
-  background: rgba(0, 0, 0, 0.12); border-radius: 999px;
-  padding: 0 7px; font-size: 12px;
+  background: rgba(0, 0, 0, 0.12); border-radius: 2px;
+  padding: 0 6px; font-size: 12px; letter-spacing: 0;
 }
-.case-tab.active .case-tab-n { background: rgba(255, 255, 255, 0.25); }
+.case-tab.active .case-tab-n { background: rgba(255, 255, 255, 0.22); }
 .cases-list { display: flex; flex-direction: column; gap: 18px; }
 .case-category { display: flex; flex-direction: column; gap: 14px; }
 .case-cat-title {
