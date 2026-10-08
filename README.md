@@ -1,10 +1,12 @@
-# 🏮 历史大冒险 · 中国历史可视化学习网站
+# 🏮 中国历史图谱 · Chinese History Atlas
 
 > 中文 | [English](README_EN.md)
 
 一个以皇帝为线索、把 **隋 · 唐 · 五代十国 · 宋 · 元 · 明 · 清** 七个朝代串成可视化时间线的历史学习网站。不用死记年代——顺着卡片、地图、案件和解谜任务，自己把「谁在什么时候、做了什么、为什么、留下什么后果」连成一条线。
 
 适合学生入门，也适合想把中国历史重新理一遍的成年人。
+
+**🌐 在线演示**：https://zinging.github.io/chinese-history-atlas/web/
 
 ![纯静态](https://img.shields.io/badge/纯静态-零构建-brightgreen)
 ![Leaflet](https://img.shields.io/badge/地图-Leaflet_1.9.4-247bc1)

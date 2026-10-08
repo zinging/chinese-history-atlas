@@ -37,7 +37,7 @@ async function loadJSON(path) {
 
 let DATA = null; // { emperors:[], people:[], events:[], places:[], routes:[] }
 let activeEraId = null; // null = 全部朝代；否则为 emperor id
-let currentDynasty = 'tang'; // 'ming' | 'song' | 'tang' | 'yuan' | 'qing' | 'sui'
+let currentDynasty = 'sui'; // 'ming' | 'song' | 'tang' | 'yuan' | 'qing' | 'sui' | 'wudai'
 // 各朝数据缓存：切换朝代不重发请求（数据只读）
 const DATA_CACHE = {};
 
@@ -580,6 +580,11 @@ const PERSON_PORTRAITS = {
   '扩廓帖木儿': 'kuokuotiemuer.jpg', '王保保': 'kuokuotiemuer.jpg',
   // 元朝人物像
   '刘秉忠': 'liubingzhong.jpg', '伯颜': 'boyan.jpg', '脱脱': 'tuotuo.jpg', '马可·波罗': 'makeluo.jpg', '马可波罗': 'makeluo.jpg',
+  '真金': 'zhenjin.jpg', '阔阔真': 'kuokuozhen.jpg', '完泽': 'wanze.jpg',
+  '李孟': 'limeng.jpg', '拜住': 'baizhu.jpg', '铁失': 'tieshi.jpg',
+  '脱虎脱': 'tuohtuo.jpg', '倒剌沙': 'daolasha.jpg',
+  '燕帖木儿': 'yantiemuer.jpg', '和世㻋': 'yuan-mingzong.jpg', '虞集': 'yuji.jpg',
+  '哈麻': 'hama.jpg', '奇皇后': 'qihuanghou.jpg', '爱猷识理答腊': 'ayushidilala.jpg',
   // 清朝人物像
   '多尔衮': 'duoergun.jpg', '孝庄太后': 'xiaozhuang.jpg', '鳌拜': 'aobai.jpg', '代善': 'daishan.jpg',
   '阿巴亥': 'abahai.jpg', '洪承畴': 'hongchengchou.jpg', '济尔哈朗': 'jihaolang.jpg', '索额图': 'suoetu.jpg',
@@ -668,6 +673,20 @@ const PERSON_TITLES = {
   '脱脱': '中书右丞相·修宋辽金三史',
   '马可·波罗': '威尼斯旅行家·在元十七年',
   '马可波罗': '威尼斯旅行家·在元十七年',
+  '真金': '皇太子·忽必烈嫡子',
+  '阔阔真': '裕圣皇后·铁穆耳生母',
+  '完泽': '中书右丞相·成宗朝贤相',
+  '李孟': '平章政事·仁宗潜邸旧臣',
+  '拜住': '中书左丞相·英宗锐革助手',
+  '铁失': '御史大夫·南坡弑主者',
+  '脱虎脱': '尚书省左丞相·武宗朝滥发钞币',
+  '倒剌沙': '中书左丞相·泰定帝幸臣',
+  '燕帖木儿': '中书右丞相·文宗朝权臣',
+  '和世㻋': '明宗·武宗长子',
+  '虞集': '奎章阁侍书学士·元诗文大家',
+  '哈麻': '中书右丞相·谗杀脱脱者',
+  '奇皇后': '肃良合皇后·高丽人·顺帝后',
+  '爱猷识理答腊': '皇太子·北元昭宗',
   // 清朝人物官位
   '多尔衮': '摄政王·和硕睿亲王',
   '孝庄太后': '孝庄文皇后·太皇太后',
@@ -745,7 +764,7 @@ function personPortrait(name) {
   const f = PERSON_PORTRAITS[name];
   if (!f) return null;
   // 皇帝互相关联的像在 portraits/ 根目录，其他人在 portraits/people/
-  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤'].includes(name)) {
+  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤','和世㻋'].includes(name)) {
     return `../data/portraits/${f}`;
   }
   return `../data/portraits/people/${f}`;
@@ -2486,11 +2505,15 @@ async function switchDynasty(d) {
     await loadBoundaries();
     renderTimeline();
     renderDetective();
-    // 切换朝代后自动展开第一位皇帝
+    // 切换朝代后自动展开第一位皇帝，卡片回到最左
     if (DATA.emperors && DATA.emperors[0]) {
       document.querySelectorAll('.emp-card').forEach((c) => c.classList.remove('active'));
-      const first = document.querySelector('.emp-card');
-      if (first) first.classList.add('active');
+      const wrap = $('#timeline-scroll');
+      const first = wrap.querySelector('.emp-card');
+      if (first) {
+        first.classList.add('active');
+        wrap.scrollTo({ left: 0, behavior: 'instant' });
+      }
       showEmperor(DATA.emperors[0]);
     }
     // 地图页如有打开，重渲染
@@ -2640,15 +2663,19 @@ async function askLLM(message, history = []) {
     await loadBoundaries();
     // LLM 配置（侦探页卡片内加载）
     loadLLMConfig();
-    // 初始默认朝代（唐）的页头/图例/页脚文案
+    // 初始默认朝代（隋）的页头/图例/页脚文案
     applyDynastyText(currentDynasty);
     renderTimeline();
     renderDetective();
-    // 默认展开第一位皇帝（唐朝即李渊）的生平时间线，并让卡片呈现选中红底
+    // 默认展开第一位皇帝（隋朝即杨坚）的生平时间线，并让卡片呈现选中红底
     if (DATA.emperors && DATA.emperors[0]) {
       document.querySelectorAll('.emp-card').forEach((c) => c.classList.remove('active'));
-      const first = document.querySelector('.emp-card');
-      if (first) first.classList.add('active');
+      const wrap = $('#timeline-scroll');
+      const first = wrap.querySelector('.emp-card');
+      if (first) {
+        first.classList.add('active');
+        wrap.scrollTo({ left: 0, behavior: 'instant' });
+      }
       showEmperor(DATA.emperors[0]);
     }
     // 地图在首次进入时渲染：按钮区 + 路线详情作为一个整体，插到图例前

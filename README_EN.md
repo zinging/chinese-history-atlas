@@ -1,10 +1,12 @@
-# 🏮 Historical Adventure · An Interactive Chinese History Learning Site
+# 🏮 Chinese History Atlas
 
 > English | [中文](README.md)
 
 A visual, timeline-driven Chinese history learning site covering **seven dynasties: Sui · Tang · Five Dynasties · Song · Yuan · Ming · Qing**. Follow each emperor as the thread and events, people, maps, cases, and puzzles weave themselves together — you build the cause-and-effect story of *who did what, when, why, and what came of it*, instead of memorizing dates.
 
 Great for students starting out, and for adults who want to revisit Chinese history in one coherent thread.
+
+**🌐 Live demo**: https://zinging.github.io/chinese-history-atlas/web/
 
 ![Pure static](https://img.shields.io/badge/pure%20static-zero%20build-brightgreen)
 ![Leaflet](https://img.shields.io/badge/maps-Leaflet_1.9.4-247bc1)
