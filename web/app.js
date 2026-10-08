@@ -311,7 +311,6 @@ function renderCases() {
   const list = cases.filter((c) => c.category === cat.id).sort((a, b) => a.date.localeCompare(b.date));
   wrap.innerHTML = `
     <section class="case-category">
-      <p class="case-cat-note">${cat.note || ''}</p>
       ${list.map(caseCard).join('')}
     </section>`;
 }
