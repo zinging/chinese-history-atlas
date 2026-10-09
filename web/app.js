@@ -332,12 +332,9 @@ function caseCard(c) {
       </div>
       <div class="case-summary">${c.summary}</div>
       <div class="case-section">
-        <b>名字的由来</b>
-        <p>${c.nameOrigin}</p>
-      </div>
-      <div class="case-section">
-        <b>背景</b>
+        <b>背景介绍</b>
         <p>${c.background}</p>
+        ${c.nameOrigin ? `<p style="color:#8a7a5c;margin-top:8px"><i>名字的由来：</i>${c.nameOrigin}</p>` : ''}
       </div>
       <div class="case-section">
         <b>关键人物</b>
@@ -791,7 +788,9 @@ function renderRelGraph(e) {
   const relLabels = nodes.map((nd) => {
     const mx = (cx + 60 + nd.x - 42) / 2, my = (cy + nd.y) / 2;
     const rel = nd.p.relation || nd.p.role || '';
-    return `<rect x="${mx-42}" y="${my-13}" width="84" height="24" rx="12" fill="#fff7e0" stroke="#c9a96a" />
+    // 根据文字长度动态计算圆角框宽度（13px 字号，中文字约 15px，紧包 padding）
+    const w = Math.max(56, rel.length * 15 + 14);
+    return `<rect x="${mx - w/2}" y="${my-13}" width="${w}" height="24" rx="12" fill="#fff7e0" stroke="#c9a96a" />
       <text x="${mx}" y="${my+5}" text-anchor="middle" font-size="13" fill="#8a6d3b" font-weight="700">${rel}</text>`;
   }).join('');
   // 描述文字按宽度自动换行（SVG text 不会自动折行，手动拆 tspan）
