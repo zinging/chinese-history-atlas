@@ -2867,6 +2867,31 @@ async function askLLM(message, history = []) {
   return r.json();
 }
 
+// 右上角「支持」弹出卡片
+(function setupSupportPop() {
+  const btn = document.getElementById('support-btn');
+  const pop = document.getElementById('support-pop');
+  const close = document.getElementById('support-close');
+  if (!btn || !pop) return;
+  const toggle = (show) => {
+    const visible = show !== undefined ? show : pop.classList.contains('hidden');
+    pop.classList.toggle('hidden', !visible);
+    btn.setAttribute('aria-expanded', String(visible));
+  };
+  btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
+  close.addEventListener('click', () => toggle(false));
+  // 点卡片外面关闭
+  document.addEventListener('click', (e) => {
+    if (!pop.classList.contains('hidden') && !pop.contains(e.target) && e.target !== btn) {
+      toggle(false);
+    }
+  });
+  // Esc 关闭
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') toggle(false);
+  });
+})();
+
 (async function init() {
   try {
     await loadAll();

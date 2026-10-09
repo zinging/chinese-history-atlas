@@ -26,7 +26,25 @@
       <button class="tab" data-page="map">舆图疆域</button>
       <button class="tab" data-page="detective">探案问史</button>
     </nav>
+    <button class="support-btn" id="support-btn" title="支持这个项目" aria-haspopup="true" aria-expanded="false">
+      <span class="support-icon">★</span><span>支持</span>
+    </button>
   </header>
+
+  <!-- 支持项目弹出卡片 -->
+  <div class="support-pop hidden" id="support-pop" role="dialog" aria-label="支持这个项目">
+    <div class="support-pop-head">
+      <span class="support-pop-star">⭐</span>
+      <b>免费支持</b>
+      <button class="support-pop-close" id="support-close" aria-label="关闭">✕</button>
+    </div>
+    <p class="support-pop-text">
+      如果这个网站对你有帮助，烦请给项目点个 Star ⭐。支持我不断创作国学、历史相关的学习站。
+    </p>
+    <a class="support-pop-gh" href="https://github.com/zinging/chinese-history-atlas" target="_blank" rel="noopener">
+      ⭐ GitHub Star
+    </a>
+  </div>
 
   <!-- 界面一：时间线首页（朝代与帝数已在顶部朝代胶囊内展示） -->
   <main id="page-timeline" class="page">
