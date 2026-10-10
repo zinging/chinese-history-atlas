@@ -2935,3 +2935,13 @@ async function askLLM(message, history = []) {
     </div>`;
   }
 })();
+// 大模块切换
+document.querySelectorAll('.mega-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mega-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const which = btn.dataset.mega;
+    document.getElementById('mega-history').classList.toggle('hidden', which !== 'history');
+    document.getElementById('mega-guoxue').classList.toggle('hidden', which !== 'guoxue');
+  });
+});

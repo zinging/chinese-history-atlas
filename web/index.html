@@ -5,12 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中国历史图谱 · Chinese History Atlas</title>
 <link rel="stylesheet" href="vendor/leaflet.css">
-<link rel="stylesheet" href="style.css?v=gaode14">
+<link rel="stylesheet" href="style.css?v=gaode15">
 </head>
 <body>
 <div id="app">
+
+  <!-- 左侧大模块切换栏 -->
+  <aside class="mega-sidebar">
+    <div class="mega-logo">📜</div>
+    <button class="mega-btn active" data-mega="history">
+      <div class="mega-icon">👑</div>
+      <div class="mega-name">帝王谱系</div>
+      <div class="mega-sub">历代皇帝</div>
+    </button>
+    <button class="mega-btn" data-mega="guoxue">
+      <div class="mega-icon">📚</div>
+      <div class="mega-name">典籍长河</div>
+      <div class="mega-sub">圣贤书林</div>
+    </button>
+  </aside>
+
+  <!-- 帝王谱系模块（原 dsh_his） -->
+  <div class="mega-area" id="mega-history">
   <header class="topbar">
-    <div class="brand" id="brand">🏮 中国历史图谱</div>
+    <div class="brand" id="brand">🏮 帝王谱系</div>
     <div class="dynasty-switch" id="dynasty-switch" role="tablist" aria-label="朝代切换">
       <button class="dynasty-btn active" data-d="sui"><span class="dyn-top">隋 · 581-618</span><span class="dyn-sub"></span></button>
       <button class="dynasty-btn" data-d="tang"><span class="dyn-top">唐 · 618-907</span><span class="dyn-sub"></span></button>
@@ -96,10 +114,17 @@
   </main>
 
   <footer class="footer" id="footer">疆域轮廓据《明史·地理志》示意，非精确边界 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《明史》《明实录》为主要依据</footer>
+  </div><!-- /mega-history -->
+
+  <!-- 典籍长河模块（国学图谱） -->
+  <div class="mega-area hidden" id="mega-guoxue">
+    <iframe src="guoxue/index.html" class="guoxue-frame" frameborder="0"></iframe>
+  </div>
+
 </div>
 <script src="search-core.js?v=sc6"></script>
 <script src="vendor/leaflet.js"></script>
 <script>window.__dbg={};</script>
-<script src="app.js?v=quiz8"></script>
+<script src="app.js?v=quiz9"></script>
 </body>
 </html>

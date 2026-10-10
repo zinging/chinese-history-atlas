@@ -910,3 +910,30 @@ input, textarea { cursor: text; }
 .gantt-note { margin-top: 10px; font-size: 12px; color: #8a6d3b; }
 .gantt-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: #5a4020; }
 .gantt-legend .sw { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
+
+/* ===== 左侧大模块切换栏 ===== */
+.mega-sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 90px;
+  background: linear-gradient(180deg, #3a2e1f 0%, #2a1f12 100%);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 16px 0; z-index: 1000;
+  box-shadow: 2px 0 8px rgba(0,0,0,.2);
+}
+.mega-logo { font-size: 28px; margin-bottom: 24px; }
+.mega-btn {
+  width: 76px; padding: 12px 6px; margin-bottom: 8px;
+  background: transparent; border: 2px solid transparent; border-radius: 10px;
+  color: #c9b896; cursor: pointer; text-align: center;
+  transition: all .2s; font-family: inherit;
+}
+.mega-btn:hover { background: rgba(240,199,94,.1); color: #f0c75e; }
+.mega-btn.active {
+  background: linear-gradient(180deg, #a82828 0%, #8a1c1c 100%);
+  border-color: #d4a84a; color: #fff5e8;
+  box-shadow: 0 3px 8px rgba(138,28,28,.4);
+}
+.mega-icon { font-size: 24px; margin-bottom: 4px; }
+.mega-name { font-size: 14px; font-weight: 700; }
+.mega-sub { font-size: 11px; opacity: .7; margin-top: 2px; }
+.mega-area { margin-left: 90px; min-height: 100vh; }
+.guoxue-frame { width: 100%; height: 100vh; border: 0; display: block; }
