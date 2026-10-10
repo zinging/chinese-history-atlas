@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国学图谱 · Chinese Classics Atlas</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css?v=v44">
+</head>
+<body>
+<div id="app">
+  <div class="brand">📚 典籍长河</div>
+  <div class="sect-switch" id="sect-switch" role="tablist" aria-label="流派切换">
+    <button class="sect-btn" data-s="rujia"><span class="sect-main">儒 · 孔孟</span><span class="sect-sub">3 部经典</span></button>
+    <button class="sect-btn active" data-s="daojia"><span class="sect-main">道 · 老庄</span><span class="sect-sub">2 部经典</span></button>
+    <button class="sect-btn" data-s="foxue"><span class="sect-main">佛 · 禅</span><span class="sect-sub">3 部经典</span></button>
+    <button class="sect-btn" data-s="zhuzi"><span class="sect-main">诸子</span><span class="sect-sub">3 家代表作</span></button>
+    <button class="sect-btn" data-s="lixue"><span class="sect-main">理学 · 心学</span><span class="sect-sub">2 部语录</span></button>
+    <button class="sect-btn" data-s="shiwen"><span class="sect-main">诗文</span><span class="sect-sub">22 位文人</span></button>
+  </div>
+
+  <nav class="tabs-v" id="tabs">
+    <button class="tab active" data-page="books">典籍长廊</button>
+    <button class="tab" data-page="cases">公案疑案</button>
+    <button class="tab" data-page="map">智慧舆图</button>
+    <button class="tab" data-page="quiz">探问问典</button>
+  </nav>
+
+  <button class="support-btn" id="support-btn">
+    <span class="support-icon">★</span><span>支持</span>
+  </button>
+
+  <!-- 支持卡片 -->
+  <div class="support-pop hidden" id="support-pop">
+    <div class="support-pop-head">
+      <span>⭐</span><b>免费支持</b>
+      <button class="support-pop-close" id="support-close">✕</button>
+    </div>
+    <p class="support-pop-text">如果这个网站对你有帮助，烦请给项目点个 Star ⭐。支持我不断创作国学、历史相关的学习站。</p>
+    <a class="support-pop-gh" href="https://github.com/zinging/chinese-classics-atlas" target="_blank" rel="noopener">⭐ GitHub Star</a>
+  </div>
+
+  <!-- 模块一：典籍长廊 -->
+  <main id="page-books" class="page">
+    <div id="era-filter" class="era-filter hidden"></div>
+    <div class="books-scroll" id="books-scroll"></div>
+    <div id="book-detail" class="book-detail hidden"></div>
+  </main>
+
+  <!-- 模块二：公案 -->
+  <main id="page-cases" class="page hidden">
+    <div id="case-tabs" class="case-tabs"></div>
+    <div id="cases-list" class="cases-list"></div>
+  </main>
+
+  <!-- 模块三：地图 -->
+  <main id="page-map" class="page hidden">
+    <div id="map-leaf" class="map-container" role="img" aria-label="文化地图"></div>
+    <div id="map-popup" class="map-popup hidden"></div>
+  </main>
+
+  <!-- 模块四：答题 -->
+  <main id="page-quiz" class="page hidden">
+    <div id="quiz-list" class="quiz-list"></div>
+  </main>
+
+  <footer class="footer" id="footer">内容以《史记》《汉书》《道德经》《庄子》等原典为依据 · 地图为示意 · 人物画像 AI 生成古风</footer>
+</div>
+
+<script src="vendor/leaflet.js"></script>
+<script src="app.js?v=v60"></script>
+</body>
+</html>
