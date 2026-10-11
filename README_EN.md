@@ -26,19 +26,19 @@ Built for history buffs who want a coherent thread, students of traditional cult
 
 77 emperors across seven dynasties (Sui → Qing) on a horizontal card rail. Open one for the life timeline, relationship graph, fun facts, and controversies. The Leaflet map overlays each dynasty's approximate borders, ancient place markers, and animated campaign/voyage routes. Famous cases are broken down from naming through sources — not one-liners. History Detective gives you sourced clues to form your own judgment.
 
-![Emperor Lineage](docs/demo/module-emperors.png)
+![Emperor Lineage](docs/demo/module-emperors.png?v=2)
 
 ### 📚 Thought Origins
 
 Confucianism (Kong-Meng), Daoism (Lao-Zhuang), Buddhism (Chan), the Hundred Schools (military/Legalist/Mohist), and Neo-Confucianism/Yangmingism (Zhu Xi/Wang Yangming) — the operating system of Chinese thought, from pre-Qin through Ming-Qing. Each school features classic texts read **against the author's historical situation**, not decontextualized. Critical multiple-choice questions train both evaluative judgment and causal reasoning.
 
-![Thought Origins](docs/demo/module-thought.png)
+![Thought Origins](docs/demo/module-thought.png?v=2)
 
 ### 🎋 Poetry Appreciation
 
 From Qu Yuan to Nalan Xingde: 22 poets organized by dynasty. Not just memorization — **trace a poet's life journey on a map, then read what situation, mood, or story lies behind each verse**. Why did Li Bai write "a skiff has sailed past ten thousand mountains" at Jiangling? Because he'd just received the amnesty order. The poetry route map shows where they went and where they wrote their famous lines.
 
-![Poetry Appreciation](docs/demo/module-poetry.png)
+![Poetry Appreciation](docs/demo/module-poetry.png?v=2)
 
 ---
 

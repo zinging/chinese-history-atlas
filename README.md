@@ -49,7 +49,7 @@
 
 
 
-![帝王谱系](docs/demo/module-emperors.png)
+![帝王谱系](docs/demo/module-emperors.png?v=2)
 
 ### 📚 思想源流
 
@@ -57,7 +57,7 @@
 
 
 
-![思想源流](docs/demo/module-thought.png)
+![思想源流](docs/demo/module-thought.png?v=2)
 
 ### 🎋 诗词鉴赏
 
@@ -65,7 +65,7 @@
 
 
 
-![诗词鉴赏](docs/demo/module-poetry.png)
+![诗词鉴赏](docs/demo/module-poetry.png?v=2)
 
 
 
