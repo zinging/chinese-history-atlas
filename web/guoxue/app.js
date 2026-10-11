@@ -8,7 +8,11 @@ const SECT_META = {
   shiwen:  { name: "诗文", intro: "中国人的审美和情绪出口。诗词不是用来背的，是一个人在某个处境下写的一句话。", data: "shiwen" },
 };
 
-let currentSect = "rujia";
+/** 初始流派：以页面上标记了 .active 的 .sect-btn 为准。
+ *  诗词鉴赏（shici.html）只留「诗文」一项，靠这里自动以诗文启动，
+ *  无需为它单独维护一份 app.js。 */
+const initialSectBtn = document.querySelector('.sect-btn.active');
+let currentSect = (initialSectBtn && initialSectBtn.dataset.s) || "rujia";
 let currentPage = "books";
 let currentEra = "all";
 let bookData = {};
@@ -499,17 +503,20 @@ document.querySelectorAll(".sect-btn").forEach(b => {
   b.addEventListener("click", () => loadSect(b.dataset.s));
 });
 
-// 支持按钮：hover 展开
+// 支持按钮：hover 展开（入口位于主站侧栏底部；单独打开本页时也有同一入口）
 const supportBtn = $("#support-btn");
 const supportPop = $("#support-pop");
-let supportTimer = null;
-function showSupport() { clearTimeout(supportTimer); supportPop.classList.remove("hidden"); }
-function hideSupport() { supportPop.classList.add("hidden"); }
-supportBtn.addEventListener("mouseenter", showSupport);
-supportPop.addEventListener("mouseenter", showSupport);
-supportBtn.addEventListener("mouseleave", () => { supportTimer = setTimeout(hideSupport, 600); });
-supportPop.addEventListener("mouseleave", () => { supportTimer = setTimeout(hideSupport, 600); });
-$("#support-close").addEventListener("click", hideSupport);
+if (supportBtn && supportPop) {
+  let supportTimer = null;
+  const showSupport = () => { clearTimeout(supportTimer); supportPop.classList.remove("hidden"); };
+  const hideSupport = () => { supportPop.classList.add("hidden"); };
+  supportBtn.addEventListener("mouseenter", showSupport);
+  supportPop.addEventListener("mouseenter", showSupport);
+  supportBtn.addEventListener("mouseleave", () => { supportTimer = setTimeout(hideSupport, 600); });
+  supportPop.addEventListener("mouseleave", () => { supportTimer = setTimeout(hideSupport, 600); });
+  const closeBtn = $("#support-close");
+  if (closeBtn) closeBtn.addEventListener("click", hideSupport);
+}
 
 // 启动
 loadSect(currentSect);

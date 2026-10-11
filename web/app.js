@@ -2992,21 +2992,28 @@ async function askLLM(message, history = []) {
   });
 })();
 
-// 大模块切换
+// 大模块切换（帝王谱系 / 典籍长河 / 诗词鉴赏）
+// 三个面板统一在此显隐；典籍长河与诗词鉴赏各自一个 iframe，首次进入才加载，
+// 之后复用同一实例（再次进入无需重新请求）。
+const MEGA_MODULES = [
+  { id: 'history', frameId: null, src: null },
+  { id: 'guoxue', frameId: 'guoxue-frame', src: 'guoxue/index.html' },
+  { id: 'shici', frameId: 'shici-frame', src: 'guoxue/shici.html' },
+];
+
 document.querySelectorAll('.mega-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.mega-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const which = btn.dataset.mega;
-    document.getElementById('mega-history').classList.toggle('hidden', which !== 'history');
-    document.getElementById('mega-guoxue').classList.toggle('hidden', which !== 'guoxue');
-    // 典籍长河靠 iframe 自带右侧沟槽，本页胶囊已隐藏，不必再占位（否则挤窄 iframe）
-    document.body.classList.toggle('mega-guoxue-on', which === 'guoxue');
-    // 典籍长河首次进入才加载子站（约 230KB + 一份 Leaflet 解析），之后复用同一 iframe
-    if (which === 'guoxue') {
-      const frame = document.getElementById('guoxue-frame');
-      if (frame && !frame.src) frame.src = 'guoxue/index.html';
+    for (const m of MEGA_MODULES) {
+      const panel = document.getElementById('mega-' + m.id);
+      if (panel) panel.classList.toggle('hidden', m.id !== which);
+      // 首次进入该板块才装载子站；已经装载过的保持原实例
+      if (m.id === which && m.frameId) {
+        const frame = document.getElementById(m.frameId);
+        if (frame && !frame.src) frame.src = m.src;
+      }
     }
   });
 });
-// 补一次「刷新时正停在典籍长河」的情形：地址栏无状态，此处不处理，首次点击即加载。

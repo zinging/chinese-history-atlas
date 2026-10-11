@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>诗词鉴赏 · Poetry Appreciation</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css?v=v48">
+</head>
+<body>
+<div id="app">
+  <div class="brand">🎋 诗词鉴赏</div>
+  <!-- 诗词鉴赏锁定为「诗文」一类：与典籍长河同一套数据和样式，只是收敛到单一品类 -->
+  <div class="sect-switch" id="sect-switch" role="tablist" aria-label="品类">
+    <button class="sect-btn active" data-s="shiwen" aria-current="true"><span class="sect-main">诗文</span><span class="sect-sub">22 位文人</span></button>
+  </div>
+
+  <nav class="tabs-v" id="tabs">
+    <button class="tab active" data-page="books">典籍长廊</button>
+    <button class="tab" data-page="cases">公案疑案</button>
+    <button class="tab" data-page="map">智慧舆图</button>
+    <button class="tab" data-page="quiz">探问问典</button>
+  </nav>
+
+  <!-- 模块一：典籍长廊 -->
+  <main id="page-books" class="page">
+    <div id="era-filter" class="era-filter hidden"></div>
+    <div class="books-scroll" id="books-scroll"></div>
+    <div id="book-detail" class="book-detail hidden"></div>
+  </main>
+
+  <!-- 模块二：公案 -->
+  <main id="page-cases" class="page hidden">
+    <div id="case-tabs" class="case-tabs"></div>
+    <div id="cases-list" class="cases-list"></div>
+  </main>
+
+  <!-- 模块三：智慧舆图（对齐帝王谱系「舆图疆域」：图例浮层 + 地名/路线图层 + 途经点详情） -->
+  <main id="page-map" class="page hidden">
+    <div class="map-wrap">
+      <div id="map-leaf" role="img" aria-label="文化地图"></div>
+      <div class="map-legend map-legend-float">
+        <span class="legend-item"><i class="dot dot-place"></i>圣贤故里</span>
+        <span class="legend-item"><i class="dot dot-site"></i>书院寺观</span>
+        <span class="legend-item"><i class="dot dot-route-start"></i>路线起点</span>
+        <span class="legend-item"><i class="dot dot-route-end"></i>路线终点</span>
+      </div>
+      <div id="map-popup" class="map-popup hidden"></div>
+    </div>
+    <!-- 路线开关 + 途经点详情：与帝王谱系同款 -->
+    <div class="route-panel">
+      <div class="route-toggle" id="map-route-btns"></div>
+      <div class="route-detail hidden" id="route-detail"></div>
+    </div>
+  </main>
+
+  <!-- 模块四：答题 -->
+  <main id="page-quiz" class="page hidden">
+    <div id="quiz-list" class="quiz-list"></div>
+  </main>
+
+  <footer class="footer" id="footer">内容以《诗经》《楚辞》及唐宋元明清诗文集为依据 · 地图为示意 · 人物画像 AI 生成古风</footer>
+</div>
+
+<script src="vendor/leaflet.js"></script>
+<script src="app.js?v=v63"></script>
+</body>
+</html>

@@ -268,9 +268,12 @@ body.sidebar-collapsed .tabs {
 .tab:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.08); }
 .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-/* ---- 右上角「支持」按钮与弹出卡片 ---- */
+/* ---- 「支持」按钮与弹出卡片 ----
+   入口统一放在左侧模块栏底部（三个板块共用），外观与 hover 交互保持原样。
+   注意：侧栏是 position:fixed 且 z-index:1000，子元素用 fixed 会相对侧栏自身定位，
+   正好就是我们要的「贴在侧栏下方」；卡片仍用 fixed 相对视口，因此要在 x 轴偏移到侧栏右侧之外。 */
 .support-btn {
-  position: fixed; top: 12px; right: 16px; z-index: 1000;
+  /* 不再是右上角固定：改为侧栏内的常规流，靠 .mega-support 贴到底部 */
   display: inline-flex; align-items: center; gap: 6px;
   border: 2px solid var(--gold); background: #fff8e6;
   color: #8a6d2f; font-size: 15px; font-weight: 700;
@@ -280,16 +283,33 @@ body.sidebar-collapsed .tabs {
 .support-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(201,169,106,.35); }
 .support-icon { font-size: 16px; color: #d4a017; }
 
+/* 侧栏底部的支持入口容器：固定占侧栏宽，贴底居中 */
+.mega-support {
+  margin-top: auto; padding: 6px 8px 10px;
+  display: flex; flex-direction: column; align-items: center;
+}
+/* 侧栏收缩态：按钮变窄只留星标，避免挤压 */
+body.sidebar-collapsed .mega-support { padding: 6px 4px 8px; }
+body.sidebar-collapsed .support-btn { padding: 7px 10px; }
+body.sidebar-collapsed .support-btn > span:not(.support-icon) { display: none; }
+/* 侧栏只有 104px 宽，按钮若换行会把「支持」两字挤成竖排 */
+.mega-support .support-btn { white-space: nowrap; font-size: 14px; padding: 6px 12px; }
+.mega-support .support-icon { font-size: 15px; }
+
+/* 卡片：从按钮右侧弹出。原来贴窗口右上角，现偏移到侧栏右缘外侧，避免遮住正文 */
 .support-pop {
-  position: fixed; top: 58px; right: 16px; z-index: 999;
+  position: fixed; z-index: 999;
+  left: calc(var(--sidebar-w) + 12px); bottom: 12px;
   width: 320px; background: #2b2620; color: #f0e4cc;
   border: 1px solid #5a4d38; border-radius: 14px;
   padding: 18px 20px 20px;
   box-shadow: 0 12px 36px rgba(0,0,0,.35);
   animation: support-pop-in .18s ease-out;
 }
+body.sidebar-collapsed .support-pop { left: calc(var(--sidebar-w-collapsed) + 12px); }
+/* 卡片顶部用三角指向左侧按钮，取代原来的向下展开 */
 @keyframes support-pop-in {
-  from { opacity: 0; transform: translateY(-8px) scale(.97); }
+  from { opacity: 0; transform: translateY(8px) scale(.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 .support-pop-head {

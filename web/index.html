@@ -58,6 +58,38 @@
       <div class="mega-name">典籍长河</div>
       <div class="mega-sub">圣贤书林</div>
     </button>
+    <button class="mega-btn" data-mega="shici">
+      <div class="mega-icon">
+        <svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <!-- 毛笔：笔杆 + 笔头 -->
+          <line x1="22" y1="5" x2="11" y2="21"/>
+          <path d="M11 21 L8.5 25.5 L13 24 Z" fill="currentColor" fill-opacity=".25"/>
+          <line x1="24" y1="7" x2="26" y2="9"/>
+        </svg>
+      </div>
+      <div class="mega-name">诗词鉴赏</div>
+      <div class="mega-sub">诗心词韵</div>
+    </button>
+
+    <!-- 支持：三个板块共用，样式与交互保持原样（hover 展开卡片），只是位置改到侧栏底部 -->
+    <div class="mega-support">
+      <button class="support-btn" id="support-btn" aria-haspopup="true" aria-expanded="false" title="支持这个项目">
+        <span class="support-icon">★</span><span>支持</span>
+      </button>
+      <div class="support-pop hidden" id="support-pop" role="dialog" aria-label="支持这个项目">
+        <div class="support-pop-head">
+          <span class="support-pop-star">⭐</span>
+          <b>免费支持</b>
+          <button class="support-pop-close" id="support-close" aria-label="关闭">✕</button>
+        </div>
+        <p class="support-pop-text">
+          如果这个网站对你有帮助，烦请给项目点个 Star ⭐。支持我不断创作国学、历史相关的学习站。
+        </p>
+        <a class="support-pop-gh" href="https://github.com/zinging/chinese-history-atlas" target="_blank" rel="noopener">
+          ⭐ GitHub Star
+        </a>
+      </div>
+    </div>
   </aside>
 
   <!-- 帝王谱系模块（原 dsh_his）。正文包在 .module-inner 里，与典籍长河 #app 用同一套宽度数学 -->
@@ -80,25 +112,7 @@
       <button class="tab" data-page="map">舆图疆域</button>
       <button class="tab" data-page="detective">探案问史</button>
     </nav>
-    <button class="support-btn" id="support-btn" title="支持这个项目" aria-haspopup="true" aria-expanded="false">
-      <span class="support-icon">★</span><span>支持</span>
-    </button>
   </header>
-
-  <!-- 支持项目弹出卡片 -->
-  <div class="support-pop hidden" id="support-pop" role="dialog" aria-label="支持这个项目">
-    <div class="support-pop-head">
-      <span class="support-pop-star">⭐</span>
-      <b>免费支持</b>
-      <button class="support-pop-close" id="support-close" aria-label="关闭">✕</button>
-    </div>
-    <p class="support-pop-text">
-      如果这个网站对你有帮助，烦请给项目点个 Star ⭐。支持我不断创作国学、历史相关的学习站。
-    </p>
-    <a class="support-pop-gh" href="https://github.com/zinging/chinese-history-atlas" target="_blank" rel="noopener">
-      ⭐ GitHub Star
-    </a>
-  </div>
 
   <!-- 界面一：时间线首页（朝代与帝数已在顶部朝代胶囊内展示） -->
   <main id="page-timeline" class="page">
@@ -156,6 +170,11 @@
   <!-- 典籍长河模块（国学图谱）：iframe 延迟到首次进入时才建，省掉首屏约 230KB 传输与一份 Leaflet 解析 -->
   <div class="mega-area hidden" id="mega-guoxue">
     <iframe id="guoxue-frame" class="guoxue-frame" title="典籍长河" frameborder="0"></iframe>
+  </div>
+
+  <!-- 诗词鉴赏模块（第三个板块）：复用国学图谱全部代码与样式，仅锁定为诗文流派（无流派切换条） -->
+  <div class="mega-area hidden" id="mega-shici">
+    <iframe id="shici-frame" class="guoxue-frame" title="诗词鉴赏" frameborder="0"></iframe>
   </div>
 
 </div>
