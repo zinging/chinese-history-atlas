@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261006b';
+const APP_BUILD = '20261010a';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -40,6 +40,8 @@ let activeEraId = null; // null = 全部朝代；否则为 emperor id
 let currentDynasty = 'sui'; // 'ming' | 'song' | 'tang' | 'yuan' | 'qing' | 'sui' | 'wudai'
 // 各朝数据缓存：切换朝代不重发请求（数据只读）
 const DATA_CACHE = {};
+// 进行中的朝代加载：快速连点朝代按钮时复用同一个请求，避免并发重复拉取 + 竞态覆盖
+const DATA_PENDING = {};
 
 // 把事件年份归到对应朝代
 function eraForYear(yearStr) {
@@ -105,7 +107,11 @@ function renderEraStrip() {
       prev.disabled = strip.scrollLeft <= 2;
       next.disabled = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 2;
     };
-    strip.addEventListener('scroll', update);
+    strip.onScrollOnce = update;               // 同一元素只保留一个滚动处理器
+    if (!strip._scrollWired) {
+      strip._scrollWired = true;
+      strip.addEventListener('scroll', () => strip.onScrollOnce && strip.onScrollOnce());
+    }
     update();
     enableDragScroll(strip);
   }
@@ -211,20 +217,37 @@ const DYNASTY_TEXT = {
 };
 
 async function loadAll() {
-  const dir = DYNASTY_DIRS[currentDynasty] || '';
-  const hasMap = DYNASTY_HAS_MAP[currentDynasty] || false;
-  const lay = DYNASTY_LAYOUT[currentDynasty] || DYNASTY_LAYOUT.ming;
-  const p = (rel) => `../data/${dir}${rel}`;
-
-  // 可选文件（地图相关、制度、出处）缺失时容错为空，不阻断整个朝代加载
-  const maybe = (path) => loadJSON(path).catch(() => null);
-
   // 已加载过的朝代缓存：切回不再重发请求（数据只读，切换朝代不修改）
   if (DATA_CACHE[currentDynasty]) {
     DATA = DATA_CACHE[currentDynasty];
     if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
     return;
   }
+  // 同一朝代正在加载中：复用那次请求，不重复拉取
+  if (DATA_PENDING[currentDynasty]) {
+    DATA = await DATA_PENDING[currentDynasty];
+    if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
+    return;
+  }
+  const loadToken = currentDynasty;
+  DATA_PENDING[loadToken] = _fetchDynasty(loadToken);
+  try {
+    DATA = await DATA_PENDING[loadToken];
+  } finally {
+    delete DATA_PENDING[loadToken];
+  }
+  DATA_CACHE[loadToken] = DATA;
+  // 喂给检索模块（历史侦探/追问框用）
+  if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
+}
+
+/** 真正拉取某朝全部 JSON（结果写入 DATA_CACHE 由调用方负责） */
+async function _fetchDynasty(dyn) {
+  const dir = DYNASTY_DIRS[dyn] || '';
+  const hasMap = DYNASTY_HAS_MAP[dyn] || false;
+  const lay = DYNASTY_LAYOUT[dyn] || DYNASTY_LAYOUT.ming;
+  const p = (rel) => `../data/${dir}${rel}`;
+  const maybe = (path) => loadJSON(path).catch(() => null);
 
   const urls = [
     loadJSON(p('emperors/index.json')),
@@ -233,15 +256,14 @@ async function loadAll() {
     loadJSON(p(lay.cases)),
   ];
   if (hasMap) urls.push(maybe(p(lay.places)), maybe(p(lay.routes)), maybe(p(lay.mapEvents)));
-  if (currentDynasty === 'ming') urls.push(maybe(p('institutions/institutions.json')), maybe(p('sources/sources.json')));
-  const quizPath = currentDynasty === 'ming' ? 'quiz/quiz.json' : 'quiz.json';
-  const quizDoc = await maybe(p(quizPath));
+  if (dyn === 'ming') urls.push(maybe(p('institutions/institutions.json')), maybe(p('sources/sources.json')));
+  const quizPath = dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json';
+  urls.push(maybe(p(quizPath)));
 
-  const [empIdx, events, people, casesDoc, places, routes, mapEventsDoc, institutions, sourcesDoc] = await Promise.all(urls);
-
+  const [empIdx, events, people, casesDoc, places, routes, mapEventsDoc, institutions, sourcesDoc, quizDoc] = await Promise.all(urls);
   // 逐皇帝读条目（并发，替代原串行）
   const emperors = await Promise.all(empIdx.emperors.map((e) => loadJSON(p(`emperors/${e.file}`))));
-  DATA = {
+  return {
     emperors,
     people: people.people || [],
     events: events.events || [],
@@ -254,9 +276,6 @@ async function loadAll() {
     caseCategories: casesDoc.categories || [],
     quiz: (quizDoc && quizDoc.quiz) || [],
   };
-  DATA_CACHE[currentDynasty] = DATA;
-  // 喂给检索模块（历史侦探/追问框用）
-  if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
 }
 
 // ---------- 界面切换 ----------
@@ -372,8 +391,8 @@ function renderTimeline() {
   const emojis = ['👑','🧧','🏯','📜','⚔️','🐉','🛡️','🎨','🪷','🐎','🔮','🕊️','🏛️','🏮','🔨','🌙'];
   DATA.emperors.forEach((e, i) => {
     const card = el('div', 'emp-card');
-    // 横向卡片条头像数量少、体积小，直接加载（懒加载在横向滚动容器里对最右侧卡片不触发）
-    const lazy = ' decoding="async"';
+    // 头像按需加载 + 声明尺寸：首屏只取视口内几张卡片，其余等滚到再取（避免首屏一次性请求十几张画像）
+    const lazy = ' loading="lazy" decoding="async" width="84" height="84"';
     const portrait = e.portrait
       ? `<img class="emp-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" ${lazy}/>`
       : `<div class="emp-portrait">${emojis[i % emojis.length]}</div>`;
@@ -405,7 +424,11 @@ function renderTimeline() {
   };
   prev.onclick = () => { wrap.scrollBy({ left: -step(), behavior: 'smooth' }); };
   next.onclick = () => { wrap.scrollBy({ left: step(), behavior: 'smooth' }); };
-  wrap.addEventListener('scroll', updateArrows);
+  wrap.onScrollOnce = updateArrows;             // 同一元素只保留一个滚动处理器
+  if (!wrap._scrollWired) {
+    wrap._scrollWired = true;
+    wrap.addEventListener('scroll', () => wrap.onScrollOnce && wrap.onScrollOnce());
+  }
   updateArrows();
   // 拖拽滚动：按住左右拖动
   enableDragScroll(wrap);
@@ -495,7 +518,11 @@ function renderShiguoGantt() {
   box.classList.remove('hidden');
 }
 
+/** 已绑定过拖拽滚动的元素：同一元素只绑一次，避免每次渲染叠加监听（旧版切朝代/点年号会累积几十个处理器） */
+const _dragScrollBound = new WeakSet();
 function enableDragScroll(el) {
+  if (!el || _dragScrollBound.has(el)) return;
+  _dragScrollBound.add(el);
   let isDown = false, startX = 0, startScroll = 0, moved = false;
   el.addEventListener('mousedown', (e) => {
     isDown = true; moved = false;
@@ -2358,6 +2385,9 @@ const DETECTIVE_TASKS_BY_DYNASTY = {
 
 const DYNASTY_LABEL = { sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
 
+// 切朝代令牌：并发切换时只渲染最后一次
+let _dynastyToken = 0;
+
 let detectiveIndex = 0;
 function detectiveTasks() {
   return DETECTIVE_TASKS_BY_DYNASTY[currentDynasty] || DETECTIVE_TASKS_BY_DYNASTY.ming;
@@ -2636,11 +2666,14 @@ function renderDetectiveAI() {
   });
   $('#ai-model-search').addEventListener('input', (e) => renderModelOptions(e.target.value));
 
-  // 点菜单外部关闭
-  document.addEventListener('click', (e) => {
-    const combo = e.target.closest && e.target.closest('.model-combo');
-    if (!combo) openMenu(false);
-  });
+  // 点菜单外部关闭：document 级监听只绑一次（renderDetectiveAI 会被切朝代重复调用）
+  if (!document._modelMenuOutsideWired) {
+    document._modelMenuOutsideWired = true;
+    document.addEventListener('click', (e) => {
+      const combo = e.target.closest && e.target.closest('.model-combo');
+      if (!combo) openMenu(false);
+    });
+  }
 
   // 保存配置
   $('#ai-save').addEventListener('click', async () => {
@@ -2703,6 +2736,8 @@ function applyDynastyText(d) {
 async function switchDynasty(d) {
   if (d === currentDynasty) return;
   currentDynasty = d;
+  // 令牌：快速连点朝代时，只有最后一次切换的结果允许落地渲染（旧版会被先返回的旧朝数据覆盖）
+  const token = ++_dynastyToken;
   activeEraId = null;
   detectiveIndex = 0;
   document.querySelectorAll('.dynasty-btn').forEach((b) => {
@@ -2712,8 +2747,8 @@ async function switchDynasty(d) {
   applyDynastyText(d);
   // 重新加载数据并渲染
   try {
-    await loadAll();
-    await loadBoundaries();
+    await Promise.all([loadAll(), loadBoundaries()]);
+    if (token !== _dynastyToken) return;   // 期间又切了朝代，丢弃这次结果
     renderTimeline();
     renderDetective();
     // 切换朝代后自动展开第一位皇帝，卡片回到最左
@@ -2752,6 +2787,8 @@ let MAP_GEO = {};
 // 加载当前朝代的边界 GeoJSON（手绘简化或 CHGIS）；文件不存在则回退硬编码示意色块
 async function loadBoundaries() {
   const key = currentDynasty;
+  // 已取过就直接复用：切回某朝不再重发（旧版每次切朝代都重拉一遍 GeoJSON）
+  if (Object.prototype.hasOwnProperty.call(MAP_GEO, key)) return MAP_GEO[key];
   const file = `../data/boundaries/${key}.geojson`;
   try {
     const r = await fetch(file);
@@ -2867,36 +2904,26 @@ async function askLLM(message, history = []) {
   return r.json();
 }
 
-// 右上角「支持」弹出卡片
+// 右上角「支持」弹出卡片：hover 展开
 (function setupSupportPop() {
   const btn = document.getElementById('support-btn');
   const pop = document.getElementById('support-pop');
   const close = document.getElementById('support-close');
   if (!btn || !pop) return;
-  const toggle = (show) => {
-    const visible = show !== undefined ? show : pop.classList.contains('hidden');
-    pop.classList.toggle('hidden', !visible);
-    btn.setAttribute('aria-expanded', String(visible));
-  };
-  btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
-  close.addEventListener('click', () => toggle(false));
-  // 点卡片外面关闭
-  document.addEventListener('click', (e) => {
-    if (!pop.classList.contains('hidden') && !pop.contains(e.target) && e.target !== btn) {
-      toggle(false);
-    }
-  });
-  // Esc 关闭
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') toggle(false);
-  });
+  let timer = null;
+  const show = () => { clearTimeout(timer); pop.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); };
+  const hide = () => { pop.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('mouseenter', show);
+  pop.addEventListener('mouseenter', show);
+  btn.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
+  pop.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
+  close.addEventListener('click', hide);
 })();
 
 (async function init() {
   try {
-    await loadAll();
-    // 加载当前朝代边界 GeoJSON；文件不存在则回退手绘示意
-    await loadBoundaries();
+    // 朝代数据与边界 GeoJSON 并发加载（两者互不依赖，串行会多等一个往返）
+    await Promise.all([loadAll(), loadBoundaries()]);
     // LLM 配置（侦探页卡片内加载）
     loadLLMConfig();
     // 初始默认朝代（隋）的页头/图例/页脚文案
@@ -2935,6 +2962,34 @@ async function askLLM(message, history = []) {
     </div>`;
   }
 })();
+// 左侧模块栏收缩/展开：只留图标 ↔ 完整显示（状态存 localStorage，刷新保持）
+(function initSidebarToggle() {
+  const btn = document.getElementById('sidebar-toggle');
+  if (!btn) return;
+  const KEY = 'dsh-sidebar-collapsed';
+  const apply = (collapsed) => {
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+    btn.setAttribute('aria-expanded', String(!collapsed));
+    btn.setAttribute('aria-label', collapsed ? '展开侧栏' : '收起侧栏');
+    btn.title = collapsed ? '展开侧栏' : '收起侧栏';
+    const label = btn.querySelector('.label');
+    if (label) label.textContent = collapsed ? '展开' : '收起';
+    // 收起后 iframe 若已加载，通知子页重排（子页按窗口宽度算正文位置）
+    const frame = document.getElementById('guoxue-frame');
+    if (frame && frame.contentWindow) {
+      try { frame.contentWindow.dispatchEvent(new Event('resize')); } catch { /* 忽略跨域 */ }
+    }
+  };
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(KEY) === '1'; } catch { /* 隐私模式 */ }
+  apply(collapsed);
+  btn.addEventListener('click', () => {
+    collapsed = !collapsed;
+    try { localStorage.setItem(KEY, collapsed ? '1' : '0'); } catch { /* 忽略 */ }
+    apply(collapsed);
+  });
+})();
+
 // 大模块切换
 document.querySelectorAll('.mega-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -2943,5 +2998,13 @@ document.querySelectorAll('.mega-btn').forEach(btn => {
     const which = btn.dataset.mega;
     document.getElementById('mega-history').classList.toggle('hidden', which !== 'history');
     document.getElementById('mega-guoxue').classList.toggle('hidden', which !== 'guoxue');
+    // 典籍长河靠 iframe 自带右侧沟槽，本页胶囊已隐藏，不必再占位（否则挤窄 iframe）
+    document.body.classList.toggle('mega-guoxue-on', which === 'guoxue');
+    // 典籍长河首次进入才加载子站（约 230KB + 一份 Leaflet 解析），之后复用同一 iframe
+    if (which === 'guoxue') {
+      const frame = document.getElementById('guoxue-frame');
+      if (frame && !frame.src) frame.src = 'guoxue/index.html';
+    }
   });
 });
+// 补一次「刷新时正停在典籍长河」的情形：地址栏无状态，此处不处理，首次点击即加载。

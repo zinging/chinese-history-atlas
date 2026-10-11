@@ -11,6 +11,15 @@
   --gold: #f0c75e;
   --border: #eadfc8;
   --radius: 16px;
+  /* 右侧竖排胶囊占位：19px 字 + 3px 字距 × 4 字 + 内边距 52 + 边框 3 ≈ 143px */
+  --rail-w: 143px;
+  --rail-gap: 12px;
+  /* 左侧模块栏：展开/收缩两态宽度。正文按「窗口 − 侧栏宽度」后的区域居中，
+     两个模块（帝王谱系 / 典籍长河）共用这套变量，保证正文宽度与位置完全一致。 */
+  --sidebar-w: 104px;
+  --sidebar-w-collapsed: 64px;
+  /* 正文限宽：典籍长河当前观感良好的基准值，两模块统一用它 */
+  --content-max: 1080px;
 }
 
 * { box-sizing: border-box; }
@@ -24,8 +33,21 @@ body {
   line-height: 1.6;
 }
 
-/* 正文容器：导航为独立浮层，不占用内容编排空间 */
-#app { max-width: 1080px; margin: 0 auto; padding: 12px 16px 40px; }
+/* 外层 #app 只负责承载侧栏与两个模块区，不限宽。
+   早期把正文限宽 1080 写在这里，导致 .mega-area 的 margin-left:104px 从 1080 里被扣掉，
+   帝王谱系正文因此比典籍长河窄 104px。现改为：正文宽度由各模块内的 .module-inner 决定，
+   两模块都用同一个类、同一套数学，正文位置与宽度完全一致。 */
+#app { max-width: none; margin: 0; padding: 0; }
+
+/* 模块正文容器：与典籍长河的 #app 完全同款（限宽 1080 居中 + 相同内边距） */
+.module-inner { max-width: 1080px; margin: 0 auto; padding: 12px 16px 40px; }
+
+/* 右侧竖排胶囊放不进正文列外侧时（视口不足），把正文列收窄给它让位。
+   断点必须与 web/guoxue/style.css 保持一致，否则同视口下两模块正文宽度不同。
+   计算：侧栏 90 + 沟槽(16+143+12=171) + 正文 + 右侧余量 16 = 1080 → 视口 <1357 时启用。 */
+@media (max-width: 1356px) {
+  .module-inner { padding-right: calc(16px + var(--rail-w) + var(--rail-gap)); }
+}
 
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
@@ -289,7 +311,7 @@ body {
   padding: 10px 0 18px;
 }
 .timeline-scroll {
-  flex: 1; display: flex; gap: 0; overflow-x: auto;
+  flex: 1; display: flex; gap: 12px; overflow-x: auto;
   scroll-snap-type: x mandatory; scroll-behavior: smooth;
   scrollbar-width: none;
 }
@@ -312,10 +334,10 @@ body {
   transition: transform .15s, box-shadow .15s;
 }
 .emp-card:not(:last-child)::after {
-  content: "➜"; position: absolute; right: -14px; top: 50%;
-  transform: translateY(-50%); color: var(--primary); font-size: 18px;
+  content: "➜"; position: absolute; right: -9px; top: 50%;
+  transform: translateY(-50%); color: var(--primary); font-size: 16px;
   font-weight: 700; z-index: 2; background: #fff;
-  width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
 }
 .emp-card:hover { transform: translateY(-4px); box-shadow: 0 8px 18px rgba(0,0,0,.10); }
@@ -911,29 +933,90 @@ input, textarea { cursor: text; }
 .gantt-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: #5a4020; }
 .gantt-legend .sw { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
 
-/* ===== 左侧大模块切换栏 ===== */
+/* ===== 左侧大模块切换栏：占位于正文左侧，正文整体右移（不做纯浮层，避免正文贴边） ===== */
+/* 宽度由 --sidebar-w / --sidebar-w-collapsed 控制，两态之间有过渡。
+   正文不因侧栏收缩而跳动：.mega-area 的 margin-left 与侧栏同宽。 */
 .mega-sidebar {
-  position: fixed; left: 0; top: 0; bottom: 0; width: 90px;
-  background: linear-gradient(180deg, #3a2e1f 0%, #2a1f12 100%);
+  position: fixed; left: 0; top: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: linear-gradient(180deg, #2e2418 0%, #1f1810 100%);
   display: flex; flex-direction: column; align-items: center;
-  padding: 16px 0; z-index: 1000;
-  box-shadow: 2px 0 8px rgba(0,0,0,.2);
+  padding: 12px 0 16px; z-index: 1000;
+  border-right: 1px solid #5a4a2e;
+  box-shadow: 2px 0 12px rgba(0,0,0,.35);
+  transition: width .24s ease;
 }
-.mega-logo { font-size: 28px; margin-bottom: 24px; }
+/* 收缩态：只留图标条 */
+body.sidebar-collapsed .mega-sidebar { width: var(--sidebar-w-collapsed); }
+body.sidebar-collapsed .mega-name,
+body.sidebar-collapsed .mega-sub { display: none; }
+body.sidebar-collapsed .mega-btn { width: 100%; padding: 12px 2px; }
+body.sidebar-collapsed .mega-logo { margin-bottom: 14px; }
+
+/* 收缩/展开按钮：位于侧栏顶部 */
+.mega-collapse-btn {
+  flex: 0 0 auto;
+  width: 72px; height: 30px; margin-bottom: 10px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  background: rgba(240,199,94,.1); border: 1.5px solid rgba(240,199,94,.32);
+  border-radius: 6px; color: #d9c191; cursor: pointer; font-family: inherit;
+  font-size: 12px; font-weight: 700;
+  transition: all .18s ease;
+}
+.mega-collapse-btn:hover { background: rgba(240,199,94,.2); color: #f0c75e; border-color: rgba(240,199,94,.55); }
+.mega-collapse-btn .caret {
+  font-size: 11px; line-height: 1;
+  transition: transform .24s ease;
+}
+/* 收缩时箭头朝右（提示"展开"） */
+body.sidebar-collapsed .mega-collapse-btn .caret { transform: rotate(180deg); }
+/* 收缩态按钮变窄，只留箭头 */
+body.sidebar-collapsed .mega-collapse-btn { width: 44px; }
+body.sidebar-collapsed .mega-collapse-btn .label { display: none; }
+.mega-logo {
+  margin-bottom: 28px;
+  padding: 4px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(192,57,43,.4);
+}
 .mega-btn {
-  width: 76px; padding: 12px 6px; margin-bottom: 8px;
-  background: transparent; border: 2px solid transparent; border-radius: 10px;
-  color: #c9b896; cursor: pointer; text-align: center;
+  width: 88px; padding: 14px 6px 12px; margin-bottom: 12px;
+  background: transparent; border: 1.5px solid transparent; border-radius: 8px;
+  color: #b8a07a; cursor: pointer; text-align: center;
   transition: all .2s; font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
 }
-.mega-btn:hover { background: rgba(240,199,94,.1); color: #f0c75e; }
+.mega-btn:hover {
+  background: rgba(240,199,94,.08);
+  border-color: rgba(240,199,94,.3);
+  color: #f0c75e;
+}
 .mega-btn.active {
-  background: linear-gradient(180deg, #a82828 0%, #8a1c1c 100%);
+  background: linear-gradient(180deg, #a8352a 0%, #8c2318 100%);
   border-color: #d4a84a; color: #fff5e8;
-  box-shadow: 0 3px 8px rgba(138,28,28,.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255,214,150,.4),
+    0 4px 12px rgba(138,28,28,.45);
 }
-.mega-icon { font-size: 24px; margin-bottom: 4px; }
-.mega-name { font-size: 14px; font-weight: 700; }
-.mega-sub { font-size: 11px; opacity: .7; margin-top: 2px; }
-.mega-area { margin-left: 90px; min-height: 100vh; }
+.mega-icon {
+  display: flex; align-items: center; justify-content: center;
+  color: currentColor;
+  margin-bottom: 2px;
+}
+.mega-btn.active .mega-icon { color: #ffe9a8; }
+.mega-name {
+  font-size: 15px; font-weight: 700; letter-spacing: 3px;
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+.mega-sub {
+  font-size: 10px; opacity: .65; letter-spacing: 1px;
+}
+/* 模块区：整体让开侧栏宽度（侧栏收缩时同步变窄，正文随之平移而不是被裁切）。
+   内部 .module-inner 负责正文限宽居中——两个模块用同一个类，宽度与位置必然一致。 */
+.mega-area {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  transition: margin-left .24s ease;
+}
+body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
 .guoxue-frame { width: 100%; height: 100vh; border: 0; display: block; }

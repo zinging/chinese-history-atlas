@@ -10,9 +10,14 @@
  *  POST /api/llm/chat        代理调用 OpenAI 兼容接口，附带儿童历史学习系统提示词
  */
 import { createServer } from 'node:http';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { join, extname, normalize, dirname } from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { gzip } from 'node:zlib';
+import { promisify } from 'node:util';
+
+const gzipAsync = promisify(gzip);
 
 const ROOT = join(fileURLToPath(new URL('..', import.meta.url)));
 const PORT = Number(process.argv[2] || 5173);
@@ -56,6 +61,27 @@ const MIME = {
 };
 
 const CACHEABLE = new Set(['.jpg', '.jpeg', '.png', '.svg', '.json', '.js', '.mjs', '.css']);
+// 带版本号（?v= / ?_v=）的静态资源内容不可变，可长期强缓存
+const VERSIONED = /\?v=|\?_v=/;
+/* 开发期保护：改了磁盘文件但忘了改 ?v= 时，浏览器会一直用旧缓存（因为上面给了 immutable）。
+   对带版本号的请求，回 200 并 no-store 强制重新取一次；代价只是本地开发时多几次请求。
+   发布到 GitHub Pages 时本服务不参与，不受影响。 */
+const DEV_NO_STORE = process.env.DSH_DEV !== '0';
+// 文本类资源压缩后体积降幅大（JSON/JS/CSS 实测 60-75%）
+const COMPRESSIBLE = new Set(['.json', '.js', '.mjs', '.css', '.html', '.svg']);
+
+/** ETag 缓存：按 mtime+size 判定文件是否变化，避免每个请求都把整份文件读进内存算哈希
+ *  （画像单文件约 300KB-2MB，旧版每请求全量读取+哈希是纯浪费） */
+const etagCache = new Map(); // abs -> { mtimeMs, size, etag }
+async function etagFor(abs, st) {
+  const hit = etagCache.get(abs);
+  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size) return hit.etag;
+  const crypto = await import('node:crypto');
+  const buf = await readFile(abs);
+  const etag = '"' + crypto.createHash('sha1').update(buf).digest('hex').slice(0, 20) + '"';
+  etagCache.set(abs, { mtimeMs: st.mtimeMs, size: st.size, etag });
+  return etag;
+}
 
 const json = (res, code, obj) => {
   res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -196,19 +222,34 @@ const server = createServer(async (req, res) => {
 
     let file = abs;
     try {
-      const st = await readFile(file);
       const ext = extname(file);
+      const versioned = VERSIONED.test(url.search || '');
       const headers = { 'Content-Type': MIME[ext] || 'application/octet-stream' };
+      // 带版本号的资源内容不可变 → 强缓存；其余走 no-cache + ETag 协商（改文件名即可绕过）
+      headers['Cache-Control'] = versioned ? 'public, max-age=31536000, immutable' : 'no-cache';
+      if (versioned && DEV_NO_STORE) {
+        // 本地开发兜底：见 DEV_NO_STORE 注释，防止「改了文件忘了改版本号」导致看不到效果
+        headers['Cache-Control'] = 'no-store';
+      }
       if (CACHEABLE.has(ext)) {
-        const crypto = await import('node:crypto');
-        headers['ETag'] = '"' + crypto.createHash('sha1').update(st).digest('hex').slice(0, 20) + '"';
-        headers['Cache-Control'] = 'no-cache';
+        const st = await stat(file);
+        headers['ETag'] = await etagFor(file, st);
+        headers['Last-Modified'] = st.mtime.toUTCString();
         if (req.headers['if-none-match'] === headers['ETag']) {
           res.writeHead(304, headers); res.end(); return;
         }
       }
+      let body = await readFile(file);
+      // gzip：只对文本类且客户端支持时压缩
+      const accepts = String(req.headers['accept-encoding'] || '');
+      if (COMPRESSIBLE.has(ext) && /\bgzip\b/.test(accepts) && body.length > 1024) {
+        body = await gzipAsync(body);
+        headers['Content-Encoding'] = 'gzip';
+        headers.Vary = 'Accept-Encoding';
+      }
+      headers['Content-Length'] = body.length;
       res.writeHead(200, headers);
-      res.end(st);
+      res.end(body);
     } catch (e) {
       if (e.code === 'EISDIR' || (e.code === 'ENOENT' && !extname(file))) {
         try {

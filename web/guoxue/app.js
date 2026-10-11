@@ -8,11 +8,41 @@ const SECT_META = {
   shiwen:  { name: "诗文", intro: "中国人的审美和情绪出口。诗词不是用来背的，是一个人在某个处境下写的一句话。", data: "shiwen" },
 };
 
-let currentSect = "daojia";
+let currentSect = "rujia";
 let currentPage = "books";
 let currentEra = "all";
 let bookData = {};
+// 各流派数据缓存：切回已看过的流派不再重发请求
+const SECT_CACHE = {};
 let map = null;
+// 图层句柄：按类型分组，切换流派时只清这些，不动底图
+const mapLayers = { places: [], routes: [], routeLabels: [] };
+// 路线动画定时器（切换流派/收起路线时统一清理）
+let routeTimers = [];
+// 当前展开的路线序号（null = 不展开）
+let activeRoute = null;
+
+/** 地名分类：书院寺观 vs 圣贤故里（决定圆点颜色，对应图例两项） */
+function placeKind(name) {
+  return /寺|观|庵|祠|院|书院|精舍|草堂|禅|庙|宫/.test(name) ? "site" : "place";
+}
+
+/** 转义：地名与 note 来自数据文件，插进 popup 前统一处理 */
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+/** 清空本模块添加的图层（保留底图瓦片） */
+function clearMapLayers() {
+  routeTimers.forEach((t) => clearTimeout(t));
+  routeTimers = [];
+  for (const k of Object.keys(mapLayers)) {
+    mapLayers[k].forEach((l) => map.removeLayer(l));
+    mapLayers[k] = [];
+  }
+}
 
 const ERAS = ["先秦", "汉魏", "唐", "五代两宋", "明清"];
 
@@ -23,12 +53,24 @@ async function loadSect(sect) {
   currentEra = "all";
   document.querySelectorAll(".sect-btn").forEach(b => b.classList.toggle("active", b.dataset.s === sect));
   const meta = SECT_META[sect];
+  // 已加载过的流派直接复用：切回不再重发请求（数据只读，切流派不修改）
+  if (SECT_CACHE[sect]) {
+    bookData = SECT_CACHE[sect];
+    renderSect();
+    return;
+  }
   try {
-    const r = await fetch(`/data/${meta.data}/index.json?v=v56`, { cache: 'no-store' });
+    const r = await fetch(`/data/${meta.data}/index.json?v=v56`);
     bookData = await r.json();
+    SECT_CACHE[sect] = bookData;
   } catch (e) {
     bookData = { books: [], cases: [], places: [], routes: [], quiz: [] };
   }
+  renderSect();
+}
+
+/** 数据就绪后的统一渲染入口（缓存命中与首次加载共用，避免两处重复维护渲染顺序） */
+function renderSect() {
   activeCaseCat = null;
   renderBooks();
   renderCases();
@@ -68,7 +110,7 @@ function renderBooks() {
     return `
     <div class="book-card" data-i="${i}">
       <div class="book-name">${topLabel}</div>
-      ${b.portrait ? `<div class="portrait"><img src="/data/portraits/${b.portrait}" alt="${b.person || b.name}"></div>` : `<div class="icon">${b.icon || "📖"}</div>`}
+      ${b.portrait ? `<div class="portrait"><img src="/data/portraits/${b.portrait}" alt="${b.person || b.name}" loading="lazy" decoding="async" width="84" height="84"></div>` : `<div class="icon">${b.icon || "📖"}</div>`}
       ${b.person ? `<div class="person-name">${b.person}</div>` : ""}
       <div class="meta">${cardMeta}</div>
     </div>`;
@@ -285,30 +327,156 @@ function renderQuiz() {
 
 function initMap() {
   const container = $("#map-leaf");
+  if (!container) return;
   if (!map) {
-    map = L.map(container).setView([34.5, 108.9], 5);
+    map = L.map(container, { scrollWheelZoom: true });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap", maxZoom: 12
+      attribution: "© OpenStreetMap",
+      maxZoom: 12,
+      // 瓦片加载失败时给一句提示，图层功能仍可用
+      errorTileUrl: "",
     }).addTo(map);
   }
-  // 清旧 marker
-  if (window.__markers) window.__markers.forEach(m => map.removeLayer(m));
-  window.__markers = [];
+  renderMapData();
+}
+
+/** 按当前流派数据重绘地名与路线图层（切换流派/进入地图页时调用） */
+function renderMapData() {
+  if (!map) return;
+  clearMapLayers();
+
   const places = bookData.places || [];
-  places.forEach(p => {
-    const mk = L.marker([p.lat, p.lng]).addTo(map);
-    mk.bindPopup(`<b>${p.name}</b><br>${p.note || ""}`);
-    window.__markers.push(mk);
+  const routes = bookData.routes || [];
+
+  // 地名：圆点 + 常显名称标签，点击弹窗看今名与故事
+  places.forEach((p) => {
+    const kind = placeKind(p.name);
+    const dot = L.circleMarker([p.lat, p.lng], {
+      radius: 7, color: "#ffffff", weight: 2,
+      fillColor: kind === "site" ? "#f0a500" : "#c0392b", fillOpacity: 0.95,
+    });
+    dot.bindTooltip(
+      `<span class="map-place-inner"><i class="dot dot-${kind}"></i>${esc(p.name)}</span>`,
+      { direction: "right", offset: [8, 0], permanent: true, className: "map-place-tip" }
+    );
+    dot.bindPopup(
+      `<b>${esc(p.name)}</b>${p.note ? `<p class="note">${esc(p.note)}</p>` : ""}`
+    );
+    dot.addTo(map);
+    mapLayers.places.push(dot);
   });
-  // 路线
-  (bookData.routes || []).forEach(r => {
-    const latlngs = r.points.map(p => [p.lat, p.lng]);
-    L.polyline(latlngs, { color: "#c0392b", weight: 3 }).addTo(map);
-    window.__markers.push(L.polyline(latlngs, { color: "#c0392b", weight: 3 }));
+
+  // 路线：线 + 起终点常显标签（与帝王谱系图例同款配色）
+  routes.forEach((r, ri) => {
+    const pts = r.points || [];
+    if (pts.length < 2) return;
+    const line = L.polyline(pts.map((p) => [p.lat, p.lng]), {
+      color: "#c0392b", weight: 3, opacity: 0.55, dashArray: "6 6",
+    }).addTo(map);
+    mapLayers.routes.push(line);
+
+    const start = pts[0], end = pts[pts.length - 1];
+    [[start, "route-start"], [end, "route-end"]].forEach(([pt, cls]) => {
+      const m = L.circleMarker([pt.lat, pt.lng], {
+        radius: 6, color: "#fff", weight: 2,
+        fillColor: cls === "route-start" ? "#2e7d32" : "#a0251c", fillOpacity: 1,
+      }).addTo(map);
+      m.bindTooltip(
+        `<span class="route-pt-tip">${esc(pt.name || "")}</span>`,
+        { direction: cls === "route-start" ? "top" : "bottom", offset: [0, 8], permanent: true, className: "map-route-tip" }
+      );
+      mapLayers.routes.push(m);
+    });
   });
-  if (places.length) {
-    map.setView([places[0].lat, places[0].lng], 6);
+
+  renderRouteButtons(routes);
+  hideRouteDetail();
+
+  // 视野：优先按路线外接框，否则按地名外接框；都没有则保持默认中国视野
+  const bounds = (routes.length
+    ? routes.flatMap((r) => (r.points || []).map((p) => [p.lat, p.lng]))
+    : places.map((p) => [p.lat, p.lng]));
+  if (bounds.length) {
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 7 });
+  } else {
+    map.setView([34.5, 108.9], 5);
   }
+}
+
+/** 路线开关按钮：点一下展开该条路线的途经点详情，再点收起 */
+function renderRouteButtons(routes) {
+  const box = $("#map-route-btns");
+  if (!box) return;
+  box.innerHTML = "";
+  routes.forEach((r, ri) => {
+    const n = (r.points || []).length;
+    const b = document.createElement("button");
+    b.className = "route-btn";
+    b.textContent = `${r.name}（${n} 站）`;
+    b.addEventListener("click", () => toggleRoute(ri));
+    box.appendChild(b);
+  });
+  box.classList.toggle("hidden", routes.length === 0);
+}
+
+/** 展开/收起一条路线：展示途经点，并高亮对应线条 */
+function toggleRoute(ri) {
+  const routes = bookData.routes || [];
+  const r = routes[ri];
+  if (!r) return;
+  if (activeRoute === ri) { hideRouteDetail(); return; }
+  activeRoute = ri;
+
+  // 仅当前路线加粗高亮，其余恢复默认淡线
+  setRouteStyles(ri, { opacity: 1, weight: 5, dashArray: null });
+
+  const box = $("#route-detail");
+  if (!box) return;
+  box.classList.remove("hidden");
+  box.innerHTML = `
+    <div class="route-detail-head" style="border-left-color:#c0392b">
+      <span class="route-detail-name">${esc(r.name)}</span>
+      <span class="route-detail-year">${(r.points || []).length} 站</span>
+    </div>
+    <ol class="route-detail-stops">
+      ${(r.points || []).map((p, i) => `<li><b>${i + 1}. ${esc(p.name || "")}</b></li>`).join("")}
+    </ol>`;
+  syncRouteButtons();
+}
+
+/** 收起路线详情，恢复所有线条默认样式 */
+function hideRouteDetail() {
+  activeRoute = null;
+  const box = $("#route-detail");
+  if (box) { box.classList.add("hidden"); box.innerHTML = ""; }
+  setRouteStyles();
+  syncRouteButtons();
+}
+
+/**
+ * 只对「真正的线/面图层」设置样式。
+ * 注意别对 tooltip 调 setStyle —— L.tooltip 没有该方法，一调就抛异常中断整个渲染。
+ */
+function setRouteStyles(hiIndex = -1, hiStyle = null) {
+  let pi = 0;
+  mapLayers.routes.forEach((l) => {
+    const isLine = l instanceof L.Polyline && !(l instanceof L.Polygon);
+    if (!isLine || typeof l.setStyle !== 'function') return;
+    const isHi = pi === hiIndex;
+    l.setStyle(hiStyle && isHi ? hiStyle : { opacity: 0.55, weight: 3, dashArray: "6 6" });
+    pi++;
+  });
+}
+
+/** 让当前展开的路线按钮呈选中态 */
+function syncRouteButtons() {
+  const box = $("#map-route-btns");
+  if (!box) return;
+  const routes = bookData.routes || [];
+  [...box.children].forEach((b, i) => {
+    b.classList.toggle("on", i === activeRoute);
+    b.textContent = `${routes[i].name}（${(routes[i].points || []).length} 站）`;
+  });
 }
 
 // 切换 tab
@@ -319,7 +487,10 @@ document.querySelectorAll(".tab").forEach(t => {
     currentPage = t.dataset.page;
     document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
     $("#page-" + currentPage).classList.remove("hidden");
-    if (currentPage === "map" && map) setTimeout(() => map.invalidateSize(), 50);
+    // 进地图页：容器从 display:none 变可见后需重算尺寸，并按当前流派重绘图层
+    if (currentPage === "map") {
+      if (map) setTimeout(() => { map.invalidateSize(); renderMapData(); }, 60);
+    }
   });
 });
 
@@ -328,9 +499,27 @@ document.querySelectorAll(".sect-btn").forEach(b => {
   b.addEventListener("click", () => loadSect(b.dataset.s));
 });
 
-// 支持按钮
-$("#support-btn").addEventListener("click", () => $("#support-pop").classList.toggle("hidden"));
-$("#support-close").addEventListener("click", () => $("#support-pop").classList.add("hidden"));
+// 支持按钮：hover 展开
+const supportBtn = $("#support-btn");
+const supportPop = $("#support-pop");
+let supportTimer = null;
+function showSupport() { clearTimeout(supportTimer); supportPop.classList.remove("hidden"); }
+function hideSupport() { supportPop.classList.add("hidden"); }
+supportBtn.addEventListener("mouseenter", showSupport);
+supportPop.addEventListener("mouseenter", showSupport);
+supportBtn.addEventListener("mouseleave", () => { supportTimer = setTimeout(hideSupport, 600); });
+supportPop.addEventListener("mouseleave", () => { supportTimer = setTimeout(hideSupport, 600); });
+$("#support-close").addEventListener("click", hideSupport);
 
 // 启动
 loadSect(currentSect);
+
+// 测试钩子（生产无害）：供自动化检查直接驱动地图渲染
+window.__guoxueMapTest = {
+  renderMapData, toggleRoute, hideRouteDetail,
+  get map() { return map; },
+  get mapLayers() { return mapLayers; },
+  get bookData() { return bookData; },
+  get activeRoute() { return activeRoute; },
+  loadSect,
+};
