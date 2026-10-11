@@ -54,7 +54,7 @@ body {
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; flex-wrap: wrap;
-  padding: 14px 6px 10px;
+  padding: 4px 6px 10px;
 }
 /* 右上角 LLM 配置（已迁移到历史侦探页卡片，保留 btn 通用样式备用） */
 .llm-btn { margin-left: 6px; }

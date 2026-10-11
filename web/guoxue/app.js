@@ -123,6 +123,24 @@ function renderEraSwitch() {
   }
   bar.innerHTML = html;
 
+  // 字体自适应：长标签自动缩小字号以填满边框不溢出
+  const fitEraFont = () => {
+    bar.querySelectorAll(".sect-btn").forEach((btn) => {
+      const main = btn.querySelector(".sect-main");
+      if (!main) return;
+      main.style.fontSize = "";
+      const base = 16;
+      let size = base;
+      main.style.fontSize = size + "px";
+      while (main.scrollWidth > btn.clientWidth - 8 && size > 10) {
+        size -= 0.5;
+        main.style.fontSize = size + "px";
+      }
+    });
+  };
+  fitEraFont();
+  window.addEventListener("resize", fitEraFont);
+
   bar.querySelectorAll(".sect-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const key = btn.dataset.era;

@@ -75,7 +75,7 @@ body {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 1px;
 }
-.sect-btn .sect-main { display: block; }
+.sect-btn .sect-main { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
 .sect-btn .sect-sub {
   display: block; height: 15px; line-height: 15px;
   font-size: 12px; font-weight: 600; color: #8a6d3b; opacity: .85;
