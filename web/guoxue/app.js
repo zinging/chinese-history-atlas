@@ -8,11 +8,12 @@ const SECT_META = {
   shiwen:  { name: "诗文", intro: "中国人的审美和情绪出口。诗词不是用来背的，是一个人在某个处境下写的一句话。", data: "shiwen" },
 };
 
-/** 初始流派：以页面上标记了 .active 的 .sect-btn 为准。
- *  诗词鉴赏（shici.html）只留「诗文」一项，靠这里自动以诗文启动，
- *  无需为它单独维护一份 app.js。 */
-const initialSectBtn = document.querySelector('.sect-btn.active');
-let currentSect = (initialSectBtn && initialSectBtn.dataset.s) || "rujia";
+/** 当前流派由页面声明：<body data-sect="..."> 优先（诗词鉴赏锁定为诗文），
+ *  否则取顶部流派条上标记 .active 的那一项（典籍长河的六派切换）。
+ *  这样同一份 app.js 既能服务六派典籍长河，也能服务单派诗词鉴赏。 */
+const initialSectBtn = document.querySelector('.sect-btn[data-s].active');
+const initialSect = document.body.dataset.sect || (initialSectBtn && initialSectBtn.dataset.s) || "rujia";
+let currentSect = initialSect;
 let currentPage = "books";
 let currentEra = "all";
 let bookData = {};
@@ -48,8 +49,6 @@ function clearMapLayers() {
   }
 }
 
-const ERAS = ["先秦", "汉魏", "唐", "五代两宋", "明清"];
-
 const $ = (sel) => document.querySelector(sel);
 
 async function loadSect(sect) {
@@ -76,32 +75,77 @@ async function loadSect(sect) {
 /** 数据就绪后的统一渲染入口（缓存命中与首次加载共用，避免两处重复维护渲染顺序） */
 function renderSect() {
   activeCaseCat = null;
+  renderEraSwitch();   // 顶部朝代条：随当前流派的数据重建
   renderBooks();
   renderCases();
   renderQuiz();
   initMap();
 }
 
+/** 朝代分档与副标题。
+ *  ERA_META 给出每个朝代的起止年份与短名，用于顶部朝代条的副标题，
+ *  与帝王谱系「朝代 · 年份 / 数量」同一套读法。 */
+const ERA_META = {
+  "先秦":     { years: "?-前221", sub: "n" },
+  "汉魏":     { years: "前206-580", sub: "n" },
+  "唐":       { years: "618-907", sub: "n" },
+  "五代两宋": { years: "907-1279", sub: "n" },
+  "明清":     { years: "1368-1912", sub: "n" },
+};
+const ERAS = Object.keys(ERA_META);
+
+/** 渲染顶部朝代条：仅诗词鉴赏（页面声明了 data-sect="shiwen"）启用。
+ *  样式复用 .sect-switch/.sect-btn——与帝王谱系朝代条同一套类，观感一致。 */
+function renderEraSwitch() {
+  const bar = document.querySelector("#era-switch");
+  if (!bar) return;                      // 典籍长河六派页面没有这条
+  const books = bookData.books || [];
+  const hasEra = books.some((b) => b.era);
+  if (!hasEra) { bar.classList.add("hidden"); return; }
+  bar.classList.remove("hidden");
+
+  const counts = {};
+  for (const b of books) if (b.era) counts[b.era] = (counts[b.era] || 0) + 1;
+  const total = books.length;
+
+  const cell = (key, label, years, sub) => {
+    const active = currentEra === key;
+    const top = years ? `${label} · ${years}` : label;
+    return `<button class="sect-btn${active ? " active" : ""}" data-era="${key}">`
+      + `<span class="sect-main">${esc(top)}</span>`
+      + `<span class="sect-sub">${esc(sub)}</span></button>`;
+  };
+
+  let html = cell("all", "全部", "", `${total} 位文人`);
+  for (const era of ERAS) {
+    if (!counts[era]) continue;          // 该朝代没有诗人就不占一格
+    html += cell(era, era, ERA_META[era].years, `${counts[era]} 位`);
+  }
+  bar.innerHTML = html;
+
+  bar.querySelectorAll(".sect-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.era;
+      if (currentEra === key) return;    // 再点已选中的朝代不做切换（避免误触清空）
+      currentEra = key;
+      renderSect();
+      if (currentPage === "books") scrollBooksToTop();
+    });
+  });
+}
+
+/** 切换朝代后把卡片条滚回最左，避免停留在上一屏 */
+function scrollBooksToTop() {
+  const wrap = $("#books-scroll");
+  if (wrap) wrap.scrollTo({ left: 0, behavior: "smooth" });
+}
+
 function renderBooks() {
   const wrap = $("#books-scroll");
   let books = bookData.books || [];
 
-  // 诗文：按朝代筛选
-  const eraBar = $("#era-filter");
-  if (currentSect === "shiwen" && books.some(b => b.era)) {
-    eraBar.classList.remove("hidden");
-    eraBar.innerHTML = `<button class="era-btn ${currentEra === "all" ? "active" : ""}" data-era="all">全部</button>` +
-      ERAS.map(e => `<button class="era-btn ${currentEra === e ? "active" : ""}" data-era="${e}">${e}</button>`).join("");
-    eraBar.querySelectorAll(".era-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        currentEra = btn.dataset.era;
-        renderBooks();
-      });
-    });
-    if (currentEra !== "all") books = books.filter(b => b.era === currentEra);
-  } else {
-    eraBar.classList.add("hidden");
-  }
+  // 朝代筛选由顶部朝代条驱动（诗词鉴赏）；正文内不再重复一排小圆钮
+  if (currentEra !== "all") books = books.filter((b) => b.era === currentEra);
 
   if (!books.length) {
     wrap.innerHTML = `<div style="color:var(--muted);padding:30px;">该流派内容正在整理中…</div>`;

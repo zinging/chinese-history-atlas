@@ -2,11 +2,13 @@
 /**
  * 由 web/guoxue/index.html 生成 web/guoxue/shici.html（诗词鉴赏板块）。
  *
- * 做法：复用同一份 style.css 与 app.js，只做三处最小差异——
- *   1) 标题改为「诗词鉴赏」
- *   2) 流派切换条只保留「诗文」一项（锁定该流派，不做多流派切换）
- *   3) 底部说明文案去掉典籍类目
- * 生成后再把 app.js 里的初始流派设为 shiwen（由页面上的 data-s 决定，无需改 JS）。
+ * 做法：复用同一份 style.css 与 app.js，只做四处最小差异——
+ *   1) <body data-sect="shiwen"> 锁定流派为诗文
+ *   2) 标题与品牌名改为「诗词鉴赏」
+ *   3) 顶部流派切换条换成朝代条（id="era-switch"，由 app.js 按数据填充，
+ *      样式复用 .sect-switch/.sect-btn，即帝王谱系朝代条的同一套类）
+ *   4) 页脚文案改为诗文集口径
+ * 正文内的 #era-filter 已移除：朝代筛选上移到顶部朝代条，不重复出现。
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -19,14 +21,16 @@ const OUT = join(GUOXUE, 'shici.html');
 
 let html = readFileSync(SRC, 'utf8');
 
-// 1) 标题与品牌名
+// 0) 页面声明锁定流派：诗词鉴赏固定为「诗文」，不显示流派切换条
+html = html.replace('<body>', '<body data-sect="shiwen">');
 html = html.replace('<title>国学图谱 · Chinese Classics Atlas</title>',
   '<title>诗词鉴赏 · Poetry Appreciation</title>');
 html = html.replace('<div class="brand">📚 典籍长河</div>',
   '<div class="brand">🎋 诗词鉴赏</div>');
 
-// 2) 流派切换条：只留「诗文」，并让它成为唯一（不可点）的那一项。
-//    按行切分重写，避免正则里的转义与 CRLF 换行带来的偏移错位。
+// 2) 顶部条：流派切换条换成朝代条。内容由 app.js 的 renderEraSwitch() 按数据填充，
+//    这里只留一个「全部」占位；样式复用 .sect-switch/.sect-btn，与帝王谱系朝代条同一套类。
+//    按行切分重写，避免正则转义与 CRLF 换行造成的偏移错位。
 const lines = html.split(/\r?\n/);
 const openIdx = lines.findIndex((l) => l.includes('<div class="sect-switch"'));
 if (openIdx < 0) { console.error('未匹配到流派切换条，生成中止'); process.exit(1); }
@@ -37,9 +41,10 @@ for (let i = openIdx + 1; i < lines.length; i++) {
 if (closeIdx < 0) { console.error('未匹配到流派切换条的结束标签，生成中止'); process.exit(1); }
 const eol = html.includes('\r\n') ? '\r\n' : '\n';
 const newSwitch = [
-  '  <!-- 诗词鉴赏锁定为「诗文」一类：与典籍长河同一套数据和样式，只是收敛到单一品类 -->',
-  '  <div class="sect-switch" id="sect-switch" role="tablist" aria-label="品类">',
-  '    <button class="sect-btn active" data-s="shiwen" aria-current="true"><span class="sect-main">诗文</span><span class="sect-sub">22 位文人</span></button>',
+  '  <!-- 诗词鉴赏按朝代分档：与帝王谱系顶部朝代条同一套类与样式（.sect-switch/.sect-btn 即朝代条），',
+  '       点某朝代即筛选下方典籍卡片，副标题显示该朝诗人数量 -->',
+  '  <div class="sect-switch" id="era-switch" role="tablist" aria-label="朝代切换">',
+  '    <button class="sect-btn active" data-era="all"><span class="sect-main">全部</span><span class="sect-sub"></span></button>',
   '  </div>',
 ];
 html = [...lines.slice(0, openIdx), ...newSwitch, ...lines.slice(closeIdx + 1)].join(eol);
