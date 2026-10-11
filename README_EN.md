@@ -2,25 +2,23 @@
 
 # 🏮 Chinese History Atlas
 
-### Emperor Lineage · Thought Origins · Poetry Appreciation — connecting scattered facts into a single thread
+**Emperor Lineage · Thought Origins · Poetry Appreciation — three threads side by side, connecting scattered facts into an era**
 
-[![Pure static](https://img.shields.io/badge/pure%20static-zero%20build-brightgreen)]()
-[![Leaflet](https://img.shields.io/badge/maps-Leaflet_1.9.4-247bc1)]()
-[![Modules](https://img.shields.io/badge/modules-3-c0392b)]()
-[![Data](https://img.shields.io/badge/data-77%20emperors_·_6%20schools_·_22%20poets-e8c86a)]()
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)]()
+![Pure static](https://img.shields.io/badge/pure%20static-zero%20build-brightgreen) ![Leaflet](https://img.shields.io/badge/maps-Leaflet_1.9.4-247bc1) ![Modules](https://img.shields.io/badge/modules-3-c0392b) ![Data](https://img.shields.io/badge/data-77%20emperors_·_6%20schools_·_22%20poets-e8c86a) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**🌐 Live demo** ｜
-[GitHub Pages](https://zinging.github.io/chinese-history-atlas/web/) ·
-[Gitee Pages](https://chen_ye_code.gitee.io/chinese-history-atlas/web/)
+🌐 **Live demo** ｜ [GitHub Pages](https://zinging.github.io/chinese-history-atlas/web/) ｜ [Gitee Pages](https://chen_ye_code.gitee.io/chinese-history-atlas/web/)
 
 </div>
 
 ---
 
-This is neither a textbook reader nor an encyclopedia. It does one thing: **connect scattered knowledge points into a thread**.
+The most familiar frustration in learning history: you memorize the timeline and forget it, while emperors, thinkers, and poets stay in separate drawers of your mind — a pile of disconnected dots.
 
-What emperors decided in court, how thinkers responded in their studies, what poets wrote at a given moment — three lines unfold in parallel, and you assemble the full outline of an era yourself. Built for history buffs who want a coherent thread, students of traditional culture who want an intellectual map, and learners moving from "memorizing dates" to "understanding cause and effect."
+This project does one thing about it. **In the same era, what an emperor decided in court, how a thinker responded in their study, and what a poet wrote on the road into exile unfold as three parallel threads.** What you get is no longer isolated names and dates, but the causes and shape of an era.
+
+- History buffs can build a firm chronological frame;
+- newcomers to traditional culture can trace how Confucianism, Buddhism, and Daoism evolved;
+- students move from "memorizing dates" to "understanding cause and effect."
 
 ---
 
@@ -40,7 +38,7 @@ Confucianism (Kong-Meng), Daoism (Lao-Zhuang), Buddhism (Chan), the Hundred Scho
 
 ### 🎋 Poetry Appreciation
 
-From Qu Yuan to Nalan Xingde, **22 poets** organized by dynasty. This is not rote memorization — **first trace a poet's life journey on a map, then read the situation, mood, and story behind each verse**. Why did Li Bai write "a light skiff has sailed past ten thousand mountains" at Jiangling? Because he had just received the amnesty order. The poetry route map shows where they traveled and where they wrote their famous lines.
+From Qu Yuan to Nalan Xingde, **22 poets** organized by dynasty. This is not rote memorization — **first trace a poet's life journey on a map, then read the situation, mood, and story behind each verse**. Why did Li Bai write "a light skiff has sailed past ten thousand mountains" at Jiangling? He had just received the amnesty order — spared and heading home, the boat felt that fast. The poetry route map shows where they traveled and where they wrote their famous lines.
 
 ![Poetry Appreciation](docs/demo/module-poetry.png?v=2)
 
@@ -49,13 +47,13 @@ From Qu Yuan to Nalan Xingde, **22 poets** organized by dynasty. This is not rot
 ## ✨ What makes this project different
 
 **🗡️ Three parallel threads, not three isolated pages**
-An emperor's decision, a thinker's response, a poet's line written in exile — three facets of the same era. Traditional history sites cover only emperors; this one lets you see how power, thought, and aesthetics shaped one another.
+An emperor's decision, a thinker's response, a poet's line written in exile are three facets of the same era. Traditional history sites cover only emperors; this one lets you see how power, thought, and aesthetics shaped one another.
 
 **🗺️ History on a map, not in text**
 A zoomable Leaflet basemap overlays borders and ancient places. The Jingnan campaign, Zheng He's seven voyages, and the Qing entry into Shanhai Pass unfold as timed animations rather than a static image; click any ancient place for its modern equivalent (e.g. Muzhou ≈ modern Jiande, Zhejiang).
 
 **📂 Deep-read case files, not encyclopedia entries**
-Famous mysteries are broken into eight sections: naming → background → people → course → outcome → impact → open debate → sources — a complete chain of reasoning, not a one-line "X happened in year Y."
+Famous mysteries are broken into eight sections: naming → background → people → course → outcome → impact → open debate → sources. You get a complete chain of reasoning, not a one-line "X happened in year Y."
 
 **📝 380 critical questions, not true/false**
 380 multiple-choice questions across 77 emperors in two modes — **evaluative judgment** ("How do you assess this policy?") and **causal chains** ("Why did this happen? What was the direct cause?"). Answers are graded instantly with explanations; roughly a quarter are open-ended and can be reviewed by an optional AI tutor.
@@ -93,12 +91,12 @@ A built-in OpenAI-compatible endpoint (DeepSeek / OpenAI / etc.) stores config o
 git clone git@gitee.com:chen_ye_code/chinese-history-atlas.git
 cd chinese-history-atlas
 node web/serve.mjs
-# Open http://127.0.0.1:5173/web/ in your browser
+# Then open http://127.0.0.1:5173/web/ in your browser
 ```
 
-> **Port in use:** run `node web/serve.mjs 8080` to switch ports.
->
-> **Why a local server?** The frontend reads `data/*.json` via `fetch`; opening the HTML directly with `file://` is blocked by the browser's CORS policy and leaves the page blank.
+> 💡 If the port is in use, run `node web/serve.mjs 8080` to switch ports.
+
+> ⚠️ Please open it through the local server, not by double-clicking the HTML: the frontend reads `data/*.json` via `fetch`, and the `file://` protocol is blocked by the browser's CORS policy, leaving the page blank.
 
 **Optional · AI tutor:** open "🤖 AI Tutor config" at the bottom of the History Detective page and enter an OpenAI-compatible endpoint, key, and model (click ⬇ to fetch the model list automatically). Config lives only in `web/llm-config.json` (git-ignored); a commented `web/llm-config.json.template` is included — copy it to `llm-config.json` and fill it in.
 
