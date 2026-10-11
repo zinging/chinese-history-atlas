@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261010a';
+const APP_BUILD = '20261011a';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -2970,10 +2970,12 @@ async function askLLM(message, history = []) {
   const apply = (collapsed) => {
     document.body.classList.toggle('sidebar-collapsed', collapsed);
     btn.setAttribute('aria-expanded', String(!collapsed));
-    btn.setAttribute('aria-label', collapsed ? '展开侧栏' : '收起侧栏');
-    btn.title = collapsed ? '展开侧栏' : '收起侧栏';
+    btn.setAttribute('aria-label', collapsed ? '展开侧栏' : '卷收侧栏');
+    btn.title = collapsed ? '展开侧栏' : '卷收侧栏';
     const label = btn.querySelector('.label');
-    if (label) label.textContent = collapsed ? '展开' : '收起';
+    if (label) label.textContent = collapsed ? '展开' : '卷收';
+    const caret = btn.querySelector('.caret');
+    if (caret) caret.style.transform = collapsed ? 'scaleX(-1)' : '';
     // 收起后 iframe 若已加载，通知子页重排（子页按窗口宽度算正文位置）
     const frame = document.getElementById('guoxue-frame');
     if (frame && frame.contentWindow) {

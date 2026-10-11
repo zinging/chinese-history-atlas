@@ -14,12 +14,14 @@
   /* 右侧竖排胶囊占位：19px 字 + 3px 字距 × 4 字 + 内边距 52 + 边框 3 ≈ 143px */
   --rail-w: 143px;
   --rail-gap: 12px;
-  /* 左侧模块栏：展开/收缩两态宽度。正文按「窗口 − 侧栏宽度」后的区域居中，
-     两个模块（帝王谱系 / 典籍长河）共用这套变量，保证正文宽度与位置完全一致。 */
+  /* 左侧模块栏：展开/收缩两态宽度 */
   --sidebar-w: 104px;
   --sidebar-w-collapsed: 64px;
-  /* 正文限宽：典籍长河当前观感良好的基准值，两模块统一用它 */
+  /* 正文限宽：与典籍长河 web/guoxue/style.css 的 #app 完全一致，两模块共用 */
   --content-max: 1080px;
+  /* 胶囊相对「可用区中心」的偏移。典籍长河在 iframe 内用的是 calc(50% - 680px)，
+     这里可用区 = 视口 − 侧栏，故换成同样的写法（两模块实测间隙均为 14px）。 */
+  --rail-offset: 680px;
 }
 
 * { box-sizing: border-box; }
@@ -33,19 +35,19 @@ body {
   line-height: 1.6;
 }
 
-/* 外层 #app 只负责承载侧栏与两个模块区，不限宽。
-   早期把正文限宽 1080 写在这里，导致 .mega-area 的 margin-left:104px 从 1080 里被扣掉，
-   帝王谱系正文因此比典籍长河窄 104px。现改为：正文宽度由各模块内的 .module-inner 决定，
-   两模块都用同一个类、同一套数学，正文位置与宽度完全一致。 */
+/* 外层 #app 只负责承载侧栏与两个模块区，不限宽。 */
 #app { max-width: none; margin: 0; padding: 0; }
 
-/* 模块正文容器：与典籍长河的 #app 完全同款（限宽 1080 居中 + 相同内边距） */
-.module-inner { max-width: 1080px; margin: 0 auto; padding: 12px 16px 40px; }
-
-/* 右侧竖排胶囊放不进正文列外侧时（视口不足），把正文列收窄给它让位。
-   断点必须与 web/guoxue/style.css 保持一致，否则同视口下两模块正文宽度不同。
-   计算：侧栏 90 + 沟槽(16+143+12=171) + 正文 + 右侧余量 16 = 1080 → 视口 <1357 时启用。 */
-@media (max-width: 1356px) {
+/* 模块正文容器：与典籍长河 web/guoxue/style.css 的 #app 逐值相同（限宽 1080 居中 + 同内边距）。
+   两模块共用同一套数学，正文宽度与位置必然一致。 */
+.module-inner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 12px 16px 40px;
+}
+/* 可用区（视口 − 侧栏）放不下「正文 + 胶囊」时，给正文右侧留出胶囊沟槽。
+   断点 1467 = 侧栏 104 + 1364（1080 正文 − 左内边距 16 + 胶囊 142 + 右侧余量 16 + 沟槽 170 − 60 余量）。 */
+@media (max-width: 1467px) {
   .module-inner { padding-right: calc(16px + var(--rail-w) + var(--rail-gap)); }
 }
 
@@ -155,9 +157,19 @@ body {
 .tabs {
   display: flex; flex-direction: column; gap: 10px;
   position: fixed; top: 50%; transform: translateY(-50%);
-  /* 落在正文列（#app 限宽 1080 居中）外侧页边距内、紧贴正文右缘；窄窗口退化为贴窗口边 */
-  right: max(16px, calc(50% - 680px));
+  /* 与 .module-inner 同一套数学。典籍长河在 iframe 内用的是 calc(50% - 680px)，
+     它的 50% 是 iframe 宽（= 视口 − 侧栏）的一半；这里可用区 = 100vw − 侧栏，
+     故减掉侧栏宽度，得到与之完全等价的结果（实测两模块间隙均为 14px）。 */
+  right: max(16px, calc((100vw - var(--sidebar-w)) / 2 - var(--rail-offset)));
   z-index: 50;
+}
+body.sidebar-collapsed .tabs {
+  right: max(16px, calc((100vw - var(--sidebar-w-collapsed)) / 2 - var(--rail-offset)));
+}
+/* 窄窗口：胶囊贴窗口右缘，正文由 .module-inner 的 padding-right 让位 */
+@media (max-width: 1467px) {
+  .tabs,
+  body.sidebar-collapsed .tabs { right: 16px; }
 }
 .tabs .tab {
   position: relative;
@@ -939,11 +951,11 @@ input, textarea { cursor: text; }
 .mega-sidebar {
   position: fixed; left: 0; top: 0; bottom: 0;
   width: var(--sidebar-w);
-  background: linear-gradient(180deg, #2e2418 0%, #1f1810 100%);
+  background: linear-gradient(180deg, #f5ead0 0%, #efe2c4 100%);
   display: flex; flex-direction: column; align-items: center;
   padding: 12px 0 16px; z-index: 1000;
-  border-right: 1px solid #5a4a2e;
-  box-shadow: 2px 0 12px rgba(0,0,0,.35);
+  border-right: 1px solid #c9b080;
+  box-shadow: 2px 0 12px rgba(0,0,0,.12);
   transition: width .24s ease;
 }
 /* 收缩态：只留图标条 */
@@ -951,45 +963,43 @@ body.sidebar-collapsed .mega-sidebar { width: var(--sidebar-w-collapsed); }
 body.sidebar-collapsed .mega-name,
 body.sidebar-collapsed .mega-sub { display: none; }
 body.sidebar-collapsed .mega-btn { width: 100%; padding: 12px 2px; }
-body.sidebar-collapsed .mega-logo { margin-bottom: 14px; }
+body.sidebar-collapsed .mega-logo { width: 100%; margin-bottom: 14px; padding: 2px 4px; }
 
 /* 收缩/展开按钮：位于侧栏顶部 */
 .mega-collapse-btn {
   flex: 0 0 auto;
-  width: 72px; height: 30px; margin-bottom: 10px;
+  width: 80px; height: 34px; margin-bottom: 10px;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  background: rgba(240,199,94,.1); border: 1.5px solid rgba(240,199,94,.32);
-  border-radius: 6px; color: #d9c191; cursor: pointer; font-family: inherit;
-  font-size: 12px; font-weight: 700;
+  background: rgba(168,53,42,.08); border: 1.5px solid rgba(168,53,42,.3);
+  border-radius: 6px; color: #8a4b2a; cursor: pointer; font-family: inherit;
+  font-size: 14px; font-weight: 700;
   transition: all .18s ease;
 }
-.mega-collapse-btn:hover { background: rgba(240,199,94,.2); color: #f0c75e; border-color: rgba(240,199,94,.55); }
+.mega-collapse-btn:hover { background: rgba(168,53,42,.15); color: #a8352a; border-color: rgba(168,53,42,.5); }
 .mega-collapse-btn .caret {
   font-size: 11px; line-height: 1;
   transition: transform .24s ease;
 }
 /* 收缩时箭头朝右（提示"展开"） */
-body.sidebar-collapsed .mega-collapse-btn .caret { transform: rotate(180deg); }
+body.sidebar-collapsed .mega-collapse-btn .caret { transform: scaleX(-1); }
 /* 收缩态按钮变窄，只留箭头 */
 body.sidebar-collapsed .mega-collapse-btn { width: 44px; }
 body.sidebar-collapsed .mega-collapse-btn .label { display: none; }
 .mega-logo {
-  margin-bottom: 28px;
-  padding: 4px;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(192,57,43,.4);
+  width: 88px; margin: 0 auto 2px; padding: 0;
 }
+.mega-logo img { width: 100%; display: block; }
 .mega-btn {
   width: 88px; padding: 14px 6px 12px; margin-bottom: 12px;
-  background: transparent; border: 1.5px solid transparent; border-radius: 8px;
-  color: #b8a07a; cursor: pointer; text-align: center;
+  background: transparent; border: 1.5px solid rgba(107,90,58,.25); border-radius: 8px;
+  color: #6b5a3a; cursor: pointer; text-align: center;
   transition: all .2s; font-family: inherit;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
 .mega-btn:hover {
-  background: rgba(240,199,94,.08);
-  border-color: rgba(240,199,94,.3);
-  color: #f0c75e;
+  background: rgba(168,53,42,.08);
+  border-color: rgba(168,53,42,.25);
+  color: #a8352a;
 }
 .mega-btn.active {
   background: linear-gradient(180deg, #a8352a 0%, #8c2318 100%);

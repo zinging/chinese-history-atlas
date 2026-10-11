@@ -39,10 +39,10 @@ body {
 }
 
 /* 右侧竖排胶囊放不进正文列外侧时，把正文列收窄给它让位，杜绝与内容重叠。
-   断点必须与主站 web/style.css 的 @media (max-width: 1356px) 一致，
-   否则同样视口下两个模块正文宽度不同（实测 1920px 时差 102px）。
-   计算：侧栏 90 + 正文 1080 + 沟槽(16+143+12=171) + 右侧余量 16 = 1357。 */
-@media (max-width: 1356px) {
+   断点必须与主站 web/style.css 的 @media (max-width: 1467px) 一致，
+   否则同样视口下两个模块正文宽度不同。
+   计算：侧栏 104 + 正文 1080 + 沟槽(16+143+12=171) + 右侧余量 16 = 1371，留约 96px 余量。 */
+@media (max-width: 1467px) {
   #app { padding-right: calc(16px + var(--rail-w) + var(--rail-gap)); }
 }
 
