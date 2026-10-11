@@ -4,9 +4,15 @@
 
 **Emperor Lineage · Thought Origins · Poetry Appreciation — three threads side by side, connecting scattered facts into an era**
 
-![Pure static](https://img.shields.io/badge/pure%20static-zero%20build-brightgreen) ![Leaflet](https://img.shields.io/badge/maps-Leaflet_1.9.4-247bc1) ![Modules](https://img.shields.io/badge/modules-3-c0392b) ![Data](https://img.shields.io/badge/data-77%20emperors_·_6%20schools_·_22%20poets-e8c86a) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+<p align="center">
+<img alt="Pure static" src="https://img.shields.io/badge/pure%20static-zero%20build-brightgreen">
+<img alt="Leaflet" src="https://img.shields.io/badge/maps-Leaflet_1.9.4-247bc1">
+<img alt="Modules" src="https://img.shields.io/badge/modules-3-c0392b">
+<img alt="Data" src="https://img.shields.io/badge/data-77%20emperors_·_6%20schools_·_22%20poets-e8c86a">
+<a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
+</p>
 
-🌐 **Live demo** ｜ [GitHub Pages](https://zinging.github.io/chinese-history-atlas/web/) ｜ [Gitee Pages](https://chen_ye_code.gitee.io/chinese-history-atlas/web/)
+<p align="center">🌐 <b>Live demo</b> ｜ <a href="https://zinging.github.io/chinese-history-atlas/web/">GitHub Pages</a> ｜ <a href="https://chen_ye_code.gitee.io/chinese-history-atlas/web/">Gitee Pages</a></p>
 
 </div>
 
@@ -94,9 +100,9 @@ node web/serve.mjs
 # Then open http://127.0.0.1:5173/web/ in your browser
 ```
 
-> 💡 If the port is in use, run `node web/serve.mjs 8080` to switch ports.
+💡 **Port in use:** run `node web/serve.mjs 8080` to switch ports.
 
-> ⚠️ Please open it through the local server, not by double-clicking the HTML: the frontend reads `data/*.json` via `fetch`, and the `file://` protocol is blocked by the browser's CORS policy, leaving the page blank.
+⚠️ **Open it through the local server, not by double-clicking the HTML:** the frontend reads `data/*.json` via `fetch`, and the `file://` protocol is blocked by the browser's CORS policy, leaving the page blank.
 
 **Optional · AI tutor:** open "🤖 AI Tutor config" at the bottom of the History Detective page and enter an OpenAI-compatible endpoint, key, and model (click ⬇ to fetch the model list automatically). Config lives only in `web/llm-config.json` (git-ignored); a commented `web/llm-config.json.template` is included — copy it to `llm-config.json` and fill it in.
 
@@ -137,7 +143,7 @@ chinese-history-atlas/
 | 📚 Thought Origins | 6 schools (Confucian / Daoist / Buddhist / Hundred / Song-Ming Neo-Confucian) · 27 classic texts |
 | 🎋 Poetry Appreciation | 22 poets · organized by dynasty · poetry journey maps |
 
-> Territory outlines are simplified sketches based on Tan Qixiang's *Historical Atlas of China*; portraits are AI-generated gongbi-style images.
+*Territory outlines are simplified sketches based on Tan Qixiang's Historical Atlas of China; portraits are AI-generated gongbi-style images.*
 
 ---
 
