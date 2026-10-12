@@ -256,11 +256,11 @@ async function _fetchDynasty(dyn) {
     loadJSON(p(lay.cases)),
   ];
   if (hasMap) urls.push(maybe(p(lay.places)), maybe(p(lay.routes)), maybe(p(lay.mapEvents)));
-  // 明朝额外加载机构制度与史料出处；非明朝补两个 null 占位，保证后续解构位置固定（否则题库会错位为空）
+  // 明朝额外加载机构制度；史料出处所有朝代共用 data/sources/sources.json（含隋书/资治通鉴/北史/两唐书等）
   if (dyn === 'ming') {
     urls.push(maybe(p('institutions/institutions.json')), maybe(p('sources/sources.json')));
   } else {
-    urls.push(null, null);
+    urls.push(null, maybe('../data/sources/sources.json'));
   }
   const quizPath = dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json';
   urls.push(maybe(p(quizPath)));
