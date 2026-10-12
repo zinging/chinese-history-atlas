@@ -640,3 +640,62 @@ body {
 }
 .quiz-card .explain.ok { background: #e8f5ec; color: #2c6b42; }
 .quiz-card .explain.bad { background: #fbeae8; color: #96352e; }
+
+/* ---- 侦探式思辨题（严格对齐帝王谱系「历史侦探任务」） ---- */
+.det-wrap { display: flex; flex-direction: column; gap: 18px; }
+
+.det-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 22px 26px; box-shadow: 0 2px 10px rgba(120, 90, 40, .06);
+}
+.det-quest {
+  font-size: 19px; font-weight: 800; color: #4a3218; line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+/* 思辨框：浅蓝虚线 */
+.det-debate {
+  background: #eef4fc; border: 1px dashed #9db8dd; border-radius: 10px;
+  padding: 14px 18px; margin-bottom: 18px;
+}
+.det-debate-label { font-size: 14px; font-weight: 700; color: var(--ink); margin-right: 8px; }
+.det-debate-quest { font-size: 14px; color: var(--ink); line-height: 1.7; }
+.det-debate-views { font-size: 13.5px; color: #5a7ba6; line-height: 1.7; margin-top: 6px; }
+.det-sep { color: #9db8dd; margin: 0 8px; }
+
+/* 导航胶囊 */
+.det-nav {
+  display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;
+}
+.det-btn {
+  background: #fff; border: 1.5px solid #d9c9a3; color: var(--ink);
+  border-radius: 999px; padding: 8px 20px; font-size: 14px; cursor: pointer;
+  transition: all .15s;
+}
+.det-btn:hover { border-color: var(--primary); color: var(--primary); }
+.det-count { font-size: 14px; color: var(--muted); }
+
+/* 线索：米黄底 + 左侧金条 */
+.det-section { background: transparent; }
+.det-sec-title { font-size: 17px; font-weight: 800; color: #8a4b1f; margin: 4px 2px 12px; }
+.det-sec-title small { font-weight: 400; color: var(--muted); font-size: 13px; }
+.det-clue {
+  background: #fdf3d9; border-left: 5px solid #d9a83c; border-radius: 8px;
+  padding: 12px 16px; margin-bottom: 10px;
+}
+.det-clue-label { font-size: 15px; font-weight: 700; color: #8a4b1f; margin-bottom: 6px; }
+.det-clue-text { font-size: 14.5px; color: #4d4234; line-height: 1.75; }
+
+/* 作答：金色虚线框 */
+.det-answer-box {
+  background: #fffdf7; border: 2px dashed #d9a83c; border-radius: 12px;
+  padding: 18px 20px;
+}
+.det-answer-quest { font-size: 15px; font-weight: 700; color: #8a4b1f; text-align: center; line-height: 1.7; margin-bottom: 6px; }
+.det-answer-hint { font-size: 13.5px; color: var(--muted); text-align: center; margin-bottom: 14px; }
+.det-answer-box textarea {
+  width: 100%; box-sizing: border-box; min-height: 120px; resize: vertical;
+  border: 1px solid var(--border); border-radius: 10px; background: #fff;
+  padding: 12px 14px; font-size: 15px; line-height: 1.7; font-family: inherit; color: #3d3428;
+}
+.det-answer-box textarea:focus { outline: none; border-color: #d9a83c; }

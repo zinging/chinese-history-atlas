@@ -66,7 +66,7 @@ async function loadSect(sect) {
     // 数据路径必须用相对路径：本页面在 web/guoxue/ 下，../../data/ 指向仓库 data/。
     // 若写成绝对路径 /data/，本地 serve.mjs 能命中，但部署到 GitHub Pages 子目录
     // （如 /chinese-history-atlas/web/guoxue/）时会解析到域名根，必然 404。
-    const r = await fetch(`../../data/${meta.data}/index.json?v=v56`);
+    const r = await fetch(`../../data/${meta.data}/index.json?v=v62`);
     bookData = await r.json();
     SECT_CACHE[sect] = bookData;
   } catch (e) {
@@ -361,37 +361,81 @@ function renderCases() {
   }).join("");
 }
 
+let discIndex = 0;
+let discEra = "__init__";
 function renderQuiz() {
   const list = $("#quiz-list");
-  const quiz = bookData.quiz || [];
-  if (!quiz.length) {
-    list.innerHTML = `<div style="color:var(--muted);padding:30px;">该流派题目整理中…</div>`;
+  const all = bookData.discourses || [];
+  // 顶部分朝代条驱动：「全部」展示全部，否则只看该朝代的诗人
+  const disc = currentEra === "all" ? all : all.filter((x) => x.era === currentEra);
+  if (!disc.length) {
+    list.innerHTML = `<div style="color:var(--muted);padding:30px;">该朝代的题目整理中…</div>`;
     return;
   }
-  list.innerHTML = quiz.map((q, i) => `
-    <div class="quiz-card" data-i="${i}">
-      <div class="q">${q.q}</div>
-      <div class="opts">
-        ${q.opts.map((o, j) => `<button class="opt" data-r="${j}">${o}</button>`).join("")}
+  // 切了朝代就回到该朝代第一题，避免索引错位
+  if (discEra !== currentEra) { discEra = currentEra; discIndex = 0; }
+  discIndex = discIndex % disc.length;
+  const d = disc[discIndex];
+
+  const cluesHtml = (d.clues || []).map((c, i) => `
+    <div class="det-clue">
+      <div class="det-clue-label">📌 ${esc(c.label)}</div>
+      <div class="det-clue-text">${esc(c.text)}</div>
+    </div>`).join("");
+
+  const openHtml = d.open ? `
+    <div class="det-debate">
+      <span class="det-debate-label">💬 思辨一下（没有标准答案）</span><span class="det-debate-quest">${esc(d.open.question)}</span>
+      <div class="det-debate-views">${(d.open.viewpoints || []).map((v) => esc(v)).join("<span class='det-sep'>｜</span>")}</div>
+    </div>` : "";
+
+  const pageTitle = currentSect === "shiwen"
+    ? "诗坛问典 · 像侦探一样读诗人"
+    : "探问问典 · 像侦探一样读典籍";
+
+  list.innerHTML = `
+    <div class="det-wrap">
+      <div class="det-card">
+        <div class="det-quest">🕵️ ${esc(d.quest)}</div>
+        ${openHtml}
+        <div class="det-nav">
+          <button class="det-btn" id="disc-prev">◀ 上一题</button>
+          <span class="det-count">第 ${discIndex + 1} / ${disc.length} 题</span>
+          <button class="det-btn" id="disc-next">下一题 ▶</button>
+        </div>
       </div>
-      <div class="explain">${q.explain || ""}</div>
-    </div>
-  `).join("");
-  list.querySelectorAll(".quiz-card").forEach(card => {
-    const q = quiz[+card.dataset.i];
-    card.querySelectorAll(".opt").forEach(btn => {
-      btn.addEventListener("click", () => {
-        card.querySelectorAll(".opt").forEach(b => b.disabled = true);
-        const r = +btn.dataset.r;
-        if (r === q.answer) btn.classList.add("correct");
-        else {
-          btn.classList.add("wrong");
-          card.querySelectorAll(".opt")[q.answer].classList.add("correct");
-        }
-        card.querySelector(".explain").classList.add("show");
-      });
-    });
+
+      <div class="det-section">
+        <h4 class="det-sec-title">🔍 收集到的线索 <small>（来自本项目已核对史料）</small></h4>
+        ${cluesHtml}
+      </div>
+
+      <div class="det-section">
+        <h4 class="det-sec-title">🖊️ 你的回答</h4>
+        <div class="det-answer-box">
+          <div class="det-answer-quest"><b>围绕本题作答：</b>${esc(d.quest)}</div>
+          <div class="det-answer-hint">💡 ${esc(d.create)}</div>
+          <textarea id="disc-input" placeholder="结合上面的线索，写下你的判断或答案…"></textarea>
+        </div>
+      </div>
+    </div>`;
+
+  $("#disc-prev").addEventListener("click", () => {
+    discIndex = (discIndex - 1 + disc.length) % disc.length;
+    renderQuiz();
+    list.scrollIntoView({ behavior: "smooth", block: "start" });
   });
+  $("#disc-next").addEventListener("click", () => {
+    discIndex = (discIndex + 1) % disc.length;
+    renderQuiz();
+    list.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  const storeKey = "shiwen-disc-" + (d.title || discIndex);
+  const input = $("#disc-input");
+  const saved = localStorage.getItem(storeKey);
+  if (saved) input.value = saved;
+  input.addEventListener("input", () => localStorage.setItem(storeKey, input.value.trim()));
 }
 
 function initMap() {
