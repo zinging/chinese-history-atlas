@@ -1,20 +1,19 @@
-<div align="center">
+<!-- 注意：不要用外层 <div> 包住标题与徽章。
+     GitHub 不解析 HTML 块级元素内部的 Markdown，会导致 # 与 ** 被当成字面字符显示。
+     改用逐行 <h1>/<p> 自带 align，既能居中又保留 Markdown 解析。 -->
+<h1 align="center">🏮 中华历史图谱 · Chinese History Atlas</h1>
 
-# 🏮 中华历史图谱 · Chinese History Atlas
-
-**帝王谱系 · 思想源流 · 诗词鉴赏 —— 三条线并排展开，把散落的知识点连成一个时代**
+<p align="center"><b>帝王谱系 · 思想源流 · 诗词鉴赏 —— 三条线并排展开，把散落的知识点连成一个时代</b></p>
 
 <p align="center">
 <img alt="纯静态" src="https://img.shields.io/badge/纯静态-零构建-brightgreen">
 <img alt="Leaflet" src="https://img.shields.io/badge/地图-Leaflet_1.9.4-247bc1">
 <img alt="板块" src="https://img.shields.io/badge/板块-3个-c0392b">
-<img alt="数据" src="https://img.shields.io/badge/数据-77帝_·_6派经典_·_22位诗人-e8c86a">
+<img alt="数据" src="https://img.shields.io/badge/数据-77帝_·_5派经典_·_22位诗人-e8c86a">
 <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
 </p>
 
 <p align="center">🌐 <b>在线演示</b> ｜ <a href="https://zinging.github.io/chinese-history-atlas/web/">GitHub Pages</a> ｜ <a href="https://chen_ye_code.gitee.io/chinese-history-atlas/web/">Gitee Pages</a></p>
-
-</div>
 
 ---
 
@@ -61,8 +60,8 @@
 **📂 案件式深读，而不是百科式罗列**
 著名疑案拆为八段：名称由来 → 背景 → 人物 → 经过 → 结果 → 影响 → 开放讨论 → 史料出处。给你的是完整推理链，而不是「某某年发生某事」的一句话。
 
-**📝 380 道辩证题，而不是是非题**
-77 位皇帝共 380 道选择题，分两类——**论证判断**（「你如何评价这项政策？」）与**因果链**（「此事因何发生？直接原因是什么？」）。提交即批改并附解析，约四分之一为开放题，可选接 AI 老师点评。
+**📝 108 道辩证题，而不是是非题**
+全站 108 道选择题：帝王谱系 77 道（每位皇帝一道）+ 思想源流与诗词鉴赏 31 道。分两类——**论证判断**（「你如何评价这项政策？」）与**因果链**（「此事因何发生？直接原因是什么？」）。提交即批改并附解析，部分为开放题，可选接 AI 老师点评。
 
 **🔍 线索可溯源，演义与正史分开**
 时间线与侦探线索均标注《旧唐书》《宋史》《明史》等出处；演义传说单独标注「小说演绎，正史不载」，不让你把《三国演义》当正史读。
@@ -139,9 +138,9 @@ chinese-history-atlas/
 
 | 板块 | 内容 |
 | :--- | :--- |
-| 🏮 帝王谱系 | 7 朝 77 位皇帝 · 380 道史论题 · 545 条时间线 |
-| 📚 思想源流 | 儒道佛诸子理学心学 6 大流派 · 27 部经典 |
-| 🎋 诗词鉴赏 | 22 位文人 · 按朝代编排 · 诗路行迹地图 |
+| 🏮 帝王谱系 | 7 朝 77 位皇帝 · 77 道史论题 · 557 条生平时间线 · 36 个悬案 |
+| 📚 思想源流 | 儒道佛诸子理学心学 5 大流派 · 27 部经典 · 28 个公案 |
+| 🎋 诗词鉴赏 | 22 位文人 · 按朝代编排 · 诗路行迹地图 · 13 个公案 |
 
 *疆域据谭其骧《中国历史地图集》手绘简化示意；画像为 AI 生成工笔风格。*
 

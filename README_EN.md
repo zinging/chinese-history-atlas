@@ -1,20 +1,19 @@
-<div align="center">
+<!-- Do not wrap the heading in an outer <div>: GitHub does not parse Markdown
+     inside HTML block elements, which makes # and ** render as literal text.
+     Use self-aligned HTML tags instead, which stay centered without breaking parsing. -->
+<h1 align="center">🏮 Chinese History Atlas</h1>
 
-# 🏮 Chinese History Atlas
-
-**Emperor Lineage · Thought Origins · Poetry Appreciation — three threads side by side, connecting scattered facts into an era**
+<p align="center"><b>Emperor Lineage · Thought Origins · Poetry Appreciation — three threads side by side, connecting scattered facts into an era</b></p>
 
 <p align="center">
 <img alt="Pure static" src="https://img.shields.io/badge/pure%20static-zero%20build-brightgreen">
 <img alt="Leaflet" src="https://img.shields.io/badge/maps-Leaflet_1.9.4-247bc1">
 <img alt="Modules" src="https://img.shields.io/badge/modules-3-c0392b">
-<img alt="Data" src="https://img.shields.io/badge/data-77%20emperors_·_6%20schools_·_22%20poets-e8c86a">
+<img alt="Data" src="https://img.shields.io/badge/data-77%20emperors_·_5%20schools_·_22%20poets-e8c86a">
 <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
 </p>
 
 <p align="center">🌐 <b>Live demo</b> ｜ <a href="https://zinging.github.io/chinese-history-atlas/web/">GitHub Pages</a> ｜ <a href="https://chen_ye_code.gitee.io/chinese-history-atlas/web/">Gitee Pages</a></p>
-
-</div>
 
 ---
 
@@ -61,8 +60,8 @@ A zoomable Leaflet basemap overlays borders and ancient places. The Jingnan camp
 **📂 Deep-read case files, not encyclopedia entries**
 Famous mysteries are broken into eight sections: naming → background → people → course → outcome → impact → open debate → sources. You get a complete chain of reasoning, not a one-line "X happened in year Y."
 
-**📝 380 critical questions, not true/false**
-380 multiple-choice questions across 77 emperors in two modes — **evaluative judgment** ("How do you assess this policy?") and **causal chains** ("Why did this happen? What was the direct cause?"). Answers are graded instantly with explanations; roughly a quarter are open-ended and can be reviewed by an optional AI tutor.
+**📝 108 critical questions, not true/false**
+108 multiple-choice questions site-wide: 77 in Emperor Lineage (one per emperor) plus 31 across Thought Origins and Poetry Appreciation. Two modes — **evaluative judgment** ("How do you assess this policy?") and **causal chains** ("Why did this happen? What was the direct cause?"). Answers are graded instantly with explanations; some are open-ended and can be reviewed by an optional AI tutor.
 
 **🔍 Traceable claims, fiction separated from history**
 Timeline entries and detective clues cite the *Old/New Book of Tang*, *History of Song*, *History of Ming*, and more; fiction and lore are labeled separately as "popular tale, not in official histories," so you never mistake *Romance of the Three Kingdoms* for the record.
@@ -139,9 +138,9 @@ chinese-history-atlas/
 
 | Module | Content |
 | :--- | :--- |
-| 🏮 Emperor Lineage | 7 dynasties · 77 emperors · 380 quiz questions · 545 timeline entries |
-| 📚 Thought Origins | 6 schools (Confucian / Daoist / Buddhist / Hundred / Song-Ming Neo-Confucian) · 27 classic texts |
-| 🎋 Poetry Appreciation | 22 poets · organized by dynasty · poetry journey maps |
+| 🏮 Emperor Lineage | 7 dynasties · 77 emperors · 77 quiz questions · 557 timeline entries · 36 cases |
+| 📚 Thought Origins | 5 schools (Confucian / Daoist / Buddhist / Hundred / Song-Ming Neo-Confucian) · 27 classic texts · 28 cases |
+| 🎋 Poetry Appreciation | 22 poets · organized by dynasty · poetry journey maps · 13 cases |
 
 *Territory outlines are simplified sketches based on Tan Qixiang's Historical Atlas of China; portraits are AI-generated gongbi-style images.*
 

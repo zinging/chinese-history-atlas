@@ -2914,29 +2914,55 @@ async function askLLM(message, history = []) {
   close.addEventListener('click', hide);
 })();
 
-/* 侧栏「AI 配置」卡片：点击展开、点外部或 ✕ 收起。
-   不用 hover——卡片里有输入框和下拉菜单，鼠标移出去就会把正在填的表单收起。 */
-(function setupAiSidebarPop() {
-  const btn = document.getElementById('ai-sidebar-btn');
-  const pop = document.getElementById('ai-sidebar-pop');
-  const close = document.getElementById('ai-sidebar-close');
-  if (!btn || !pop) return;
-  const show = () => { pop.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); };
-  const hide = () => { pop.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (pop.classList.contains('hidden')) show(); else hide();
+/* 侧栏弹出卡片统一管理：「AI 配置」「模块管理」共用一套开合逻辑。
+   - 点击按钮切换；点卡片外、Esc、✕ 均关闭。
+   - 同时只开一个：打开一个会关掉另一个，避免卡片互相遮挡、也遮住对方按钮。
+   - 「支持」卡片内容短且无输入框，仍沿用 hover 展开（见 setupSupportPop）。
+   注意：不用 hover 展开前两者——卡片里有输入框和下拉菜单，鼠标移出会把正在填的表单收起。 */
+(function setupSidebarPops() {
+  const PAIRS = [
+    { btn: 'ai-sidebar-btn', pop: 'ai-sidebar-pop', close: 'ai-sidebar-close' },
+    { btn: 'modules-btn', pop: 'modules-pop', close: 'modules-close' },
+  ].map((p) => ({
+    ...p,
+    btnEl: document.getElementById(p.btn),
+    popEl: document.getElementById(p.pop),
+    closeEl: document.getElementById(p.close),
+  })).filter((p) => p.btnEl && p.popEl);
+
+  const show = (p) => {
+    // 注意：必须显式传参（hide(o)），写成 o.hide() 会把 this 当 p、实参为 undefined
+    PAIRS.forEach((o) => { if (o !== p) hide(o); });
+    p.popEl.classList.remove('hidden');
+    p.btnEl.setAttribute('aria-expanded', 'true');
+    if (p.btn === 'modules-btn' && typeof renderModuleManager === 'function') renderModuleManager();
+  };
+  const hide = (p) => {
+    p.popEl.classList.add('hidden');
+    p.btnEl.setAttribute('aria-expanded', 'false');
+  };
+  // 先把 show/hide 挂到每一项，再绑事件——否则 show 内部回调 hide 时会取到 undefined
+  PAIRS.forEach((p) => { p.show = show; p.hide = hide; });
+  PAIRS.forEach((p) => {
+    p.btnEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (p.popEl.classList.contains('hidden')) show(p); else hide(p);
+    });
+    if (p.closeEl) p.closeEl.addEventListener('click', () => hide(p));
   });
-  if (close) close.addEventListener('click', hide);
-  // 点卡片外部收起（模型下拉菜单也靠这条关闭）
-  document.addEventListener('click', (e) => {
-    if (pop.contains(e.target) || btn.contains(e.target)) return;
-    hide();
-  });
-  // Esc 关闭
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hide();
-  });
+
+  // 点卡片外关闭所有卡片（mock DOM 可能没有 document.addEventListener，做能力检测）
+  if (typeof document.addEventListener === 'function') {
+    document.addEventListener('click', (e) => {
+      PAIRS.forEach((p) => {
+        if (p.popEl.contains(e.target) || p.btnEl.contains(e.target)) return;
+        hide(p);
+      });
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') PAIRS.forEach((p) => hide(p));
+    });
+  }
 })();
 
 (async function init() {
@@ -3193,27 +3219,13 @@ function renderModuleManager() {
   });
 }
 
-/* 侧栏「模块」卡片：点击展开、点外部收起（与 AI 配置同款） */
-(function setupModulesPop() {
-  const btn = document.getElementById('modules-btn');
-  const pop = document.getElementById('modules-pop');
-  const close = document.getElementById('modules-close');
-  if (!btn || !pop) return;
-  const show = () => { pop.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); renderModuleManager(); };
-  const hide = () => { pop.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (pop.classList.contains('hidden')) show(); else hide();
-  });
-  if (close) close.addEventListener('click', hide);
-  document.addEventListener('click', (e) => {
-    if (pop.contains(e.target) || btn.contains(e.target)) return;
-    hide();
-  });
+/* 「恢复全部模块」按钮：清空停用记录并刷新。
+   卡片的开合逻辑已并入 setupSidebarPops，这里只处理重置动作。 */
+(function setupModulesReset() {
   const reset = document.getElementById('modules-reset');
-  if (reset) reset.addEventListener('click', () => {
+  if (!reset) return;
+  reset.addEventListener('click', () => {
     saveDisabledModules(new Set());
-    renderModuleManager();
     location.reload();
   });
 })();

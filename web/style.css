@@ -325,27 +325,41 @@ body.sidebar-collapsed .mega-support .support-btn { width: 100%; height: 40px; p
   animation: support-pop-in .18s ease-out;
 }
 body.sidebar-collapsed .support-pop { left: calc(var(--sidebar-w-collapsed) + 12px); }
-/* AI 配置：表单更宽更高，紧贴按钮上沿向上展开。
-   注意：按钮虽设了 position:relative，但 .mega-sidebar 是 fixed，它才是真正的
-   offsetParent，absolute 会相对整条侧栏定位而跑出屏幕。故这里用 fixed 直接
-   相对视口定位：侧栏宽度已知，卡片左缘 = 侧栏宽 + 12px；纵向用 bottom 贴住
-   与按钮同一水平带的底部（按钮底边约在视口底部上方 85px 处，由侧栏内边距决定）。 */
-#ai-sidebar-pop {
-  position: fixed; z-index: 999;
-  width: 420px;
-  left: calc(var(--sidebar-w) + 12px);
+/* AI 配置与模块管理的卡片：以各自的按钮容器为锚点定位。
+   不用 bottom 相对视口的固定值——侧栏里胶囊一多一少，那个值就会漂移
+   （模块管理曾因写死 bottom:186px 而与按钮错位）。
+   .mega-support 设 position:relative 后，卡片 absolute 相对本容器定位，
+   永远紧贴自己的按钮；容器在侧栏内的实际位置由布局决定，不受影响。 */
+.mega-support { position: relative; }
+#ai-sidebar-pop,
+#modules-pop {
+  position: absolute;
+  left: calc(100% + 12px);    /* 按钮右侧，落在侧栏之外 */
+  bottom: calc(100% + 10px);  /* 贴按钮上沿，向上展开 */
   right: auto; top: auto;
-  bottom: 131px;               /* 贴住按钮上沿（按钮顶边距视口底 121px + 10px 间距） */
-  max-height: calc(100vh - 96px);
-  overflow-y: auto;
   margin: 0;
-  /* 卡片风格与侧栏暖色体系一致，不再沿用侦探页的深色卡片 */
+}
+#ai-sidebar-pop {
+  z-index: 999;
+  width: 420px;
+  max-height: min(560px, calc(100vh - 120px));
+  overflow-y: auto;
+}
+#modules-pop {
+  /* 层级高于 AI 卡片：两者同时打开时，「模块管理」压在上层，不会被遮住按钮 */
+  z-index: 1002;
+  width: 300px;
+}
+body.sidebar-collapsed #ai-sidebar-pop,
+body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
+
+/* 卡片风格与侧栏暖色体系一致，不再沿用侦探页的深色卡片 */
+#ai-sidebar-pop, #modules-pop {
   background: #fdf6e9; color: var(--ink);
   border: 1px solid #c9b88a; border-radius: 12px;
   box-shadow: 0 10px 30px rgba(90,66,30,.22);
   padding: 14px 16px 16px;
 }
-body.sidebar-collapsed #ai-sidebar-pop { left: calc(var(--sidebar-w-collapsed) + 12px); }
 #ai-sidebar-pop .support-pop-head { color: #8a4b1f; font-size: 16px; margin-bottom: 8px; }
 #ai-sidebar-pop .support-pop-star { font-size: 17px; }
 #ai-sidebar-pop .support-pop-close { color: #8a7a5c; }
@@ -373,20 +387,7 @@ body.sidebar-collapsed #ai-sidebar-pop { left: calc(var(--sidebar-w-collapsed) +
 #ai-sidebar-pop .create-save:hover { background: #a82828; }
 #ai-sidebar-pop .ai-save-msg { color: #8a7a5c; }
 
-/* 模块管理：贴按钮上沿展开（模块按钮排在 AI 配置之上，故底边更高） */
-#modules-pop {
-  position: fixed; z-index: 999;
-  width: 300px;
-  left: calc(var(--sidebar-w) + 12px);
-  right: auto; top: auto;
-  bottom: 186px;
-  margin: 0;
-  background: #fdf6e9; color: var(--ink);
-  border: 1px solid #c9b88a; border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(90,66,30,.22);
-  padding: 14px 16px;
-}
-body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12px); }
+/* 模块管理的定位与配色已在上面与 AI 卡片合并声明（均以各自按钮容器为锚点） */
 #modules-pop .support-pop-head { color: #8a4b1f; font-size: 16px; margin-bottom: 8px; }
 #modules-pop .support-pop-star { font-size: 17px; }
 #modules-pop .support-pop-close { color: #8a7a5c; }
