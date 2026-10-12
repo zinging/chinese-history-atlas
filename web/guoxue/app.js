@@ -63,7 +63,10 @@ async function loadSect(sect) {
     return;
   }
   try {
-    const r = await fetch(`/data/${meta.data}/index.json?v=v56`);
+    // 数据路径必须用相对路径：本页面在 web/guoxue/ 下，../../data/ 指向仓库 data/。
+    // 若写成绝对路径 /data/，本地 serve.mjs 能命中，但部署到 GitHub Pages 子目录
+    // （如 /chinese-history-atlas/web/guoxue/）时会解析到域名根，必然 404。
+    const r = await fetch(`../../data/${meta.data}/index.json?v=v56`);
     bookData = await r.json();
     SECT_CACHE[sect] = bookData;
   } catch (e) {
@@ -176,7 +179,7 @@ function renderBooks() {
     return `
     <div class="book-card" data-i="${i}">
       <div class="book-name">${topLabel}</div>
-      ${b.portrait ? `<div class="portrait"><img src="/data/portraits/${b.portrait}" alt="${b.person || b.name}" loading="lazy" decoding="async" width="84" height="84"></div>` : `<div class="icon">${b.icon || "📖"}</div>`}
+      ${b.portrait ? `<div class="portrait"><img src="../../data/portraits/${b.portrait}" alt="${b.person || b.name}" loading="lazy" decoding="async" width="84" height="84"></div>` : `<div class="icon">${b.icon || "📖"}</div>`}
       ${b.person ? `<div class="person-name">${b.person}</div>` : ""}
       <div class="meta">${cardMeta}</div>
     </div>`;
@@ -208,7 +211,7 @@ function renderBookDetail(b) {
   const el = $("#book-detail");
   el.classList.remove("hidden");
   const portraitHtml = b.portrait
-    ? `<img class="detail-portrait" src="/data/portraits/${b.portrait}" alt="${b.person || b.name}">`
+    ? `<img class="detail-portrait" src="../../data/portraits/${b.portrait}" alt="${b.person || b.name}">`
     : `<div class="detail-icon">${b.icon || "📖"}</div>`;
   const bookTagHtml = b.person
     ? `<span class="book-tag">《${b.name}》</span> · `
