@@ -256,7 +256,12 @@ async function _fetchDynasty(dyn) {
     loadJSON(p(lay.cases)),
   ];
   if (hasMap) urls.push(maybe(p(lay.places)), maybe(p(lay.routes)), maybe(p(lay.mapEvents)));
-  if (dyn === 'ming') urls.push(maybe(p('institutions/institutions.json')), maybe(p('sources/sources.json')));
+  // 明朝额外加载机构制度与史料出处；非明朝补两个 null 占位，保证后续解构位置固定（否则题库会错位为空）
+  if (dyn === 'ming') {
+    urls.push(maybe(p('institutions/institutions.json')), maybe(p('sources/sources.json')));
+  } else {
+    urls.push(null, null);
+  }
   const quizPath = dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json';
   urls.push(maybe(p(quizPath)));
 
@@ -2526,7 +2531,8 @@ async function askHistoryTeacher(question) {
   return askLLM(question, ctx);
 }
 
-/** 历史侦探页「AI老师配置」：默认折叠；模型可一键拉取 + 可搜索下拉点选（无需手填）。
+/** AI 老师配置：挂在左侧模块栏「支持」上方的胶囊里（内容由 renderDetectiveAI 注入），
+ *  展开/收起由侧栏按钮控制，故此处不再自带折叠标题。
  *  配置只存在本机。问答统一走上方「AI 史老师」面板，故此处不再放聊天框。 */
 let fetchedModels = [];
 function renderDetectiveAI() {
@@ -2534,39 +2540,32 @@ function renderDetectiveAI() {
   if (!box) return;
   box.innerHTML = `
     <div class="detective-ai-card ai-config-card">
-      <button type="button" id="ai-config-toggle" class="ai-config-toggle" aria-expanded="false">
-        <span class="ai-config-toggle-title">🤖 AI老师配置</span>
-        <span class="ai-config-toggle-sub">配置接口地址、密钥和模型 · 只保存在本机</span>
-        <span class="ai-config-chevron">▾</span>
-      </button>
-      <div class="ai-config-body collapsed" id="ai-config-body">
-        <div class="ai-config-row">
-          <label class="ai-field">接口地址（OpenAI 兼容）
-            <input id="ai-base-url" type="text" placeholder="https://api.deepseek.com/v1/chat/completions" />
-          </label>
-          <label class="ai-field">API Key
-            <input id="ai-api-key" type="password" placeholder="sk-..." />
-          </label>
-        </div>
-        <div class="ai-config-row">
-          <label class="ai-field ai-field-model">默认模型
-            <div class="model-combo">
-              <input id="ai-model-input" type="text" placeholder="点右侧 ⬇ 自动拉取模型，再点 ▾ 选择" autocomplete="off" />
-              <button type="button" id="ai-model-fetch" class="model-icon-btn" title="拉取该接口支持的模型列表">⬇</button>
-              <button type="button" id="ai-model-open" class="model-icon-btn" title="展开模型列表选择">▾</button>
-              <div class="model-menu hidden" id="ai-model-menu">
-                <input type="text" id="ai-model-search" class="model-search" placeholder="搜索模型…" />
-                <div class="model-options" id="ai-model-options"></div>
-              </div>
+      <div class="ai-config-row">
+        <label class="ai-field">接口地址（OpenAI 兼容）
+          <input id="ai-base-url" type="text" placeholder="如：https://api.deepseek.com/v1/chat/completions" />
+        </label>
+        <label class="ai-field">API Key
+          <input id="ai-api-key" type="password" placeholder="如：sk-..." />
+        </label>
+      </div>
+      <div class="ai-config-row">
+        <label class="ai-field ai-field-model">默认模型
+          <div class="model-combo">
+            <input id="ai-model-input" type="text" placeholder="如：点右侧 ⬇ 自动拉取模型，再点 ▾ 选择" autocomplete="off" />
+            <button type="button" id="ai-model-fetch" class="model-icon-btn" title="拉取该接口支持的模型列表">⬇</button>
+            <button type="button" id="ai-model-open" class="model-icon-btn" title="展开模型列表选择">▾</button>
+            <div class="model-menu hidden" id="ai-model-menu">
+              <input type="text" id="ai-model-search" class="model-search" placeholder="搜索模型…" />
+              <div class="model-options" id="ai-model-options"></div>
             </div>
-          </label>
-          <label class="ai-field">活泼度（0-2）
-            <input id="ai-temperature" type="number" min="0" max="2" step="0.1" value="0.7" />
-          </label>
-          <div class="ai-field ai-field-btns">
-            <button id="ai-save" class="create-save llm-btn">保存配置</button>
-            <span id="ai-save-msg" class="ai-save-msg"></span>
           </div>
+        </label>
+        <label class="ai-field">活泼度（0-2）
+          <input id="ai-temperature" type="number" min="0" max="2" step="0.1" value="0.7" />
+        </label>
+        <div class="ai-field ai-field-btns">
+          <button id="ai-save" class="create-save llm-btn">保存配置</button>
+          <span id="ai-save-msg" class="ai-save-msg"></span>
         </div>
       </div>
     </div>`;
@@ -2578,12 +2577,7 @@ function renderDetectiveAI() {
   if (c.model) $('#ai-model-input').value = c.model;
   if (c.temperature != null) $('#ai-temperature').value = c.temperature;
 
-  // 折叠 / 展开
-  $('#ai-config-toggle').addEventListener('click', () => {
-    const collapsed = $('#ai-config-body').classList.toggle('collapsed');
-    $('#ai-config-toggle').classList.toggle('open', !collapsed);
-    $('#ai-config-toggle').setAttribute('aria-expanded', String(!collapsed));
-  });
+  // 折叠/展开由侧栏胶囊按钮控制（见 initSidebarSupport），此处不再自带折叠标题
 
   // 收集当前表单（model 取 combobox 输入框）
   const collect = () => ({
@@ -2697,14 +2691,14 @@ function renderDetectiveAI() {
   });
 }
 
-/** 展开（true）或折叠（false）AI老师配置面板，供「去配置」按钮调用 */
+/** 展开（true）或收起（false）侧栏里的「AI 配置」卡片，供「去配置 AI 老师」按钮调用。
+ *  配置表单已挂到侧栏，不再有独立的折叠标题，故这里直接开关卡片本身。 */
 function expandAIConfig(open) {
-  const body = $('#ai-config-body');
-  const toggle = $('#ai-config-toggle');
-  if (!body || !toggle) return;
-  body.classList.toggle('collapsed', !open);
-  toggle.classList.toggle('open', open);
-  toggle.setAttribute('aria-expanded', String(open));
+  const pop = $('#ai-sidebar-pop');
+  const btn = $('#ai-sidebar-btn');
+  if (!pop || !btn) return;
+  pop.classList.toggle('hidden', !open);
+  btn.setAttribute('aria-expanded', String(!!open));
 }
 
 // ---------- 启动 ----------
@@ -2904,7 +2898,7 @@ async function askLLM(message, history = []) {
   return r.json();
 }
 
-// 右上角「支持」弹出卡片：hover 展开
+// 侧栏「支持」弹出卡片：hover 展开
 (function setupSupportPop() {
   const btn = document.getElementById('support-btn');
   const pop = document.getElementById('support-pop');
@@ -2918,6 +2912,31 @@ async function askLLM(message, history = []) {
   btn.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
   pop.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
   close.addEventListener('click', hide);
+})();
+
+/* 侧栏「AI 配置」卡片：点击展开、点外部或 ✕ 收起。
+   不用 hover——卡片里有输入框和下拉菜单，鼠标移出去就会把正在填的表单收起。 */
+(function setupAiSidebarPop() {
+  const btn = document.getElementById('ai-sidebar-btn');
+  const pop = document.getElementById('ai-sidebar-pop');
+  const close = document.getElementById('ai-sidebar-close');
+  if (!btn || !pop) return;
+  const show = () => { pop.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); };
+  const hide = () => { pop.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (pop.classList.contains('hidden')) show(); else hide();
+  });
+  if (close) close.addEventListener('click', hide);
+  // 点卡片外部收起（模型下拉菜单也靠这条关闭）
+  document.addEventListener('click', (e) => {
+    if (pop.contains(e.target) || btn.contains(e.target)) return;
+    hide();
+  });
+  // Esc 关闭
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hide();
+  });
 })();
 
 (async function init() {

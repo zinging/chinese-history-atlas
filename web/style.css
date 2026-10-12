@@ -104,6 +104,7 @@ body {
   flex: 1; min-width: 0; margin-top: 0; border: 2px solid var(--border);
   border-radius: 8px; padding: 9px 11px; font-size: 15px; font-family: inherit; background: #fff;
 }
+.ai-config-card input::placeholder { color: #c9b092; font-size: 12px; opacity: 1; letter-spacing: .2px; }
 .model-icon-btn {
   flex: 0 0 auto; width: 42px; border: 2px solid var(--border); background: #fbf3e0;
   border-radius: 8px; font-size: 16px; cursor: pointer; color: #8a4b1f;
@@ -283,20 +284,37 @@ body.sidebar-collapsed .tabs {
 .support-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(201,169,106,.35); }
 .support-icon { font-size: 16px; color: #d4a017; }
 
-/* 侧栏底部的支持入口容器：固定占侧栏宽，贴底居中 */
+/* 侧栏底部的入口容器：固定占侧栏宽，贴底居中 */
 .mega-support {
-  margin-top: auto; padding: 6px 8px 10px;
+  margin-top: auto; padding: 6px 8px 0;
   display: flex; flex-direction: column; align-items: center;
 }
-/* 侧栏收缩态：按钮变窄只留星标，避免挤压 */
-body.sidebar-collapsed .mega-support { padding: 6px 4px 8px; }
-body.sidebar-collapsed .support-btn { padding: 7px 10px; }
+.mega-support:last-child { padding-bottom: 10px; }
+/* 侧栏收缩态：按钮变窄只留图标，避免挤压 */
+body.sidebar-collapsed .mega-support { padding: 6px 0 0; align-self: stretch; width: 100%; }
+body.sidebar-collapsed .mega-support:last-child { padding-bottom: 8px; }
 body.sidebar-collapsed .support-btn > span:not(.support-icon) { display: none; }
-/* 侧栏只有 104px 宽，按钮若换行会把「支持」两字挤成竖排 */
-.mega-support .support-btn { white-space: nowrap; font-size: 14px; padding: 6px 12px; }
-.mega-support .support-icon { font-size: 15px; }
 
-/* 卡片：从按钮右侧弹出。原来贴窗口右上角，现偏移到侧栏右缘外侧，避免遮住正文 */
+/* 两个胶囊（AI 配置 / 支持）：同宽、同高、圆角矩形、间距 5px。
+   侧栏只有 104px 宽，固定宽度保证两枚胶囊视觉对齐，不受文字长度影响。 */
+.mega-support .support-btn {
+  white-space: nowrap;
+  font-size: 13px;
+  width: 88px;
+  height: 32px;
+  padding: 0 6px;
+  justify-content: center;
+  border-radius: 6px;          /* 圆角矩形，非胶囊 */
+  letter-spacing: -0.3px;
+}
+.mega-support .support-icon { font-size: 14px; }
+.mega-support + .mega-support { margin-top: 5px; padding-top: 0; }
+body.sidebar-collapsed .mega-support + .mega-support { margin-top: 5px; padding-top: 0; }
+body.sidebar-collapsed .mega-support .support-btn { width: 100%; height: 40px; padding: 0; }
+
+/* 侧栏胶囊的弹出卡片：从按钮右侧展开，落在侧栏右缘之外，不遮挡正文。
+   「支持」卡片内容短，贴视口底部；「AI 配置」有表单，改为紧贴按钮上方展开，
+   避免出现在页面最底部而与按钮脱节。 */
 .support-pop {
   position: fixed; z-index: 999;
   left: calc(var(--sidebar-w) + 12px); bottom: 12px;
@@ -307,6 +325,53 @@ body.sidebar-collapsed .support-btn > span:not(.support-icon) { display: none; }
   animation: support-pop-in .18s ease-out;
 }
 body.sidebar-collapsed .support-pop { left: calc(var(--sidebar-w-collapsed) + 12px); }
+/* AI 配置：表单更宽更高，紧贴按钮上沿向上展开。
+   注意：按钮虽设了 position:relative，但 .mega-sidebar 是 fixed，它才是真正的
+   offsetParent，absolute 会相对整条侧栏定位而跑出屏幕。故这里用 fixed 直接
+   相对视口定位：侧栏宽度已知，卡片左缘 = 侧栏宽 + 12px；纵向用 bottom 贴住
+   与按钮同一水平带的底部（按钮底边约在视口底部上方 85px 处，由侧栏内边距决定）。 */
+#ai-sidebar-pop {
+  position: fixed; z-index: 999;
+  width: 420px;
+  left: calc(var(--sidebar-w) + 12px);
+  right: auto; top: auto;
+  bottom: 131px;               /* 贴住按钮上沿（按钮顶边距视口底 121px + 10px 间距） */
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  margin: 0;
+  /* 卡片风格与侧栏暖色体系一致，不再沿用侦探页的深色卡片 */
+  background: #fdf6e9; color: var(--ink);
+  border: 1px solid #c9b88a; border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(90,66,30,.22);
+  padding: 14px 16px 16px;
+}
+body.sidebar-collapsed #ai-sidebar-pop { left: calc(var(--sidebar-w-collapsed) + 12px); }
+#ai-sidebar-pop .support-pop-head { color: #8a4b1f; font-size: 16px; margin-bottom: 8px; }
+#ai-sidebar-pop .support-pop-star { font-size: 17px; }
+#ai-sidebar-pop .support-pop-close { color: #8a7a5c; }
+#ai-sidebar-pop .support-pop-close:hover { color: #8a1c1c; }
+#ai-sidebar-pop .support-pop-text {
+  margin: 0 0 12px; font-size: 13px; line-height: 1.7; color: #5c5140;
+  background: #fbf3e0; border-radius: 8px; padding: 8px 10px;
+}
+#ai-sidebar-pop .detective-ai-card {
+  background: #fff; border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px;
+}
+#ai-sidebar-pop .ai-field { color: #5a4a2a; font-size: 13px; }
+#ai-sidebar-pop .ai-field input {
+  border: 1.5px solid var(--border); border-radius: 8px; background: #fffdf7;
+  padding: 7px 10px; font-size: 14px;
+}
+#ai-sidebar-pop .ai-field input:focus { outline: none; border-color: var(--gold); }
+#ai-sidebar-pop .model-icon-btn { background: #fbf3e0; border-color: var(--border); color: #8a4b1f; }
+#ai-sidebar-pop .model-icon-btn:hover { background: #f5e6c4; }
+#ai-sidebar-pop .model-menu { background: #fffdf7; border-color: var(--border); }
+#ai-sidebar-pop .model-search { border-bottom-color: var(--border); }
+#ai-sidebar-pop .model-option:hover { background: #fbf3e0; }
+#ai-sidebar-pop .create-save { background: var(--primary); }
+#ai-sidebar-pop .create-save:hover { background: #a82828; }
+#ai-sidebar-pop .ai-save-msg { color: #8a7a5c; }
 /* 卡片顶部用三角指向左侧按钮，取代原来的向下展开 */
 @keyframes support-pop-in {
   from { opacity: 0; transform: translateY(8px) scale(.97); }

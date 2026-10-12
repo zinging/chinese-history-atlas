@@ -71,6 +71,25 @@
       <div class="mega-sub">诗心词韵</div>
     </button>
 
+    <!-- AI 老师配置：三个板块共用，放在侧栏「支持」上方；
+         展开卡片与「支持」同款（点击展开、点外部关闭），内容由 app.js 的 renderDetectiveAI() 注入 -->
+    <div class="mega-support">
+      <button class="support-btn" id="ai-sidebar-btn" aria-haspopup="true" aria-expanded="false" title="AI 老师配置">
+        <span class="support-icon">🤖</span><span>AI 配置</span>
+      </button>
+      <div class="support-pop hidden" id="ai-sidebar-pop" role="dialog" aria-label="AI 老师配置">
+        <div class="support-pop-head">
+          <span class="support-pop-star">🤖</span>
+          <b>AI 老师配置</b>
+          <button class="support-pop-close" id="ai-sidebar-close" aria-label="关闭">✕</button>
+        </div>
+        <p class="support-pop-text">
+          填入 OpenAI 兼容接口地址、API Key 与模型，问答即可使用 AI 老师点评。配置只保存在本机，不上传任何服务器。
+        </p>
+        <div id="detective-ai" class="detective-ai"></div>
+      </div>
+    </div>
+
     <!-- 支持：三个板块共用，样式与交互保持原样（hover 展开卡片），只是位置改到侧栏底部 -->
     <div class="mega-support">
       <button class="support-btn" id="support-btn" aria-haspopup="true" aria-expanded="false" title="支持这个项目">
@@ -160,7 +179,7 @@
     <div id="detective-clues" class="detective-clues"></div>
     <div id="detective-create" class="detective-create"></div>
     <div id="detective-ask" class="detective-ask"></div>
-    <div id="detective-ai" class="detective-ai"></div>
+    <!-- AI 老师配置已移到左侧模块栏（与「支持」并列），此处不再重复 -->
   </main>
 
   <footer class="footer" id="footer">疆域轮廓据《明史·地理志》示意，非精确边界 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《明史》《明实录》为主要依据</footer>
