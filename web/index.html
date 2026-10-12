@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中国历史图谱 · Chinese History Atlas</title>
 <link rel="stylesheet" href="vendor/leaflet.css">
-<link rel="stylesheet" href="style.css?v=gap3">
+<link rel="stylesheet" href="style.css?v=gap4">
 </head>
 <body>
 <div id="app">
@@ -24,52 +24,27 @@
     <div class="mega-logo" title="中华历史 · Chinese History Atlas">
       <img src="assets/logo-zhls.png?v=2" alt="中华历史" style="width:100%;display:block;">
     </div>
-    <button class="mega-btn active" data-mega="history">
-      <div class="mega-icon">
-        <svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <!-- 冕板（延）-->
-          <rect x="5" y="9" width="22" height="2.5" rx="1"/>
-          <!-- 前旒：垂珠 -->
-          <line x1="8" y1="11.5" x2="8" y2="20"/><circle cx="8" cy="13.5" r="1"/><circle cx="8" cy="16" r="1"/><circle cx="8" cy="18.5" r="1"/>
-          <line x1="12.5" y1="11.5" x2="12.5" y2="20"/><circle cx="12.5" cy="13.5" r="1"/><circle cx="12.5" cy="16" r="1"/><circle cx="12.5" cy="18.5" r="1"/>
-          <line x1="16" y1="11.5" x2="16" y2="20"/><circle cx="16" cy="13.5" r="1"/><circle cx="16" cy="16" r="1"/><circle cx="16" cy="18.5" r="1"/>
-          <line x1="19.5" y1="11.5" x2="19.5" y2="20"/><circle cx="19.5" cy="13.5" r="1"/><circle cx="19.5" cy="16" r="1"/><circle cx="19.5" cy="18.5" r="1"/>
-          <line x1="24" y1="11.5" x2="24" y2="20"/><circle cx="24" cy="13.5" r="1"/><circle cx="24" cy="16" r="1"/><circle cx="24" cy="18.5" r="1"/>
-          <!-- 簪导 -->
-          <line x1="4" y1="10.2" x2="28" y2="10.2" stroke-width="1.2"/>
-        </svg>
+
+    <!-- 模块按钮由 app.js 依 modules.json 动态生成（见 renderModuleList），此处不再硬编码 -->
+
+    <!-- 模块管理：停用/启用板块 -->
+    <div class="mega-support">
+      <button class="support-btn" id="modules-btn" aria-haspopup="true" aria-expanded="false" title="模块管理">
+        <span class="support-icon">🧩</span><span>模块</span>
+      </button>
+      <div class="support-pop hidden" id="modules-pop" role="dialog" aria-label="模块管理">
+        <div class="support-pop-head">
+          <span class="support-pop-star">🧩</span>
+          <b>模块管理</b>
+          <button class="support-pop-close" id="modules-close" aria-label="关闭">✕</button>
+        </div>
+        <p class="support-pop-text">
+          停用的模块不会显示在侧栏，也不会加载它的资源。数据仍留在仓库里，随时可以再启用。
+        </p>
+        <div id="modules-list" class="modules-list"></div>
+        <button class="create-save modules-reset" id="modules-reset">恢复全部模块</button>
       </div>
-      <div class="mega-name">帝王谱系</div>
-      <div class="mega-sub">历代皇帝</div>
-    </button>
-    <button class="mega-btn" data-mega="guoxue">
-      <div class="mega-icon">
-        <svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <!-- 卷轴：左右轴头 -->
-          <ellipse cx="7" cy="16" rx="2.5" ry="6"/>
-          <ellipse cx="25" cy="16" rx="2.5" ry="6"/>
-          <!-- 卷面 -->
-          <path d="M9.5 11 L22.5 11 M9.5 21 L22.5 21"/>
-          <!-- 中间文字线 -->
-          <line x1="12" y1="14.5" x2="20" y2="14.5"/>
-          <line x1="12" y1="17.5" x2="20" y2="17.5"/>
-        </svg>
-      </div>
-      <div class="mega-name">思想源流</div>
-      <div class="mega-sub">圣贤书林</div>
-    </button>
-    <button class="mega-btn" data-mega="shici">
-      <div class="mega-icon">
-        <svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <!-- 印章边框 -->
-          <rect x="5" y="5" width="22" height="22" rx="2" fill="currentColor" fill-opacity=".12"/>
-          <!-- 诗字（篆刻风格简化） -->
-          <text x="16" y="22" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none" font-family="serif">诗</text>
-        </svg>
-      </div>
-      <div class="mega-name">诗词鉴赏</div>
-      <div class="mega-sub">诗心词韵</div>
-    </button>
+    </div>
 
     <!-- AI 老师配置：三个板块共用，放在侧栏「支持」上方；
          展开卡片与「支持」同款（点击展开、点外部关闭），内容由 app.js 的 renderDetectiveAI() 注入 -->
@@ -200,6 +175,6 @@
 <script src="search-core.js?v=sc6"></script>
 <script src="vendor/leaflet.js"></script>
 <script>window.__dbg={};</script>
-<script src="app.js?v=gap3"></script>
+<script src="app.js?v=gap4"></script>
 </body>
 </html>

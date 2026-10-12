@@ -1,0 +1,39 @@
+{
+  "$comment": [
+    "模块清单：新增模块只需在这里加一条，并把资源放进 web/ 下对应目录。",
+    "enabled: false 表示停用——侧栏不显示、面板不创建、资源一个字节都不加载。",
+    "用户在页面上关闭的模块会记进 localStorage（键 dsh-disabled-modules），",
+    "优先于本文件的 enabled；想恢复默认，删掉该项或点界面上的「恢复已停用模块」。",
+    "kind: 'inline' 表示正文直接写在 index.html 的 #mega-<id> 面板里；",
+    "kind: 'iframe' 表示独立的页面，用 entry 指向入口 HTML（首次进入时才装载）。"
+  ],
+  "modules": [
+    {
+      "id": "history",
+      "name": "帝王谱系",
+      "sub": "历代皇帝",
+      "kind": "inline",
+      "entry": null,
+      "enabled": true,
+      "icon": "crown"
+    },
+    {
+      "id": "guoxue",
+      "name": "思想源流",
+      "sub": "圣贤书林",
+      "kind": "iframe",
+      "entry": "guoxue/index.html",
+      "enabled": true,
+      "icon": "scroll"
+    },
+    {
+      "id": "shici",
+      "name": "诗词鉴赏",
+      "sub": "诗心词韵",
+      "kind": "iframe",
+      "entry": "guoxue/shici.html",
+      "enabled": true,
+      "icon": "seal"
+    }
+  ]
+}

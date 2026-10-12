@@ -372,6 +372,48 @@ body.sidebar-collapsed #ai-sidebar-pop { left: calc(var(--sidebar-w-collapsed) +
 #ai-sidebar-pop .create-save { background: var(--primary); }
 #ai-sidebar-pop .create-save:hover { background: #a82828; }
 #ai-sidebar-pop .ai-save-msg { color: #8a7a5c; }
+
+/* 模块管理：贴按钮上沿展开（模块按钮排在 AI 配置之上，故底边更高） */
+#modules-pop {
+  position: fixed; z-index: 999;
+  width: 300px;
+  left: calc(var(--sidebar-w) + 12px);
+  right: auto; top: auto;
+  bottom: 186px;
+  margin: 0;
+  background: #fdf6e9; color: var(--ink);
+  border: 1px solid #c9b88a; border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(90,66,30,.22);
+  padding: 14px 16px;
+}
+body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12px); }
+#modules-pop .support-pop-head { color: #8a4b1f; font-size: 16px; margin-bottom: 8px; }
+#modules-pop .support-pop-star { font-size: 17px; }
+#modules-pop .support-pop-close { color: #8a7a5c; }
+#modules-pop .support-pop-close:hover { color: #8a1c1c; }
+#modules-pop .support-pop-text {
+  margin: 0 0 12px; font-size: 13px; line-height: 1.7; color: #5c5140;
+  background: #fbf3e0; border-radius: 8px; padding: 8px 10px;
+}
+.modules-list { display: flex; flex-direction: column; gap: 6px; }
+.modules-item {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 11px; cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.modules-item:hover { border-color: var(--gold); background: #fffdf7; }
+.modules-item input { flex: 0 0 auto; width: 16px; height: 16px; cursor: pointer; }
+.modules-item-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.modules-item-sub { font-size: 12px; color: var(--muted); margin-left: auto; }
+.modules-reset {
+  margin-top: 12px; width: 100%;
+  background: transparent; color: #8a6d2f;
+  border: 1.5px solid #c9b88a; border-radius: 8px;
+  font-size: 13px; font-weight: 700; padding: 8px 0;
+  font-family: inherit; cursor: pointer; transition: all .15s;
+}
+.modules-reset:hover { background: #fbf3e0; border-color: var(--gold); color: #8a4b1f; }
 /* 卡片顶部用三角指向左侧按钮，取代原来的向下展开 */
 @keyframes support-pop-in {
   from { opacity: 0; transform: translateY(8px) scale(.97); }

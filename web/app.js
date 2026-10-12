@@ -3011,28 +3011,209 @@ async function askLLM(message, history = []) {
   });
 })();
 
-// 大模块切换（帝王谱系 / 典籍长河 / 诗词鉴赏）
-// 三个面板统一在此显隐；典籍长河与诗词鉴赏各自一个 iframe，首次进入才加载，
-// 之后复用同一实例（再次进入无需重新请求）。
-const MEGA_MODULES = [
-  { id: 'history', frameId: null, src: null },
-  { id: 'guoxue', frameId: 'guoxue-frame', src: 'guoxue/index.html' },
-  { id: 'shici', frameId: 'shici-frame', src: 'guoxue/shici.html' },
-];
+/* ============================================================
+ * 模块运行时：从 web/modules.json 读取有哪些板块，生成侧栏按钮与面板。
+ * 新增板块 = 加一条清单 + 放一份资源；停用 = enabled:false（或在界面里关掉）。
+ *   - kind=inline：面板已写在 index.html 里（#mega-<id>），只负责显隐。
+ *   - kind=iframe：独立页面，懒加载——首次进入才设 src，之后复用同一实例。
+ * 停用的模块既不显示也不加载资源（未启用的 iframe 面板会被移除）。
+ * ============================================================ */
 
-document.querySelectorAll('.mega-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.mega-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const which = btn.dataset.mega;
-    for (const m of MEGA_MODULES) {
-      const panel = document.getElementById('mega-' + m.id);
-      if (panel) panel.classList.toggle('hidden', m.id !== which);
-      // 首次进入该板块才装载子站；已经装载过的保持原实例
-      if (m.id === which && m.frameId) {
-        const frame = document.getElementById(m.frameId);
-        if (frame && !frame.src) frame.src = m.src;
-      }
-    }
+/** 读取用户停用的模块（localStorage 优先于 modules.json 的 enabled） */
+function loadDisabledModules() {
+  try {
+    const raw = localStorage.getItem('dsh-disabled-modules');
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch { return new Set(); }
+}
+function saveDisabledModules(set) {
+  try { localStorage.setItem('dsh-disabled-modules', JSON.stringify([...set])); } catch { /* 隐私模式忽略 */ }
+}
+
+/** 侧栏图标：与清单里的 icon 字段对应。新增图标在此加一条。 */
+const MODULE_ICONS = {
+  crown: `<svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="5" y="9" width="22" height="2.5" rx="1"/>
+      <line x1="8" y1="11.5" x2="8" y2="20"/><circle cx="8" cy="13.5" r="1"/><circle cx="8" cy="16" r="1"/><circle cx="8" cy="18.5" r="1"/>
+      <line x1="12.5" y1="11.5" x2="12.5" y2="20"/><circle cx="12.5" cy="13.5" r="1"/><circle cx="12.5" cy="16" r="1"/><circle cx="12.5" cy="18.5" r="1"/>
+      <line x1="16" y1="11.5" x2="16" y2="20"/><circle cx="16" cy="13.5" r="1"/><circle cx="16" cy="16" r="1"/><circle cx="16" cy="18.5" r="1"/>
+      <line x1="19.5" y1="11.5" x2="19.5" y2="20"/><circle cx="19.5" cy="13.5" r="1"/><circle cx="19.5" cy="16" r="1"/><circle cx="19.5" cy="18.5" r="1"/>
+      <line x1="24" y1="11.5" x2="24" y2="20"/><circle cx="24" cy="13.5" r="1"/><circle cx="24" cy="16" r="1"/><circle cx="24" cy="18.5" r="1"/>
+      <line x1="4" y1="10.2" x2="28" y2="10.2" stroke-width="1.2"/>
+    </svg>`,
+  scroll: `<svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="7" cy="16" rx="2.5" ry="6"/>
+      <ellipse cx="25" cy="16" rx="2.5" ry="6"/>
+      <path d="M9.5 11 L22.5 11 M9.5 21 L22.5 21"/>
+      <line x1="12" y1="14.5" x2="20" y2="14.5"/>
+      <line x1="12" y1="17.5" x2="20" y2="17.5"/>
+    </svg>`,
+  seal: `<svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="5" y="5" width="22" height="22" rx="2" fill="currentColor" fill-opacity=".12"/>
+      <text x="16" y="22" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none" font-family="serif">诗</text>
+    </svg>`,
+};
+
+/** 运行时状态：已启用的模块清单（启动后填充） */
+let ACTIVE_MODULES = [];
+let MEGA_MODULES = [];
+
+/** 切换到指定模块：其余面板隐藏，选中项首次进入时懒加载 */
+function activateModule(which) {
+  document.querySelectorAll('.mega-btn[data-mega]').forEach((b) => {
+    b.classList.toggle('active', b.dataset.mega === which);
   });
-});
+  for (const m of MEGA_MODULES) {
+    const panel = document.getElementById('mega-' + m.id);
+    if (panel) panel.classList.toggle('hidden', m.id !== which);
+    // iframe 模块：首次进入才装载，之后复用同一实例
+    if (m.id === which && m.kind === 'iframe') {
+      const frame = document.getElementById(m.id + '-frame');
+      if (frame && !frame.src && m.entry) frame.src = m.entry;
+    }
+  }
+  try { sessionStorage.setItem('dsh-active-module', which); } catch { /* 忽略 */ }
+}
+
+/** 依据清单渲染侧栏按钮，并为 iframe 模块补出懒加载面板 */
+function renderModuleList(modules) {
+  const sidebar = document.querySelector('.mega-sidebar');
+  if (!sidebar) return;
+  // 清掉旧按钮（保留卷收、logo、模块管理、AI 配置、支持等固定元素）
+  sidebar.querySelectorAll('.mega-btn[data-mega]').forEach((b) => b.remove());
+  const anchor = sidebar.querySelector('.mega-support');
+
+  // 逐个插到锚点之前（不用 createDocumentFragment：部分 mock DOM 未实现它）
+  modules.forEach((m, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'mega-btn' + (i === 0 ? ' active' : '');
+    btn.dataset.mega = m.id;
+    btn.title = `${m.name} · ${m.sub || ''}`;
+    btn.innerHTML = `<div class="mega-icon">${MODULE_ICONS[m.icon] || MODULE_ICONS.scroll}</div>`
+      + `<div class="mega-name">${m.name}</div>`
+      + `<div class="mega-sub">${m.sub || ''}</div>`;
+    btn.addEventListener('click', () => activateModule(m.id));
+    if (anchor && sidebar.insertBefore) sidebar.insertBefore(btn, anchor);
+    else sidebar.appendChild(btn);
+  });
+
+  // iframe 模块：面板已写在 index.html 里；这里只在缺失时补建，
+  // 并对 setAttribute/appendChild 等能力做检测（冒烟测试的 mock DOM 不完整）。
+  for (const m of modules) {
+    if (m.kind !== 'iframe') continue;
+    let panel = document.getElementById('mega-' + m.id);
+    if (panel) continue;
+    if (!document.createElement || !document.getElementById('app')) continue;
+    panel = document.createElement('div');
+    panel.className = 'mega-area hidden';
+    panel.id = 'mega-' + m.id;
+    const frame = document.createElement('iframe');
+    frame.id = m.id + '-frame';
+    frame.className = 'guoxue-frame';
+    frame.title = m.name;
+    if (frame.setAttribute) frame.setAttribute('frameborder', '0');
+    if (panel.appendChild) panel.appendChild(frame);
+    const app = document.getElementById('app');
+    if (app.appendChild) app.appendChild(panel);
+  }
+  // 停用的模块：移除面板，一个字节都不加载
+  for (const m of modules) {
+    if (m.kind !== 'iframe') continue;
+    const panel = document.getElementById('mega-' + m.id);
+    const frame = document.getElementById(m.id + '-frame');
+    if (frame && frame.src) frame.removeAttribute('src');   // 已装载的先卸载
+    if (panel && !m.enabled) panel.remove();
+  }
+}
+
+/** 启动：读清单 → 应用用户停用 → 渲染侧栏 → 恢复上次停留的模块 */
+async function initModules() {
+  let modules = [];
+  try {
+    const r = await loadJSON('modules.json');
+    modules = (r && r.modules) || [];
+  } catch (e) {
+    // 清单读不到时回退到内置清单，保证站点仍可用（例如某些测试的 mock 环境没有 fetch）
+    console.warn('modules.json 读取失败，回退到内置清单', e && e.message);
+    modules = [
+      { id: 'history', name: '帝王谱系', sub: '历代皇帝', kind: 'inline', enabled: true, icon: 'crown' },
+      { id: 'guoxue', name: '思想源流', sub: '圣贤书林', kind: 'iframe', entry: 'guoxue/index.html', enabled: true, icon: 'scroll' },
+      { id: 'shici', name: '诗词鉴赏', sub: '诗心词韵', kind: 'iframe', entry: 'guoxue/shici.html', enabled: true, icon: 'seal' },
+    ];
+  }
+  // 用户的停用选择优先于清单默认
+  const disabled = loadDisabledModules();
+  ACTIVE_MODULES = modules.map((m) => ({ ...m, enabled: m.enabled !== false && !disabled.has(m.id) }));
+  MEGA_MODULES = ACTIVE_MODULES.filter((m) => m.enabled);
+
+  if (!MEGA_MODULES.length) {
+    console.warn('所有模块均已停用，侧栏为空');
+    return;
+  }
+  renderModuleList(MEGA_MODULES);
+
+  // 恢复上次停留的模块；停用了就退回第一个
+  let which = MEGA_MODULES[0].id;
+  try {
+    const last = sessionStorage.getItem('dsh-active-module');
+    if (last && MEGA_MODULES.some((m) => m.id === last)) which = last;
+  } catch { /* 忽略 */ }
+  activateModule(which);
+}
+
+// 侧栏卷收与 AI 配置/支持卡片在 DOM 就绪时绑定；模块清单随后异步加载
+initModules();
+
+/* ---------- 模块管理面板：勾选启用/停用 ---------- */
+function renderModuleManager() {
+  const box = $('#modules-list');
+  if (!box || !ACTIVE_MODULES.length) return;
+  box.innerHTML = ACTIVE_MODULES.map((m) => `
+    <label class="modules-item">
+      <input type="checkbox" data-mid="${m.id}" ${m.enabled ? 'checked' : ''} />
+      <span class="modules-item-name">${m.name}</span>
+      <span class="modules-item-sub">${m.sub || ''}</span>
+    </label>`).join('');
+  box.querySelectorAll('input[data-mid]').forEach((cb) => {
+    cb.addEventListener('change', () => {
+      const id = cb.dataset.mid;
+      const def = ACTIVE_MODULES.find((m) => m.id === id);
+      if (def) def.enabled = cb.checked;
+      const disabled = loadDisabledModules();
+      if (cb.checked) disabled.delete(id); else disabled.add(id);
+      saveDisabledModules(disabled);
+      // 立刻生效：重算启用集合并重绘侧栏
+      MEGA_MODULES = ACTIVE_MODULES.filter((m) => m.enabled);
+      renderModuleList(MEGA_MODULES);
+      if (MEGA_MODULES.length) {
+        const cur = MEGA_MODULES.some((m) => m.id === id) ? id : MEGA_MODULES[0].id;
+        activateModule(cur);
+      }
+    });
+  });
+}
+
+/* 侧栏「模块」卡片：点击展开、点外部收起（与 AI 配置同款） */
+(function setupModulesPop() {
+  const btn = document.getElementById('modules-btn');
+  const pop = document.getElementById('modules-pop');
+  const close = document.getElementById('modules-close');
+  if (!btn || !pop) return;
+  const show = () => { pop.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); renderModuleManager(); };
+  const hide = () => { pop.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (pop.classList.contains('hidden')) show(); else hide();
+  });
+  if (close) close.addEventListener('click', hide);
+  document.addEventListener('click', (e) => {
+    if (pop.contains(e.target) || btn.contains(e.target)) return;
+    hide();
+  });
+  const reset = document.getElementById('modules-reset');
+  if (reset) reset.addEventListener('click', () => {
+    saveDisabledModules(new Set());
+    renderModuleManager();
+    location.reload();
+  });
+})();
