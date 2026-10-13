@@ -3079,10 +3079,13 @@ const MODULE_ICONS = {
       <text x="16" y="22" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none" font-family="serif">诗</text>
     </svg>`,
   gear: `<svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M7 25 L20 12"/>
-      <path d="M18 6 L26 14 L23 17 L15 9 Z"/>
-      <line x1="5" y1="27" x2="9" y2="23"/>
-      <circle cx="11" cy="21" r="1.2"/>
+      <circle cx="16" cy="16" r="10"/>
+      <circle cx="16" cy="16" r="1.5"/>
+      <path d="M16 9 L18 16 L16 23 L14 16 Z" fill="currentColor" fill-opacity=".25"/>
+      <line x1="16" y1="4" x2="16" y2="6"/>
+      <line x1="16" y1="26" x2="16" y2="28"/>
+      <line x1="4" y1="16" x2="6" y2="16"/>
+      <line x1="26" y1="16" x2="28" y2="16"/>
     </svg>`,
 };
 

@@ -67,7 +67,7 @@ async function loadSect(sect) {
     // 数据路径必须用相对路径：本页面在 web/guoxue/ 下，../../data/ 指向仓库 data/。
     // 若写成绝对路径 /data/，本地 serve.mjs 能命中，但部署到 GitHub Pages 子目录
     // （如 /chinese-history-atlas/web/guoxue/）时会解析到域名根，必然 404。
-    const r = await fetch(`../../data/${meta.data}/index.json?v=v73`);
+    const r = await fetch(`../../data/${meta.data}/index.json?v=v74`);
     bookData = await r.json();
     SECT_CACHE[sect] = bookData;
   } catch (e) {
@@ -83,7 +83,7 @@ function renderSect() {
   renderBooks();
   renderCases();
   renderQuiz();
-  initMap();
+  renderArtifacts();
 }
 
 /** 朝代分档与副标题。
@@ -110,11 +110,16 @@ function renderEraSwitch() {
   bar.classList.remove("hidden");
 
   const counts = {};
-  for (const b of books) {
-    const k = isCategory ? b.category : b.era;
+  const items = currentPage === "quiz"
+    ? (bookData.discourses || [])
+    : currentPage === "artifacts"
+      ? (bookData.artifacts || [])
+      : books;
+  for (const b of items) {
+    const k = isCategory ? (b.category || b.cat) : b.era;
     if (k) counts[k] = (counts[k] || 0) + 1;
   }
-  const total = books.length;
+  const total = items.length;
   const keys = isCategory
     ? ["工艺营造","医药本草","农书","算历","地理博物","生活艺术"].filter(k => counts[k])
     : ERAS.filter(k => counts[k]);
@@ -126,10 +131,10 @@ function renderEraSwitch() {
       + `<span class="sect-sub">${esc(sub)}</span></button>`;
   };
 
-  let html = cell("all", "全部", `${total} 部`);
+  const unit = currentPage === "quiz" ? "题" : currentPage === "artifacts" ? "件" : "部";
+  let html = cell("all", "全部", `${total} ${unit}`);
   for (const k of keys) {
-    if (isCategory) html += cell(k, k, `${counts[k]} 部`);
-    else html += cell(k, `${k} · ${ERA_META[k].years}`, `${counts[k]} 位`);
+    html += cell(k, k, `${counts[k] || 0} ${unit}`);
   }
   bar.innerHTML = html;
 
@@ -384,6 +389,58 @@ function renderCases() {
 
 let discIndex = 0;
 let discEra = "__init__";
+
+/** 器物图谱（百工图鉴）：按书分组，书为容器，器物为子卡 */
+function renderArtifacts() {
+  const grid = $("#artifacts-grid");
+  if (!grid) return;
+  const all = bookData.artifacts || [];
+  const list = currentEra === "all" ? all : all.filter((x) => x.cat === currentEra);
+  if (!list.length) {
+    grid.innerHTML = `<div style="color:var(--muted);padding:30px;">该分类的器物图鉴整理中…</div>`;
+    return;
+  }
+  const catColor = {
+    "工艺营造": "#8b5a2b", "医药本草": "#4a7c59", "农书": "#a8893c",
+    "算历": "#3d5a80", "地理博物": "#6b8e6b", "生活艺术": "#9c5a5a",
+  };
+  // 书顺序：与 books 一致
+  const bookOrder = (bookData.books || []).map((b) => b.name);
+  // 按 from 分组
+  const groups = {};
+  for (const a of list) {
+    (groups[a.from] = groups[a.from] || []).push(a);
+  }
+  const sortedKeys = Object.keys(groups).sort((x, y) => {
+    const ix = bookOrder.indexOf(x), iy = bookOrder.indexOf(y);
+    return (ix === -1 ? 999 : ix) - (iy === -1 ? 999 : iy);
+  });
+  const bookMeta = {};
+  for (const b of (bookData.books || [])) bookMeta[b.name] = b;
+
+  grid.innerHTML = sortedKeys.map((bookName) => {
+    const items = groups[bookName];
+    const meta = bookMeta[bookName] || {};
+    const cats = [...new Set(items.map((x) => x.cat))];
+    const eras = [...new Set(items.map((x) => x.era))];
+    const cards = items.map((a) => `
+      <div class="artifact-card">
+        ${a.image ? `<div class="artifact-img" data-full="${esc(a.image)}"><img src="${esc(a.image)}" alt="${esc(a.name)}" loading="lazy"/></div>` : ""}
+        <div class="artifact-name">${esc(a.name)}</div>
+        <div class="artifact-note">${esc(a.note)}</div>
+      </div>`).join("");
+    return `
+      <div class="artifact-group">
+        <div class="artifact-group-head">
+          <span class="artifact-group-book">《${esc(bookName)}》</span>
+          <span class="artifact-group-meta">${esc(eras.join(" / "))} · ${esc(cats.join(" / "))}</span>
+          <span class="artifact-group-count">${items.length} 件</span>
+        </div>
+        <div class="artifact-group-body">${cards}</div>
+      </div>`;
+  }).join("");
+}
+
 function renderQuiz() {
   const list = $("#quiz-list");
   const all = bookData.discourses || [];
@@ -623,10 +680,9 @@ document.querySelectorAll(".tab").forEach(t => {
     currentPage = t.dataset.page;
     document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
     $("#page-" + currentPage).classList.remove("hidden");
-    // 进地图页：容器从 display:none 变可见后需重算尺寸，并按当前流派重绘图层
-    if (currentPage === "map") {
-      if (map) setTimeout(() => { map.invalidateSize(); renderMapData(); }, 60);
-    }
+    currentEra = "all";
+    renderEraSwitch();
+    renderSect();
   });
 });
 
@@ -649,6 +705,18 @@ if (supportBtn && supportPop) {
   const closeBtn = $("#support-close");
   if (closeBtn) closeBtn.addEventListener("click", hideSupport);
 }
+
+// 器物图谱：点击图片放大（轻量 lightbox）
+document.addEventListener("click", (e) => {
+  const box = e.target.closest(".artifact-img[data-full]");
+  if (!box) return;
+  const src = box.dataset.full;
+  const lb = document.createElement("div");
+  lb.className = "artifact-lightbox";
+  lb.innerHTML = `<img src="${src}" alt=""/><span class="lb-close">×</span>`;
+  lb.addEventListener("click", () => lb.remove());
+  document.body.appendChild(lb);
+});
 
 // 启动
 loadSect(currentSect);
