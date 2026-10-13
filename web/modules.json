@@ -34,6 +34,15 @@
       "entry": "guoxue/shici.html",
       "enabled": true,
       "icon": "seal"
+    },
+    {
+      "id": "gewu",
+      "name": "格物致知",
+      "sub": "百工格物",
+      "kind": "iframe",
+      "entry": "guoxue/gewu.html",
+      "enabled": true,
+      "icon": "gear"
     }
   ]
 }

@@ -323,16 +323,18 @@ body {
   content: ""; position: absolute; left: 8px; top: 4px; bottom: 4px;
   width: 3px; background: var(--gold); border-radius: 2px;
 }
-.tl-item { display: flex; gap: 8px; padding: 0 0 14px 34px; position: relative; align-items: baseline; }
+.tl-item { display: flex; gap: 6px; padding: 0 0 14px 34px; position: relative; align-items: baseline; }
 .tl-item::before {
   content: ""; position: absolute; left: 2px; top: 6px;
   width: 15px; height: 15px; border-radius: 50%;
   background: var(--primary); border: 3px solid var(--bg);
 }
+/* 序号列按内容收缩：原先固定 min-width:36px，两位序号也占满，
+   「01」与标题之间空出 44px。这里改为按实际字宽并右对齐，短序号不再留大片空白。 */
 .tl-year {
   flex: 0 0 auto; font-weight: 800; color: var(--primary);
   font-size: 15px; white-space: nowrap; line-height: 1.4;
-  min-width: 60px;
+  min-width: 0; padding-right: 2px;
 }
 .tl-body { flex: 1 1 auto; min-width: 0; }
 .tl-event { font-weight: 700; font-size: 16.5px; color: var(--ink); line-height: 1.5; }

@@ -3078,6 +3078,12 @@ const MODULE_ICONS = {
       <rect x="5" y="5" width="22" height="22" rx="2" fill="currentColor" fill-opacity=".12"/>
       <text x="16" y="22" text-anchor="middle" font-size="16" font-weight="bold" fill="currentColor" stroke="none" font-family="serif">诗</text>
     </svg>`,
+  gear: `<svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 25 L20 12"/>
+      <path d="M18 6 L26 14 L23 17 L15 9 Z"/>
+      <line x1="5" y1="27" x2="9" y2="23"/>
+      <circle cx="11" cy="21" r="1.2"/>
+    </svg>`,
 };
 
 /** 运行时状态：已启用的模块清单（启动后填充） */
@@ -3165,6 +3171,7 @@ async function initModules() {
       { id: 'history', name: '帝王谱系', sub: '历代皇帝', kind: 'inline', enabled: true, icon: 'crown' },
       { id: 'guoxue', name: '思想源流', sub: '圣贤书林', kind: 'iframe', entry: 'guoxue/index.html', enabled: true, icon: 'scroll' },
       { id: 'shici', name: '诗词鉴赏', sub: '诗心词韵', kind: 'iframe', entry: 'guoxue/shici.html', enabled: true, icon: 'seal' },
+      { id: 'gewu', name: '格物致知', sub: '百工格物', kind: 'iframe', entry: 'guoxue/gewu.html', enabled: true, icon: 'gear' },
     ];
   }
   // 用户的停用选择优先于清单默认

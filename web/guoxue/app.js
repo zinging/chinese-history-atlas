@@ -6,6 +6,7 @@ const SECT_META = {
   zhuzi:   { name: "诸子", intro: "百家争鸣时期的各种「解决方案」：墨子兼爱非攻、韩非子法治、孙子兵法、鬼谷子纵横。", data: "zhuzi" },
   lixue:   { name: "理学心学", intro: "宋明知识分子把儒释道捏成一套。朱熹讲「存天理」，王阳明讲「致良知」。", data: "lixue" },
   shiwen:  { name: "诗文", intro: "中国人的审美和情绪出口。诗词不是用来背的，是一个人在某个处境下写的一句话。", data: "shiwen" },
+  gewu:    { name: "格物", intro: "中国人怎么理解和改造物质世界：从《考工记》到《天工开物》，工艺、医药、农算、地理、博物。", data: "gewu" },
 };
 
 /** 当前流派由页面声明：<body data-sect="..."> 优先（诗词鉴赏锁定为诗文），
@@ -66,7 +67,7 @@ async function loadSect(sect) {
     // 数据路径必须用相对路径：本页面在 web/guoxue/ 下，../../data/ 指向仓库 data/。
     // 若写成绝对路径 /data/，本地 serve.mjs 能命中，但部署到 GitHub Pages 子目录
     // （如 /chinese-history-atlas/web/guoxue/）时会解析到域名根，必然 404。
-    const r = await fetch(`../../data/${meta.data}/index.json?v=v62`);
+    const r = await fetch(`../../data/${meta.data}/index.json?v=v73`);
     bookData = await r.json();
     SECT_CACHE[sect] = bookData;
   } catch (e) {
@@ -103,26 +104,32 @@ function renderEraSwitch() {
   const bar = document.querySelector("#era-switch");
   if (!bar) return;                      // 典籍长河六派页面没有这条
   const books = bookData.books || [];
-  const hasEra = books.some((b) => b.era);
-  if (!hasEra) { bar.classList.add("hidden"); return; }
+  // 格物致知用 category（工艺营造/医药本草/...）；诗词鉴赏用 era（先秦/汉魏/...）
+  const isCategory = books.some((b) => b.category);
+  if (!isCategory && !books.some((b) => b.era)) { bar.classList.add("hidden"); return; }
   bar.classList.remove("hidden");
 
   const counts = {};
-  for (const b of books) if (b.era) counts[b.era] = (counts[b.era] || 0) + 1;
+  for (const b of books) {
+    const k = isCategory ? b.category : b.era;
+    if (k) counts[k] = (counts[k] || 0) + 1;
+  }
   const total = books.length;
+  const keys = isCategory
+    ? ["工艺营造","医药本草","农书","算历","地理博物","生活艺术"].filter(k => counts[k])
+    : ERAS.filter(k => counts[k]);
 
-  const cell = (key, label, years, sub) => {
+  const cell = (key, label, sub) => {
     const active = currentEra === key;
-    const top = years ? `${label} · ${years}` : label;
     return `<button class="sect-btn${active ? " active" : ""}" data-era="${key}">`
-      + `<span class="sect-main">${esc(top)}</span>`
+      + `<span class="sect-main">${esc(label)}</span>`
       + `<span class="sect-sub">${esc(sub)}</span></button>`;
   };
 
-  let html = cell("all", "全部", "", `${total} 位文人`);
-  for (const era of ERAS) {
-    if (!counts[era]) continue;          // 该朝代没有诗人就不占一格
-    html += cell(era, era, ERA_META[era].years, `${counts[era]} 位`);
+  let html = cell("all", "全部", `${total} 部`);
+  for (const k of keys) {
+    if (isCategory) html += cell(k, k, `${counts[k]} 部`);
+    else html += cell(k, `${k} · ${ERA_META[k].years}`, `${counts[k]} 位`);
   }
   bar.innerHTML = html;
 
@@ -165,8 +172,10 @@ function renderBooks() {
   const wrap = $("#books-scroll");
   let books = bookData.books || [];
 
-  // 朝代筛选由顶部朝代条驱动（诗词鉴赏）；正文内不再重复一排小圆钮
-  if (currentEra !== "all") books = books.filter((b) => b.era === currentEra);
+  // 朝代/分类筛选由顶部条驱动（诗词鉴赏按 era，格物致知按 category）
+  if (currentEra !== "all") {
+    books = books.filter((b) => b.category ? b.category === currentEra : b.era === currentEra);
+  }
 
   if (!books.length) {
     wrap.innerHTML = `<div style="color:var(--muted);padding:30px;">该流派内容正在整理中…</div>`;
@@ -224,8 +233,20 @@ function renderBookDetail(b) {
   if (b.core) {
     html += `<h4>核心思想</h4><div class="core-box"><p>${b.core}</p></div>`;
   }
-  // 人生时间线（诗文卡片）
-  if (b.timeline && b.timeline.length) {
+  // 人生时间线（诗文卡片）；格物致知改用"章节介绍"自上而下列篇目
+  if (currentSect === "gewu" && b.outline && b.outline.length) {
+    // 格物致知：以章节顺序介绍书籍结构（不按时间，按篇目先后）
+    html += `<h4>章节介绍</h4><ul class="timeline">`;
+    html += b.outline.map((c, i) => `
+      <li class="tl-item">
+        <div class="tl-year">${String(i + 1).padStart(2, "0")}</div>
+        <div class="tl-body">
+          <div class="tl-event">${esc(c.title || "")}</div>
+          ${c.note ? `<div class="tl-note">${esc(c.note)}</div>` : ""}
+        </div>
+      </li>`).join("");
+    html += `</ul>`;
+  } else if (b.timeline && b.timeline.length) {
     html += `<h4>人生时间线</h4><ul class="timeline">`;
     html += b.timeline.map(t => {
       const isHighlight = /★|转折点|悟道|入幕|亡国|之变/.test(t.event || "");
@@ -366,10 +387,12 @@ let discEra = "__init__";
 function renderQuiz() {
   const list = $("#quiz-list");
   const all = bookData.discourses || [];
-  // 顶部分朝代条驱动：「全部」展示全部，否则只看该朝代的诗人
-  const disc = currentEra === "all" ? all : all.filter((x) => x.era === currentEra);
+  // 顶部分类/朝代条驱动：「全部」展示全部，否则按 category 或 era 过滤
+  const disc = currentEra === "all"
+    ? all
+    : all.filter((x) => x.category ? x.category === currentEra : x.era === currentEra);
   if (!disc.length) {
-    list.innerHTML = `<div style="color:var(--muted);padding:30px;">该朝代的题目整理中…</div>`;
+    list.innerHTML = `<div style="color:var(--muted);padding:30px;">该分类的题目整理中…</div>`;
     return;
   }
   // 切了朝代就回到该朝代第一题，避免索引错位

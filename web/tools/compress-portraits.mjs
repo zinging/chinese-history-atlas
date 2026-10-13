@@ -73,6 +73,12 @@ foreach ($line in [System.IO.File]::ReadAllLines($list)) {
   try {
     $img=[System.Drawing.Image]::FromFile($p)
     try {
+      # 已达标的图直接跳过：否则每次运行都会把所有图重编码一遍，
+      # 字节数虽几乎不变，却让 git 看到上百个无意义的二进制改动。
+      if ($img.Width -le $size -and $img.Height -le $size) {
+        Write-Output ("SKIP|" + $idx)
+        continue
+      }
       $bmp=New-Object System.Drawing.Bitmap $size,$size
       $g=[System.Drawing.Graphics]::FromImage($bmp)
       $g.InterpolationMode=[System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
@@ -108,10 +114,12 @@ try {
 }
 
 const done = new Set();
+const skippedBySize = new Set();
 for (const line of String(raw).split(/\r?\n/)) {
-  const m = line.match(/^(OK|ERR)\|(.+)$/);
+  const m = line.match(/^(OK|ERR|SKIP)\|(.+)$/);
   if (!m) continue;
   if (m[1] === 'ERR') console.log(`  ✗ ${m[2]} → ${files[Number(m[2])]?.slice(ROOT.length + 1)}: ${m.slice(2).join('|')}`);
+  else if (m[1] === 'SKIP') skippedBySize.add(Number(m[2]));
   else done.add(Number(m[2]));
 }
 
@@ -119,6 +127,7 @@ let before = 0, after = 0, saved = 0, skipped = 0, fail = 0;
 files.forEach((f, i) => {
   const b = statSync(f).size;
   before += b;
+  if (skippedBySize.has(i)) { skipped++; after += b; return; }   // 尺寸已达标，未重编码
   const out = join(OUT_DIR, `${i}.jpg`);
   if (!done.has(i) || !existsSync(out)) { fail++; after += b; return; }
   const s = statSync(out).size;

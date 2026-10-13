@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>格物致知 · Chinese Science & Crafts</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css?v=v51">
+</head>
+<body data-sect="gewu">
+<div id="app">
+  <div class="brand">⚙️ 格物致知</div>
+  <!-- 格物致知按朝代分档：与诗词鉴赏同一套类与样式 -->
+  <div class="sect-switch" id="era-switch" role="tablist" aria-label="朝代切换">
+    <button class="sect-btn active" data-era="all"><span class="sect-main">全部</span><span class="sect-sub"></span></button>
+  </div>
+
+  <nav class="tabs-v" id="tabs">
+    <button class="tab active" data-page="books">典籍长廊</button>
+    <button class="tab" data-page="cases">工艺公案</button>
+    <button class="tab" data-page="map">格物舆图</button>
+    <button class="tab" data-page="quiz">格物问典</button>
+  </nav>
+
+  <!-- 模块一：典籍长廊 -->
+  <main id="page-books" class="page">
+    <div class="books-scroll" id="books-scroll"></div>
+    <div id="book-detail" class="book-detail hidden"></div>
+  </main>
+
+  <!-- 模块二：公案（格物暂无公案，留空） -->
+  <main id="page-cases" class="page hidden">
+    <div id="case-tabs" class="case-tabs"></div>
+    <div id="cases-list" class="cases-list"></div>
+  </main>
+
+  <!-- 模块三：格物舆图 -->
+  <main id="page-map" class="page hidden">
+    <div class="map-wrap">
+      <div id="map-leaf" role="img" aria-label="格物地图"></div>
+      <div class="map-legend map-legend-float">
+        <span class="legend-item"><i class="dot dot-place"></i>著书地</span>
+        <span class="legend-item"><i class="dot dot-site"></i>工坊书院</span>
+        <span class="legend-item"><i class="dot dot-route-start"></i>路线起点</span>
+        <span class="legend-item"><i class="dot dot-route-end"></i>路线终点</span>
+      </div>
+      <div id="map-popup" class="map-popup hidden"></div>
+    </div>
+    <div class="route-panel">
+      <div class="route-toggle" id="map-route-btns"></div>
+      <div class="route-detail hidden" id="route-detail"></div>
+    </div>
+  </main>
+
+  <!-- 模块四：格物问典 -->
+  <main id="page-quiz" class="page hidden">
+    <div id="quiz-list" class="quiz-list"></div>
+  </main>
+
+  <footer class="footer" id="footer">内容以《考工记》《天工开物》《本草纲目》《梦溪笔谈》等原典为依据 · 地图为示意 · 人物画像 AI 生成古风</footer>
+</div>
+
+<script src="vendor/leaflet.js"></script>
+<script src="app.js?v=v73"></script>
+</body>
+</html>
