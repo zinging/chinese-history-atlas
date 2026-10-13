@@ -1108,6 +1108,19 @@ body.sidebar-collapsed .mega-logo { width: 100%; margin-bottom: 14px; padding: 2
   font-size: 11px; line-height: 1;
   transition: transform .24s ease;
 }
+/* 卷收：古篆笔意——楷起笔收、略带金石刻痕感 */
+.mega-collapse-btn .label {
+  font-family: "STKaiti", "KaiTi", "Kaiti SC", "STSong", "SimSun", serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: #a8352a;
+  text-shadow:
+    0 0 0.5px #7a2418,
+    1px 1px 0 rgba(122,36,24,.35),
+    -1px 0 0 rgba(255,240,215,.5),
+    0 2px 3px rgba(122,36,24,.25);
+}
 /* 收缩时箭头朝右（提示"展开"） */
 body.sidebar-collapsed .mega-collapse-btn .caret { transform: scaleX(-1); }
 /* 收缩态按钮变窄，只留箭头 */

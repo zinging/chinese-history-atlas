@@ -3037,6 +3037,30 @@
       "image": "../../data/portraits/artifacts/zhuotongjing.jpg"
     },
     {
+      "name": "明代曲蘖酿酒器",
+      "era": "明清",
+      "cat": "工艺营造",
+      "from": "天工开物",
+      "note": "《曲蘖》卷原版木刻图：酒曲摊在竹匾里，置于木架上通风干燥，地上铺席拌曲。宋应星记『凡曲者，霉菌之母』，比欧洲微生物学早两百年。",
+      "image": "../../data/portraits/artifacts/qunie.jpg"
+    },
+    {
+      "name": "明代竹纸造纸槽",
+      "era": "明清",
+      "cat": "工艺营造",
+      "from": "天工开物",
+      "note": "《杀青》卷原版木刻图：斩竹漂塘（右侧工人在塘中洗竹料）+ 煮楻足火（左侧大甑蒸煮竹料），是《天工开物》原书插图。",
+      "image": "../../data/portraits/artifacts/zhizao.jpg"
+    },
+    {
+      "name": "明代铸钟镬（失蜡法）",
+      "era": "明清",
+      "cat": "工艺营造",
+      "from": "天工开物",
+      "note": "《冶铸》卷原版木刻图《塑钟模图》：工人在蜡模上刻纹路，旁置牛油黄蜡料。这是世界上最早以版画形式记录失蜡法的图像。",
+      "image": "../../data/portraits/artifacts/zhuzhong.jpg"
+    },
+    {
       "name": "马王堆帛书《五十二病方》",
       "era": "汉魏",
       "cat": "医药本草",
