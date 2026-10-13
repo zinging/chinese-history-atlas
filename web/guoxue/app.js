@@ -84,6 +84,11 @@ function renderSect() {
   renderCases();
   renderQuiz();
   renderArtifacts();
+  // 地图初始化/重绘：必须在各分区渲染之后仍执行，否则切流派或刷新时
+  // 地图永远空白（initMap 曾在此处缺失，导致地图页取不到任何图层）。
+  // 容器此刻若仍是 display:none，Leaflet 量到的尺寸为 0；
+  // 故进入地图页时另有一次 invalidateSize + 重绘（见 tab 切换处）。
+  initMap();
 }
 
 /** 朝代分档与副标题。
@@ -531,6 +536,24 @@ function initMap() {
     }).addTo(map);
   }
   renderMapData();
+  // 容器若处在隐藏的页面里，Leaflet 首次量到的尺寸是 0，图层会画到看不见的地方。
+  // 这里不强行 invalidateSize（隐藏元素量不出尺寸），交由进入地图页时统一修正：
+  // 见 tab 切换里的 requestAnimationFrame + invalidateSize + renderMapData。
+  if (!map._dshSized && container.clientWidth > 0) {
+    map.invalidateSize();
+    map._dshSized = true;
+  }
+}
+
+/** 进入地图页后修正尺寸并重绘：容器从 display:none 变可见时，Leaflet 必须重新量尺寸，
+ *  否则地图显示为空白（尺寸仍停在 0）。用 requestAnimationFrame 等布局完成后执行。 */
+function refreshMapWhenVisible() {
+  if (!map) return;
+  requestAnimationFrame(() => {
+    map.invalidateSize();
+    map._dshSized = true;
+    renderMapData();
+  });
 }
 
 /** 按当前流派数据重绘地名与路线图层（切换流派/进入地图页时调用） */
@@ -683,6 +706,9 @@ document.querySelectorAll(".tab").forEach(t => {
     currentEra = "all";
     renderEraSwitch();
     renderSect();
+    // 进入地图页：容器由 display:none 变可见，必须让 Leaflet 重新量尺寸，
+    // 否则地图显示为空白（尺寸停在 0）。
+    if (currentPage === "map") refreshMapWhenVisible();
   });
 });
 
@@ -723,7 +749,7 @@ loadSect(currentSect);
 
 // 测试钩子（生产无害）：供自动化检查直接驱动地图渲染
 window.__guoxueMapTest = {
-  renderMapData, toggleRoute, hideRouteDetail,
+  renderMapData, toggleRoute, hideRouteDetail, initMap, refreshMapWhenVisible,
   get map() { return map; },
   get mapLayers() { return mapLayers; },
   get bookData() { return bookData; },
