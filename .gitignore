@@ -13,6 +13,9 @@ web/.check-*
 web/.diag-*
 web/.verify-*
 
+# 数据迁移一次性备份（不纳入版本库）
+data/gewu/.index.full.bak.json
+
 # 系统
 .DS_Store
 Thumbs.db

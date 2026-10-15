@@ -1,0 +1,498 @@
+[
+  {
+    "name": "商代后母戊鼎",
+    "era": "先秦",
+    "cat": "工艺营造",
+    "from": "考工记",
+    "note": "832kg 青铜方鼎，《考工记》'轮人舆人'记青铜配比：六分其金而锡居一，谓之钟鼎之齐。",
+    "image": "../../data/portraits/artifacts/housimu.jpg"
+  },
+  {
+    "name": "战国错金银铜方案",
+    "era": "先秦",
+    "cat": "工艺营造",
+    "from": "考工记",
+    "note": "青铜方案底座，错金银龙凤纹，体现《考工记》'刮摩之工'精密工艺。",
+    "image": "../../data/portraits/artifacts/cuofang.jpg"
+  },
+  {
+    "name": "宋代斗拱（材分制）",
+    "era": "五代两宋",
+    "cat": "工艺营造",
+    "from": "营造法式",
+    "note": "李诫定'材分制'：以单材高15分、宽10分为基本模数，整座建筑按倍数放大。",
+    "image": "../../data/portraits/artifacts/dougong.jpg"
+  },
+  {
+    "name": "宋代殿堂大木作",
+    "era": "五代两宋",
+    "cat": "工艺营造",
+    "from": "营造法式",
+    "note": "《营造法式》34卷中6卷是图样，绘平面、剖面、斗拱详样。",
+    "image": "../../data/portraits/artifacts/damuzao.jpg"
+  },
+  {
+    "name": "明代花楼织机",
+    "era": "明清",
+    "cat": "工艺营造",
+    "from": "天工开物",
+    "note": "《乃服》卷：花楼高达一丈五尺，提花工坐花楼之上，织工在下，两人合作织锦缎。",
+    "image": "../../data/portraits/artifacts/hualou.jpg"
+  },
+  {
+    "name": "明代榨糖石碾",
+    "era": "明清",
+    "cat": "工艺营造",
+    "from": "天工开物",
+    "note": "《甘嗜》卷：上下两石碾轴，牛拽转榨甘蔗汁，煮成红糖。",
+    "image": "../../data/portraits/artifacts/zhenianian.jpg"
+  },
+  {
+    "name": "宋应星图中的井盐架",
+    "era": "明清",
+    "cat": "工艺营造",
+    "from": "天工开物",
+    "note": "《作咸》卷：四川卓筒井，凿地如碗大，深数十丈，竹筒汲卤水熬盐。",
+    "image": "../../data/portraits/artifacts/zhuotongjing.jpg"
+  },
+  {
+    "name": "明代曲蘖酿酒器",
+    "era": "明清",
+    "cat": "工艺营造",
+    "from": "天工开物",
+    "note": "《曲蘖》卷原版木刻图：酒曲摊在竹匾里，置于木架上通风干燥，地上铺席拌曲。宋应星记『凡曲者，霉菌之母』，比欧洲微生物学早两百年。",
+    "image": "../../data/portraits/artifacts/qunie.jpg"
+  },
+  {
+    "name": "明代竹纸造纸槽",
+    "era": "明清",
+    "cat": "工艺营造",
+    "from": "天工开物",
+    "note": "《杀青》卷原版木刻图：斩竹漂塘（右侧工人在塘中洗竹料）+ 煮楻足火（左侧大甑蒸煮竹料），是《天工开物》原书插图。",
+    "image": "../../data/portraits/artifacts/zhizao.jpg"
+  },
+  {
+    "name": "明代铸钟镬（失蜡法）",
+    "era": "明清",
+    "cat": "工艺营造",
+    "from": "天工开物",
+    "note": "《冶铸》卷原版木刻图《塑钟模图》：工人在蜡模上刻纹路，旁置牛油黄蜡料。这是世界上最早以版画形式记录失蜡法的图像。",
+    "image": "../../data/portraits/artifacts/zhuzhong.jpg"
+  },
+  {
+    "name": "马王堆帛书《五十二病方》",
+    "era": "汉魏",
+    "cat": "医药本草",
+    "from": "黄帝内经",
+    "note": "与《内经》同时代的医方帛书，存103方，是现存最早中医方书实物。",
+    "image": "../../data/portraits/artifacts/boshu.jpg"
+  },
+  {
+    "name": "汉代针灸铜人",
+    "era": "汉魏",
+    "cat": "医药本草",
+    "from": "黄帝内经",
+    "note": "按《灵枢·经脉》绘制的经络穴位，宋代铸铜人教学。",
+    "image": "../../data/portraits/artifacts/zhenjiu.jpg"
+  },
+  {
+    "name": "张仲景《伤寒论》桂枝汤",
+    "era": "汉魏",
+    "cat": "医药本草",
+    "from": "伤寒杂病论",
+    "note": "群方之祖：桂枝、芍药、生姜、大枣、甘草，解肌发表。",
+    "image": "../../data/portraits/artifacts/guizhitang.jpg"
+  },
+  {
+    "name": "孙思邈《大医精诚》刻石",
+    "era": "唐",
+    "cat": "医药本草",
+    "from": "千金要方",
+    "note": "中国最早医德宣言：'凡大医治病，必当安神定志，无欲无求，先发大慈恻隐之心。'",
+    "image": "../../data/portraits/artifacts/dajingcheng.jpg"
+  },
+  {
+    "name": "李时珍采药图（武当山）",
+    "era": "明清",
+    "cat": "医药本草",
+    "from": "本草纲目",
+    "note": "27年走遍湖广、江西、江苏、安徽，亲口尝曼陀罗验证麻醉。",
+    "image": "../../data/portraits/artifacts/lishizhen.jpg"
+  },
+  {
+    "name": "《本草纲目》金陵版木刻",
+    "era": "明清",
+    "cat": "医药本草",
+    "from": "本草纲目",
+    "note": "1596年南京胡承龙刻本，52卷，1109种药，附图1109幅。",
+    "image": "../../data/portraits/artifacts/jinlingban.jpg"
+  },
+  {
+    "name": "汉代耧车",
+    "era": "汉魏",
+    "cat": "农书",
+    "from": "齐民要术",
+    "note": "三脚条播器，赵过发明，《齐民要术》记其播种均匀，一人一牛日种一顷。",
+    "image": "../../data/portraits/artifacts/louche.jpg"
+  },
+  {
+    "name": "北魏贾思勰绿肥田",
+    "era": "汉魏",
+    "cat": "农书",
+    "from": "齐民要术",
+    "note": "绿豆根瘤固氮，下茬种谷子特别旺——比西方轮作制早1200年。",
+    "image": "../../data/portraits/artifacts/lvfeitian.jpg"
+  },
+  {
+    "name": "明代曲辕犁",
+    "era": "明清",
+    "cat": "农书",
+    "from": "农政全书",
+    "note": "江东犁，曲辕比直辕灵活，一牛可拉，江南水田标准农具。",
+    "image": "../../data/portraits/artifacts/quyuanli.jpg"
+  },
+  {
+    "name": "徐光启天津试种稻田",
+    "era": "明清",
+    "cat": "农书",
+    "from": "农政全书",
+    "note": "他在天津买地，把南方稻作技术引入北方，还合译《泰西水法》介绍欧洲水泵。",
+    "image": "../../data/portraits/artifacts/tiantian.jpg"
+  },
+  {
+    "name": "汉代算筹",
+    "era": "汉魏",
+    "cat": "算历",
+    "from": "九章算术",
+    "note": "竹制小棍，长6寸，摆成方阵做四则运算和方程消元。",
+    "image": "../../data/portraits/artifacts/chousuan.jpg"
+  },
+  {
+    "name": "刘徽割圆术",
+    "era": "汉魏",
+    "cat": "算历",
+    "from": "九章算术",
+    "note": "从圆内接正六边形一直算到3072边形，得π≈3.1416。",
+    "image": "../../data/portraits/artifacts/geyuan.jpg"
+  },
+  {
+    "name": "周髀髀表（八尺表）",
+    "era": "先秦",
+    "cat": "算历",
+    "from": "周髀算经",
+    "note": "立八尺表测日影，'夏至影长一尺六寸'是中国最早的天文测量法。",
+    "image": "../../data/portraits/artifacts/biao.jpg"
+  },
+  {
+    "name": "郭守敬简仪",
+    "era": "元",
+    "cat": "算历",
+    "from": "授时历",
+    "note": "取消传统浑仪多重圆环重叠，改用独立环组，观测精度大幅提高，比丹麦第谷同类仪器早300年。",
+    "image": "../../data/portraits/artifacts/jianyi.jpg"
+  },
+  {
+    "name": "元大都四海测验",
+    "era": "元",
+    "cat": "算历",
+    "from": "授时历",
+    "note": "在全国27个测点同时测北极出地高度，最北到北海（西伯利亚），最南到南海。",
+    "image": "../../data/portraits/artifacts/sihai.jpg"
+  },
+  {
+    "name": "山海经九尾狐",
+    "era": "先秦",
+    "cat": "地理博物",
+    "from": "山海经",
+    "note": "《南山经》'青丘之山，有兽焉，其状如狐而九尾'，后成《封神》《诛仙》原型。",
+    "image": "../../data/portraits/artifacts/jiuweihu.jpg"
+  },
+  {
+    "name": "郦道元笔下三峡",
+    "era": "汉魏",
+    "cat": "地理博物",
+    "from": "水经注",
+    "note": "'自三峡七百里中，两岸连山，略无阙处'——李白《早发白帝城》化用此段。",
+    "image": "../../data/portraits/artifacts/sanxia.jpg"
+  },
+  {
+    "name": "徐霞客桂林溶洞",
+    "era": "明清",
+    "cat": "地理博物",
+    "from": "徐霞客游记",
+    "note": "系统考察100多个溶洞，记录石钟乳、石笋、石柱成因，世界最早的喀斯特学。",
+    "image": "../../data/portraits/artifacts/karst.jpg"
+  },
+  {
+    "name": "腾冲火山地热",
+    "era": "明清",
+    "cat": "地理博物",
+    "from": "徐霞客游记",
+    "note": "他是第一个记录腾冲火山和硫磺塘温泉的中国人。",
+    "image": "../../data/portraits/artifacts/tengchong.jpg"
+  },
+  {
+    "name": "唐代越州青瓷碗",
+    "era": "唐",
+    "cat": "生活艺术",
+    "from": "茶经",
+    "note": "陆羽列越州瓷为第一：'碗，越州上，鼎州次……邢瓷白而茶色丹，越瓷青而茶色绿。'",
+    "image": "../../data/portraits/artifacts/yuezhouwan.jpg"
+  },
+  {
+    "name": "陆羽风炉（象古鼎）",
+    "era": "唐",
+    "cat": "生活艺术",
+    "from": "茶经",
+    "note": "铜铁铸成古鼎形，铸'伊公羹、陆氏茶'六字，配灰承、炭檛24器。",
+    "image": "../../data/portraits/artifacts/fenglu.jpg"
+  },
+  {
+    "name": "苏州留园冠云峰",
+    "era": "明清",
+    "cat": "生活艺术",
+    "from": "园冶",
+    "note": "太湖石'瘦漏透皱'四字诀的代表作，高6.5米，江南园林之最。",
+    "image": "../../data/portraits/artifacts/guanyunfeng.jpg"
+  },
+  {
+    "name": "计成影园",
+    "era": "明清",
+    "cat": "生活艺术",
+    "from": "园冶",
+    "note": "计成在扬州为郑元勋造影园，'虽由人作，宛自天开'的实践样本。",
+    "image": "../../data/portraits/artifacts/yingyuan.jpg"
+  },
+  {
+    "name": "麻黄汤（群方之二）",
+    "era": "汉魏",
+    "cat": "医药本草",
+    "from": "伤寒杂病论",
+    "note": "麻黄、桂枝、杏仁、甘草，发汗解表，治太阳伤寒表实证。",
+    "image": "../../data/portraits/artifacts/mahuangtang.jpg"
+  },
+  {
+    "name": "白虎汤",
+    "era": "汉魏",
+    "cat": "医药本草",
+    "from": "伤寒杂病论",
+    "note": "石膏、知母、粳米、甘草，清热生津，治阳明经大热。",
+    "image": "../../data/portraits/artifacts/baihutang.jpg"
+  },
+  {
+    "name": "阿是穴（孙思邈痛点取穴）",
+    "era": "唐",
+    "cat": "医药本草",
+    "from": "千金要方",
+    "note": "'有痛处，即按之，随而得穴'——开创以痛点为准的取穴法，后世针灸临床沿用至今。",
+    "image": "../../data/portraits/artifacts/ashixue.jpg"
+  },
+  {
+    "name": "金针拨障术（白内障手术）",
+    "era": "唐",
+    "cat": "医药本草",
+    "from": "千金要方",
+    "note": "孙思邈记载用金针拨除白内障混浊，是世界最早的眼科手术记录之一。",
+    "image": "../../data/portraits/artifacts/jinzhen.jpg"
+  },
+  {
+    "name": "独活寄生汤",
+    "era": "唐",
+    "cat": "医药本草",
+    "from": "千金要方",
+    "note": "治痹证日久、肝肾两亏的名方，15味药，后世治疗风湿类疾病的基础方。",
+    "image": "../../data/portraits/artifacts/duhuo.jpg"
+  },
+  {
+    "name": "勾股圆方图",
+    "era": "先秦",
+    "cat": "算历",
+    "from": "周髀算经",
+    "note": "'勾三股四弦五'的最早完整证明，赵爽注《周髀》时补绘弦图。",
+    "image": "../../data/portraits/artifacts/gougu.jpg"
+  },
+  {
+    "name": "七衡六间图",
+    "era": "先秦",
+    "cat": "算历",
+    "from": "周髀算经",
+    "note": "以北极为中心的七个同心圆，描述太阳在二至二分之间的轨道。",
+    "image": "../../data/portraits/artifacts/qiheng.jpg"
+  },
+  {
+    "name": "招差法（三次内插）",
+    "era": "元",
+    "cat": "算历",
+    "from": "授时历",
+    "note": "郭守敬用三次内插公式推算日月运行，比牛顿提出有限差分法早近400年。",
+    "image": "../../data/portraits/artifacts/zhaochafa.jpg"
+  },
+  {
+    "name": "365.2425日（回归年长度）",
+    "era": "元",
+    "cat": "算历",
+    "from": "授时历",
+    "note": "与现行公历（格里高利历）数值相同，但早300年；郭守敬通过4年实测确定。",
+    "image": "../../data/portraits/artifacts/guanxingtai.jpg"
+  },
+  {
+    "name": "精卫填海",
+    "era": "先秦",
+    "cat": "地理博物",
+    "from": "山海经",
+    "note": "《北山经》'发鸠之山，其上多柘木，有鸟焉……名曰精卫'——陶渊明'精卫衔微木，将以填沧海'化用此典。",
+    "image": "../../data/portraits/artifacts/jingwei.jpg"
+  },
+  {
+    "name": "昆仑虚（帝之下都）",
+    "era": "先秦",
+    "cat": "地理博物",
+    "from": "山海经",
+    "note": "《西山经》描写的黄河源头神山，方八百里，高万仞，是中国最早的地理想象中心。",
+    "image": "../../data/portraits/artifacts/kunlun.jpg"
+  },
+  {
+    "name": "壶口瀑布",
+    "era": "汉魏",
+    "cat": "地理博物",
+    "from": "水经注",
+    "note": "《河水注》记'禹治水，壶口始'，描述黄河孟门山激流穿峡的壮观。",
+    "image": "../../data/portraits/artifacts/hukou.jpg"
+  },
+  {
+    "name": "渭水长安",
+    "era": "汉魏",
+    "cat": "地理博物",
+    "from": "水经注",
+    "note": "记录汉长安城十二座城门、八街九陌的水系与布局，是研究唐代长安的一手文献。",
+    "image": "../../data/portraits/artifacts/changan.jpg"
+  },
+  {
+    "name": "六齐（青铜六种配比）",
+    "era": "先秦",
+    "cat": "工艺营造",
+    "from": "考工记",
+    "note": "'金有六齐：六分其金而锡居一，谓之钟鼎之齐'——世界最早的青铜合金配方表。",
+    "image": "../../data/portraits/artifacts/liuqi.jpg"
+  },
+  {
+    "name": "匠人营国（都城规划）",
+    "era": "先秦",
+    "cat": "工艺营造",
+    "from": "考工记",
+    "note": "'方九里，旁三门。国中九经九纬，经涂九轨'——中国古代都城中轴线规划的源头。",
+    "image": "../../data/portraits/artifacts/yingguo.jpg"
+  },
+  {
+    "name": "竹纸造法",
+    "era": "明清",
+    "cat": "工艺营造",
+    "from": "天工开物",
+    "note": "《杀青》卷：竹纸五步——煮篾、漂白、抄纸、压榨、烘干，明代福建竹纸行销全国。",
+    "image": "../../data/portraits/artifacts/zhizhi.jpg"
+  },
+  {
+    "name": "景德镇青花瓷",
+    "era": "明清",
+    "cat": "工艺营造",
+    "from": "天工开物",
+    "note": "《陶埏》卷：'共计一坯之力，过手七十二，方克成器'，记录御窑厂分工流程。",
+    "image": "../../data/portraits/artifacts/qinghua.jpg"
+  },
+  {
+    "name": "风炉二十四器",
+    "era": "唐",
+    "cat": "生活艺术",
+    "from": "茶经",
+    "note": "《四之器》列24件茶具：风炉、灰承、炭檛、火筴、鍑、交床、夹、纸囊、碾、罗合……一套完整的煎茶系统。",
+    "image": "../../data/portraits/artifacts/ersishiqi.jpg"
+  },
+  {
+    "from": "营造法式",
+    "name": "彩画作制度（宋式青绿彩画）",
+    "note": "《营造法式》卷十四彩画作制度：丹粉刷饰、五彩遍装、碾玉装、青绿叠晕。这是中国古代建筑彩画的最早规范。",
+    "image": "../../data/portraits/artifacts/caihua.jpg",
+    "cat": "工艺营造",
+    "era": "宋"
+  },
+  {
+    "from": "黄帝内经",
+    "name": "九针图（《灵枢》九针形制）",
+    "note": "《灵枢·九针十二原》九种针具：镵针、圆针、鍉针、锋针、铍针、圆利针、毫针、长针、大针，各有不同用途。",
+    "image": "../../data/portraits/artifacts/jiuzhen.jpg",
+    "cat": "医药本草",
+    "era": "先秦汉"
+  },
+  {
+    "from": "本草纲目",
+    "name": "本草纲目草部（金陵本插图）",
+    "note": "《本草纲目》金陵版木刻插图，如山草部人参、黄耆、当归等。李时珍亲自绘图，是中国本草学最系统的图谱。",
+    "image": "../../data/portraits/artifacts/caobu.jpg",
+    "cat": "医药本草",
+    "era": "明"
+  },
+  {
+    "from": "齐民要术",
+    "name": "接树法（古代嫁接技术）",
+    "note": "《齐民要术》记嫁接法：棠接梨、桑接柿。接穗要选良木，嫁接后培土保湿。这是世界最早的嫁接技术文献之一。",
+    "image": "../../data/portraits/artifacts/jieshu.jpg",
+    "cat": "农书",
+    "era": "北魏"
+  },
+  {
+    "from": "农政全书",
+    "name": "泰西水法（螺旋提水器）",
+    "note": "徐光启与传教士熊三拔合译《泰西水法》，介绍西方螺旋提水器（龙尾车）、水库、蓄水池。这是中西水利技术交流的见证。",
+    "image": "../../data/portraits/artifacts/taixi.jpg",
+    "cat": "农书",
+    "era": "明"
+  },
+  {
+    "from": "九章算术",
+    "name": "方程正负术（线性方程组）",
+    "note": "《九章算术·方程》：用消元法解线性方程组，并提出正负术——正负数运算法则。这是世界数学史上最早的线性方程组解法。",
+    "image": "../../data/portraits/artifacts/fangcheng.jpg",
+    "cat": "算历",
+    "era": "汉"
+  },
+  {
+    "from": "徐霞客游记",
+    "name": "黄山云海（徐霞客三游黄山）",
+    "note": "徐霞客三游黄山，记云海、奇松、怪石、温泉。他发出「五岳归来不看山，黄山归来不看岳」的赞叹。",
+    "image": "../../data/portraits/artifacts/huangshan.jpg",
+    "cat": "地理博物",
+    "era": "明"
+  },
+  {
+    "from": "园冶",
+    "name": "借景（远借邻借仰借俯借）",
+    "note": "《园冶》借景篇：园林最高境界不是园墙内的景物，而是把园外的山、塔、楼阁借入园中。「虽由人作，宛自天开」。",
+    "image": "../../data/portraits/artifacts/jiejing.jpg",
+    "cat": "生活艺术",
+    "era": "明"
+  },
+  {
+    "from": "梦溪笔谈",
+    "name": "毕昇活字印刷（泥活字）",
+    "note": "沈括记毕昇发明泥活字：胶泥刻字，火烧令坚，排版时以铁范置铁板上，密布字印。这是世界最早的活字印刷记录。",
+    "image": "../../data/portraits/artifacts/bisheng.jpg",
+    "cat": "工艺营造",
+    "era": "宋"
+  },
+  {
+    "from": "梦溪笔谈",
+    "name": "指南针（沈括记磁针）",
+    "note": "沈括记磁针：方家以磁石磨针锋，则能指南。但常微偏东，不全南也——这是世界上最早的磁偏角记录。",
+    "image": "../../data/portraits/artifacts/zhinanzhen.jpg",
+    "cat": "算历",
+    "era": "宋"
+  },
+  {
+    "from": "梦溪笔谈",
+    "name": "山水画三远法",
+    "note": "沈括论画山水：山有三远——自山下而仰山巅谓之高远，自山前而窥山后谓之深远，自近山而望远山谓之平远。",
+    "image": "../../data/portraits/artifacts/sanyuan.jpg",
+    "cat": "生活艺术",
+    "era": "宋"
+  }
+]

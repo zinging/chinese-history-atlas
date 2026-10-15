@@ -220,6 +220,19 @@ const server = createServer(async (req, res) => {
     const abs = join(ROOT, safe);
     if (!abs.startsWith(ROOT)) { res.writeHead(403); res.end('Forbidden'); return; }
 
+    // 目录访问自动补斜杠：/web -> 301 /web/。
+    // 否则浏览器把 /web 当成文件，页面里 style.css / app.js 等相对路径会错挂到根目录，整页失去样式。
+    if (!extname(pathname)) {
+      try {
+        const st = await stat(abs);
+        if (st.isDirectory() && !pathname.endsWith('/')) {
+          res.writeHead(301, { Location: pathname + '/' + (url.search || '') });
+          res.end();
+          return;
+        }
+      } catch { /* 非目录，继续走文件读取 */ }
+    }
+
     let file = abs;
     try {
       const ext = extname(file);

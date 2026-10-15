@@ -29,10 +29,89 @@
 body {
   margin: 0;
   font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
-  background: var(--bg);
+  background-color: #fdf6e9;
+  /* 宣纸纤维底纹（极淡噪点，平铺） */
+  --paper-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+  background-image: var(--paper-noise);
+  background-repeat: repeat;
   color: var(--ink);
   font-size: 17px;
   line-height: 1.6;
+  transition: background-color 1.2s ease;
+}
+
+/* 朝代换肤：统一米黄底 + 该朝代表性纹样（按出土文物形状重画的极淡水印）+ 宣纸噪点 */
+/* 隋·忍冬卷草纹：敦煌壁画/隋瓷，对生叶瓣外翻卷 */
+body[data-era="sui"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Cpath d='M60 20 Q50 40 60 60 Q70 80 60 100'/%3E%3Cpath d='M60 20 Q70 40 60 60 Q50 80 60 100'/%3E%3Cellipse cx='60' cy='60' rx='14' ry='6'/%3E%3Cellipse cx='42' cy='40' rx='5' ry='10' transform='rotate(-30 42 40)'/%3E%3Cellipse cx='78' cy='40' rx='5' ry='10' transform='rotate(30 78 40)'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 唐·宝相花：阿斯塔那墓出土锦，多层瓣放射+卷草底 */
+body[data-era="tang"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130' viewBox='0 0 130 130'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Ccircle cx='65' cy='65' r='8'/%3E%3Cpath d='M65 30 Q55 50 65 65 Q75 50 65 30'/%3E%3Cpath d='M65 100 Q55 80 65 65 Q75 80 65 100'/%3E%3Cpath d='M30 65 Q50 55 65 65 Q50 75 30 65'/%3E%3Cpath d='M100 65 Q80 55 65 65 Q80 75 100 65'/%3E%3Cpath d='M40 40 Q50 55 65 65 Q55 50 40 40'/%3E%3Cpath d='M90 90 Q80 75 65 65 Q75 80 90 90'/%3E%3Cpath d='M90 40 Q75 50 65 65 Q80 55 90 40'/%3E%3Cpath d='M40 90 Q55 80 65 65 Q50 75 40 90'/%3E%3Ccircle cx='65' cy='65' r='32' stroke-dasharray='2 4'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 五代·卷草流云 */
+body[data-era="wudai"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='80' viewBox='0 0 110 80'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Cpath d='M10 40 Q25 20 40 40 T70 40 T100 40'/%3E%3Ccircle cx='40' cy='40' r='5'/%3E%3Ccircle cx='70' cy='40' r='4'/%3E%3Cpath d='M20 60 Q35 50 50 60'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 宋·方胜纹：宋锦连环菱形 */
+body[data-era="song"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Crect x='18' y='18' width='34' height='34' transform='rotate(45 35 35)'/%3E%3Crect x='48' y='48' width='34' height='34' transform='rotate(45 65 65)'/%3E%3Ccircle cx='35' cy='35' r='4'/%3E%3Ccircle cx='65' cy='65' r='4'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 元·满池娇：元青花盘莲荷+水草 */
+body[data-era="yuan"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Cellipse cx='40' cy='45' rx='12' ry='8'/%3E%3Cpath d='M40 30 L40 45 M32 35 L40 42 M48 35 L40 42'/%3E%3Cellipse cx='80' cy='80' rx='14' ry='9'/%3E%3Cpath d='M80 68 L80 80 M72 72 L80 78 M88 72 L80 78'/%3E%3Cpath d='M60 20 Q58 35 62 50'/%3E%3Cpath d='M20 80 Q35 75 50 82'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 明·缠枝莲：卷枝串联花朵 */
+body[data-era="ming"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130' viewBox='0 0 130 130'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.2'%3E%3Ccircle cx='35' cy='35' r='10'/%3E%3Cpath d='M35 35 Q65 35 65 65 Q65 95 95 95'/%3E%3Ccircle cx='65' cy='65' r='6'/%3E%3Ccircle cx='95' cy='95' r='10'/%3E%3Cpath d='M35 35 Q20 55 35 75 Q50 95 65 95'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 清·团寿纹：圆形寿字骨架 */
+body[data-era="qing"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Ccircle cx='55' cy='55' r='28'/%3E%3Cpath d='M55 35 L55 75 M35 55 L75 55'/%3E%3Cpath d='M42 42 L68 68 M68 42 L42 68'/%3E%3Ccircle cx='55' cy='55' r='6'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+
+/* 其他三大板块专属背板纹样（统一米黄底，与主站同源） */
+/* 思想源流：汉画像砖卷云纹（S形螺旋云，张掖汉砖实物） */
+body[data-module="guoxue"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='100' viewBox='0 0 130 100'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.2'%3E%3Cpath d='M15 50 Q35 20 55 50 T95 50 T125 50'/%3E%3Ccircle cx='35' cy='50' r='6'/%3E%3Ccircle cx='75' cy='50' r='6'/%3E%3Cpath d='M15 50 Q10 65 20 75'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 诗词鉴赏：宋画梅枝+月轮（疏影横斜，宋元水墨小品常见） */
+body[data-module="shici"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.2'%3E%3Ccircle cx='115' cy='35' r='20'/%3E%3Cpath d='M25 130 Q55 90 80 65 Q95 50 105 35'/%3E%3Ccircle cx='50' cy='100' r='5'/%3E%3Ccircle cx='72' cy='75' r='4'/%3E%3Ccircle cx='88' cy='55' r='4'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 格物致知：宋《宣和博古图》鼎纹（双耳三足青铜鼎线描） */
+body[data-module="gewu"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.2'%3E%3Cpath d='M35 35 L35 25 M75 35 L75 25'/%3E%3Cpath d='M30 35 L30 55 Q30 65 55 65 Q80 65 80 55 L80 35'/%3E%3Cline x1='30' y1='48' x2='80' y2='48'/%3E%3Cpath d='M40 65 L38 80 M55 65 L55 82 M70 65 L72 80'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+
+/* 动态墨雾：两团极淡墨色缓慢漂移，浮于底纹之上、内容之下 */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 30% at 18% 22%, rgba(90, 110, 130, 0.10), transparent 70%),
+    radial-gradient(34% 28% at 82% 78%, rgba(150, 120, 80, 0.09), transparent 70%);
+  animation: mist-drift 46s ease-in-out infinite alternate;
+}
+@keyframes mist-drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); opacity: .8; }
+  to   { transform: translate3d(2%, 2%, 0) scale(1.08); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::after { animation: none; }
 }
 
 /* 外层 #app 只负责承载侧栏与两个模块区，不限宽。 */
@@ -1079,7 +1158,7 @@ input, textarea { cursor: text; }
 .mega-sidebar {
   position: fixed; left: 0; top: 0; bottom: 0;
   width: var(--sidebar-w);
-  background: linear-gradient(180deg, #f5ead0 0%, #efe2c4 100%);
+  background: linear-gradient(180deg, rgba(245,234,208,.88) 0%, rgba(239,226,196,.88) 100%);
   display: flex; flex-direction: column; align-items: center;
   padding: 12px 0 16px; z-index: 1000;
   border-right: 1px solid #c9b080;

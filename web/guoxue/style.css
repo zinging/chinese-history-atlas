@@ -16,6 +16,7 @@
   /* 右侧竖排胶囊占位：实测 19px 字 + 3px 字距 × 4 字 + 内边距 52 + 边框 3 ≈ 143px */
   --rail-w: 143px;
   --rail-gap: 12px;
+  --paper-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
 }
 
 * { box-sizing: border-box; }
@@ -27,6 +28,23 @@ body {
   color: var(--ink);
   font-size: 17px;
   line-height: 1.6;
+}
+
+/* 各板块专属背板纹样（统一米黄底，与主站同源） */
+/* 思想源流：汉画像砖卷云纹（S形螺旋云，张掖汉砖实物） */
+body.mod-sixiang {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='100' viewBox='0 0 130 100'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.2'%3E%3Cpath d='M15 50 Q35 20 55 50 T95 50 T125 50'/%3E%3Ccircle cx='35' cy='50' r='6'/%3E%3Ccircle cx='75' cy='50' r='6'/%3E%3Cpath d='M15 50 Q10 65 20 75'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 诗词鉴赏：宋画梅枝+月轮（疏影横斜，宋元水墨小品常见） */
+body[data-sect="shiwen"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.2'%3E%3Ccircle cx='115' cy='35' r='20'/%3E%3Cpath d='M25 130 Q55 90 80 65 Q95 50 105 35'/%3E%3Ccircle cx='50' cy='100' r='5'/%3E%3Ccircle cx='72' cy='75' r='4'/%3E%3Ccircle cx='88' cy='55' r='4'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 格物致知：宋《宣和博古图》鼎纹（双耳三足青铜鼎线描） */
+body[data-sect="gewu"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.2'%3E%3Cpath d='M35 35 L35 25 M75 35 L75 25'/%3E%3Cpath d='M30 35 L30 55 Q30 65 55 65 Q80 65 80 55 L80 35'/%3E%3Cline x1='30' y1='48' x2='80' y2='48'/%3E%3Cpath d='M40 65 L38 80 M55 65 L55 82 M70 65 L72 80'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
 }
 
 /* 正文容器：与帝王谱系一致（限宽 1080 居中）
@@ -792,4 +810,31 @@ body {
   background: #fff;
   border: 1px solid #ece0c6;
   border-left: 3px solid #b08954;
+}
+
+/* ===== 按需加载：骨架 / 加载中 / 失败提示（与碑刻米黄配色一致） ===== */
+.lazy-loading {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 34px 16px;
+  position: relative;
+}
+.lazy-loading::after {
+  content: "";
+  display: block;
+  width: 22px;
+  height: 22px;
+  margin: 12px auto 0;
+  border: 2px solid #e0d2b2;
+  border-top-color: #8b5a2b;
+  border-radius: 50%;
+  animation: lazy-spin .8s linear infinite;
+}
+@keyframes lazy-spin { to { transform: rotate(360deg); } }
+.lazy-error {
+  color: #b04a36;
+  font-size: 14px;
+  text-align: center;
+  padding: 34px 16px;
 }

@@ -20,6 +20,11 @@ let currentEra = "all";
 let bookData = {};
 // 各流派数据缓存：切回已看过的流派不再重发请求
 const SECT_CACHE = {};
+/**
+ * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
+ * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
+ */
+const DATA_VER = "v94";
 let map = null;
 // 图层句柄：按类型分组，切换流派时只清这些，不动底图
 const mapLayers = { places: [], routes: [], routeLabels: [] };
@@ -67,13 +72,65 @@ async function loadSect(sect) {
     // 数据路径必须用相对路径：本页面在 web/guoxue/ 下，../../data/ 指向仓库 data/。
     // 若写成绝对路径 /data/，本地 serve.mjs 能命中，但部署到 GitHub Pages 子目录
     // （如 /chinese-history-atlas/web/guoxue/）时会解析到域名根，必然 404。
-    const r = await fetch(`../../data/${meta.data}/index.json?v=v74`);
+    const r = await fetch(`../../data/${meta.data}/index.json?v=${DATA_VER}`);
     bookData = await r.json();
     SECT_CACHE[sect] = bookData;
   } catch (e) {
     bookData = { books: [], cases: [], places: [], routes: [], quiz: [] };
   }
   renderSect();
+}
+
+/**
+ * 按需加载（数据基座）。
+ * 数据已由"单体 index.json"演进为"清单 + 分片"：
+ *   - index.json 只放书籍卡片字段与各分区指针（{src, count, byGroup}）
+ *   - books/<id>.json 单本书详情，点开卡片时才加载
+ *   - artifacts.json / discourses.json / cases.json 分区分片，切到对应 tab 时才加载
+ * 其余六流派仍是内联单体，下面的判断用"数组=已就绪、{src}=待加载"两种形态兼容。
+ */
+function sectDataUrl(rel) {
+  const meta = SECT_META[currentSect];
+  const sep = rel.includes("?") ? "&" : "?";
+  return `../../data/${meta.data}/${rel}${sep}v=${DATA_VER}`;
+}
+
+/** 加载某个分区分片（artifacts/discourses/cases）。已加载或本就内联则直接返回。 */
+async function ensureSection(name) {
+  const v = bookData[name];
+  if (Array.isArray(v)) return v;
+  if (v && v.src) {
+    if (!v.__p) {
+      v.__p = fetch(sectDataUrl(v.src))
+        .then((r) => {
+          if (!r.ok) throw new Error(`加载 ${v.src} 失败 (${r.status})`);
+          return r.json();
+        })
+        .then((arr) => { bookData[name] = arr; return arr; })
+        .catch((err) => { v.__p = null; throw err; });
+    }
+    return v.__p;
+  }
+  return [];
+}
+
+/** 加载某本书的详情分片（intro/core/chapters/golden/funFacts/outline 等）。 */
+async function ensureBookDetail(book) {
+  if (!book || !book.src || book.__loaded) return book;
+  if (!book.__p) {
+    book.__p = fetch(sectDataUrl(book.src))
+      .then((r) => {
+        if (!r.ok) throw new Error(`加载 ${book.src} 失败 (${r.status})`);
+        return r.json();
+      })
+      .then((detail) => {
+        Object.assign(book, detail);
+        book.__loaded = true;
+        return book;
+      })
+      .catch((err) => { book.__p = null; throw err; });
+  }
+  return book.__p;
 }
 
 /** 数据就绪后的统一渲染入口（缓存命中与首次加载共用，避免两处重复维护渲染顺序） */
@@ -115,16 +172,24 @@ function renderEraSwitch() {
   bar.classList.remove("hidden");
 
   const counts = {};
-  const items = currentPage === "quiz"
+  const rawItems = currentPage === "quiz"
     ? (bookData.discourses || [])
     : currentPage === "artifacts"
       ? (bookData.artifacts || [])
       : books;
-  for (const b of items) {
-    const k = isCategory ? (b.category || b.cat) : b.era;
-    if (k) counts[k] = (counts[k] || 0) + 1;
+  let total;
+  if (rawItems && !Array.isArray(rawItems) && rawItems.src) {
+    // 分片尚未加载：用清单里预聚合的分类计数，角标仍能即时显示
+    Object.assign(counts, rawItems.byGroup || {});
+    total = rawItems.count || 0;
+  } else {
+    const items = Array.isArray(rawItems) ? rawItems : [];
+    for (const b of items) {
+      const k = isCategory ? (b.category || b.cat) : b.era;
+      if (k) counts[k] = (counts[k] || 0) + 1;
+    }
+    total = items.length;
   }
-  const total = items.length;
   const keys = isCategory
     ? ["工艺营造","医药本草","农书","算历","地理博物","生活艺术"].filter(k => counts[k])
     : ERAS.filter(k => counts[k]);
@@ -209,7 +274,7 @@ function renderBooks() {
       card.classList.add("active");
       // 选中卡片自动居中
       card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-      renderBookDetail(books[+card.dataset.i]);
+      openBook(books[+card.dataset.i]);
     });
   });
   // 鼠标滚轮横向滚动
@@ -222,8 +287,25 @@ function renderBooks() {
   // 默认展开第一本
   if (books[0]) {
     wrap.querySelector(".book-card").classList.add("active");
-    renderBookDetail(books[0]);
+    openBook(books[0]);
   }
+}
+
+/** 打开某本书：详情在分片里则先按需加载（卡片字段清单已具备，先给骨架，再渲染）。 */
+async function openBook(b) {
+  if (!b) return;
+  const el = $("#book-detail");
+  if (b.src && !b.__loaded) {
+    el.classList.remove("hidden");
+    el.innerHTML = `<div class="lazy-loading">《${b.name}》详情加载中…</div>`;
+    try {
+      await ensureBookDetail(b);
+    } catch (e) {
+      el.innerHTML = `<div class="lazy-error">详情加载失败，请稍后重试。</div>`;
+      return;
+    }
+  }
+  renderBookDetail(b);
 }
 
 function renderBookDetail(b) {
@@ -341,9 +423,22 @@ function renderBookDetail(b) {
 }
 
 let activeCaseCat = null;
-function renderCases() {
+async function renderCases() {
   const list = $("#cases-list");
   const tabsEl = $("#case-tabs");
+  // 分片按需加载：仅当公案 tab 为当前页时才拉 cases.json
+  const needsLoad = bookData.cases && !Array.isArray(bookData.cases) && !!bookData.cases.src;
+  if (needsLoad && currentPage !== "cases") return;
+  if (needsLoad) {
+    list.innerHTML = `<div class="lazy-loading">工艺公案加载中…</div>`;
+    tabsEl.innerHTML = "";
+    try {
+      await ensureSection("cases");
+    } catch (e) {
+      list.innerHTML = `<div class="lazy-error">公案加载失败，请稍后重试。</div>`;
+      return;
+    }
+  }
   const cases = bookData.cases || [];
   const cats = bookData.categories || [];
   if (!cases.length) {
@@ -396,9 +491,21 @@ let discIndex = 0;
 let discEra = "__init__";
 
 /** 器物图谱（百工图鉴）：按书分组，书为容器，器物为子卡 */
-function renderArtifacts() {
+async function renderArtifacts() {
   const grid = $("#artifacts-grid");
   if (!grid) return;
+  // 分片按需加载：仅当图鉴 tab 为当前页时才拉 artifacts.json，避免首屏并发拉全部分片
+  const needsLoad = bookData.artifacts && !Array.isArray(bookData.artifacts) && !!bookData.artifacts.src;
+  if (needsLoad && currentPage !== "artifacts") return;
+  if (needsLoad) {
+    grid.innerHTML = `<div class="lazy-loading">百工图鉴加载中…</div>`;
+    try {
+      await ensureSection("artifacts");
+    } catch (e) {
+      grid.innerHTML = `<div class="lazy-error">图鉴加载失败，请稍后重试。</div>`;
+      return;
+    }
+  }
   const all = bookData.artifacts || [];
   const list = currentEra === "all" ? all : all.filter((x) => x.cat === currentEra);
   if (!list.length) {
@@ -446,8 +553,20 @@ function renderArtifacts() {
   }).join("");
 }
 
-function renderQuiz() {
+async function renderQuiz() {
   const list = $("#quiz-list");
+  // 分片按需加载：仅当问典 tab 为当前页时才拉 discourses.json
+  const needsLoad = bookData.discourses && !Array.isArray(bookData.discourses) && !!bookData.discourses.src;
+  if (needsLoad && currentPage !== "quiz") return;
+  if (needsLoad) {
+    list.innerHTML = `<div class="lazy-loading">问典题目加载中…</div>`;
+    try {
+      await ensureSection("discourses");
+    } catch (e) {
+      list.innerHTML = `<div class="lazy-error">题目加载失败，请稍后重试。</div>`;
+      return;
+    }
+  }
   const all = bookData.discourses || [];
   // 顶部分类/朝代条驱动：「全部」展示全部，否则按 category 或 era 过滤
   const disc = currentEra === "all"

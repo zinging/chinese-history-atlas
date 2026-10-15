@@ -2730,6 +2730,7 @@ function applyDynastyText(d) {
 async function switchDynasty(d) {
   if (d === currentDynasty) return;
   currentDynasty = d;
+  document.body.dataset.era = d; // 背板朝代换肤（CSS 按 body[data-era] 切换底色+纹样）
   // 令牌：快速连点朝代时，只有最后一次切换的结果允许落地渲染（旧版会被先返回的旧朝数据覆盖）
   const token = ++_dynastyToken;
   activeEraId = null;
@@ -2973,6 +2974,7 @@ async function askLLM(message, history = []) {
     loadLLMConfig();
     // 初始默认朝代（隋）的页头/图例/页脚文案
     applyDynastyText(currentDynasty);
+    document.body.dataset.era = currentDynasty; // 背板初始朝代色+纹样
     renderTimeline();
     renderDetective();
     // 默认展开第一位皇帝（隋朝即杨坚）的生平时间线，并让卡片呈现选中红底
@@ -3106,6 +3108,13 @@ function activateModule(which) {
       const frame = document.getElementById(m.id + '-frame');
       if (frame && !frame.src && m.entry) frame.src = m.entry;
     }
+  }
+  // 背板纹样随模块切换：history 模块用朝代纹，其余用各自专属纹
+  if (which === 'history') {
+    delete document.body.dataset.module;
+    document.body.dataset.era = currentDynasty;
+  } else {
+    document.body.dataset.module = which;
   }
   try { sessionStorage.setItem('dsh-active-module', which); } catch { /* 忽略 */ }
 }
