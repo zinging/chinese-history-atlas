@@ -25,7 +25,7 @@ const SECT_CACHE = {};
  * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
-const DATA_VER = "v94";
+const DATA_VER = "v98";
 
 // Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
 // 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
@@ -250,7 +250,9 @@ function renderEraSwitch() {
     total = items.length;
   }
   const keys = isCategory
-    ? ["工艺营造","医药本草","农书","算历","地理博物","生活艺术"].filter(k => counts[k])
+    ? (bookData.categories
+        ? bookData.categories.map(c => c.name).filter(k => counts[k])
+        : ["工艺营造","医药本草","农书","算历","地理博物","生活艺术"].filter(k => counts[k]))
     : ERAS.filter(k => counts[k]);
 
   const cell = (key, label, sub) => {

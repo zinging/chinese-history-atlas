@@ -1,9 +1,10 @@
 {
   "categories": [
-    { "id": "shoushen", "name": "神兽瑞兽" },
-    { "id": "yiren", "name": "异人异国" },
-    { "id": "shenshan", "name": "神山仙境" },
-    { "id": "jingguai", "name": "精怪异兽" }
+    { "id": "shanhaijing", "name": "山海经" },
+    { "id": "xiyouji", "name": "西游记" },
+    { "id": "fengshen", "name": "封神演义" },
+    { "id": "liaozhai", "name": "聊斋志异" },
+    { "id": "soushen", "name": "搜神记" }
   ],
   "books": [
     {
@@ -13,15 +14,54 @@
       "meta": "先秦-汉 · 神话地理博物 · 18卷 · 中国想象力之源",
       "person": "山海巫觋",
       "portrait": "shanhaijing.jpg",
-      "category": "神兽瑞兽",
-      "era": "先秦",
+      "category": "山海经",
       "src": "books/shanhaijing.json"
+    },
+    {
+      "id": "xiyouji",
+      "icon": "🐒",
+      "name": "西游记",
+      "meta": "明 · 神魔小说 · 100回 · 取经路上的妖怪档案",
+      "person": "吴承恩",
+      "portrait": "xiyouji.jpg",
+      "category": "西游记",
+      "src": "books/xiyouji.json"
+    },
+    {
+      "id": "fengshen",
+      "icon": "⚔️",
+      "name": "封神演义",
+      "meta": "明 · 神魔小说 · 100回 · 365位正神的封神榜",
+      "person": "许仲琳",
+      "portrait": "fengshen.jpg",
+      "category": "封神演义",
+      "src": "books/fengshen.json"
+    },
+    {
+      "id": "liaozhai",
+      "icon": "🦊",
+      "name": "聊斋志异",
+      "meta": "清 · 文言短篇 · 近500篇 · 狐鬼花仙比人更有情",
+      "person": "蒲松龄",
+      "portrait": "liaozhai.jpg",
+      "category": "聊斋志异",
+      "src": "books/liaozhai.json"
+    },
+    {
+      "id": "soushen",
+      "icon": "📜",
+      "name": "搜神记",
+      "meta": "晋 · 志怪小说 · 464篇 · 中国神话的最早笔录",
+      "person": "干宝",
+      "portrait": "soushen.jpg",
+      "category": "搜神记",
+      "src": "books/soushen.json"
     }
   ],
   "artifacts": {
     "src": "artifacts.json",
-    "count": 20,
-    "byGroup": { "神兽瑞兽": 5, "异人异国": 5, "神山仙境": 3, "精怪异兽": 7 }
+    "count": 34,
+    "byGroup": { "山海经": 20, "西游记": 4, "封神演义": 4, "聊斋志异": 3, "搜神记": 3 }
   },
   "discourses": [],
   "cases": [],

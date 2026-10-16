@@ -1,162 +1,36 @@
 [
-  {
-    "name": "九尾狐",
-    "era": "先秦",
-    "cat": "神兽瑞兽",
-    "from": "南山经·青丘之山",
-    "note": "『其状如狐而九尾，其音如婴儿，能食人，食者不蛊。』青丘山的异兽，九条尾巴叫起来像婴儿哭。汉代成为祥瑞，宋代后渐成妖媚形象。",
-    "image": "../../data/portraits/artifacts/jiuweihu.jpg"
-  },
-  {
-    "name": "精卫",
-    "era": "先秦",
-    "cat": "精怪异兽",
-    "from": "北山经·发鸠之山",
-    "note": "『其状如乌，文首、白喙、赤足。』炎帝少女女娃溺于东海后所化，常衔西山木石以填东海。陶渊明赞其『猛志固常在』。",
-    "image": "../../data/portraits/artifacts/jingwei.jpg"
-  },
-  {
-    "name": "昆仑之丘",
-    "era": "先秦",
-    "cat": "神山仙境",
-    "from": "西山经",
-    "note": "『帝之下都』，黄帝在人间的都城。人面虎身的陆吾神守护，山下弱水环绕，外有炎火山。西王母居于此。",
-    "image": "../../data/portraits/artifacts/kunlun.jpg"
-  },
-  {
-    "name": "帝江",
-    "era": "先秦",
-    "cat": "精怪异兽",
-    "from": "西山经·天山",
-    "note": "『其状如黄囊，赤如丹火，六足四翼，浑敦无面目。』没有脸的神，长六只脚四个翅膀，懂歌舞。后世『浑沌』一词源此。",
-    "image": "../../data/portraits/artifacts/dijiang.jpg"
-  },
-  {
-    "name": "烛龙",
-    "era": "先秦",
-    "cat": "神兽瑞兽",
-    "from": "大荒北经",
-    "note": "『钟山之神，名曰烛阴，视为昼，瞑为夜，吹为冬，呼为夏。』人面蛇身，身长千里，睁眼是白天闭眼是黑夜。",
-    "image": "../../data/portraits/artifacts/zhulong.jpg"
-  },
-  {
-    "name": "毕方鸟",
-    "era": "先秦",
-    "cat": "精怪异兽",
-    "from": "西山经·章莪之山",
-    "note": "『其状如鹤，一足，赤文青质而白喙。』独脚鹤形鸟，出现的地方会有怪异火灾。黄帝在泰山之山驾象车时遇毕方在旁。",
-    "image": "../../data/portraits/artifacts/bifang.jpg"
-  },
-  {
-    "name": "夔牛",
-    "era": "先秦",
-    "cat": "精怪异兽",
-    "from": "大荒东经·流波山",
-    "note": "『状如牛，苍身而无角，一足。』出入水必风雨。黄帝得之，用其皮蒙鼓，声闻五百里。后世『一足夔』成了孔子讨论的典故。",
-    "image": "../../data/portraits/artifacts/kuiniu.jpg"
-  },
-  {
-    "name": "刑天",
-    "era": "先秦",
-    "cat": "异人异国",
-    "from": "海外西经",
-    "note": "『与帝争神，帝断其首，葬之常羊之山。乃以乳为目，以脐为口，操干戚以舞。』被砍头后仍挥舞盾斧，中国神话最硬的反抗者。",
-    "image": "../../data/portraits/artifacts/xingtian.jpg"
-  },
-  {
-    "name": "夸父",
-    "era": "先秦",
-    "cat": "异人异国",
-    "from": "大荒北经",
-    "note": "『珥两黄蛇，把两黄蛇。』耳挂黄蛇手拿黄蛇的巨人，追太阳到禺谷，渴饮河渭不足，北饮大泽途中渴死，杖化邓林。",
-    "image": "../../data/portraits/artifacts/kuafu.jpg"
-  },
-  {
-    "name": "西王母",
-    "era": "先秦",
-    "cat": "神山仙境",
-    "from": "西山经·玉山",
-    "note": "『其状如人，豹尾虎齿而善啸，蓬发戴胜。』昆仑山的凶神，掌瘟疫刑罚。后世演变为蟠桃会上的王母娘娘。",
-    "image": "../../data/portraits/artifacts/xiwangmu.jpg"
-  },
-  {
-    "name": "窫窳",
-    "era": "先秦",
-    "cat": "精怪异兽",
-    "from": "北山经·少咸之山",
-    "note": "『其状如牛，赤身、人面、马足，音如婴儿。』原是蛇身人面的天神被贰负臣所杀，复活后变成吃人的凶兽。",
-    "image": "../../data/portraits/artifacts/yayu.jpg"
-  },
-  {
-    "name": "狌狌",
-    "era": "先秦",
-    "cat": "精怪异兽",
-    "from": "南山经·招摇之山",
-    "note": "『其状如禺而白耳，伏行人走。』白耳朵的猿，伏行也能像人一样走。郭璞注说它知人名，吃了它跑得快。",
-    "image": "../../data/portraits/artifacts/xingxing.jpg"
-  },
-  {
-    "name": "鸾鸟",
-    "era": "先秦",
-    "cat": "神兽瑞兽",
-    "from": "西山经·女床之山",
-    "note": "『其状如翟而五采文。』五彩羽毛的山鸡形鸟，见则天下安宁。是凤凰的前身，后世成为『鸾凤和鸣』。",
-    "image": "../../data/portraits/artifacts/luanniao.jpg"
-  },
-  {
-    "name": "帝俊",
-    "era": "先秦",
-    "cat": "神山仙境",
-    "from": "大荒东经/南经",
-    "note": "《山海经》里最高的天神，妻羲和生十个太阳，妻常羲生十二个月亮。甲骨文里的『帝俊』就是商代高祖夋。",
-    "image": "../../data/portraits/artifacts/dijun.jpg"
-  },
-  {
-    "name": "羽民国",
-    "era": "先秦",
-    "cat": "异人异国",
-    "from": "海外南经",
-    "note": "『其为人长头，身生羽。』那里的人身上长羽毛，长脑袋，能飞但飞不远。是古人对海外远方居民的想象。",
-    "image": "../../data/portraits/artifacts/yuguo.jpg"
-  },
-  {
-    "name": "君子国",
-    "era": "先秦",
-    "cat": "异人异国",
-    "from": "海外东经",
-    "note": "『其人好让不争。』衣冠带剑的君子之国，人与人之间谦让不争。后世《镜花缘》里李汝珍大写君子国。",
-    "image": "../../data/portraits/artifacts/junziguo.jpg"
-  },
-  {
-    "name": "应龙",
-    "era": "先秦",
-    "cat": "神兽瑞兽",
-    "from": "大荒东经",
-    "note": "『应龙处南极，杀蚩尤与夸父。』长翅膀的神龙，帮黄帝杀蚩尤和夸父。杀蚩尤时喷大水，被女魃止住。后不能再上天。",
-    "image": "../../data/portraits/artifacts/yinglong.jpg"
-  },
-  {
-    "name": "女魃",
-    "era": "先秦",
-    "cat": "异人异国",
-    "from": "大荒北经",
-    "note": "『有人衣青衣，名曰黄帝女魃。』黄帝的女儿，旱神。应龙杀蚩尤时喷大水，女魃下凡止雨，战后不能回天，所居之处大旱。",
-    "image": "../../data/portraits/artifacts/nvba.jpg"
-  },
-  {
-    "name": "相柳",
-    "era": "先秦",
-    "cat": "精怪异兽",
-    "from": "大荒北经",
-    "note": "『九首蛇身，自环，食于九土。』九头蛇身怪物，是共工的臣属，所到之处成沼泽毒水。大禹杀之，其地生血腥不可生谷。",
-    "image": "../../data/portraits/artifacts/xiangliu.jpg"
-  },
-  {
-    "name": "开明兽",
-    "era": "先秦",
-    "cat": "神兽瑞兽",
-    "from": "海内西经",
-    "note": "『昆仑之虚，……面有九门，门有开明兽守之。』昆仑山守门神兽，虎身人面九个头，管着帝之下都九门。",
-    "image": "../../data/portraits/artifacts/kaimingshou.jpg"
-  }
+  { "name": "九尾狐", "era": "先秦", "cat": "山海经", "from": "南山经·青丘之山", "note": "『其状如狐而九尾，其音如婴儿，能食人。』青丘山异兽，九条尾巴。汉代成祥瑞，宋后渐成妖媚形象。", "image": "../../data/portraits/artifacts/jiuweihu.jpg" },
+  { "name": "精卫", "era": "先秦", "cat": "山海经", "from": "北山经·发鸠之山", "note": "炎帝少女女娃溺于东海后所化，常衔西山木石以填东海。陶渊明赞其『猛志固常在』。", "image": "../../data/portraits/artifacts/jingwei.jpg" },
+  { "name": "昆仑之丘", "era": "先秦", "cat": "山海经", "from": "西山经", "note": "『帝之下都』，黄帝在人间的都城。人面虎身陆吾守护，山下弱水环绕，西王母居于此。", "image": "../../data/portraits/artifacts/kunlun.jpg" },
+  { "name": "帝江", "era": "先秦", "cat": "山海经", "from": "西山经·天山", "note": "『其状如黄囊，赤如丹火，六足四翼，浑敦无面目。』没有脸的神，后世『浑沌』一词源此。", "image": "../../data/portraits/artifacts/dijiang.jpg" },
+  { "name": "烛龙", "era": "先秦", "cat": "山海经", "from": "大荒北经", "note": "『视为昼，瞑为夜。』人面蛇身，身长千里，睁眼是白天闭眼是黑夜。", "image": "../../data/portraits/artifacts/zhulong.jpg" },
+  { "name": "毕方鸟", "era": "先秦", "cat": "山海经", "from": "西山经·章莪之山", "note": "独脚鹤形鸟，出现的地方会有怪异火灾。黄帝泰山之会时毕方在旁。", "image": "../../data/portraits/artifacts/bifang.jpg" },
+  { "name": "夔牛", "era": "先秦", "cat": "山海经", "from": "大荒东经·流波山", "note": "苍身无角独脚牛，出入水必风雨。黄帝用其皮蒙鼓，声闻五百里。", "image": "../../data/portraits/artifacts/kuiniu.jpg" },
+  { "name": "刑天", "era": "先秦", "cat": "山海经", "from": "海外西经", "note": "『以乳为目，以脐为口，操干戚以舞。』被砍头后仍挥舞盾斧，中国神话最硬的反抗者。", "image": "../../data/portraits/artifacts/xingtian.jpg" },
+  { "name": "夸父", "era": "先秦", "cat": "山海经", "from": "大荒北经", "note": "耳挂黄蛇手拿黄蛇的巨人，追太阳到禺谷，渴饮河渭不足，杖化邓林。", "image": "../../data/portraits/artifacts/kuafu.jpg" },
+  { "name": "西王母", "era": "先秦", "cat": "山海经", "from": "西山经·玉山", "note": "『豹尾虎齿而善啸，蓬发戴胜。』昆仑山凶神，掌瘟疫刑罚，后世演变为王母娘娘。", "image": "../../data/portraits/artifacts/xiwangmu.jpg" },
+  { "name": "窫窳", "era": "先秦", "cat": "山海经", "from": "北山经·少咸之山", "note": "赤身人面马足，音如婴儿。原是天神被贰负臣所杀，复活后变成吃人的凶兽。", "image": "../../data/portraits/artifacts/yayu.jpg" },
+  { "name": "狌狌", "era": "先秦", "cat": "山海经", "from": "南山经·招摇之山", "note": "白耳朵的猿，伏行也能像人一样走。郭璞注说它知人名。", "image": "../../data/portraits/artifacts/xingxing.jpg" },
+  { "name": "鸾鸟", "era": "先秦", "cat": "山海经", "from": "西山经·女床之山", "note": "五彩羽毛山鸡形鸟，见则天下安宁。凤凰前身，后世『鸾凤和鸣』。", "image": "../../data/portraits/artifacts/luanniao.jpg" },
+  { "name": "帝俊", "era": "先秦", "cat": "山海经", "from": "大荒东经", "note": "《山海经》最高天神，妻羲和生十日，妻常羲生十二月。甲骨文里的『帝俊』即商代高祖夋。", "image": "../../data/portraits/artifacts/dijun.jpg" },
+  { "name": "羽民国", "era": "先秦", "cat": "山海经", "from": "海外南经", "note": "『其为人长头，身生羽。』身上长羽毛的远方国民，能飞但飞不远。", "image": "../../data/portraits/artifacts/yuguo.jpg" },
+  { "name": "君子国", "era": "先秦", "cat": "山海经", "from": "海外东经", "note": "『其人好让不争。』衣冠带剑的君子之国，人与人谦让不争。", "image": "../../data/portraits/artifacts/junziguo.jpg" },
+  { "name": "应龙", "era": "先秦", "cat": "山海经", "from": "大荒东经", "note": "长翅膀的神龙，帮黄帝杀蚩尤和夸父。后不能再上天。", "image": "../../data/portraits/artifacts/yinglong.jpg" },
+  { "name": "女魃", "era": "先秦", "cat": "山海经", "from": "大荒北经", "note": "『有人衣青衣，名曰黄帝女魃。』黄帝之女旱神，所居之处大旱。", "image": "../../data/portraits/artifacts/nvba.jpg" },
+  { "name": "相柳", "era": "先秦", "cat": "山海经", "from": "大荒北经", "note": "九头蛇身，共工臣属，所到之处成沼泽毒水。大禹杀之，其地血腥不可生谷。", "image": "../../data/portraits/artifacts/xiangliu.jpg" },
+  { "name": "开明兽", "era": "先秦", "cat": "山海经", "from": "海内西经", "note": "昆仑山守门神兽，虎身人面九个头，管帝之下都九门。", "image": "../../data/portraits/artifacts/kaimingshou.jpg" },
+  { "name": "孙悟空", "era": "明", "cat": "西游记", "from": "西游记·第一回", "note": "花果山仙石所生，拜菩提祖师学七十二变，大闹天宫后被压五行山，护唐僧取经，成斗战胜佛。", "image": "" },
+  { "name": "猪八戒", "era": "明", "cat": "西游记", "from": "西游记·第八回", "note": "本是天蓬元帅，调戏嫦娥被贬错投猪胎。九齿钉耙是太上老君所造，贪吃好色但憨厚可爱。", "image": "" },
+  { "name": "牛魔王", "era": "明", "cat": "西游记", "from": "西游记·第三回", "note": "孙悟空结拜大哥，翠云山铁扇公主之夫，红孩儿之父。会七十二变，与孙悟空本领相当。", "image": "" },
+  { "name": "红孩儿", "era": "明", "cat": "西游记", "from": "西游记·第四十回", "note": "牛魔王与铁扇公主之子，会三昧真火，被观音收为善财童子。", "image": "" },
+  { "name": "哪吒", "era": "明", "cat": "封神演义", "from": "封神演义·第十二回", "note": "灵珠子下凡，七岁闹海打死敖丙，剔骨还父。太乙真人用莲花重塑肉身，助周伐纣。", "image": "" },
+  { "name": "杨戬", "era": "明", "cat": "封神演义", "from": "封神演义·第四十回", "note": "二郎神，玉鼎真人徒弟，会八九玄功，带哮天犬，三只眼。劈山救母的主角。", "image": "" },
+  { "name": "姜子牙", "era": "明", "cat": "封神演义", "from": "封神演义·第二十四回", "note": "七十二岁出山，渭水直钩钓鱼。执封神榜封三百六十五位正神，自己未成仙。", "image": "" },
+  { "name": "苏妲己", "era": "明", "cat": "封神演义", "from": "封神演义·第一回", "note": "冀州侯苏护之女，被千年狐狸精附体，蛊惑纣王造炮烙、设虿盆，亡商。", "image": "" },
+  { "name": "婴宁", "era": "清", "cat": "聊斋志异", "from": "聊斋·婴宁", "note": "狐女，天生爱笑，什么场合都笑。嫁给王子服后憨笑不改，是蒲松龄笔下最可爱的女性。", "image": "" },
+  { "name": "聂小倩", "era": "清", "cat": "聊斋志异", "from": "聊斋·聂小倩", "note": "十八岁女鬼，被夜叉胁迫害人。感宁采臣正直，求他迁骨脱离魔爪，后随他回家结为夫妻。", "image": "" },
+  { "name": "画皮鬼", "era": "清", "cat": "聊斋志异", "from": "聊斋·画皮", "note": "青面恶鬼，披画好的人皮变美女，骗王生后掏其心。中国最有名的恐怖意象。", "image": "" },
+  { "name": "干将莫邪", "era": "晋", "cat": "搜神记", "from": "搜神记·三王墓", "note": "楚国铸剑师夫妇，为楚王铸雌雄二剑，干将被楚王杀。其子赤持雄剑报仇，侠客帮他杀楚王，三首同葬三王墓。", "image": "" },
+  { "name": "董永织女", "era": "晋", "cat": "搜神记", "from": "搜神记·董永", "note": "董永卖身为奴葬父，天帝遣织女下凡帮他织绢还债。十天织百匹，事毕凌空而去——七仙女故事最早版本。", "image": "" },
+  { "name": "李寄", "era": "晋", "cat": "搜神记", "from": "搜神记·李寄斩蛇", "note": "十二岁女孩，主动应征去喂大蛇，带剑和狗，放糯米糍引蛇出洞，斩蛇救城。中国最早的少女英雄。", "image": "" }
 ]
