@@ -325,11 +325,14 @@ function switchPage(name) {
     if (tab) tab.classList.toggle('active', on);
   }
   if (name === 'map') {
-    renderEraStrip(); renderEraInfo(); renderMap();
-    // 首次进入地图页：默认点开「该朝事件」（展开事件古地名汇总面板）
-    showEventsSummary();
-    // 地图容器从隐藏变为可见，让 Leaflet 重新计算尺寸
-    if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 60);
+    renderEraStrip(); renderEraInfo();
+    // 首次进地图页：先按需加载 Leaflet，再渲染
+    ensureLeaflet().then(() => {
+      renderMap();
+      // 首次进入地图页：默认点开「该朝事件」（展开事件古地名汇总面板）
+      showEventsSummary();
+      if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 60);
+    }).catch((e) => console.error(e));
   }
   if (name === 'cases') renderCases();
   if (name !== 'map') hideRouteDetail();
@@ -1413,6 +1416,31 @@ function buildMapData() {
     zhenghe: (DATA.routes || []).find((r) => r.id === 'zhenghe-west') || null,
     fill,
   };
+}
+
+// Leaflet 按需加载：首屏默认是时间线，不需要 144KB 的地图库；
+// 只有用户第一次切到「舆图疆域」标签时，才注入 leaflet.css + leaflet.js。
+// 这样首屏少传 ~158KB（gzip 后也少一个 144KB 脚本的解析与执行），时间线立刻可交互。
+let _leafletLoading = null;
+function ensureLeaflet() {
+  if (window.L) return Promise.resolve(window.L);
+  if (_leafletLoading) return _leafletLoading;
+  _leafletLoading = new Promise((resolve, reject) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'vendor/leaflet.css';
+    document.head.appendChild(css);
+    const pre = document.createElement('link');
+    pre.rel = 'preconnect';
+    pre.href = 'https://tile.openstreetmap.org';
+    document.head.appendChild(pre);
+    const s = document.createElement('script');
+    s.src = 'vendor/leaflet.js';
+    s.onload = () => resolve(window.L);
+    s.onerror = () => { _leafletLoading = null; reject(new Error('地图组件加载失败')); };
+    document.body.appendChild(s);
+  });
+  return _leafletLoading;
 }
 
 // Leaflet 实例缓存：切换朝代时复用（重设视图+图层），避免重建地图/瓦片
@@ -2795,10 +2823,13 @@ async function switchDynasty(d) {
     }
     // 地图页如有打开，重渲染
     if (!$('#page-map').classList.contains('hidden')) {
-      renderEraStrip(); renderEraInfo(); renderMap();
-      // 切换朝代后同样默认展开「该朝事件」汇总
-      showEventsSummary();
-      if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 60);
+      renderEraStrip(); renderEraInfo();
+      ensureLeaflet().then(() => {
+        renderMap();
+        // 切换朝代后同样默认展开「该朝事件」汇总
+        showEventsSummary();
+        if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 60);
+      }).catch((e) => console.error(e));
     }
     if (!$('#page-cases').classList.contains('hidden')) renderCases();
   } catch (e) {
