@@ -573,6 +573,9 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
   font-size: 34px; user-select: none;
   object-fit: cover; /* 图片时圆形裁剪 */
 }
+/* 头像淡入：先出文字与金色圆占位，图片到了再柔和浮现，不抢文字 */
+.emp-card img.emp-portrait, .detail-portrait { opacity: 0; transition: opacity .35s ease; }
+.emp-card img.emp-portrait.loaded, .detail-portrait.loaded { opacity: 1; }
 .emp-card .name { font-size: 18px; font-weight: 700; }
 .emp-card .era { color: var(--muted); font-size: 14px; }
 .emp-card .reign { color: var(--muted); font-size: 13px; }

@@ -328,10 +328,12 @@ function switchPage(name) {
     renderEraStrip(); renderEraInfo();
     // 首次进地图页：先按需加载 Leaflet，再渲染
     ensureLeaflet().then(() => {
-      renderMap();
-      // 首次进入地图页：默认点开「该朝事件」（展开事件古地名汇总面板）
-      showEventsSummary();
-      if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 60);
+      loadBoundaries().then(() => {
+        renderMap();
+        // 首次进入地图页：默认点开「该朝事件」（展开事件古地名汇总面板）
+        showEventsSummary();
+        if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 60);
+      });
     }).catch((e) => console.error(e));
   }
   if (name === 'cases') renderCases();
@@ -433,7 +435,7 @@ function renderTimeline() {
     // 头像按需加载 + 声明尺寸：首屏只取视口内几张卡片，其余等滚到再取（避免首屏一次性请求十几张画像）
     const lazy = ' loading="lazy" decoding="async" width="84" height="84"';
     const portrait = e.portrait
-      ? `<img class="emp-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" ${lazy}/>`
+      ? `<img class="emp-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" ${lazy} onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')"/>`
       : `<div class="emp-portrait">${emojis[i % emojis.length]}</div>`;
     card.innerHTML = `
       ${portrait}
@@ -925,7 +927,7 @@ function showEmperor(e) {
   d.innerHTML = `
     <div class="detail-head">
       ${e.portrait
-        ? `<img class="detail-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" />`
+        ? `<img class="detail-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')" />`
         : `<div class="detail-portrait">👑</div>`}
       <div class="meta">
         <h3 style="color:#c0392b;font-size:26px">${e.name} <small style="color:#8a7a5c;font-size:16px;font-weight:normal">${e.templeName}</small></h3>
@@ -3035,8 +3037,9 @@ async function askLLM(message, history = []) {
 
 (async function init() {
   try {
-    // 朝代数据与边界 GeoJSON 并发加载（两者互不依赖，串行会多等一个往返）
-    await Promise.all([loadAll(), loadBoundaries()]);
+    // 只拉时间线必需的帝纪数据；边界 GeoJSON 是地图专用，延迟到首次开地图再取，
+    // 避免首屏多等一个 JSON 往返，让帝纪文字先渲染出来。
+    await loadAll();
     // LLM 配置（侦探页卡片内加载）
     loadLLMConfig();
     // 初始默认朝代的页头/图例/页脚文案
