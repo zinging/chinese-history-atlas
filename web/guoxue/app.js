@@ -25,7 +25,7 @@ const SECT_CACHE = {};
  * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
-const DATA_VER = "v98";
+const DATA_VER = "v99";
 
 // Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
 // 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
@@ -578,12 +578,11 @@ async function renderArtifacts() {
     "工艺营造": "#8b5a2b", "医药本草": "#4a7c59", "农书": "#a8893c",
     "算历": "#3d5a80", "地理博物": "#6b8e6b", "生活艺术": "#9c5a5a",
   };
-  // 书顺序：与 books 一致
+  // 按书分组（cat字段=书名），书顺序与 books 一致
   const bookOrder = (bookData.books || []).map((b) => b.name);
-  // 按 from 分组
   const groups = {};
   for (const a of list) {
-    (groups[a.from] = groups[a.from] || []).push(a);
+    (groups[a.cat] = groups[a.cat] || []).push(a);
   }
   const sortedKeys = Object.keys(groups).sort((x, y) => {
     const ix = bookOrder.indexOf(x), iy = bookOrder.indexOf(y);
@@ -595,19 +594,16 @@ async function renderArtifacts() {
   grid.innerHTML = sortedKeys.map((bookName) => {
     const items = groups[bookName];
     const meta = bookMeta[bookName] || {};
-    const cats = [...new Set(items.map((x) => x.cat))];
-    const eras = [...new Set(items.map((x) => x.era))];
     const cards = items.map((a) => `
       <div class="artifact-card">
         ${a.image ? `<div class="artifact-img" data-full="${esc(a.image)}"><img src="${esc(a.image)}" alt="${esc(a.name)}" loading="lazy"/></div>` : ""}
-        <div class="artifact-name">${esc(a.name)}</div>
+        <div class="artifact-name">${esc(a.name)}<span class="artifact-from"> · ${esc(a.from || "")}</span></div>
         <div class="artifact-note">${esc(a.note)}</div>
       </div>`).join("");
     return `
       <div class="artifact-group">
         <div class="artifact-group-head">
           <span class="artifact-group-book">《${esc(bookName)}》</span>
-          <span class="artifact-group-meta">${esc(eras.join(" / "))} · ${esc(cats.join(" / "))}</span>
           <span class="artifact-group-count">${items.length} 件</span>
         </div>
         <div class="artifact-group-body">${cards}</div>
