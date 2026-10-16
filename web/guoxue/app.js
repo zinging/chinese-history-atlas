@@ -25,6 +25,31 @@ const SECT_CACHE = {};
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
 const DATA_VER = "v94";
+
+// Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
+// 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
+let _leafletLoading = null;
+function ensureLeaflet() {
+  if (window.L) return Promise.resolve(window.L);
+  if (_leafletLoading) return _leafletLoading;
+  _leafletLoading = new Promise((resolve, reject) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'vendor/leaflet.css';
+    document.head.appendChild(css);
+    const pre = document.createElement('link');
+    pre.rel = 'preconnect';
+    pre.href = 'https://tile.openstreetmap.org';
+    document.head.appendChild(pre);
+    const s = document.createElement('script');
+    s.src = 'vendor/leaflet.js';
+    s.onload = () => resolve(window.L);
+    s.onerror = () => { _leafletLoading = null; reject(new Error('地图组件加载失败')); };
+    document.body.appendChild(s);
+  });
+  return _leafletLoading;
+}
+
 let map = null;
 // 图层句柄：按类型分组，切换流派时只清这些，不动底图
 const mapLayers = { places: [], routes: [], routeLabels: [] };
@@ -678,6 +703,7 @@ async function renderQuiz() {
 function initMap() {
   const container = $("#map-leaf");
   if (!container) return;
+  if (!window.L) return; // Leaflet 还没加载（懒加载），等用户切到地图标签再初始化
   if (!map) {
     map = L.map(container, { scrollWheelZoom: true });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -860,7 +886,12 @@ document.querySelectorAll(".tab").forEach(t => {
     renderSect();
     // 进入地图页：容器由 display:none 变可见，必须让 Leaflet 重新量尺寸，
     // 否则地图显示为空白（尺寸停在 0）。
-    if (currentPage === "map") refreshMapWhenVisible();
+    if (currentPage === "map") {
+      ensureLeaflet().then(() => {
+        initMap();
+        refreshMapWhenVisible();
+      }).catch((e) => console.error(e));
+    }
   });
 });
 
