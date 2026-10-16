@@ -43,6 +43,15 @@
       "entry": "guoxue/gewu.html",
       "enabled": true,
       "icon": "gear"
+    },
+    {
+      "id": "myth",
+      "name": "神话异志",
+      "sub": "山海搜神",
+      "kind": "iframe",
+      "entry": "guoxue/myth.html",
+      "enabled": true,
+      "icon": "dragon"
     }
   ]
 }

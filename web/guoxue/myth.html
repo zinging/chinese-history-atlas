@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>神话异志 · Chinese Mythos</title>
+<link rel="stylesheet" href="style.css?v=v55">
+</head>
+<body data-sect="myth">
+<div id="app">
+  <div class="brand">🐉 神话异志</div>
+
+  <nav class="tabs-v" id="tabs">
+    <button class="tab active" data-page="books">典籍长廊</button>
+    <button class="tab" data-page="artifacts">神兽图鉴</button>
+  </nav>
+
+  <!-- 模块一：典籍长廊 -->
+  <main id="page-books" class="page">
+    <div class="books-scroll" id="books-scroll"></div>
+    <div id="book-detail" class="book-detail hidden"></div>
+  </main>
+
+  <!-- 模块二：神兽图鉴 -->
+  <main id="page-artifacts" class="page hidden">
+    <div class="artifacts-grid" id="artifacts-grid"></div>
+  </main>
+
+  <footer class="footer" id="footer">内容以《山海经》原典为依据 · 神兽图鉴为工笔淡彩示意 · 形象据郭璞注本及明清绘本想象还原</footer>
+</div>
+
+<script src="app.js?v=v97"></script>
+</body>
+</html>

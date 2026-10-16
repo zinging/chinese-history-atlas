@@ -1,0 +1,162 @@
+[
+  {
+    "name": "九尾狐",
+    "era": "先秦",
+    "cat": "神兽瑞兽",
+    "from": "南山经·青丘之山",
+    "note": "『其状如狐而九尾，其音如婴儿，能食人，食者不蛊。』青丘山的异兽，九条尾巴叫起来像婴儿哭。汉代成为祥瑞，宋代后渐成妖媚形象。",
+    "image": "../../data/portraits/artifacts/jiuweihu.jpg"
+  },
+  {
+    "name": "精卫",
+    "era": "先秦",
+    "cat": "精怪异兽",
+    "from": "北山经·发鸠之山",
+    "note": "『其状如乌，文首、白喙、赤足。』炎帝少女女娃溺于东海后所化，常衔西山木石以填东海。陶渊明赞其『猛志固常在』。",
+    "image": "../../data/portraits/artifacts/jingwei.jpg"
+  },
+  {
+    "name": "昆仑之丘",
+    "era": "先秦",
+    "cat": "神山仙境",
+    "from": "西山经",
+    "note": "『帝之下都』，黄帝在人间的都城。人面虎身的陆吾神守护，山下弱水环绕，外有炎火山。西王母居于此。",
+    "image": "../../data/portraits/artifacts/kunlun.jpg"
+  },
+  {
+    "name": "帝江",
+    "era": "先秦",
+    "cat": "精怪异兽",
+    "from": "西山经·天山",
+    "note": "『其状如黄囊，赤如丹火，六足四翼，浑敦无面目。』没有脸的神，长六只脚四个翅膀，懂歌舞。后世『浑沌』一词源此。",
+    "image": "../../data/portraits/artifacts/dijiang.jpg"
+  },
+  {
+    "name": "烛龙",
+    "era": "先秦",
+    "cat": "神兽瑞兽",
+    "from": "大荒北经",
+    "note": "『钟山之神，名曰烛阴，视为昼，瞑为夜，吹为冬，呼为夏。』人面蛇身，身长千里，睁眼是白天闭眼是黑夜。",
+    "image": "../../data/portraits/artifacts/zhulong.jpg"
+  },
+  {
+    "name": "毕方鸟",
+    "era": "先秦",
+    "cat": "精怪异兽",
+    "from": "西山经·章莪之山",
+    "note": "『其状如鹤，一足，赤文青质而白喙。』独脚鹤形鸟，出现的地方会有怪异火灾。黄帝在泰山之山驾象车时遇毕方在旁。",
+    "image": "../../data/portraits/artifacts/bifang.jpg"
+  },
+  {
+    "name": "夔牛",
+    "era": "先秦",
+    "cat": "精怪异兽",
+    "from": "大荒东经·流波山",
+    "note": "『状如牛，苍身而无角，一足。』出入水必风雨。黄帝得之，用其皮蒙鼓，声闻五百里。后世『一足夔』成了孔子讨论的典故。",
+    "image": "../../data/portraits/artifacts/kuiniu.jpg"
+  },
+  {
+    "name": "刑天",
+    "era": "先秦",
+    "cat": "异人异国",
+    "from": "海外西经",
+    "note": "『与帝争神，帝断其首，葬之常羊之山。乃以乳为目，以脐为口，操干戚以舞。』被砍头后仍挥舞盾斧，中国神话最硬的反抗者。",
+    "image": "../../data/portraits/artifacts/xingtian.jpg"
+  },
+  {
+    "name": "夸父",
+    "era": "先秦",
+    "cat": "异人异国",
+    "from": "大荒北经",
+    "note": "『珥两黄蛇，把两黄蛇。』耳挂黄蛇手拿黄蛇的巨人，追太阳到禺谷，渴饮河渭不足，北饮大泽途中渴死，杖化邓林。",
+    "image": "../../data/portraits/artifacts/kuafu.jpg"
+  },
+  {
+    "name": "西王母",
+    "era": "先秦",
+    "cat": "神山仙境",
+    "from": "西山经·玉山",
+    "note": "『其状如人，豹尾虎齿而善啸，蓬发戴胜。』昆仑山的凶神，掌瘟疫刑罚。后世演变为蟠桃会上的王母娘娘。",
+    "image": "../../data/portraits/artifacts/xiwangmu.jpg"
+  },
+  {
+    "name": "窫窳",
+    "era": "先秦",
+    "cat": "精怪异兽",
+    "from": "北山经·少咸之山",
+    "note": "『其状如牛，赤身、人面、马足，音如婴儿。』原是蛇身人面的天神被贰负臣所杀，复活后变成吃人的凶兽。",
+    "image": "../../data/portraits/artifacts/yayu.jpg"
+  },
+  {
+    "name": "狌狌",
+    "era": "先秦",
+    "cat": "精怪异兽",
+    "from": "南山经·招摇之山",
+    "note": "『其状如禺而白耳，伏行人走。』白耳朵的猿，伏行也能像人一样走。郭璞注说它知人名，吃了它跑得快。",
+    "image": "../../data/portraits/artifacts/xingxing.jpg"
+  },
+  {
+    "name": "鸾鸟",
+    "era": "先秦",
+    "cat": "神兽瑞兽",
+    "from": "西山经·女床之山",
+    "note": "『其状如翟而五采文。』五彩羽毛的山鸡形鸟，见则天下安宁。是凤凰的前身，后世成为『鸾凤和鸣』。",
+    "image": "../../data/portraits/artifacts/luanniao.jpg"
+  },
+  {
+    "name": "帝俊",
+    "era": "先秦",
+    "cat": "神山仙境",
+    "from": "大荒东经/南经",
+    "note": "《山海经》里最高的天神，妻羲和生十个太阳，妻常羲生十二个月亮。甲骨文里的『帝俊』就是商代高祖夋。",
+    "image": "../../data/portraits/artifacts/dijun.jpg"
+  },
+  {
+    "name": "羽民国",
+    "era": "先秦",
+    "cat": "异人异国",
+    "from": "海外南经",
+    "note": "『其为人长头，身生羽。』那里的人身上长羽毛，长脑袋，能飞但飞不远。是古人对海外远方居民的想象。",
+    "image": "../../data/portraits/artifacts/yuguo.jpg"
+  },
+  {
+    "name": "君子国",
+    "era": "先秦",
+    "cat": "异人异国",
+    "from": "海外东经",
+    "note": "『其人好让不争。』衣冠带剑的君子之国，人与人之间谦让不争。后世《镜花缘》里李汝珍大写君子国。",
+    "image": "../../data/portraits/artifacts/junziguo.jpg"
+  },
+  {
+    "name": "应龙",
+    "era": "先秦",
+    "cat": "神兽瑞兽",
+    "from": "大荒东经",
+    "note": "『应龙处南极，杀蚩尤与夸父。』长翅膀的神龙，帮黄帝杀蚩尤和夸父。杀蚩尤时喷大水，被女魃止住。后不能再上天。",
+    "image": "../../data/portraits/artifacts/yinglong.jpg"
+  },
+  {
+    "name": "女魃",
+    "era": "先秦",
+    "cat": "异人异国",
+    "from": "大荒北经",
+    "note": "『有人衣青衣，名曰黄帝女魃。』黄帝的女儿，旱神。应龙杀蚩尤时喷大水，女魃下凡止雨，战后不能回天，所居之处大旱。",
+    "image": "../../data/portraits/artifacts/nvba.jpg"
+  },
+  {
+    "name": "相柳",
+    "era": "先秦",
+    "cat": "精怪异兽",
+    "from": "大荒北经",
+    "note": "『九首蛇身，自环，食于九土。』九头蛇身怪物，是共工的臣属，所到之处成沼泽毒水。大禹杀之，其地生血腥不可生谷。",
+    "image": "../../data/portraits/artifacts/xiangliu.jpg"
+  },
+  {
+    "name": "开明兽",
+    "era": "先秦",
+    "cat": "神兽瑞兽",
+    "from": "海内西经",
+    "note": "『昆仑之虚，……面有九门，门有开明兽守之。』昆仑山守门神兽，虎身人面九个头，管着帝之下都九门。",
+    "image": "../../data/portraits/artifacts/kaimingshou.jpg"
+  }
+]

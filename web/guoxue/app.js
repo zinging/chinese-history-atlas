@@ -7,6 +7,7 @@ const SECT_META = {
   lixue:   { name: "理学心学", intro: "宋明知识分子把儒释道捏成一套。朱熹讲「存天理」，王阳明讲「致良知」。", data: "lixue" },
   shiwen:  { name: "诗文", intro: "中国人的审美和情绪出口。诗词不是用来背的，是一个人在某个处境下写的一句话。", data: "shiwen" },
   gewu:    { name: "格物", intro: "中国人怎么理解和改造物质世界：从《考工记》到《天工开物》，工艺、医药、农算、地理、博物。", data: "gewu" },
+  myth:    { name: "神话", intro: "古人怎么想象天地山川和幽冥世界：从《山海经》的九尾狐、精卫、刑天，看中国想象力的源头。", data: "myth" },
 };
 
 /** 当前流派由页面声明：<body data-sect="..."> 优先（诗词鉴赏锁定为诗文），
@@ -484,6 +485,7 @@ let activeCaseCat = null;
 async function renderCases() {
   const list = $("#cases-list");
   const tabsEl = $("#case-tabs");
+  if (!list || !tabsEl) return;
   // 分片按需加载：仅当公案 tab 为当前页时才拉 cases.json
   const needsLoad = bookData.cases && !Array.isArray(bookData.cases) && !!bookData.cases.src;
   if (needsLoad && currentPage !== "cases") return;
@@ -613,6 +615,7 @@ async function renderArtifacts() {
 
 async function renderQuiz() {
   const list = $("#quiz-list");
+  if (!list) return;
   // 分片按需加载：仅当问典 tab 为当前页时才拉 discourses.json
   const needsLoad = bookData.discourses && !Array.isArray(bookData.discourses) && !!bookData.discourses.src;
   if (needsLoad && currentPage !== "quiz") return;
