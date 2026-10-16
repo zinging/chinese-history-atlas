@@ -61,6 +61,34 @@ async function loadSect(sect) {
   currentSect = sect;
   currentEra = "all";
   document.querySelectorAll(".sect-btn").forEach(b => b.classList.toggle("active", b.dataset.s === sect));
+
+  // "全部"视图：加载五个流派的书籍并合并
+  if (sect === 'all') {
+    if (SECT_CACHE['all']) {
+      bookData = SECT_CACHE['all'];
+      renderSect();
+      return;
+    }
+    const sects = ['rujia','daojia','foxue','zhuzi','lixue'];
+    const allBooks = [];
+    for (const s of sects) {
+      try {
+        const meta = SECT_META[s];
+        const r = await fetch(`../../data/${meta.data}/index.json?v=${DATA_VER}`);
+        if (r.ok) {
+          const d = await r.json();
+          const books = d.books || [];
+          books.forEach(b => { b._sect = s; b._sectName = meta.name; });
+          allBooks.push(...books);
+        }
+      } catch(e) { /* 跳过 */ }
+    }
+    bookData = { books: allBooks, cases: [], places: [], routes: [], quiz: [] };
+    SECT_CACHE['all'] = bookData;
+    renderSect();
+    return;
+  }
+
   const meta = SECT_META[sect];
   // 已加载过的流派直接复用：切回不再重发请求（数据只读，切流派不修改）
   if (SECT_CACHE[sect]) {
@@ -89,10 +117,15 @@ async function loadSect(sect) {
  *   - artifacts.json / discourses.json / cases.json 分区分片，切到对应 tab 时才加载
  * 其余六流派仍是内联单体，下面的判断用"数组=已就绪、{src}=待加载"两种形态兼容。
  */
-function sectDataUrl(rel) {
-  const meta = SECT_META[currentSect];
+function sectDataUrl(rel, book) {
+  let dataDir;
+  if (currentSect === 'all' && book && book._sect) {
+    dataDir = SECT_META[book._sect].data;
+  } else {
+    dataDir = SECT_META[currentSect].data;
+  }
   const sep = rel.includes("?") ? "&" : "?";
-  return `../../data/${meta.data}/${rel}${sep}v=${DATA_VER}`;
+  return `../../data/${dataDir}/${rel}${sep}v=${DATA_VER}`;
 }
 
 /** 加载某个分区分片（artifacts/discourses/cases）。已加载或本就内联则直接返回。 */
@@ -118,7 +151,7 @@ async function ensureSection(name) {
 async function ensureBookDetail(book) {
   if (!book || !book.src || book.__loaded) return book;
   if (!book.__p) {
-    book.__p = fetch(sectDataUrl(book.src))
+    book.__p = fetch(sectDataUrl(book.src, book))
       .then((r) => {
         if (!r.ok) throw new Error(`加载 ${book.src} 失败 (${r.status})`);
         return r.json();

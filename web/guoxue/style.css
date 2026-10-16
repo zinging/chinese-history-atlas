@@ -82,8 +82,8 @@ body[data-sect="gewu"] {
 .sect-btn {
   flex: 1 1 0;
   border: none; background: transparent; cursor: pointer;
-  font-size: clamp(13px, 1.25vw, 17px); font-weight: 700; color: #6b5432;
-  padding: 10px 4px; border-radius: 0;
+  font-size: clamp(12px, 1.1vw, 16px); font-weight: 700; color: #6b5432;
+  padding: 8px 4px; border-radius: 0;
   transition: all .2s ease;
   border-right: 1px solid #d9c9a3;
   text-align: center;
@@ -99,6 +99,7 @@ body[data-sect="gewu"] {
   font-size: 12px; font-weight: 600; color: #8a6d3b; opacity: .85;
 }
 .sect-btn:last-child { border-right: none; }
+.sect-btn[data-s="all"] { flex: 0.6 1 0; }
 .sect-btn:hover { background: #e5d7b8; color: #3d2f1a; }
 .sect-btn.active {
   background: #2c3e50; color: #f5e6c8;
@@ -238,7 +239,7 @@ body[data-sect="gewu"] {
 .books-scroll::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
 .books-scroll::-webkit-scrollbar-track { background: #f0e6d2; }
 .book-card {
-  flex: 0 0 178px; scroll-snap-align: center;
+  flex: 0 0 190px; scroll-snap-align: center;
   background: var(--card); border: 2px solid var(--border);
   border-radius: var(--radius); padding: 14px 12px;
   cursor: pointer; text-align: center; position: relative;
@@ -259,6 +260,7 @@ body[data-sect="gewu"] {
   font-size: 15px; font-weight: 700; color: var(--primary);
   background: #fbe9d0; padding: 3px 12px; border-radius: 4px;
   margin-bottom: 5px; letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 .book-card .person-name { font-size: 18px; font-weight: 700; color: var(--ink); }
 .book-card .meta { color: var(--muted); font-size: 13px; margin-top: 3px; line-height: 1.5; }

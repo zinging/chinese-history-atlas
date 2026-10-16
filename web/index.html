@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中国历史图谱 · Chinese History Atlas</title>
 <link rel="stylesheet" href="vendor/leaflet.css">
-<link rel="stylesheet" href="style.css?v=gap17">
+<link rel="stylesheet" href="style.css?v=gap20">
 </head>
 <body>
 <div id="app">
@@ -92,13 +92,14 @@
   <header class="topbar">
     <div class="brand" id="brand">🏮 帝王谱系</div>
     <div class="dynasty-switch" id="dynasty-switch" role="tablist" aria-label="朝代切换">
-      <button class="dynasty-btn active" data-d="sui"><span class="dyn-top">隋 · 581-618</span><span class="dyn-sub"></span></button>
-      <button class="dynasty-btn" data-d="tang"><span class="dyn-top">唐 · 618-907</span><span class="dyn-sub"></span></button>
-      <button class="dynasty-btn" data-d="wudai"><span class="dyn-top">五代 · 907-960</span><span class="dyn-sub"></span></button>
-      <button class="dynasty-btn" data-d="song"><span class="dyn-top">宋 · 960-1279</span><span class="dyn-sub"></span></button>
-      <button class="dynasty-btn" data-d="yuan"><span class="dyn-top">元 · 1271-1368</span><span class="dyn-sub"></span></button>
-      <button class="dynasty-btn" data-d="ming"><span class="dyn-top">明 · 1368-1644</span><span class="dyn-sub"></span></button>
-      <button class="dynasty-btn" data-d="qing"><span class="dyn-top">清 · 1616-1912</span><span class="dyn-sub"></span></button>
+      <button class="dynasty-btn active" data-d="all"><span class="dyn-top">全部</span><span class="dyn-sub"></span></button>
+      <button class="dynasty-btn" data-d="sui"><span class="dyn-top">隋<span class="dyn-year">581-618</span></span><span class="dyn-sub"></span></button>
+      <button class="dynasty-btn" data-d="tang"><span class="dyn-top">唐<span class="dyn-year">618-907</span></span><span class="dyn-sub"></span></button>
+      <button class="dynasty-btn" data-d="wudai"><span class="dyn-top">五代<span class="dyn-year">907-960</span></span><span class="dyn-sub"></span></button>
+      <button class="dynasty-btn" data-d="song"><span class="dyn-top">宋<span class="dyn-year">960-1279</span></span><span class="dyn-sub"></span></button>
+      <button class="dynasty-btn" data-d="yuan"><span class="dyn-top">元<span class="dyn-year">1271-1368</span></span><span class="dyn-sub"></span></button>
+      <button class="dynasty-btn" data-d="ming"><span class="dyn-top">明<span class="dyn-year">1368-1644</span></span><span class="dyn-sub"></span></button>
+      <button class="dynasty-btn" data-d="qing"><span class="dyn-top">清<span class="dyn-year">1616-1912</span></span><span class="dyn-sub"></span></button>
     </div>
     <nav class="tabs">
       <button class="tab active" data-page="timeline">帝王世系</button>
@@ -175,6 +176,6 @@
 <script src="search-core.js?v=sc6"></script>
 <script src="vendor/leaflet.js"></script>
 <script>window.__dbg={};</script>
-<script src="app.js?v=gap8"></script>
+<script src="app.js?v=gap9"></script>
 </body>
 </html>

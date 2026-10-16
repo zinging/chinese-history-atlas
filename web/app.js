@@ -37,7 +37,7 @@ async function loadJSON(path) {
 
 let DATA = null; // { emperors:[], people:[], events:[], places:[], routes:[] }
 let activeEraId = null; // null = 全部朝代；否则为 emperor id
-let currentDynasty = 'sui'; // 'ming' | 'song' | 'tang' | 'yuan' | 'qing' | 'sui' | 'wudai'
+let currentDynasty = 'all'; // 'all' | 'sui' | 'tang' | 'wudai' | 'song' | 'yuan' | 'ming' | 'qing'
 // 各朝数据缓存：切换朝代不重发请求（数据只读）
 const DATA_CACHE = {};
 // 进行中的朝代加载：快速连点朝代按钮时复用同一个请求，避免并发重复拉取 + 竞态覆盖
@@ -217,6 +217,37 @@ const DYNASTY_TEXT = {
 };
 
 async function loadAll() {
+  // "全部"视图：加载所有朝代的皇帝并合并
+  if (currentDynasty === 'all') {
+    if (DATA_CACHE['all']) {
+      DATA = DATA_CACHE['all'];
+      if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
+      return;
+    }
+    const dynOrder = ['sui','tang','wudai','song','yuan','ming','qing'];
+    const allEmperors = [];
+    for (const dyn of dynOrder) {
+      try {
+        const dir = DYNASTY_DIRS[dyn] || '';
+        const r = await fetch(`../data/${dir}emperors/index.json?v=v1`);
+        if (!r.ok) continue;
+        const idx = await r.json();
+        if (!idx.emperors || !Array.isArray(idx.emperors)) continue;
+        // 逐皇帝加载详情
+        const emps = await Promise.all(idx.emperors.map(e =>
+          loadJSON(`../data/${dir}emperors/${e.file}`).catch(() => null)
+        ));
+        emps.filter(Boolean).forEach(emp => { emp._dynasty = dyn; allEmperors.push(emp); });
+      } catch(e) { /* 跳过加载失败的朝代 */ }
+    }
+    DATA = { emperors: allEmperors, people: [], events: [], places: [], routes: [], cases: [], institutions: [], sourcesDoc: { sources: [] }, quiz: [], mapEvents: [] };
+    DATA_CACHE['all'] = DATA;
+    // 更新「全部」按钮的帝数
+    const allBtn = document.querySelector('.dynasty-btn[data-d="all"] .dyn-sub');
+    if (allBtn) allBtn.textContent = `${allEmperors.length}帝`;
+    if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
+    return;
+  }
   // 已加载过的朝代缓存：切回不再重发请求（数据只读，切换朝代不修改）
   if (DATA_CACHE[currentDynasty]) {
     DATA = DATA_CACHE[currentDynasty];
@@ -2712,8 +2743,9 @@ function applyDynastyText(d) {
   const txt = DYNASTY_TEXT[d] || DYNASTY_TEXT.ming;
   const brand = $('#brand');
   if (brand) brand.textContent = txt.brand;
-  // 朝代胶囊副标题：每个按钮都常驻显示本朝帝数（如「隋朝三帝」「大唐二十一帝」）
+  // 朝代胶囊副标题：每个按钮显示本朝帝数（「全部」按钮的帝数由 loadAll 聚合后设置）
   document.querySelectorAll('.dynasty-btn').forEach((b) => {
+    if (b.dataset.d === 'all') return;
     const sub = b.querySelector('.dyn-sub');
     if (!sub) return;
     const own = DYNASTY_TEXT[b.dataset.d];
@@ -2730,7 +2762,11 @@ function applyDynastyText(d) {
 async function switchDynasty(d) {
   if (d === currentDynasty) return;
   currentDynasty = d;
-  document.body.dataset.era = d; // 背板朝代换肤（CSS 按 body[data-era] 切换底色+纹样）
+  if (d === 'all') {
+    delete document.body.dataset.era; // 全部视图用默认背板纹样
+  } else {
+    document.body.dataset.era = d;
+  }
   // 令牌：快速连点朝代时，只有最后一次切换的结果允许落地渲染（旧版会被先返回的旧朝数据覆盖）
   const token = ++_dynastyToken;
   activeEraId = null;
@@ -2972,11 +3008,33 @@ async function askLLM(message, history = []) {
     await Promise.all([loadAll(), loadBoundaries()]);
     // LLM 配置（侦探页卡片内加载）
     loadLLMConfig();
-    // 初始默认朝代（隋）的页头/图例/页脚文案
+    // 初始默认朝代的页头/图例/页脚文案
     applyDynastyText(currentDynasty);
-    document.body.dataset.era = currentDynasty; // 背板初始朝代色+纹样
+    if (currentDynasty !== 'all') document.body.dataset.era = currentDynasty;
     renderTimeline();
     renderDetective();
+    // 鼠标滚轮横向滚动帝王卡片
+    const tsc = $('#timeline-scroll');
+    if (tsc && !tsc._wheelBound) {
+      tsc.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          e.preventDefault();
+          tsc.scrollLeft += e.deltaY;
+        }
+      }, { passive: false });
+      tsc._wheelBound = true;
+    }
+    // 地图年号条也支持滚轮横滚
+    const es = $('#era-strip');
+    if (es && !es._wheelBound) {
+      es.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          e.preventDefault();
+          es.scrollLeft += e.deltaY;
+        }
+      }, { passive: false });
+      es._wheelBound = true;
+    }
     // 默认展开第一位皇帝（隋朝即杨坚）的生平时间线，并让卡片呈现选中红底
     if (DATA.emperors && DATA.emperors[0]) {
       document.querySelectorAll('.emp-card').forEach((c) => c.classList.remove('active'));
@@ -3112,7 +3170,8 @@ function activateModule(which) {
   // 背板纹样随模块切换：history 模块用朝代纹，其余用各自专属纹
   if (which === 'history') {
     delete document.body.dataset.module;
-    document.body.dataset.era = currentDynasty;
+    if (currentDynasty !== 'all') document.body.dataset.era = currentDynasty;
+    else delete document.body.dataset.era;
   } else {
     document.body.dataset.module = which;
   }

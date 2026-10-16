@@ -41,6 +41,11 @@ body {
 }
 
 /* 朝代换肤：统一米黄底 + 该朝代表性纹样（按出土文物形状重画的极淡水印）+ 宣纸噪点 */
+/* 默认（全部）：云水纹，极淡 */
+body:not([data-era]) {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.3'%3E%3Cpath d='M20 30 Q35 20 50 30 T80 30'/%3E%3Cpath d='M10 60 Q25 50 40 60 T70 60'/%3E%3Ccircle cx='35' cy='35' r='3'/%3E%3Ccircle cx='65' cy='65' r='3'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
 /* 隋·忍冬卷草纹：敦煌壁画/隋瓷，对生叶瓣外翻卷 */
 body[data-era="sui"] {
   background-color: #fdf6e9;
@@ -315,8 +320,8 @@ body.sidebar-collapsed .tabs {
 .dynasty-btn {
   flex: 1 1 0;
   border: none; background: transparent; cursor: pointer;
-  font-size: clamp(13px, 1.25vw, 17px); font-weight: 700; color: #6b5432;
-  padding: 10px 4px; border-radius: 0;
+  font-size: clamp(12px, 1.1vw, 16px); font-weight: 700; color: #6b5432;
+  padding: 8px 4px; border-radius: 0;
   transition: all .2s ease;
   border-right: 1px solid #d9c9a3;
   text-align: center;
@@ -325,8 +330,12 @@ body.sidebar-collapsed .tabs {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 1px;
 }
+.dynasty-btn[data-d="all"] { flex: 0.6 1 0; }
 /* 年号行 */
 .dynasty-btn .dyn-top { display: block; }
+.dynasty-btn .dyn-year {
+  font-size: 12px; font-weight: 700; opacity: .7; margin-left: 3px;
+}
 /* 帝数行：仅当前选中朝代显示，居中年号下方 */
 .dynasty-btn .dyn-sub {
   display: block; height: 15px; line-height: 15px;
@@ -527,24 +536,18 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 /* ---- 时间线 ---- */
 .timeline-wrap {
   position: relative; display: flex; align-items: center; gap: 8px;
-  padding: 10px 0 18px;
+  padding: 6px 0 6px;
 }
 .timeline-scroll {
   flex: 1; display: flex; gap: 12px; overflow-x: auto;
   scroll-snap-type: x mandatory; scroll-behavior: smooth;
-  scrollbar-width: none;
+  scrollbar-width: thin; scrollbar-color: #a8352a #f0e6d2;
+  padding-bottom: 4px;
 }
-.timeline-scroll::-webkit-scrollbar { display: none; }
-.timeline-arrow {
-  flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%;
-  border: 2px solid var(--primary); background: var(--card); color: var(--primary);
-  font-size: 14px; cursor: pointer; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .15s, color .15s;
-  z-index: 2; align-self: center;
-}
-.timeline-arrow:hover:not(:disabled) { background: var(--primary); color: #fff; }
-.timeline-arrow:disabled { opacity: .25; cursor: not-allowed; }
+.timeline-scroll::-webkit-scrollbar { height: 6px; }
+.timeline-scroll::-webkit-scrollbar-thumb { background: #a8352a; border-radius: 3px; }
+.timeline-scroll::-webkit-scrollbar-track { background: #f0e6d2; }
+.timeline-arrow { display: none; }
 .emp-card {
   flex: 0 0 168px; scroll-snap-align: start;
   background: var(--card); border: 2px solid var(--border);
@@ -1067,10 +1070,13 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 /* ---- 朝代时间线 ---- */
 .era-strip {
   flex: 1; display: flex; gap: 6px; overflow-x: auto;
-  padding: 8px 0 12px; scroll-behavior: smooth; scrollbar-width: none;
+  padding: 8px 0 12px; scroll-behavior: smooth;
+  scrollbar-width: thin; scrollbar-color: #a8352a #f0e6d2;
   border-bottom: 2px dashed var(--border);
 }
-.era-strip::-webkit-scrollbar { display: none; }
+.era-strip::-webkit-scrollbar { height: 6px; }
+.era-strip::-webkit-scrollbar-thumb { background: #a8352a; border-radius: 3px; }
+.era-strip::-webkit-scrollbar-track { background: #f0e6d2; }
 .era-btn {
   flex: 0 0 auto; border: 2px solid var(--border); background: var(--card);
   border-radius: 10px; padding: 8px 14px; cursor: pointer; font-size: 15px;
