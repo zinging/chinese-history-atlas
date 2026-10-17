@@ -47,6 +47,11 @@ body[data-sect="gewu"] {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.2'%3E%3Cpath d='M35 35 L35 25 M75 35 L75 25'/%3E%3Cpath d='M30 35 L30 55 Q30 65 55 65 Q80 65 80 55 L80 35'/%3E%3Cline x1='30' y1='48' x2='80' y2='48'/%3E%3Cpath d='M40 65 L38 80 M55 65 L55 82 M70 65 L72 80'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
 }
 
+body[data-sect="myth"] {
+  background-color: #f8f0e3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%237a6a4c' stroke-width='0.9' opacity='0.2'%3E%3C!-- 祥云 --%3E%3Cpath d='M20 30 Q30 20 45 28 Q55 22 65 30 Q72 26 78 32'/%3E%3Cpath d='M15 35 Q25 30 35 35'/%3E%3Ccircle cx='40' cy='28' r='2.5'/%3E%3Ccircle cx='58' cy='30' r='2'/%3E%3C!-- 山 --%3E%3Cpath d='M90 100 L105 75 L118 95 L128 80 L138 100'/%3E%3Cpath d='M95 100 L105 85 L115 100'/%3E%3C!-- 卷云纹 --%3E%3Cpath d='M25 90 Q35 80 45 90 Q52 85 58 92'/%3E%3Ccircle cx='42' cy='88' r='2'/%3E%3C!-- 星斗 --%3E%3Ccircle cx='110' cy='35' r='1.5'/%3E%3Ccircle cx='125' cy='50' r='1'/%3E%3Ccircle cx='95' cy='55' r='1.2'/%3E%3Cpath d='M110 35 L125 50 L95 55'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+
 /* 正文容器：与帝王谱系一致（限宽 1080 居中）
    父页 iframe 已占据侧栏右侧区域，此处 #app 在 iframe 内居中，
    与主站「#app 在 .mega-area(margin-left:90px) 内居中」的位置关系等价。 */
@@ -749,11 +754,18 @@ body[data-sect="gewu"] {
   margin: -4px -4px 4px;
   border-radius: 4px;
   overflow: hidden;
-  background: #f5ecd6;
+  background: linear-gradient(110deg, #f5ecd6 30%, #faf3e0 50%, #f5ecd6 70%);
+  background-size: 200% 100%;
+  animation: imgShimmer 1.8s linear infinite;
 }
 .artifact-img img {
   width: 100%; height: 160px; object-fit: cover; display: block;
   transition: transform .3s ease;
+}
+.artifact-img img:not([src=""]) { animation: none; background: none; }
+@keyframes imgShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 .artifact-card:hover .artifact-img img { transform: scale(1.03); cursor: zoom-in; }
 
@@ -812,6 +824,52 @@ body[data-sect="gewu"] {
   background: #fff;
   border: 1px solid #ece0c6;
   border-left: 3px solid #b08954;
+}
+
+/* 第二级：书籍筛选按钮 */
+.book-filter {
+  display: none;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin: 0 0 16px 0;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+.book-filter::-webkit-scrollbar { height: 4px; }
+.book-filter::-webkit-scrollbar-thumb { background: #c9b48a; border-radius: 2px; }
+.book-filter-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border: 1px solid #c9b48a;
+  border-radius: 6px;
+  background: #faf5e8;
+  color: #5a3a1a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.book-filter-btn em {
+  font-style: normal;
+  font-size: 12px;
+  background: #e8dcc0;
+  color: #8a6a3a;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+.book-filter-btn.active {
+  background: #8b2e2e;
+  border-color: #8b2e2e;
+  color: #fff;
+}
+.book-filter-btn.active em {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
 }
 
 /* ===== 按需加载：骨架 / 加载中 / 失败提示（与碑刻米黄配色一致） ===== */

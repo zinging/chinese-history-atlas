@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>神话异志 · Chinese Mythos</title>
-<link rel="stylesheet" href="style.css?v=v60">
+<link rel="stylesheet" href="style.css?v=v62">
 </head>
 <body data-sect="myth">
 <div id="app">
@@ -16,6 +16,7 @@
   <nav class="tabs-v" id="tabs">
     <button class="tab active" data-page="books">典籍长廊</button>
     <button class="tab" data-page="artifacts">神兽图鉴</button>
+    <button class="tab" data-page="quiz">探问异闻</button>
   </nav>
 
   <!-- 模块一：典籍长廊 -->
@@ -26,7 +27,13 @@
 
   <!-- 模块二：神兽图鉴 -->
   <main id="page-artifacts" class="page hidden">
+    <div class="book-filter" id="book-filter"></div>
     <div class="artifacts-grid" id="artifacts-grid"></div>
+  </main>
+
+  <!-- 模块三：探问异闻 -->
+  <main id="page-quiz" class="page hidden">
+    <div id="quiz-list" class="quiz-list"></div>
   </main>
 
   <footer class="footer" id="footer">据《山海经》郭璞注本及明清绘本想象还原 · 神兽图为工笔淡彩AI生成 · 非古画真迹</footer>

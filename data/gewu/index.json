@@ -170,17 +170,6 @@
       "src": "books/shoushili.json"
     },
     {
-      "id": "shanhaijing",
-      "icon": "🐉",
-      "name": "山海经",
-      "meta": "先秦-汉 · 神话地理博物 · 18 卷",
-      "person": "山海巫觋",
-      "portrait": "shanhaijing.jpg",
-      "category": "地理博物",
-      "era": "先秦",
-      "src": "books/shanhaijing.json"
-    },
-    {
       "id": "shuijingzhu",
       "icon": "🏞️",
       "name": "水经注",

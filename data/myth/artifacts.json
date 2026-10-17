@@ -1,36 +1,1019 @@
 [
-  { "name": "九尾狐", "era": "先秦", "cat": "山海经", "from": "南山经·青丘之山", "note": "『其状如狐而九尾，其音如婴儿，能食人。』青丘山异兽，九条尾巴。汉代成祥瑞，宋后渐成妖媚形象。", "image": "../../data/portraits/artifacts/jiuweihu.jpg" },
-  { "name": "精卫", "era": "先秦", "cat": "山海经", "from": "北山经·发鸠之山", "note": "炎帝少女女娃溺于东海后所化，常衔西山木石以填东海。陶渊明赞其『猛志固常在』。", "image": "../../data/portraits/artifacts/jingwei.jpg" },
-  { "name": "昆仑之丘", "era": "先秦", "cat": "山海经", "from": "西山经", "note": "『帝之下都』，黄帝在人间的都城。人面虎身陆吾守护，山下弱水环绕，西王母居于此。", "image": "../../data/portraits/artifacts/kunlun.jpg" },
-  { "name": "帝江", "era": "先秦", "cat": "山海经", "from": "西山经·天山", "note": "『其状如黄囊，赤如丹火，六足四翼，浑敦无面目。』没有脸的神，后世『浑沌』一词源此。", "image": "../../data/portraits/artifacts/dijiang.jpg" },
-  { "name": "烛龙", "era": "先秦", "cat": "山海经", "from": "大荒北经", "note": "『视为昼，瞑为夜。』人面蛇身，身长千里，睁眼是白天闭眼是黑夜。", "image": "../../data/portraits/artifacts/zhulong.jpg" },
-  { "name": "毕方鸟", "era": "先秦", "cat": "山海经", "from": "西山经·章莪之山", "note": "独脚鹤形鸟，出现的地方会有怪异火灾。黄帝泰山之会时毕方在旁。", "image": "../../data/portraits/artifacts/bifang.jpg" },
-  { "name": "夔牛", "era": "先秦", "cat": "山海经", "from": "大荒东经·流波山", "note": "苍身无角独脚牛，出入水必风雨。黄帝用其皮蒙鼓，声闻五百里。", "image": "../../data/portraits/artifacts/kuiniu.jpg" },
-  { "name": "刑天", "era": "先秦", "cat": "山海经", "from": "海外西经", "note": "『以乳为目，以脐为口，操干戚以舞。』被砍头后仍挥舞盾斧，中国神话最硬的反抗者。", "image": "../../data/portraits/artifacts/xingtian.jpg" },
-  { "name": "夸父", "era": "先秦", "cat": "山海经", "from": "大荒北经", "note": "耳挂黄蛇手拿黄蛇的巨人，追太阳到禺谷，渴饮河渭不足，杖化邓林。", "image": "../../data/portraits/artifacts/kuafu.jpg" },
-  { "name": "西王母", "era": "先秦", "cat": "山海经", "from": "西山经·玉山", "note": "『豹尾虎齿而善啸，蓬发戴胜。』昆仑山凶神，掌瘟疫刑罚，后世演变为王母娘娘。", "image": "../../data/portraits/artifacts/xiwangmu.jpg" },
-  { "name": "窫窳", "era": "先秦", "cat": "山海经", "from": "北山经·少咸之山", "note": "赤身人面马足，音如婴儿。原是天神被贰负臣所杀，复活后变成吃人的凶兽。", "image": "../../data/portraits/artifacts/yayu.jpg" },
-  { "name": "狌狌", "era": "先秦", "cat": "山海经", "from": "南山经·招摇之山", "note": "白耳朵的猿，伏行也能像人一样走。郭璞注说它知人名。", "image": "../../data/portraits/artifacts/xingxing.jpg" },
-  { "name": "鸾鸟", "era": "先秦", "cat": "山海经", "from": "西山经·女床之山", "note": "五彩羽毛山鸡形鸟，见则天下安宁。凤凰前身，后世『鸾凤和鸣』。", "image": "../../data/portraits/artifacts/luanniao.jpg" },
-  { "name": "帝俊", "era": "先秦", "cat": "山海经", "from": "大荒东经", "note": "《山海经》最高天神，妻羲和生十日，妻常羲生十二月。甲骨文里的『帝俊』即商代高祖夋。", "image": "../../data/portraits/artifacts/dijun.jpg" },
-  { "name": "羽民国", "era": "先秦", "cat": "山海经", "from": "海外南经", "note": "『其为人长头，身生羽。』身上长羽毛的远方国民，能飞但飞不远。", "image": "../../data/portraits/artifacts/yuguo.jpg" },
-  { "name": "君子国", "era": "先秦", "cat": "山海经", "from": "海外东经", "note": "『其人好让不争。』衣冠带剑的君子之国，人与人谦让不争。", "image": "../../data/portraits/artifacts/junziguo.jpg" },
-  { "name": "应龙", "era": "先秦", "cat": "山海经", "from": "大荒东经", "note": "长翅膀的神龙，帮黄帝杀蚩尤和夸父。后不能再上天。", "image": "../../data/portraits/artifacts/yinglong.jpg" },
-  { "name": "女魃", "era": "先秦", "cat": "山海经", "from": "大荒北经", "note": "『有人衣青衣，名曰黄帝女魃。』黄帝之女旱神，所居之处大旱。", "image": "../../data/portraits/artifacts/nvba.jpg" },
-  { "name": "相柳", "era": "先秦", "cat": "山海经", "from": "大荒北经", "note": "九头蛇身，共工臣属，所到之处成沼泽毒水。大禹杀之，其地血腥不可生谷。", "image": "../../data/portraits/artifacts/xiangliu.jpg" },
-  { "name": "开明兽", "era": "先秦", "cat": "山海经", "from": "海内西经", "note": "昆仑山守门神兽，虎身人面九个头，管帝之下都九门。", "image": "../../data/portraits/artifacts/kaimingshou.jpg" },
-  { "name": "孙悟空", "era": "明", "cat": "西游记", "from": "西游记·第一回", "note": "花果山仙石所生，拜菩提祖师学七十二变，大闹天宫后被压五行山，护唐僧取经，成斗战胜佛。", "image": "" },
-  { "name": "猪八戒", "era": "明", "cat": "西游记", "from": "西游记·第八回", "note": "本是天蓬元帅，调戏嫦娥被贬错投猪胎。九齿钉耙是太上老君所造，贪吃好色但憨厚可爱。", "image": "" },
-  { "name": "牛魔王", "era": "明", "cat": "西游记", "from": "西游记·第三回", "note": "孙悟空结拜大哥，翠云山铁扇公主之夫，红孩儿之父。会七十二变，与孙悟空本领相当。", "image": "" },
-  { "name": "红孩儿", "era": "明", "cat": "西游记", "from": "西游记·第四十回", "note": "牛魔王与铁扇公主之子，会三昧真火，被观音收为善财童子。", "image": "" },
-  { "name": "哪吒", "era": "明", "cat": "封神演义", "from": "封神演义·第十二回", "note": "灵珠子下凡，七岁闹海打死敖丙，剔骨还父。太乙真人用莲花重塑肉身，助周伐纣。", "image": "" },
-  { "name": "杨戬", "era": "明", "cat": "封神演义", "from": "封神演义·第四十回", "note": "二郎神，玉鼎真人徒弟，会八九玄功，带哮天犬，三只眼。劈山救母的主角。", "image": "" },
-  { "name": "姜子牙", "era": "明", "cat": "封神演义", "from": "封神演义·第二十四回", "note": "七十二岁出山，渭水直钩钓鱼。执封神榜封三百六十五位正神，自己未成仙。", "image": "" },
-  { "name": "苏妲己", "era": "明", "cat": "封神演义", "from": "封神演义·第一回", "note": "冀州侯苏护之女，被千年狐狸精附体，蛊惑纣王造炮烙、设虿盆，亡商。", "image": "" },
-  { "name": "婴宁", "era": "清", "cat": "聊斋志异", "from": "聊斋·婴宁", "note": "狐女，天生爱笑，什么场合都笑。嫁给王子服后憨笑不改，是蒲松龄笔下最可爱的女性。", "image": "" },
-  { "name": "聂小倩", "era": "清", "cat": "聊斋志异", "from": "聊斋·聂小倩", "note": "十八岁女鬼，被夜叉胁迫害人。感宁采臣正直，求他迁骨脱离魔爪，后随他回家结为夫妻。", "image": "" },
-  { "name": "画皮鬼", "era": "清", "cat": "聊斋志异", "from": "聊斋·画皮", "note": "青面恶鬼，披画好的人皮变美女，骗王生后掏其心。中国最有名的恐怖意象。", "image": "" },
-  { "name": "干将莫邪", "era": "晋", "cat": "搜神记", "from": "搜神记·三王墓", "note": "楚国铸剑师夫妇，为楚王铸雌雄二剑，干将被楚王杀。其子赤持雄剑报仇，侠客帮他杀楚王，三首同葬三王墓。", "image": "" },
-  { "name": "董永织女", "era": "晋", "cat": "搜神记", "from": "搜神记·董永", "note": "董永卖身为奴葬父，天帝遣织女下凡帮他织绢还债。十天织百匹，事毕凌空而去——七仙女故事最早版本。", "image": "" },
-  { "name": "李寄", "era": "晋", "cat": "搜神记", "from": "搜神记·李寄斩蛇", "note": "十二岁女孩，主动应征去喂大蛇，带剑和狗，放糯米糍引蛇出洞，斩蛇救城。中国最早的少女英雄。", "image": "" }
+  {
+    "name": "九尾狐",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "南山经·青丘之山",
+    "note": "『其状如狐而九尾，其音如婴儿，能食人。』青丘山异兽，九条尾巴。汉代成祥瑞，宋后渐成妖媚形象。",
+    "image": "../../data/portraits/artifacts/jiuweihu.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "精卫",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "北山经·发鸠之山",
+    "note": "炎帝少女女娃溺于东海后所化，常衔西山木石以填东海。陶渊明赞其『猛志固常在』。",
+    "image": "../../data/portraits/artifacts/jingwei.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "昆仑之丘",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "西山经",
+    "note": "『帝之下都』，黄帝在人间的都城。人面虎身陆吾守护，山下弱水环绕，西王母居于此。",
+    "image": "../../data/portraits/artifacts/kunlun.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "帝江",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "西山经·天山",
+    "note": "『其状如黄囊，赤如丹火，六足四翼，浑敦无面目。』没有脸的神，后世『浑沌』一词源此。",
+    "image": "../../data/portraits/artifacts/dijiang.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "烛龙",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒北经",
+    "note": "『视为昼，瞑为夜。』人面蛇身，身长千里，睁眼是白天闭眼是黑夜。",
+    "image": "../../data/portraits/artifacts/zhulong.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "毕方鸟",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "西山经·章莪之山",
+    "note": "独脚鹤形鸟，出现的地方会有怪异火灾。黄帝泰山之会时毕方在旁。",
+    "image": "../../data/portraits/artifacts/bifang.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "夔牛",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒东经·流波山",
+    "note": "苍身无角独脚牛，出入水必风雨。黄帝用其皮蒙鼓，声闻五百里。",
+    "image": "../../data/portraits/artifacts/kuiniu.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "刑天",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "海外西经",
+    "note": "『以乳为目，以脐为口，操干戚以舞。』被砍头后仍挥舞盾斧，中国神话最硬的反抗者。",
+    "image": "../../data/portraits/artifacts/xingtian.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "夸父",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒北经",
+    "note": "耳挂黄蛇手拿黄蛇的巨人，追太阳到禺谷，渴饮河渭不足，杖化邓林。",
+    "image": "../../data/portraits/artifacts/kuafu.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "西王母",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "西山经·玉山",
+    "note": "『豹尾虎齿而善啸，蓬发戴胜。』昆仑山凶神，掌瘟疫刑罚，后世演变为王母娘娘。",
+    "image": "../../data/portraits/artifacts/xiwangmu.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "窫窳",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "北山经·少咸之山",
+    "note": "赤身人面马足，音如婴儿。原是天神被贰负臣所杀，复活后变成吃人的凶兽。",
+    "image": "../../data/portraits/artifacts/yayu.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "狌狌",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "南山经·招摇之山",
+    "note": "白耳朵的猿，伏行也能像人一样走。郭璞注说它知人名。",
+    "image": "../../data/portraits/artifacts/xingxing.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "鸾鸟",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "西山经·女床之山",
+    "note": "五彩羽毛山鸡形鸟，见则天下安宁。凤凰前身，后世『鸾凤和鸣』。",
+    "image": "../../data/portraits/artifacts/luanniao.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "帝俊",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒东经",
+    "note": "《山海经》最高天神，妻羲和生十日，妻常羲生十二月。甲骨文里的『帝俊』即商代高祖夋。",
+    "image": "../../data/portraits/artifacts/dijun.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "羽民国",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "海外南经",
+    "note": "『其为人长头，身生羽。』身上长羽毛的远方国民，能飞但飞不远。",
+    "image": "../../data/portraits/artifacts/yuguo.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "君子国",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "海外东经",
+    "note": "『其人好让不争。』衣冠带剑的君子之国，人与人谦让不争。",
+    "image": "../../data/portraits/artifacts/junziguo.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "应龙",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒东经",
+    "note": "长翅膀的神龙，帮黄帝杀蚩尤和夸父。后不能再上天。",
+    "image": "../../data/portraits/artifacts/yinglong.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "女魃",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒北经",
+    "note": "『有人衣青衣，名曰黄帝女魃。』黄帝之女旱神，所居之处大旱。",
+    "image": "../../data/portraits/artifacts/nvba.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "相柳",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒北经",
+    "note": "九头蛇身，共工臣属，所到之处成沼泽毒水。大禹杀之，其地血腥不可生谷。",
+    "image": "../../data/portraits/artifacts/xiangliu.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "开明兽",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "海内西经",
+    "note": "昆仑山守门神兽，虎身人面九个头，管帝之下都九门。",
+    "image": "../../data/portraits/artifacts/kaimingshou.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "孙悟空",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第一回",
+    "note": "花果山仙石所生，拜菩提祖师学七十二变，大闹天宫后被压五行山，护唐僧取经，成斗战胜佛。",
+    "image": "../../data/portraits/artifacts/sunwukong.jpg",
+    "book": "西游记"
+  },
+  {
+    "name": "猪八戒",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第八回",
+    "note": "本是天蓬元帅，调戏嫦娥被贬错投猪胎。九齿钉耙是太上老君所造，贪吃好色但憨厚可爱。",
+    "image": "../../data/portraits/artifacts/zhubajie.jpg",
+    "book": "西游记"
+  },
+  {
+    "name": "牛魔王",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第三回",
+    "note": "孙悟空结拜大哥，翠云山铁扇公主之夫，红孩儿之父。会七十二变，与孙悟空本领相当。",
+    "image": "../../data/portraits/artifacts/niumowang.jpg",
+    "book": "西游记"
+  },
+  {
+    "name": "红孩儿",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第四十回",
+    "note": "牛魔王与铁扇公主之子，会三昧真火，被观音收为善财童子。",
+    "image": "../../data/portraits/artifacts/honghaier.jpg",
+    "book": "西游记"
+  },
+  {
+    "name": "哪吒",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第十二回",
+    "note": "灵珠子下凡，七岁闹海打死敖丙，剔骨还父。太乙真人用莲花重塑肉身，助周伐纣。",
+    "image": "../../data/portraits/artifacts/nezha.jpg",
+    "book": "封神演义"
+  },
+  {
+    "name": "杨戬",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第四十回",
+    "note": "二郎神，玉鼎真人徒弟，会八九玄功，带哮天犬，三只眼。劈山救母的主角。",
+    "image": "../../data/portraits/artifacts/yangjian.jpg",
+    "book": "封神演义"
+  },
+  {
+    "name": "姜子牙",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第二十四回",
+    "note": "七十二岁出山，渭水直钩钓鱼。执封神榜封三百六十五位正神，自己未成仙。",
+    "image": "../../data/portraits/artifacts/jiangziya.jpg",
+    "book": "封神演义"
+  },
+  {
+    "name": "苏妲己",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第一回",
+    "note": "冀州侯苏护之女，被千年狐狸精附体，蛊惑纣王造炮烙、设虿盆，亡商。",
+    "image": "../../data/portraits/artifacts/sudaji.jpg",
+    "book": "封神演义"
+  },
+  {
+    "name": "婴宁",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·婴宁",
+    "note": "狐女，天生爱笑，什么场合都笑。嫁给王子服后憨笑不改，是蒲松龄笔下最可爱的女性。",
+    "image": "../../data/portraits/artifacts/yingning.jpg",
+    "book": "聊斋志异"
+  },
+  {
+    "name": "聂小倩",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·聂小倩",
+    "note": "十八岁女鬼，被夜叉胁迫害人。感宁采臣正直，求他迁骨脱离魔爪，后随他回家结为夫妻。",
+    "image": "../../data/portraits/artifacts/niexiaoqian.jpg",
+    "book": "聊斋志异"
+  },
+  {
+    "name": "画皮鬼",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·画皮",
+    "note": "青面恶鬼，披画好的人皮变美女，骗王生后掏其心。中国最有名的恐怖意象。",
+    "image": "../../data/portraits/artifacts/huapi.jpg",
+    "book": "聊斋志异"
+  },
+  {
+    "name": "干将莫邪",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·三王墓",
+    "note": "楚国铸剑师夫妇，为楚王铸雌雄二剑，干将被楚王杀。其子赤持雄剑报仇，侠客帮他杀楚王，三首同葬三王墓。",
+    "image": "../../data/portraits/artifacts/ganjiang.jpg",
+    "book": "搜神记"
+  },
+  {
+    "name": "董永织女",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·董永",
+    "note": "董永卖身为奴葬父，天帝遣织女下凡帮他织绢还债。十天织百匹，事毕凌空而去——七仙女故事最早版本。",
+    "image": "../../data/portraits/artifacts/dongyong.jpg",
+    "book": "搜神记"
+  },
+  {
+    "name": "李寄",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·李寄斩蛇",
+    "note": "十二岁女孩，主动应征去喂大蛇，带剑和狗，放糯米糍引蛇出洞，斩蛇救城。中国最早的少女英雄。",
+    "image": "../../data/portraits/artifacts/liji.jpg",
+    "book": "搜神记"
+  },
+  {
+    "name": "大人国",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒东经",
+    "note": "『有波谷山者，有大人之国。』巨人之国，人高数十丈，坐地如山。",
+    "image": "../../data/portraits/artifacts/daren.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "长臂国",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "海外南经",
+    "note": "『其人长臂三尺。』手臂特别长的人，在海里捕鱼两臂够到海底。",
+    "image": "../../data/portraits/artifacts/changbi.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "三首国",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "海外南经",
+    "note": "『其为人一身三首。』一个身子三个头的远方国民。",
+    "image": "../../data/portraits/artifacts/sanshou.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "女儿国（山海经）",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "海外西经",
+    "note": "『女子国在巫咸北，两女子居，水周之。』全是女人的国家，靠黄池洗澡受孕。后西游记、镜花缘都演绎过。",
+    "image": "../../data/portraits/artifacts/nverguo.jpg",
+    "book": "山海经"
+  },
+  {
+    "name": "申公豹",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第三十七回",
+    "note": "姜子牙师弟，因嫉妒出走，一句『道友请留步』害死无数截教修士。",
+    "image": "../../data/portraits/artifacts/shengongbao.jpg",
+    "book": "封神演义"
+  },
+  {
+    "name": "韩凭妻",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·韩凭妻",
+    "note": "宋康王舍人韩凭妻何氏貌美，被王夺入宫。韩凭自杀，何氏投台而死，遗书求合葬。王怒令分葬，两坟各生梓树，根交枝错，即『相思树』。",
+    "book": "搜神记",
+    "image": "../../data/portraits/artifacts/xianshu.jpg"
+  },
+  {
+    "name": "东海孝妇",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·东海孝妇",
+    "note": "周青侍婆至孝，婆婆自缢免累她，小姑诬告周青杀母。临刑血染白幡倒流上天，郡中大旱三年。后于公墓祭天才降雨——关汉卿《窦娥冤》原型。",
+    "book": "搜神记",
+    "image": "../../data/portraits/artifacts/xiaofu.jpg"
+  },
+  {
+    "name": "盘瓠",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·盘瓠",
+    "note": "老妇耳疾挑出顶虫，覆以盘中化为犬，因名盘瓠。时戎吴屡侵，帝募能得戎王首者嫁女。盘瓠衔戎王首归，公主随入南山，生六男六女，即蛮夷始祖。",
+    "book": "搜神记",
+    "image": "../../data/portraits/artifacts/panhu.jpg"
+  },
+  {
+    "name": "紫玉",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·紫玉韩重",
+    "note": "吴王夫差小女紫玉与韩重相爱，吴王不许，紫玉结气而死。韩重吊墓，紫玉现形邀入冢，留三日后辞别。中国最早的人鬼恋故事之一。",
+    "book": "搜神记",
+    "image": "../../data/portraits/artifacts/ziyu.jpg"
+  },
+  {
+    "name": "沙悟净",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第二十二回",
+    "note": "原天庭卷帘大将，失手打碎琉璃盏被贬流沙河，项挂九个骷髅头。唐僧渡河时将骷髅串与葫芦结为法船，渡过河后皈依，金身罗汉。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/shaheshang.jpg"
+  },
+  {
+    "name": "白骨精",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第二十七回",
+    "note": "白虎岭尸魔，三变村姑、老妇、老翁骗唐僧，均被孙悟空打死。唐僧不知是妖，逐悟空。中国最有名的『扮猪吃虎』妖怪。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/baigujing.jpg"
+  },
+  {
+    "name": "铁扇公主",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第五十九回",
+    "note": "翠云山芭蕉洞主，牛魔王之妻，红孩儿之母。持芭蕉扇一扇熄火、二扇生风、三扇下雨。孙悟空三借芭蕉扇过火焰山。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/tieshan.jpg"
+  },
+  {
+    "name": "唐僧",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第十二回",
+    "note": "如来二弟子金蝉子转世，姓陈名祎。唐太宗结拜为御弟，赐号三藏，西天取佛经。十年跋涉，历八十一难，成旃檀功德佛。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/tangseng.jpg"
+  },
+  {
+    "name": "雷震子",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第十回",
+    "note": "姬昌第一百子，云中子徒弟。食红杏而生风雷双翅，面如青靛，发似朱砂，使黄金棍。文王归周时飞天截杀追将。",
+    "book": "封神演义",
+    "image": "../../data/portraits/artifacts/leizhenzi.jpg"
+  },
+  {
+    "name": "闻太师",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第二十七回",
+    "note": "闻仲，商朝三朝元老，帝乙托孤重臣。墨麒麟上征伐西岐，被姜子牙打杀。死后封为九天应元雷声普化天尊——商朝最后的擎天支柱。",
+    "book": "封神演义",
+    "image": "../../data/portraits/artifacts/wentaishi.jpg"
+  },
+  {
+    "name": "土行孙",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第五十二回",
+    "note": "惧留孙徒弟，矮身捷行，会地行术日行千里。盗师父捆仙绳降周，后娶邓婵玉。战张奎时地行不及对方快，被杀。",
+    "book": "封神演义",
+    "image": "../../data/portraits/artifacts/tuxingsun.jpg"
+  },
+  {
+    "name": "连城",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·连城",
+    "note": "史孝廉女连城善诗，与乔生以诗相知。后连城病沉，需男子胸肉作药引，乔生割肉。两人死后魂归一处，终成眷属。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/liancheng.jpg"
+  },
+  {
+    "name": "娇娜",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·娇娜",
+    "note": "狐女娇娜医术通神，孔雪笠险被雷击时她吐红丸救之。蒲松龄评『余于孔生，不羡其得艳妻，而羡其得腻友也』——中国文学最早的异性知己形象。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/jiaona.jpg"
+  },
+  {
+    "name": "青凤",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·青凤",
+    "note": "狐叟之侄女青凤与耿生相恋，被叔父严词拆散。后耿生救狐叟于犬难，青凤重返，一家团圆。写狐而有人情，是聊斋最温润的一篇。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/qingfeng.jpg"
+  },
+  {
+    "name": "促织",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·促织",
+    "note": "宣德帝好斗蟋蟀，成名被逼交不上村中最佳促织，儿子误毙虫身投井，魂化小促织入宫斗败所有对手，成名家由此暴富。一篇写尽盛世下小民命如虫蚁。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/cuzhi.jpg"
+  },
+  {
+    "name": "崂山道士",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·崂山道士",
+    "note": "王生求道崂山，不耐苦辞行。临别求穿墙术，道士嘱勿炫。归家试术头撞墙扑地，额肿如卵。最有名的『想学速成的都学不成』寓言。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/laoshan.jpg"
+  },
+  {
+    "name": "蚩尤",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒北经",
+    "note": "兵主，铜头铁额，食沙石。与黄帝战于涿鹿，作大雾三军皆迷。黄帝造指南车破之，杀蚩尤。其血化为卤，山西解州盐池即其血。",
+    "book": "山海经",
+    "image": "../../data/portraits/artifacts/chiyou.jpg"
+  },
+  {
+    "name": "女娲",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "大荒西经",
+    "note": "人面蛇身。共工怒触不周山，天倾地裂，女娲炼五色石补天，断鳌足立四极，聚芦灰止淫水。又抟黄土作人，是人类始祖。",
+    "book": "山海经",
+    "image": "../../data/portraits/artifacts/nüwa.jpg"
+  },
+  {
+    "name": "后羿",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "海内经",
+    "note": "帝俊赐彤弓素矡，令扶下国。十日并出，禾苗焦枯，后羿上射九日，留一日。又射杀猰貐、凿齿、九婴、大风、封豨、修蛇六怪。",
+    "book": "山海经",
+    "image": "../../data/portraits/artifacts/houyi.jpg"
+  },
+  {
+    "name": "共工",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "海外北经",
+    "note": "与颛顼争为帝，怒而触不周之山。天柱折，地维绝，天倾西北故日月星辰移，地不满东南故水潦尘埃归。中国最早的『撞塌天』神话。",
+    "book": "山海经",
+    "image": "../../data/portraits/artifacts/gonggong.jpg"
+  },
+  {
+    "name": "当康",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "东次四经·钦山",
+    "note": "『其状如豚而有牙，其名曰当康，其鸣自叫，见则天下大穰。』猪形瑞兽，见则丰收。后世年画里的肥猪拱门即其遗意。",
+    "book": "山海经",
+    "image": "../../data/portraits/artifacts/dangkang.jpg"
+  },
+  {
+    "name": "夫诸",
+    "era": "先秦",
+    "cat": "上古神话",
+    "from": "中次三经·敖岸山",
+    "note": "『其状如白鹿而四角，名曰夫诸，见则其邑大水。』四角白鹿，出现的地方必有水灾。古代水患预警神兽。",
+    "book": "山海经",
+    "image": "../../data/portraits/artifacts/fuzhu.jpg"
+  },
+  {
+    "name": "阳羡书生",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·阳羡书生",
+    "note": "阳羡许氏遇一书生入鹅笼坐，吐出一女子；书生醉卧，女子又吐一男子；男子复吐一女子。层层嵌套的『笼中套』故事，比《镜花缘》早千年。",
+    "book": "搜神记",
+    "image": "../../data/portraits/artifacts/yangxian.jpg"
+  },
+  {
+    "name": "成公智琼",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·弦超",
+    "note": "天上玉女，感弦超孤节，下凡为妻。七年后文帝疑之，智琼求去，留下酒杯，凌空而去。后弦超在洛中复见她，春日再遇。",
+    "book": "搜神记",
+    "image": "../../data/portraits/artifacts/zhiqiong.jpg"
+  },
+  {
+    "name": "范式张劭",
+    "era": "晋",
+    "cat": "上古神话",
+    "from": "搜神记·范式",
+    "note": "范式与张劭千里结交，约定二年后拜访。张劭母杀鸡黍候之，范式果至。后张劭死，范式梦其来告，千里奔丧，执绋引柩。鸡黍之交原型。",
+    "book": "搜神记",
+    "image": "../../data/portraits/artifacts/fanzhang.jpg"
+  },
+  {
+    "name": "六耳猕猴",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第五十八回",
+    "note": "假悟空，与真悟空同像同音，观音、天庭、地藏皆不能辨。直到如来佛祖道出『四猴混世』，六耳猕猴才现本相。心猿二心之争。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/liuer.jpg"
+  },
+  {
+    "name": "金角银角大王",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第三十二回",
+    "note": "太上老君守金炉、银炉的二童子，偷老君五件法宝下界为平顶山大王。紫金红葫芦、羊脂玉净瓶装天装地，被悟空智取。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/jinjiao.jpg"
+  },
+  {
+    "name": "镇元大仙",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第二十四回",
+    "note": "地仙之祖，居万寿山五庄观。人参果三千年一开花、三千年一结果、三千年一成熟，短头尾形似婴儿。孙悟空推倒果树，三岛求方救活。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/zhenyuan.jpg"
+  },
+  {
+    "name": "大鹏金翅雕",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第七十四回",
+    "note": "狮驼岭三魔之三，如来佛祖舅舅。云程万里鹏，一翅九万里，捉唐僧要蒸食。悟空钻其腹，被如来亲降。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/dapeng.jpg"
+  },
+  {
+    "name": "黄风怪",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第二十回",
+    "note": "黄风岭黄风洞主，灵山脚下得道的黄毛貂鼠。一口黄风刮得悟空火金睛难睁，灵吉菩萨飞龙宝杖收服。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/huangfeng.jpg"
+  },
+  {
+    "name": "蜘蛛精",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "西游记·第七十二回",
+    "note": "盘丝洞七女妖，蛛丝缠身。濯泉浴时被悟空变老鹰盗走衣裳。其义百眼魔君（蜈蚣精）金光罩人，被毗蓝婆菩萨破之。",
+    "book": "西游记",
+    "image": "../../data/portraits/artifacts/zhizhu.jpg"
+  },
+  {
+    "name": "商纣王",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第一回",
+    "note": "帝辛，宠苏妲己。造酒池肉林、炮烙虿盆，废忠臣比干剖心。武王伐纣，牧野之战倒戈，纣王登鹿台自焚。封天喜星。",
+    "book": "封神演义",
+    "image": "../../data/portraits/artifacts/zhouwang.jpg"
+  },
+  {
+    "name": "黄飞虎",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第三十回",
+    "note": "商朝武成王，镇守朝歌。妲己害死其妻贾氏、妹黄娘娘，飞虎反出五关投周。后战死渑池，封武成王。",
+    "book": "封神演义",
+    "image": "../../data/portraits/artifacts/huangfeihu.jpg"
+  },
+  {
+    "name": "赵公明",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第四十七回",
+    "note": "峨嵋山罗浮洞道人，骑黑虎，持鞭。助闻太师战西岐，被姜子牙用钉头七箭书咒死。封金龙如意正一龙虎玄坛真君——民间武财神。",
+    "book": "封神演义",
+    "image": "../../data/portraits/artifacts/zhaogongming.jpg"
+  },
+  {
+    "name": "太乙真人",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第十三回",
+    "note": "乾元山金光洞主，哪吒师父。哪吒剔骨还父后，真人以莲花为其重塑肉身。赐火尖枪、风火轮、乾坤圈、混天绫。",
+    "book": "封神演义",
+    "image": "../../data/portraits/artifacts/taiyizhenren.jpg"
+  },
+  {
+    "name": "三霄娘娘",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第四十九回",
+    "note": "云霄、琼霄、碧霄三姐妹，摆九曲黄河阵。混元金斗收尽玉虚十二仙人。老子、元始破阵，三霄亡，封感应随世仙姑——民间送子娘娘。",
+    "book": "封神演义",
+    "image": "../../data/portraits/artifacts/sanxiao.jpg"
+  },
+  {
+    "name": "姬发",
+    "era": "明",
+    "cat": "神魔长篇",
+    "from": "封神演义·第三十六回",
+    "note": "周武王，文王姬昌次子。观兵孟津，八百诸侯不期而会。牧野一战，商师倒戈，灭商建周。封神榜上无名——他是人间真命天子。",
+    "book": "封神演义",
+    "image": "../../data/portraits/artifacts/jifa.jpg"
+  },
+  {
+    "name": "红玉",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·红玉",
+    "note": "狐女红玉与冯相如相恋被冯父撞见，泣别。后冯生被豪霸陷狱，妻死，红玉携其子归，操家教子，家道复振。蒲松龄写狐女的『完人』。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/hongyu.jpg"
+  },
+  {
+    "name": "席方平",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·席方平",
+    "note": "席方平为父冤魂入阴司告状，从城隍到冥王，一路受打、火床、锯解，绝不屈服。最后灌口二郎神查清，冥王被审。中国最硬的告状人。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/xifangping.jpg"
+  },
+  {
+    "name": "葛巾",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·葛巾",
+    "note": "洛阳牡丹精，葛巾与玉版姐妹。常大用恋葛巾，娶归。后真相败露，葛巾生子后抛儿离去，空中消失，所遗二子化为牡丹，紫斑艳异。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/gejin.jpg"
+  },
+  {
+    "name": "黄英",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·黄英",
+    "note": "菊精，弟陶生。马子才爱菊，黄英嫁之。陶生醉酒化菊，被马子才误折枝枯。黄英以菊法复活，马家遂成菊花世家。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/huangying.jpg"
+  },
+  {
+    "name": "鸦头",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "聊斋·鸦头",
+    "note": "狐女鸦头与王生私奔，被母抓回幽禁。子王孜长成，力杀虎舅，救母出井。十八年隔世，母子重逢。",
+    "book": "聊斋志异",
+    "image": "../../data/portraits/artifacts/yatou.jpg"
+  },
+  {
+    "name": "百花仙子",
+    "era": "清",
+    "cat": "神魔长篇",
+    "from": "第一回",
+    "note": "百花之首，因嫦娥宴上打赌，百花齐放违反天条，被贬下凡转世为唐小山。",
+    "image": "../../data/portraits/artifacts/jinghua-baihuaxianzi.jpg",
+    "book": "镜花缘"
+  },
+  {
+    "name": "唐敖",
+    "era": "清",
+    "cat": "神魔长篇",
+    "from": "第一回",
+    "note": "秀才，因受弹劾随妻兄林之洋出海游历，途经三十余国，入小蓬莱成仙。",
+    "image": "../../data/portraits/artifacts/jinghua-tangaao.jpg",
+    "book": "镜花缘"
+  },
+  {
+    "name": "林之洋",
+    "era": "清",
+    "cat": "神魔长篇",
+    "from": "第五回",
+    "note": "海商，豪爽粗豪，在女儿国被选为王妃，受尽缠足穿耳之苦。",
+    "image": "../../data/portraits/artifacts/jinghua-linzhiyang.jpg",
+    "book": "镜花缘"
+  },
+  {
+    "name": "多九公",
+    "era": "清",
+    "cat": "神魔长篇",
+    "from": "第九回",
+    "note": "老舵手，博古通今，随船出海解说各国风土，是唐敖的活地图。",
+    "image": "../../data/portraits/artifacts/jinghua-duojiugong.jpg",
+    "book": "镜花缘"
+  },
+  {
+    "name": "女儿国（镜花缘）",
+    "era": "清",
+    "cat": "神魔长篇",
+    "from": "第三十二回",
+    "note": "男女颠倒之国：男子穿裙当主妇，女子穿靴为官将。林之洋在此遭缠足。",
+    "image": "../../data/portraits/artifacts/jinghua-nverguo.jpg",
+    "book": "镜花缘"
+  },
+  {
+    "name": "君子国",
+    "era": "清",
+    "cat": "神魔长篇",
+    "from": "第十一回",
+    "note": "好让不争之国：买卖双方争着让价，士卒谦谦有礼，是李汝珍的理想国。",
+    "image": "../../data/portraits/artifacts/jinghua-junziguo.jpg",
+    "book": "镜花缘"
+  },
+  {
+    "name": "双面国",
+    "era": "清",
+    "cat": "神魔长篇",
+    "from": "第三十六回",
+    "note": "人前一面和善，背后另一副狰狞面孔，两面国。",
+    "image": "../../data/portraits/artifacts/jinghua-shuangmianguo.jpg",
+    "book": "镜花缘"
+  },
+  {
+    "name": "无肠国",
+    "era": "清",
+    "cat": "神魔长篇",
+    "from": "第十四回",
+    "note": "国人无肠子，食物穿过身体不停留，富人把粪便留给穷人吃。",
+    "image": "../../data/portraits/artifacts/jinghua-wuchangguo.jpg",
+    "book": "镜花缘"
+  },
+  {
+    "name": "骷髅报仇",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "卷一",
+    "note": "常熟孙某酒后踢骷髅，骷髅夜中追命，言『汝何踢我』。袁枚记怪力乱神之首篇。",
+    "image": "../../data/portraits/artifacts/ziyu-kulou.jpg",
+    "book": "子不语"
+  },
+  {
+    "name": "僵尸求食",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "卷二",
+    "note": "清初僵尸传说：白鬃僵尸夜出扑人，活人以糯米、桃枝制之。",
+    "image": "../../data/portraits/artifacts/ziyu-jiangshi.jpg",
+    "book": "子不语"
+  },
+  {
+    "name": "狐道学",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "卷三",
+    "note": "狐仙化名老道讲朱熹性理，讲完现原形摇尾而去。袁枚讽刺假道学。",
+    "image": "../../data/portraits/artifacts/ziyu-hudaoxue.jpg",
+    "book": "子不语"
+  },
+  {
+    "name": "雷神",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "卷四",
+    "note": "雷神劈妖时误击凡人，赔偿银两后离去。雷神穿红袍、背斧凿。",
+    "image": "../../data/portraits/artifacts/ziyu-leishen.jpg",
+    "book": "子不语"
+  },
+  {
+    "name": "水鬼找替身",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "卷五",
+    "note": "水鬼蹲河边等待落水者替死，渔人告官，水鬼泣而去。",
+    "image": "../../data/portraits/artifacts/ziyu-shuigui.jpg",
+    "book": "子不语"
+  },
+  {
+    "name": "城隍断案",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "卷六",
+    "note": "阳间人冤死，梦中到城隍庙告状，城隍夜班审案，判决报应。",
+    "image": "../../data/portraits/artifacts/ziyu-chenghuang.jpg",
+    "book": "子不语"
+  },
+  {
+    "name": "夜叉",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "卷七",
+    "note": "海上夜叉食人，船人以血食祭之方得过。青面獠牙，居海岛洞穴。",
+    "image": "../../data/portraits/artifacts/ziyu-yecha.jpg",
+    "book": "子不语"
+  },
+  {
+    "name": "借尸还魂",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "卷八",
+    "note": "女子死后借新尸还魂，性格大变，家人难认。袁枚记多起此类异事。",
+    "image": "../../data/portraits/artifacts/ziyu-jieshi.jpg",
+    "book": "子不语"
+  },
+  {
+    "name": "狐女小翠",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "滦阳消夏录",
+    "note": "狐女小翠为报恩嫁入王给谏家，嬉笑怒骂间化解官场恩怨，后飘然离去。",
+    "image": "../../data/portraits/artifacts/yuewei-xiaocui.jpg",
+    "book": "阅微草堂笔记"
+  },
+  {
+    "name": "槐镇老狐",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "槐西杂志",
+    "note": "槐树镇老狐修炼百年，能化人形，与邻人对弈论古，自称『狐中秀才』。",
+    "image": "../../data/portraits/artifacts/yuewei-huaizhen.jpg",
+    "book": "阅微草堂笔记"
+  },
+  {
+    "name": "缢鬼",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "如是我闻",
+    "note": "上吊之鬼在缢处徘徊，寻找替死鬼。纪晓岚记其面貌青白、舌吐出。",
+    "image": "../../data/portraits/artifacts/yuewei-yigui.jpg",
+    "book": "阅微草堂笔记"
+  },
+  {
+    "name": "遭报",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "滦阳消夏录",
+    "note": "恶人作恶后遭狐仙报应，家产散尽。纪昀强调因果不虚。",
+    "image": "../../data/portraits/artifacts/yuewei-zaobao.jpg",
+    "book": "阅微草堂笔记"
+  },
+  {
+    "name": "僧孽",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "滦阳续录",
+    "note": "假和尚破戒杀生，死后堕入畜生道为驴。纪昀记佛门因果。",
+    "image": "../../data/portraits/artifacts/yuewei-sengnie.jpg",
+    "book": "阅微草堂笔记"
+  },
+  {
+    "name": "驴报",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "姑妄听之",
+    "note": "主人虐待驴，驴死后托梦其子，言『吾为汝父还债』。",
+    "image": "../../data/portraits/artifacts/yuewei-lvbao.jpg",
+    "book": "阅微草堂笔记"
+  },
+  {
+    "name": "鬼求祭",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "滦阳消夏录",
+    "note": "荒野孤鬼夜托梦求祭祀，村民立庙祭之，地方平安。",
+    "image": "../../data/portraits/artifacts/yuewei-guiqiuji.jpg",
+    "book": "阅微草堂笔记"
+  },
+  {
+    "name": "夜读遇鬼",
+    "era": "清",
+    "cat": "鬼狐笔记",
+    "from": "滦阳续录",
+    "note": "书生夜读，窗外鬼影幢幢，书生诵《论语》，鬼退。纪昀以正气压邪。",
+    "image": "../../data/portraits/artifacts/yuewei-yedu.jpg",
+    "book": "阅微草堂笔记"
+  },
+  {
+    "name": "柳毅传",
+    "era": "唐",
+    "cat": "小说总集",
+    "from": "卷四百一十九",
+    "note": "柳毅落第归乡，遇洞庭龙女牧羊，受托传书至龙宫。钱塘君救女，柳毅终娶龙女。",
+    "image": "../../data/portraits/artifacts/taiping-liuyi.jpg",
+    "book": "太平广记"
+  },
+  {
+    "name": "聂隐娘",
+    "era": "唐",
+    "cat": "小说总集",
+    "from": "卷一百九十四",
+    "note": "女侠聂隐娘，被尼带走学艺，能白日刺人无形。后为魏博大将保镖。",
+    "image": "../../data/portraits/artifacts/taiping-nieyiniang.jpg",
+    "book": "太平广记"
+  },
+  {
+    "name": "红线盗盒",
+    "era": "唐",
+    "cat": "小说总集",
+    "from": "卷一百九十五",
+    "note": "红线女为潞州节度使薛嵩青衣，夜驰五百里盗田承嗣金盒，止兵戈。",
+    "image": "../../data/portraits/artifacts/taiping-hongxian.jpg",
+    "book": "太平广记"
+  },
+  {
+    "name": "虬髯客传",
+    "era": "唐",
+    "cat": "小说总集",
+    "from": "卷一百九十三",
+    "note": "虬髯客与李靖、红拂女结为风尘三侠，见李世民后自知非真命，将资产赠李靖而去。",
+    "image": "../../data/portraits/artifacts/taiping-qiuran.jpg",
+    "book": "太平广记"
+  },
+  {
+    "name": "昆仑奴磨勒",
+    "era": "唐",
+    "cat": "小说总集",
+    "from": "卷一百九十四",
+    "note": "昆仑奴磨勒负崔生逾十重垣盗出红绡妓，后被官箭射死。",
+    "image": "../../data/portraits/artifacts/taiping-mole.jpg",
+    "book": "太平广记"
+  },
+  {
+    "name": "莺莺传",
+    "era": "唐",
+    "cat": "小说总集",
+    "from": "卷四百八十八",
+    "note": "张生与崔莺莺西厢相会，后张生始乱终弃，元稹自述。后世《西厢记》蓝本。",
+    "image": "../../data/portraits/artifacts/taiping-yingying.jpg",
+    "book": "太平广记"
+  },
+  {
+    "name": "霍小玉传",
+    "era": "唐",
+    "cat": "小说总集",
+    "from": "卷四百八十七",
+    "note": "长安名妓霍小玉与李约相恋，李负心，小玉含恨而死，化为厉鬼报负。",
+    "image": "../../data/portraits/artifacts/taiping-huoxiaoyu.jpg",
+    "book": "太平广记"
+  },
+  {
+    "name": "李娃传",
+    "era": "唐",
+    "cat": "小说总集",
+    "from": "卷四百八十四",
+    "note": "常州刺史子郑生迷恋长安娼女李娃，资尽被弃，后李娃助其登科。",
+    "image": "../../data/portraits/artifacts/taiping-liwa.jpg",
+    "book": "太平广记"
+  }
 ]

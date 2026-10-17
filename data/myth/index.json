@@ -1,10 +1,21 @@
 {
   "categories": [
-    { "id": "shanhaijing", "name": "山海经" },
-    { "id": "xiyouji", "name": "西游记" },
-    { "id": "fengshen", "name": "封神演义" },
-    { "id": "liaozhai", "name": "聊斋志异" },
-    { "id": "soushen", "name": "搜神记" }
+    {
+      "id": "shanggu",
+      "name": "上古神话"
+    },
+    {
+      "id": "shenmo",
+      "name": "神魔长篇"
+    },
+    {
+      "id": "guihu",
+      "name": "鬼狐笔记"
+    },
+    {
+      "id": "zongji",
+      "name": "小说总集"
+    }
   ],
   "books": [
     {
@@ -14,8 +25,18 @@
       "meta": "先秦-汉 · 神话地理博物 · 18卷 · 中国想象力之源",
       "person": "山海巫觋",
       "portrait": "shanhaijing.jpg",
-      "category": "山海经",
+      "category": "上古神话",
       "src": "books/shanhaijing.json"
+    },
+    {
+      "id": "soushen",
+      "icon": "📜",
+      "name": "搜神记",
+      "meta": "晋 · 志怪小说 · 464篇 · 中国神话的最早笔录",
+      "person": "干宝",
+      "portrait": "soushen.jpg",
+      "category": "上古神话",
+      "src": "books/soushen.json"
     },
     {
       "id": "xiyouji",
@@ -24,7 +45,7 @@
       "meta": "明 · 神魔小说 · 100回 · 取经路上的妖怪档案",
       "person": "吴承恩",
       "portrait": "xiyouji.jpg",
-      "category": "西游记",
+      "category": "神魔长篇",
       "src": "books/xiyouji.json"
     },
     {
@@ -34,8 +55,18 @@
       "meta": "明 · 神魔小说 · 100回 · 365位正神的封神榜",
       "person": "许仲琳",
       "portrait": "fengshen.jpg",
-      "category": "封神演义",
+      "category": "神魔长篇",
       "src": "books/fengshen.json"
+    },
+    {
+      "id": "jinghua",
+      "icon": "🌸",
+      "name": "镜花缘",
+      "meta": "清 · 长篇小说 · 100回 · 百花仙子下凡的列国游记",
+      "person": "李汝珍",
+      "category": "神魔长篇",
+      "src": "books/jinghua.json",
+      "portrait": "jinghua.jpg"
     },
     {
       "id": "liaozhai",
@@ -44,26 +75,54 @@
       "meta": "清 · 文言短篇 · 近500篇 · 狐鬼花仙比人更有情",
       "person": "蒲松龄",
       "portrait": "liaozhai.jpg",
-      "category": "聊斋志异",
+      "category": "鬼狐笔记",
       "src": "books/liaozhai.json"
     },
     {
-      "id": "soushen",
-      "icon": "📜",
-      "name": "搜神记",
-      "meta": "晋 · 志怪小说 · 464篇 · 中国神话的最早笔录",
-      "person": "干宝",
-      "portrait": "soushen.jpg",
-      "category": "搜神记",
-      "src": "books/soushen.json"
+      "id": "ziyu",
+      "icon": "👻",
+      "name": "子不语",
+      "meta": "清 · 笔记小说 · 24卷 · 专记鬼神怪异的荒唐言",
+      "person": "袁枚",
+      "category": "鬼狐笔记",
+      "src": "books/ziyu.json",
+      "portrait": "ziyu.jpg"
+    },
+    {
+      "id": "yuewei",
+      "icon": "📚",
+      "name": "阅微草堂笔记",
+      "meta": "清 · 笔记小说 · 24卷 · 与聊斋齐名的鬼魂账簿",
+      "person": "纪昀",
+      "category": "鬼狐笔记",
+      "src": "books/yuewei.json",
+      "portrait": "yuewei.jpg"
+    },
+    {
+      "id": "taiping",
+      "icon": "📖",
+      "name": "太平广记",
+      "meta": "宋 · 类书 · 500卷 · 汉到宋初的小说总集",
+      "person": "李昉",
+      "category": "小说总集",
+      "src": "books/taiping.json",
+      "portrait": "taiping.jpg"
     }
   ],
   "artifacts": {
     "src": "artifacts.json",
-    "count": 34,
-    "byGroup": { "山海经": 20, "西游记": 4, "封神演义": 4, "聊斋志异": 3, "搜神记": 3 }
+    "count": 113,
+    "byGroup": {
+      "上古神话": 40,
+      "神魔长篇": 36,
+      "鬼狐笔记": 29,
+      "小说总集": 8
+    }
   },
-  "discourses": [],
+  "discourses": {
+    "src": "discourses.json",
+    "count": 8
+  },
   "cases": [],
   "places": [],
   "routes": []
