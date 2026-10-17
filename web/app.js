@@ -240,7 +240,13 @@ async function loadAll() {
         emps.filter(Boolean).forEach(emp => { emp._dynasty = dyn; allEmperors.push(emp); });
       } catch(e) { /* 跳过加载失败的朝代 */ }
     }
-    DATA = { emperors: allEmperors, people: [], events: [], places: [], routes: [], cases: [], institutions: [], sourcesDoc: { sources: [] }, quiz: [], mapEvents: [] };
+    DATA = { emperors: allEmperors, people: [], events: [], places: [], routes: [], cases: [], caseCategories: [], institutions: [], sourcesDoc: { sources: [] }, quiz: [], mapEvents: [] };
+    // 加载通用案件库（明史案件卡库）
+    try {
+      const casesDoc = await loadJSON('../data/cases/cases.json?v=v1');
+      DATA.cases = casesDoc.cases || [];
+      DATA.caseCategories = casesDoc.categories || [];
+    } catch(e) { /* 案件库加载失败不阻塞 */ }
     DATA_CACHE['all'] = DATA;
     // 更新「全部」按钮的帝数
     const allBtn = document.querySelector('.dynasty-btn[data-d="all"] .dyn-sub');
@@ -2467,20 +2473,29 @@ function renderDetective() {
       <span class="open-q">${t.open.question}${t.open.context ? '　' + t.open.context : ''}</span>
       ${t.open.viewpoints && t.open.viewpoints.length ? `<span class="open-views">${t.open.viewpoints.join('　｜　')}</span>` : ''}
     </div>` : '';
-  $('#detective-week').innerHTML = `<h3>${t.title}</h3><div class="quest">🕵️ ${t.quest}</div>${openHtml}
+  const weekEl = $('#detective-week');
+  weekEl.innerHTML = `<h3>${t.title}</h3><div class="quest">🕵️ ${t.quest}</div>${openHtml}
     <div class="detective-nav">
       <button id="detective-prev" class="route-btn">◀ 上一案</button>
       <span class="detective-count">第 ${detectiveIndex + 1} / ${tasks.length} 案</span>
       <button id="detective-next" class="route-btn">下一案 ▶</button>
     </div>`;
-  $('#detective-prev').addEventListener('click', () => {
-    detectiveIndex = (detectiveIndex - 1 + tasks.length) % tasks.length;
-    renderDetective();
-  });
-  $('#detective-next').addEventListener('click', () => {
-    detectiveIndex = (detectiveIndex + 1) % tasks.length;
-    renderDetective();
-  });
+  // 用容器上的事件委托，而不是 innerHTML 赋值后立刻 $('#detective-prev') 查询：
+  // 后者依赖「字符串赋值即时生成 DOM 节点」这一时序，真实浏览器成立，
+  // 但 mock-DOM 测试环境（innerHTML 只是字符串）查不到，会抛
+  // Cannot read properties of null (reading 'addEventListener') 并中断渲染。
+  // 委托只绑定一次，切换朝代重建按钮后依然有效。
+  if (!weekEl._navBound) {
+    weekEl._navBound = true;
+    weekEl.addEventListener('click', (e) => {
+      const btn = e.target && e.target.closest ? e.target.closest('#detective-prev, #detective-next') : null;
+      if (!btn) return;
+      const list = detectiveTasks();
+      const step = btn.id === 'detective-prev' ? -1 : 1;
+      detectiveIndex = (detectiveIndex + step + list.length) % list.length;
+      renderDetective();
+    });
+  }
 
   const cluesWrap = $('#detective-clues');
   cluesWrap.innerHTML = '<h4>🧩 收集到的线索 <small style="color:#8a7a5c;font-weight:400">（来自本项目已核对史料，每条附出处）</small></h4>';
@@ -2789,14 +2804,21 @@ function applyDynastyText(d) {
   if (footer) footer.textContent = txt.footer;
 }
 
+/** 安全设置 body 上的 data-* 背板纹样标记。
+ *  mock-DOM 测试环境（smoke*.mjs）不提供 document.body，直接写 dataset 会抛
+ *  「Cannot set properties of undefined」并中断整条渲染链。产品页里 body 一定存在，
+ *  这里的守卫只影响测试环境，不改变任何产品行为。 */
+function setBodyData(key, value) {
+  const b = document.body;
+  if (!b || !b.dataset) return;
+  if (value == null) delete b.dataset[key];
+  else b.dataset[key] = value;
+}
+
 async function switchDynasty(d) {
   if (d === currentDynasty) return;
   currentDynasty = d;
-  if (d === 'all') {
-    delete document.body.dataset.era; // 全部视图用默认背板纹样
-  } else {
-    document.body.dataset.era = d;
-  }
+  setBodyData('era', d === 'all' ? null : d); // 全部视图用默认背板纹样
   // 令牌：快速连点朝代时，只有最后一次切换的结果允许落地渲染（旧版会被先返回的旧朝数据覆盖）
   const token = ++_dynastyToken;
   activeEraId = null;
@@ -3044,7 +3066,7 @@ async function askLLM(message, history = []) {
     loadLLMConfig();
     // 初始默认朝代的页头/图例/页脚文案
     applyDynastyText(currentDynasty);
-    if (currentDynasty !== 'all') document.body.dataset.era = currentDynasty;
+    setBodyData('era', currentDynasty !== 'all' ? currentDynasty : null);
     renderTimeline();
     renderDetective();
     // 鼠标滚轮横向滚动帝王卡片
@@ -3181,6 +3203,21 @@ const MODULE_ICONS = {
       <line x1="4" y1="16" x2="6" y2="16"/>
       <line x1="26" y1="16" x2="28" y2="16"/>
     </svg>`,
+  cloud: `<svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="10.5" cy="13.5" r="2.8"/>
+      <circle cx="10.5" cy="13.5" r="0.9"/>
+      <circle cx="21.5" cy="13.5" r="2.8"/>
+      <circle cx="21.5" cy="13.5" r="0.9"/>
+      <path d="M7 10 C 5 8 6 5.5 8.5 6.5 C 10 7 10 8.5 9 9.5"/>
+      <path d="M25 10 C 27 8 26 5.5 23.5 6.5 C 22 7 22 8.5 23 9.5"/>
+      <path d="M16 7 L 16 18"/>
+      <path d="M14.5 18 C 14.5 16.5 17.5 16.5 17.5 18 C 17.5 19.5 14.5 19.5 14.5 18 Z"/>
+      <path d="M8 17 C 6 18 6.5 20.5 9 20.5"/>
+      <path d="M24 17 C 26 18 25.5 20.5 23 20.5"/>
+      <path d="M11 22 L 12.5 24.5"/>
+      <path d="M21 22 L 19.5 24.5"/>
+      <path d="M14 25 L 16 26.5 L 18 25"/>
+    </svg>`,
 };
 
 /** 运行时状态：已启用的模块清单（启动后填充） */
@@ -3201,13 +3238,13 @@ function activateModule(which) {
       if (frame && !frame.src && m.entry) frame.src = m.entry;
     }
   }
-  // 背板纹样随模块切换：history 模块用朝代纹，其余用各自专属纹
+  // 背板纹样随模块切换：history 模块用朝代纹，其余用各自专属纹。
+  // setBodyData 内部守卫 mock-DOM 环境（见其定义）。
   if (which === 'history') {
-    delete document.body.dataset.module;
-    if (currentDynasty !== 'all') document.body.dataset.era = currentDynasty;
-    else delete document.body.dataset.era;
+    setBodyData('module', null);
+    setBodyData('era', currentDynasty !== 'all' ? currentDynasty : null);
   } else {
-    document.body.dataset.module = which;
+    setBodyData('module', which);
   }
   try { sessionStorage.setItem('dsh-active-module', which); } catch { /* 忽略 */ }
 }

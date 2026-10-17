@@ -26,7 +26,15 @@ const detailEl = {
 };
 
 function container() {
-  return { innerHTML: '', appendChild: (n) => { if (n.className === 'clue-card') clueCards.push(n); } };
+  // addEventListener 是必须的：renderDetective 用容器上的事件委托绑定
+  // 「上一案/下一案」（这两个按钮由 innerHTML 生成，mock 环境查不到）。
+  return {
+    innerHTML: '',
+    appendChild: (n) => { if (n.className === 'clue-card') clueCards.push(n); },
+    addEventListener: () => {},
+    querySelector: () => null,
+    querySelectorAll: () => [],
+  };
 }
 
 // Leaflet 桩：renderMap 里 map 桩不绑定事件，只走通 setView/removeLayer。

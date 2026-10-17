@@ -25,7 +25,7 @@ const SECT_CACHE = {};
  * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
-const DATA_VER = "v99";
+const DATA_VER = "v117";
 
 // Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
 // 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
@@ -88,7 +88,10 @@ async function loadSect(sect) {
   currentEra = "all";
   document.querySelectorAll(".sect-btn").forEach(b => b.classList.toggle("active", b.dataset.s === sect));
 
-  // "全部"视图：加载五个流派的书籍并合并
+  // "全部"视图：加载五个流派的数据并合并。
+  // 公案与探案也必须一并合并——此前只合并了 books，把 cases/quiz/discourses 留空，
+  // 而「全部」是默认视图，于是首屏进公案/探案页永远显示「整理中」，
+  // 用户必须手动切到某个具体流派才看得到内容。
   if (sect === 'all') {
     if (SECT_CACHE['all']) {
       bookData = SECT_CACHE['all'];
@@ -97,6 +100,11 @@ async function loadSect(sect) {
     }
     const sects = ['rujia','daojia','foxue','zhuzi','lixue'];
     const allBooks = [];
+    const allCases = [];
+    const allQuiz = [];
+    const allDiscourses = [];
+    const allCats = [];
+    const seenCat = new Set();
     for (const s of sects) {
       try {
         const meta = SECT_META[s];
@@ -106,10 +114,21 @@ async function loadSect(sect) {
           const books = d.books || [];
           books.forEach(b => { b._sect = s; b._sectName = meta.name; });
           allBooks.push(...books);
+          // 打上流派标记，卡片上能看出这条公案/探案属于哪一派
+          (Array.isArray(d.cases) ? d.cases : []).forEach(c => { c._sect = s; c._sectName = meta.name; });
+          (Array.isArray(d.quiz) ? d.quiz : []).forEach(q => { q._sect = s; q._sectName = meta.name; });
+          (Array.isArray(d.discourses) ? d.discourses : []).forEach(x => { x._sect = s; x._sectName = meta.name; });
+          allCases.push(...(Array.isArray(d.cases) ? d.cases : []));
+          allQuiz.push(...(Array.isArray(d.quiz) ? d.quiz : []));
+          allDiscourses.push(...(Array.isArray(d.discourses) ? d.discourses : []));
+          // categories 决定公案分组标签，各流派的分类按并集合并
+          for (const c of (Array.isArray(d.categories) ? d.categories : [])) {
+            if (!seenCat.has(c.id)) { seenCat.add(c.id); allCats.push(c); }
+          }
         }
-      } catch(e) { /* 跳过 */ }
+      } catch(e) { /* 跳过该流派，不影响其余 */ }
     }
-    bookData = { books: allBooks, cases: [], places: [], routes: [], quiz: [] };
+    bookData = { books: allBooks, cases: allCases, quiz: allQuiz, discourses: allDiscourses, categories: allCats, places: [], routes: [] };
     SECT_CACHE['all'] = bookData;
     renderSect();
     return;
@@ -196,6 +215,7 @@ async function ensureBookDetail(book) {
 function renderSect() {
   activeCaseCat = null;
   renderEraSwitch();   // 顶部朝代条：随当前流派的数据重建
+  renderBookFilter();
   renderBooks();
   renderCases();
   renderQuiz();
@@ -292,6 +312,7 @@ function renderEraSwitch() {
       const key = btn.dataset.era;
       if (currentEra === key) return;    // 再点已选中的朝代不做切换（避免误触清空）
       currentEra = key;
+      currentBook = "all";
       renderSect();
       if (currentPage === "books") scrollBooksToTop();
     });
@@ -386,8 +407,8 @@ function renderBookDetail(b) {
   if (b.core) {
     html += `<h4>核心思想</h4><div class="core-box"><p>${b.core}</p></div>`;
   }
-  // 人生时间线（诗文卡片）；格物致知改用"章节介绍"自上而下列篇目
-  if (currentSect === "gewu" && b.outline && b.outline.length) {
+  // 人生时间线（诗文卡片）；格物致知与神话异志改用"章节介绍"自上而下列篇目
+  if ((currentSect === "gewu" || currentSect === "myth") && b.outline && b.outline.length) {
     // 格物致知：以章节顺序介绍书籍结构（不按时间，按篇目先后）
     html += `<h4>章节介绍</h4><ul class="timeline">`;
     html += b.outline.map((c, i) => `
@@ -552,6 +573,34 @@ async function renderCases() {
 let discIndex = 0;
 let discEra = "__init__";
 
+/** 书籍筛选条：仅在神兽图鉴/器物图谱页显示，按书筛选图鉴 */
+function renderBookFilter() {
+  const bar = $("#book-filter");
+  if (!bar) return;
+  if (currentPage !== "artifacts") { bar.style.display = "none"; bar.innerHTML = ""; return; }
+  const books = bookData.books || [];
+  if (!books.length) { bar.style.display = "none"; return; }
+  const all = bookData.artifacts || [];
+  const items = Array.isArray(all) ? all : [];
+  const counts = {};
+  for (const a of items) { const k = a.book || a.cat || a.from; if (k) counts[k] = (counts[k] || 0) + 1; }
+  let html = `<button class="book-filter-btn${currentBook === "all" ? " active" : ""}" data-book="all">全部<em>${items.length}</em></button>`;
+  for (const b of books) {
+    const cn = b.name;
+    const cnt = counts[cn] || 0;
+    html += `<button class="book-filter-btn${currentBook === cn ? " active" : ""}" data-book="${esc(cn)}">${esc(cn)}<em>${cnt}</em></button>`;
+  }
+  bar.innerHTML = html;
+  bar.style.display = "flex";
+  bar.querySelectorAll(".book-filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentBook = btn.dataset.book;
+      renderBookFilter();
+      renderArtifacts();
+    });
+  });
+}
+
 /** 器物图谱（百工图鉴）：按书分组，书为容器，器物为子卡 */
 async function renderArtifacts() {
   const grid = $("#artifacts-grid");
@@ -563,13 +612,15 @@ async function renderArtifacts() {
     grid.innerHTML = `<div class="lazy-loading">百工图鉴加载中…</div>`;
     try {
       await ensureSection("artifacts");
+      renderBookFilter();
     } catch (e) {
       grid.innerHTML = `<div class="lazy-error">图鉴加载失败，请稍后重试。</div>`;
       return;
     }
   }
   const all = bookData.artifacts || [];
-  const list = currentEra === "all" ? all : all.filter((x) => x.cat === currentEra);
+  let list = currentEra === "all" ? all : all.filter((x) => x.cat === currentEra);
+  if (currentBook !== "all") list = list.filter((x) => (x.book || x.cat) === currentBook);
   if (!list.length) {
     grid.innerHTML = `<div style="color:var(--muted);padding:30px;">该分类的器物图鉴整理中…</div>`;
     return;
@@ -578,11 +629,12 @@ async function renderArtifacts() {
     "工艺营造": "#8b5a2b", "医药本草": "#4a7c59", "农书": "#a8893c",
     "算历": "#3d5a80", "地理博物": "#6b8e6b", "生活艺术": "#9c5a5a",
   };
-  // 按书分组（cat字段=书名），书顺序与 books 一致
+  // 按书分组，书顺序与 books 一致
   const bookOrder = (bookData.books || []).map((b) => b.name);
   const groups = {};
   for (const a of list) {
-    (groups[a.cat] = groups[a.cat] || []).push(a);
+    const bk = a.book || a.cat;
+    (groups[bk] = groups[bk] || []).push(a);
   }
   const sortedKeys = Object.keys(groups).sort((x, y) => {
     const ix = bookOrder.indexOf(x), iy = bookOrder.indexOf(y);
@@ -596,7 +648,7 @@ async function renderArtifacts() {
     const meta = bookMeta[bookName] || {};
     const cards = items.map((a) => `
       <div class="artifact-card">
-        ${a.image ? `<div class="artifact-img" data-full="${esc(a.image)}"><img src="${esc(a.image)}" alt="${esc(a.name)}" loading="lazy"/></div>` : ""}
+        ${a.image ? `<div class="artifact-img" data-full="${esc(a.image)}"><img src="${esc(a.image)}" alt="${esc(a.name)}" loading="lazy" decoding="async" width="300" height="160" fetchpriority="low"/></div>` : ""}
         <div class="artifact-name">${esc(a.name)}<span class="artifact-from"> · ${esc(a.from || "")}</span></div>
         <div class="artifact-note">${esc(a.note)}</div>
       </div>`).join("");
@@ -883,7 +935,9 @@ document.querySelectorAll(".tab").forEach(t => {
     document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
     $("#page-" + currentPage).classList.remove("hidden");
     currentEra = "all";
+    currentBook = "all";
     renderEraSwitch();
+    renderBookFilter();
     renderSect();
     // 进入地图页：容器由 display:none 变可见，必须让 Leaflet 重新量尺寸，
     // 否则地图显示为空白（尺寸停在 0）。
