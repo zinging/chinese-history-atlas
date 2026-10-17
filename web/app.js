@@ -226,9 +226,19 @@ async function loadAll() {
     }
     const dynOrder = ['sui','tang','wudai','song','yuan','ming','qing'];
     const allEmperors = [];
+    const allEvents = [];
+    const allPeople = [];
+    const allPlaces = [];
+    const allRoutes = [];
+    const allMapEvents = [];
+    const allInstitutions = [];
+    const allQuiz = [];
+    const allSources = [];
+    const seenSrc = new Set();
     for (const dyn of dynOrder) {
       try {
         const dir = DYNASTY_DIRS[dyn] || '';
+        const lay = DYNASTY_LAYOUT[dyn] || DYNASTY_LAYOUT.ming;
         const r = await fetch(`../data/${dir}emperors/index.json?v=v1`);
         if (!r.ok) continue;
         const idx = await r.json();
@@ -238,9 +248,42 @@ async function loadAll() {
           loadJSON(`../data/${dir}emperors/${e.file}`).catch(() => null)
         ));
         emps.filter(Boolean).forEach(emp => { emp._dynasty = dyn; allEmperors.push(emp); });
+
+        // 其余分区同样要合并：此前只合了 emperors，把 events/mapEvents/cases/people/
+        // quiz/sourcesDoc 全留空，而「全部」是默认视图，导致首屏「该朝事件」显示
+        // 「这个朝代还没有标记在地图上的事件」、人物关系与探案也缺内容。
+        const p = (rel) => `../data/${dir}${rel}`;
+        const maybe = (path) => loadJSON(path).catch(() => null);
+        const [evDoc, peoDoc, plaDoc, rouDoc, mevDoc, insDoc, quizDoc] = await Promise.all([
+          maybe(p(lay.events)), maybe(p(lay.people)), maybe(p(lay.places)),
+          maybe(p(lay.routes)), maybe(p(lay.mapEvents)),
+          dyn === 'ming' ? maybe(p('institutions/institutions.json')) : null,
+          maybe(p(dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json')),
+        ]);
+        (evDoc && evDoc.events || []).forEach(x => { x._dynasty = dyn; allEvents.push(x); });
+        (peoDoc && peoDoc.people || []).forEach(x => { x._dynasty = dyn; allPeople.push(x); });
+        (plaDoc && plaDoc.places || []).forEach(x => { x._dynasty = dyn; allPlaces.push(x); });
+        (rouDoc && rouDoc.routes || []).forEach(x => { x._dynasty = dyn; allRoutes.push(x); });
+        (mevDoc && mevDoc.events || []).forEach(x => { x._dynasty = dyn; allMapEvents.push(x); });
+        (insDoc && insDoc.institutions || []).forEach(x => { x._dynasty = dyn; allInstitutions.push(x); });
+        (quizDoc && quizDoc.quiz || []).forEach(x => { x._dynasty = dyn; allQuiz.push(x); });
       } catch(e) { /* 跳过加载失败的朝代 */ }
     }
-    DATA = { emperors: allEmperors, people: [], events: [], places: [], routes: [], cases: [], caseCategories: [], institutions: [], sourcesDoc: { sources: [] }, quiz: [], mapEvents: [] };
+    // 史料出处全朝代共用一份，按 id 去重
+    try {
+      const src = await loadJSON('../data/sources/sources.json');
+      for (const s of (src && src.sources) || []) {
+        const key = s.id || s.title || JSON.stringify(s);
+        if (!seenSrc.has(key)) { seenSrc.add(key); allSources.push(s); }
+      }
+    } catch(e) { /* 史料加载失败不阻塞 */ }
+
+    DATA = {
+      emperors: allEmperors, people: allPeople, events: allEvents,
+      places: allPlaces, routes: allRoutes, cases: [], caseCategories: [],
+      institutions: allInstitutions, sourcesDoc: { sources: allSources },
+      quiz: allQuiz, mapEvents: allMapEvents,
+    };
     // 加载通用案件库（明史案件卡库）
     try {
       const casesDoc = await loadJSON('../data/cases/cases.json?v=v1');
@@ -2462,6 +2505,16 @@ let _dynastyToken = 0;
 
 let detectiveIndex = 0;
 function detectiveTasks() {
+  // 「全部」视图把七朝的题目合并展示；具体朝代则只看本朝。
+  // 此前 all 落到 ming 的回退分支，首屏（默认就是全部）只能看到明代 3 题。
+  if (currentDynasty === 'all') {
+    const all = [];
+    for (const key of ['sui', 'tang', 'wudai', 'song', 'yuan', 'ming', 'qing']) {
+      const list = DETECTIVE_TASKS_BY_DYNASTY[key];
+      if (list) list.forEach((t) => all.push(t));
+    }
+    return all.length ? all : DETECTIVE_TASKS_BY_DYNASTY.ming;
+  }
   return DETECTIVE_TASKS_BY_DYNASTY[currentDynasty] || DETECTIVE_TASKS_BY_DYNASTY.ming;
 }
 function renderDetective() {

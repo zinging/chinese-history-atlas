@@ -27,13 +27,24 @@ const num = (name, def) => {
 const TARGET = num('size', 320);    // 显示最大 120px（详情头像），320 留足 2x 余量
 const QUALITY = num('quality', 78); // 人像 78 质量肉眼几乎无损
 
-/** 遍历 portraits 根目录与 people/ 等子目录下全部 jpg */
+/**
+ * 遍历 portraits 根目录与 people/ 等子目录下全部 jpg。
+ *
+ * 跳过 artifacts/ 与 artifacts-thumb/：
+ *   - artifacts/ 是器物图原图，点击放大（lightbox）要按 90vw 显示，必须保留高分辨率；
+ *     它的卡片缩略图由 web/tools/make-artifact-thumbs.mjs 单独生成到 artifacts-thumb/。
+ *   - artifacts-thumb/ 已是 480px 宽的成品，再压到 320 会白白损失清晰度。
+ * 本脚本只面向「头像/书封」这类显示尺寸 ≤120px 的图（2x 屏留 320 足够）。
+ */
+const SKIP_DIRS = new Set(['artifacts', 'artifacts-thumb']);
 function walk(dir) {
   const out = [];
   for (const f of readdirSync(dir)) {
     const p = join(dir, f);
-    if (statSync(p).isDirectory()) out.push(...walk(p));
-    else if (/\.jpg$/i.test(f)) out.push(p);
+    if (statSync(p).isDirectory()) {
+      if (SKIP_DIRS.has(f)) continue;
+      out.push(...walk(p));
+    } else if (/\.jpg$/i.test(f)) out.push(p);
   }
   return out;
 }

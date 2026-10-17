@@ -25,6 +25,7 @@
 }
 
 * { box-sizing: border-box; }
+html, body { overflow-x: hidden; }
 
 body {
   margin: 0;
@@ -1068,7 +1069,7 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 .deb-input:focus { outline: none; border-color: var(--gold); }
 .deb-result { margin-top: 8px; }
 
-.footer { margin-top: 32px; text-align: center; color: var(--muted); font-size: 13px; }
+.footer { margin-top: 32px; text-align: center; color: var(--muted); font-size: 13px; word-break: break-word; padding: 0 8px; }
 
 /* ---- 朝代时间线 ---- */
 .era-strip {
