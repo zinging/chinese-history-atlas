@@ -16,6 +16,13 @@ web/.verify-*
 # 数据迁移一次性备份（不纳入版本库）
 data/gewu/.index.full.bak.json
 
+# 调试期截图与一次性抓取脚本：留在本地参考，不进版本库
+# （曾经堆了 50+ 张、约 30MB，会干扰 git add -A）
+/_*.png
+/*.png
+/download_*.js
+/.sessions/
+
 # 系统
 .DS_Store
 Thumbs.db

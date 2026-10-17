@@ -601,7 +601,37 @@ function renderBookFilter() {
   });
 }
 
-/** 器物图谱（百工图鉴）：按书分组，书为容器，器物为子卡 */
+/**
+ * 器物图谱（百工图鉴）：卡片图用缩略图、点击放大用原图。
+ *
+ * 原图是 1600–2364px、平均 531KB，而卡片只显示 220×160（2x 屏需 440×320）——
+ * 一屏 27 张要传 7.2MB，其中 95% 是浪费。故卡片改用 480px 宽的缩略图
+ * （data/portraits/artifacts-thumb/ 同名文件，由 web/tools/make-artifact-thumbs.mjs 生成）。
+ *
+ * 缩略图是构建产物、可能缺失（只 checkout 源码而没跑生成脚本时会 404），
+ * 故把原图路径写进 data-fallback，由下方捕获阶段的 error 监听兜底换回原图。
+ * 用监听而非内联 onerror：路径若含引号会把内联 JS 的字符串截断，静默失效。
+ */
+function thumbUrl(full) {
+  return String(full).replace("/artifacts/", "/artifacts-thumb/");
+}
+function artifactImgHtml(a) {
+  const full = esc(a.image);
+  const thumb = esc(thumbUrl(a.image));
+  return `<div class="artifact-img" data-full="${full}">`
+    + `<img src="${thumb}" data-fallback="${full}" alt="${esc(a.name)}" `
+    + `loading="lazy" decoding="async" width="300" height="160" fetchpriority="low"/></div>`;
+}
+// 缩略图加载失败时回退到原图。error 事件不冒泡，故用捕获阶段。
+document.addEventListener("error", (e) => {
+  const img = e.target;
+  if (!img || img.tagName !== "IMG") return;
+  const fb = img.dataset && img.dataset.fallback;
+  if (!fb) return;
+  img.removeAttribute("data-fallback");   // 防止原图也失败时无限循环
+  img.src = fb;
+}, true);
+
 async function renderArtifacts() {
   const grid = $("#artifacts-grid");
   if (!grid) return;
@@ -648,7 +678,7 @@ async function renderArtifacts() {
     const meta = bookMeta[bookName] || {};
     const cards = items.map((a) => `
       <div class="artifact-card">
-        ${a.image ? `<div class="artifact-img" data-full="${esc(a.image)}"><img src="${esc(a.image)}" alt="${esc(a.name)}" loading="lazy" decoding="async" width="300" height="160" fetchpriority="low"/></div>` : ""}
+        ${a.image ? artifactImgHtml(a) : ""}
         <div class="artifact-name">${esc(a.name)}<span class="artifact-from"> · ${esc(a.from || "")}</span></div>
         <div class="artifact-note">${esc(a.note)}</div>
       </div>`).join("");
