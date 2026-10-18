@@ -884,6 +884,16 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 .evt-summary-chip.on { background: #c0392b; border-color: #c0392b; color: #fff; }
 .evt-summary-chip.on b { color: #ffd9d9; }
 .evt-summary-chip.on .evt-summary-name { color: #ffd9d9; }
+/* 「展示更多 / 收起」：事件多时默认只显示前 12 条，其余折在这里
+   （「全部」视图下七朝合计 141 条，全平铺会把地图挤出视口） */
+.evt-summary-more { margin-top: 10px; text-align: center; }
+.evt-more-btn {
+  border: 1.5px dashed var(--border); background: transparent;
+  border-radius: 999px; padding: 5px 16px;
+  font-size: 13px; font-family: inherit; color: var(--primary);
+  cursor: var(--cur-pointer); transition: all .12s;
+}
+.evt-more-btn:hover { border-style: solid; background: #fdf3e8; }
 /* 城市/事件标记可点击（配合全局 --cur-pointer） */
 .leaflet-marker-icon { cursor: var(--cur-pointer); }
 /* Leaflet 默认控件配色与站点圆点跟随主题 */

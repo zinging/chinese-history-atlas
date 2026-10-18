@@ -221,16 +221,39 @@ const waitLoop = setInterval(() => {
         console.log(`❌ buildMapData 抛错: ${e.message}`);
         fail++;
       }
-      // 场景 3：该朝事件汇总（古地名 chips 渲染）
+      // 场景 3：该朝事件汇总（古地名 chips 渲染 + 折叠行为）
+      // 事件多时默认只渲染前 EVT_SUMMARY_LIMIT 条（明朝 43 条 → 显示 12），
+      // 其余折在「展示更多」后面，避免把地图挤出视口。
+      //
+      // mock 的 innerHTML 只是字符串、不生成真实 DOM，querySelector 解析不出按钮，
+      // 所以这里改用「字符串断言 + 直接调 window 上的展开开关」两步验证：
+      //   - 折叠态：12 条 + 按钮文案
+      //   - 展开态：调 setEvtSummaryShowAll(true) 后重渲染，看到全部 43 条
       try {
         t.showEventsSummary();
         const html = routeDetailEl.innerHTML;
-        const ok6 = html.includes('evt-summary-chip') && html.includes('古地名') && (html.match(/evt-summary-chip/g) || []).length >= 40;
-        console.log(`${ok6 ? '✅' : '❌'} 该朝事件汇总渲染古地名 chips（${(html.match(/evt-summary-chip/g) || []).length} 个）`);
+        const collapsedChips = (html.match(/evt-summary-chip/g) || []).length;
+        const ok6 = html.includes('evt-summary-chip') && html.includes('古地名')
+          && collapsedChips === 12 && html.includes('evt-more-btn');
+        console.log(`${ok6 ? '✅' : '❌'} 折叠态显示前 12 条 chips + 展示更多按钮（${collapsedChips} 个）`);
         if (!ok6) fail++;
-        const ok7 = html.includes('土木堡');
-        console.log(`${ok7 ? '✅' : '❌'} 汇总含事件古地名（如土木堡）`);
+
+        // 展开：直接改状态再重渲染（等价于点「展示更多」）
+        t.setEvtSummaryShowAll(true);
+        t.showEventsSummary();
+        const html2 = routeDetailEl.innerHTML;
+        const expandedChips = (html2.match(/evt-summary-chip/g) || []).length;
+        const ok7 = expandedChips >= 40 && html2.includes('土木堡') && html2.includes('收起');
+        console.log(`${ok7 ? '✅' : '❌'} 展开后含全部事件与古地名如土木堡（${expandedChips} 个）`);
         if (!ok7) fail++;
+
+        // 收起后回到折叠态，避免状态泄漏影响后续场景
+        t.setEvtSummaryShowAll(false);
+        t.showEventsSummary();
+        const back = (routeDetailEl.innerHTML.match(/evt-summary-chip/g) || []).length;
+        const ok8 = back === 12;
+        console.log(`${ok8 ? '✅' : '❌'} 收起后回到折叠态（${back} 个）`);
+        if (!ok8) fail++;
       } catch (e) {
         console.log(`❌ showEventsSummary 抛错: ${e.message}`);
         fail++;

@@ -2017,8 +2017,15 @@ function renderMapControls(data) {
   showEvents();
 }
 
-/** 该朝事件汇总：列出本朝所有地图事件涉及的古地名（点击跳地图并弹窗说明） */
-function showEventsSummary() {
+/** 该朝事件汇总：列出本朝所有地图事件涉及的古地名（点击跳地图并弹窗说明）。
+ *
+ *  事件多时默认只展示前若干条，其余折在「展示更多」后面：
+ *  「全部」视图下七朝合计 141 条（单朝最多明 43 条），全部平铺会把地图挤到屏幕外。
+ *  阈值 12 约合两行胶囊，切朝代时回到折叠态（见 switchDynasty）。 */
+const EVT_SUMMARY_LIMIT = 12;
+let evtSummaryShowAll = false;
+
+function showEventsSummary(opts) {
   const box = $('#route-detail');
   if (!box) return;
   // 汇总本朝全部事件（不受年号筛选影响；若在具体年号视图则提示）
@@ -2027,12 +2034,15 @@ function showEventsSummary() {
   if (!list.length) {
     box.classList.remove('hidden');
     box.innerHTML = `<div class="route-detail-desc">这个朝代还没有标记在地图上的事件。</div>`;
-    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (!opts || !opts.noScroll) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return;
   }
   const curEmp = currentEraEmperor();
   const noteLine = curEmp ? `<div class="route-detail-desc">当前查看「${curEmp.eraName[0]}」年间 · 点击查看事件详情</div>` : `<div class="route-detail-desc">全朝事件汇总 · 点击查看事件详情</div>`;
-  const items = list.map((ev) => {
+  // 折叠：默认只渲染前 EVT_SUMMARY_LIMIT 条
+  const overflow = list.length > EVT_SUMMARY_LIMIT;
+  const shown = (overflow && !evtSummaryShowAll) ? list.slice(0, EVT_SUMMARY_LIMIT) : list;
+  const items = shown.map((ev) => {
     const place = ev.place || {};
     const pn = place.name || ev.name;
     const modern = place.modern ? `（今${place.modern}）` : '';
@@ -2043,14 +2053,30 @@ function showEventsSummary() {
       ${placePart}
     </button>`;
   }).join('');
+  // 超出时给「展示更多 / 收起」，按钮上写明还剩多少条，避免用户不知道被折起了
+  const moreRow = overflow ? `
+    <div class="evt-summary-more">
+      <button class="evt-more-btn" id="evt-more-btn">${evtSummaryShowAll
+        ? '收起 ▴'
+        : `展示更多（还有 ${list.length - EVT_SUMMARY_LIMIT} 个）▾`}</button>
+    </div>` : '';
   box.classList.remove('hidden');
   box.innerHTML = `
     <div class="route-detail-head" style="border-color:#c0392b">
       <span class="route-detail-name">📍 该朝事件 · 事件名（古地名）</span>
-      <span class="route-detail-year">共 ${list.length} 个</span>
+      <span class="route-detail-year">共 ${list.length} 个${overflow && !evtSummaryShowAll ? ` · 显示前 ${EVT_SUMMARY_LIMIT}` : ''}</span>
     </div>
     ${noteLine}
-    <div class="evt-summary-grid">${items}</div>`;
+    <div class="evt-summary-grid">${items}</div>
+    ${moreRow}`;
+  // 展开/收起只重绘本面板，且不触发滚动（否则点一下页面就跳走）
+  const moreBtn = $('#evt-more-btn');
+  if (moreBtn) {
+    moreBtn.addEventListener('click', () => {
+      evtSummaryShowAll = !evtSummaryShowAll;
+      showEventsSummary({ noScroll: true });
+    });
+  }
   // 点击某地名：只保留该事件的地点标记，其余事件点/城市点/路线全部隐藏
   box.querySelectorAll('.evt-summary-chip').forEach((chip) => {
     chip.addEventListener('click', () => {
@@ -2063,7 +2089,7 @@ function showEventsSummary() {
       document.querySelector('.map-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   });
-  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (!opts || !opts.noScroll) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 /** 只展示单个事件的地点：清空地图上的其他事件点、城市点、路线，仅保留目标地点标记，飞到并弹窗 */
@@ -2876,6 +2902,8 @@ async function switchDynasty(d) {
   const token = ++_dynastyToken;
   activeEraId = null;
   detectiveIndex = 0;
+  // 事件汇总回到折叠态：否则在明朝点开「展示更多」后切到清朝，会保持全展开
+  evtSummaryShowAll = false;
   document.querySelectorAll('.dynasty-btn').forEach((b) => {
     b.classList.toggle('active', b.dataset.d === d);
   });
@@ -2918,7 +2946,7 @@ document.querySelectorAll('.dynasty-btn').forEach((b) => {
 });
 
 // 测试钩子（生产无害）：供 smoke/浏览器测试直接触发渲染
-window.__mingTest = { renderMap, showEmperor, renderTimeline, renderCases, showRouteDetail, hideRouteDetail, buildMapData, switchDynasty, showEventsSummary, buildEventClusters, showSingleEvent, get DATA() { return DATA; }, get SEARCH() { return typeof SEARCH !== 'undefined' ? SEARCH : null; }, get leafletMap() { return leafletMap; } };
+window.__mingTest = { renderMap, showEmperor, renderTimeline, renderCases, showRouteDetail, hideRouteDetail, buildMapData, switchDynasty, showEventsSummary, buildEventClusters, showSingleEvent, setEvtSummaryShowAll: (v) => { evtSummaryShowAll = !!v; }, get evtSummaryShowAll() { return evtSummaryShowAll; }, get DATA() { return DATA; }, get SEARCH() { return typeof SEARCH !== 'undefined' ? SEARCH : null; }, get leafletMap() { return leafletMap; } };
 
 // 各朝真实边界 GeoJSON（loadBoundaries 填充；文件不存在则该朝为 null，地图回退示意色块）
 let MAP_GEO = {};
