@@ -215,7 +215,17 @@ const server = createServer(async (req, res) => {
     }
 
     // ---- 静态文件 ----
-    if (pathname === '/') pathname = '/web/';
+    // 根路径优先返回仓库根的 index.html（跳转页）；本地没有该文件时才回退到 /web/。
+    // 这样本地与 GitHub Pages 行为一致——线上没有把 / 改写成 /web/ 的逻辑，
+    // 若本地强制改写，根目录的跳转页就永远测不到。
+    if (pathname === '/') {
+      let hasRootIndex = false;
+      try {
+        const st = await stat(join(ROOT, 'index.html'));
+        hasRootIndex = st.isFile();
+      } catch { /* 没有该文件 */ }
+      if (!hasRootIndex) pathname = '/web/';
+    }
     const safe = normalize(pathname).replace(/^(\.\.[/\\])+/, '');
     const abs = join(ROOT, safe);
     if (!abs.startsWith(ROOT)) { res.writeHead(403); res.end('Forbidden'); return; }

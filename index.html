@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中华历史图谱 · Chinese History Atlas</title>
+<!-- 仓库根没有页面本体，站点在 web/ 下。这个文件只做跳转，
+     否则 GitHub Pages 会把 README.md 当首页渲染，看起来像"全白"。
+     用 meta refresh 而非纯 JS：无脚本环境（含部分爬虫与预览器）也能跳。 -->
+<meta http-equiv="refresh" content="0; url=./web/">
+<link rel="canonical" href="./web/">
+<style>
+  html, body { margin: 0; height: 100%; background: #fdf6e9; color: #4a3b32;
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif; }
+  .wrap { height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 20px; }
+  .title { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+  .sub { font-size: 14px; color: #8a7a5c; }
+  a { color: #c0392b; text-decoration: none; border-bottom: 1px solid currentColor; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">🏮 中华历史图谱</div>
+    <div class="sub">正在进入站点…</div>
+    <div class="sub">如果没有自动跳转，请点 <a href="./web/">这里</a></div>
+  </div>
+  <script>location.replace('./web/');</script>
+</body>
+</html>
