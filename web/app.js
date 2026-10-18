@@ -81,7 +81,8 @@ function renderEraStrip() {
   const range = DYNASTY_RANGE[currentDynasty] || '1368-1644';
   allBtn.innerHTML = `<span class="era-name">全部</span><span class="era-years">${range}</span>`;
   allBtn.addEventListener('click', () => {
-    activeEraId = null; renderEraStrip(); renderMap(); renderEraInfo();
+    activeEraId = null; evtSummaryShowAll = false;
+    renderEraStrip(); renderMap(); renderEraInfo();
     showEventsSummary(); // 保持「该朝事件」汇总展开（默认视图）
     centerTo(document.querySelector('#era-strip .era-btn'));
   });
@@ -91,6 +92,8 @@ function renderEraStrip() {
     btn.innerHTML = `<span class="era-name">${e.eraName[0]}</span><span class="era-years">${e.reign.start}-${e.reign.end}</span>`;
     btn.addEventListener('click', () => {
       activeEraId = (activeEraId === e.id ? null : e.id);
+      // 折叠态跟着年号复位：上一个年号展开过，换年号不应仍保持全展开
+      evtSummaryShowAll = false;
       renderEraStrip(); renderMap(); renderEraInfo();
       showEventsSummary(); // 保持「该朝事件」汇总展开（默认视图）
       centerTo(document.querySelector(`#era-strip .era-btn${activeEraId ? '.active' : ''}`));
@@ -1998,9 +2001,10 @@ function renderMapControls(data) {
     });
     legend.appendChild(btn);
   }
-  // 事件按钮（默认激活）：点击后在地图下方汇总该朝所有事件涉及的古地名
+  // 事件按钮（默认激活）：点击后在地图下方汇总事件涉及的古地名。
+  // 文案跟随年号切换，与汇总面板标题保持一致（点年号后只汇总该年号的事件）
   const evtBtn = el('button', 'route-btn');
-  evtBtn.textContent = '📍 该朝事件';
+  evtBtn.textContent = curEmp ? `📍 该年号事件` : '📍 该朝事件';
   evtBtn.dataset.layer = 'events';
   evtBtn.style.borderColor = '#c0392b';
   evtBtn.classList.add('on');
@@ -2017,28 +2021,38 @@ function renderMapControls(data) {
   showEvents();
 }
 
-/** 该朝事件汇总：列出本朝所有地图事件涉及的古地名（点击跳地图并弹窗说明）。
+/** 该朝事件汇总：列出地图事件涉及的古地名（点击跳地图并弹窗说明）。
+ *
+ *  列表跟随头顶的年号切换：选中某年号时只列该年号在位期间的事件，
+ *  否则（「全部」年号）列本朝全部事件——地图上的事件点本来就是这么筛的
+ *  （见 buildMapData 的 events: eventsForEra(activeEraId)），此前汇总面板漏了这一步，
+ *  于是点了年号地图只剩几条、下面却仍平铺整朝事件，两边对不上。
  *
  *  事件多时默认只展示前若干条，其余折在「展示更多」后面：
  *  「全部」视图下七朝合计 141 条（单朝最多明 43 条），全部平铺会把地图挤到屏幕外。
- *  阈值 12 约合两行胶囊，切朝代时回到折叠态（见 switchDynasty）。 */
+ *  单个年号最多 12 条，因此年号视图下不会触发折叠。
+ *  阈值 12 约合两行胶囊，切朝代/切年号时都回到折叠态。 */
 const EVT_SUMMARY_LIMIT = 12;
 let evtSummaryShowAll = false;
 
 function showEventsSummary(opts) {
   const box = $('#route-detail');
   if (!box) return;
-  // 汇总本朝全部事件（不受年号筛选影响；若在具体年号视图则提示）
-  const allEvents = DATA.mapEvents || [];
-  const list = allEvents.slice().sort((a, b) => parseInt(a.date, 10) - parseInt(b.date, 10));
+  const curEmp = currentEraEmperor();
+  // 跟随年号筛选：有选中皇帝时只取其在位期间的事件
+  const list = (curEmp ? eventsForEra(curEmp.id) : (DATA.mapEvents || []))
+    .slice().sort((a, b) => parseInt(a.date, 10) - parseInt(b.date, 10));
   if (!list.length) {
     box.classList.remove('hidden');
-    box.innerHTML = `<div class="route-detail-desc">这个朝代还没有标记在地图上的事件。</div>`;
+    box.innerHTML = curEmp
+      ? `<div class="route-detail-desc">「${curEmp.eraName[0]}」年间没有标记在地图上的事件。</div>`
+      : `<div class="route-detail-desc">这个朝代还没有标记在地图上的事件。</div>`;
     if (!opts || !opts.noScroll) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return;
   }
-  const curEmp = currentEraEmperor();
-  const noteLine = curEmp ? `<div class="route-detail-desc">当前查看「${curEmp.eraName[0]}」年间 · 点击查看事件详情</div>` : `<div class="route-detail-desc">全朝事件汇总 · 点击查看事件详情</div>`;
+  const noteLine = curEmp
+    ? `<div class="route-detail-desc">${curEmp.name}（${curEmp.templeName}）在位 ${curEmp.reign.start}-${curEmp.reign.end} · 点击查看事件详情</div>`
+    : `<div class="route-detail-desc">全朝事件汇总 · 点击查看事件详情</div>`;
   // 折叠：默认只渲染前 EVT_SUMMARY_LIMIT 条
   const overflow = list.length > EVT_SUMMARY_LIMIT;
   const shown = (overflow && !evtSummaryShowAll) ? list.slice(0, EVT_SUMMARY_LIMIT) : list;
@@ -2063,7 +2077,7 @@ function showEventsSummary(opts) {
   box.classList.remove('hidden');
   box.innerHTML = `
     <div class="route-detail-head" style="border-color:#c0392b">
-      <span class="route-detail-name">📍 该朝事件 · 事件名（古地名）</span>
+      <span class="route-detail-name">${curEmp ? `📍 该年号事件 · ${curEmp.eraName[0]}年间` : '📍 该朝事件 · 事件名（古地名）'}</span>
       <span class="route-detail-year">共 ${list.length} 个${overflow && !evtSummaryShowAll ? ` · 显示前 ${EVT_SUMMARY_LIMIT}` : ''}</span>
     </div>
     ${noteLine}
