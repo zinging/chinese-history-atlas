@@ -1270,3 +1270,56 @@ body.sidebar-collapsed .mega-collapse-btn .label { display: none; }
 }
 body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
 .guoxue-frame { width: 100%; height: 100vh; border: 0; display: block; }
+
+/* ===== 全局加载动画（居中遮罩，慢网时显示） ===== */
+#global-loader {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(253, 246, 233, .88);
+  backdrop-filter: blur(4px);
+  opacity: 0; visibility: hidden;
+  transition: opacity .25s ease, visibility .25s ease;
+  pointer-events: none;
+}
+#global-loader.show {
+  opacity: 1; visibility: visible;
+  pointer-events: all;
+}
+.gl-spinner {
+  width: 56px; height: 56px; position: relative;
+}
+.gl-spinner::before,
+.gl-spinner::after {
+  content: ""; position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+.gl-spinner::before {
+  border-top-color: #a8352a;
+  border-right-color: #a8352a;
+  animation: gl-spin 1s linear infinite;
+}
+.gl-spinner::after {
+  inset: 8px;
+  border-bottom-color: #c9a96a;
+  border-left-color: #c9a96a;
+  animation: gl-spin-rev 1.4s linear infinite;
+}
+@keyframes gl-spin { to { transform: rotate(360deg); } }
+@keyframes gl-spin-rev { to { transform: rotate(-360deg); } }
+.gl-text {
+  margin-top: 18px;
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: 15px; font-weight: 600; letter-spacing: 4px;
+  color: #6b5432;
+}
+.gl-dots::after {
+  content: "";
+  animation: gl-dots 1.5s steps(4, end) infinite;
+}
+@keyframes gl-dots {
+  0% { content: ""; }
+  25% { content: "·"; }
+  50% { content: "··"; }
+  75% { content: "···"; }
+}

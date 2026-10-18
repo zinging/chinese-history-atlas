@@ -219,7 +219,25 @@ const DYNASTY_TEXT = {
   },
 };
 
+// ===== 全局加载动画控制 =====
+let _loaderTimer = null;
+function showLoader() {
+  const el = document.getElementById('global-loader');
+  if (!el) return;
+  clearTimeout(_loaderTimer);
+  // 延迟300ms才显示，避免快速加载时闪烁
+  _loaderTimer = setTimeout(() => el.classList.add('show'), 300);
+}
+function hideLoader() {
+  const el = document.getElementById('global-loader');
+  if (!el) return;
+  clearTimeout(_loaderTimer);
+  el.classList.remove('show');
+}
+
 async function loadAll() {
+  showLoader();
+  try {
   // "全部"视图：加载所有朝代的皇帝并合并
   if (currentDynasty === 'all') {
     if (DATA_CACHE['all']) {
@@ -322,6 +340,9 @@ async function loadAll() {
   DATA_CACHE[loadToken] = DATA;
   // 喂给检索模块（历史侦探/追问框用）
   if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
+  } finally {
+    hideLoader();
+  }
 }
 
 /** 真正拉取某朝全部 JSON（结果写入 DATA_CACHE 由调用方负责） */

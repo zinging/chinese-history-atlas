@@ -1,4 +1,20 @@
 // 国学图谱 · app.js
+
+// ===== 全局加载动画 =====
+let _glTimer = null;
+function showLoader() {
+  const el = document.getElementById('global-loader');
+  if (!el) return;
+  clearTimeout(_glTimer);
+  _glTimer = setTimeout(() => el.classList.add('show'), 300);
+}
+function hideLoader() {
+  const el = document.getElementById('global-loader');
+  if (!el) return;
+  clearTimeout(_glTimer);
+  el.classList.remove('show');
+}
+
 const SECT_META = {
   rujia:   { name: "儒家", intro: "中国人的底层操作系统。从孔子开始，讲的是人和人怎么相处、怎么做人、怎么治国。", data: "rujia" },
   daojia:  { name: "道家", intro: "中国人的退路。老子讲「无为」，庄子讲「逍遥」——当儒家让你扛不动的时候，道家告诉你可以放下。", data: "daojia" },
@@ -84,6 +100,8 @@ function clearMapLayers() {
 const $ = (sel) => document.querySelector(sel);
 
 async function loadSect(sect) {
+  showLoader();
+  try {
   currentSect = sect;
   currentEra = "all";
   document.querySelectorAll(".sect-btn").forEach(b => b.classList.toggle("active", b.dataset.s === sect));
@@ -152,6 +170,9 @@ async function loadSect(sect) {
     bookData = { books: [], cases: [], places: [], routes: [], quiz: [] };
   }
   renderSect();
+  } finally {
+    hideLoader();
+  }
 }
 
 /**
@@ -486,7 +507,10 @@ function renderBookDetail(b) {
     }
     if (hasFunFacts) {
       html += `<div class="entry-panel" data-panel="funfacts" style="${defaultTab === "funfacts" ? "" : "display:none;"}">`;
-      html += b.funFacts.map(f => `<div class="funfact">${f.fact}</div>`).join("");
+      html += b.funFacts.map(f => {
+        const text = typeof f === "string" ? f : (f.fact || f.text || "");
+        return `<div class="funfact">${text}</div>`;
+      }).join("");
       html += `</div>`;
     }
   }
@@ -530,9 +554,13 @@ async function renderCases() {
     return;
   }
   if (!activeCaseCat && cats.length) activeCaseCat = cats[0].id;
-  tabsEl.innerHTML = cats.map(cat => {
-    const n = cases.filter(c => c.category === cat.id).length;
-    return `<button class="case-tab${cat.id === activeCaseCat ? ' active' : ''}" data-cat="${cat.id}">${cat.name}<span class="case-tab-n">${n}</span></button>`;
+  // 只显示有案件的分类，去掉数量为0的按钮
+  const catsWithCases = cats.map(cat => ({
+    ...cat,
+    count: cases.filter(c => c.category === cat.id).length
+  })).filter(c => c.count > 0);
+  tabsEl.innerHTML = catsWithCases.map(cat => {
+    return `<button class="case-tab${cat.id === activeCaseCat ? ' active' : ''}" data-cat="${cat.id}">${cat.name}<span class="case-tab-n">${cat.count}</span></button>`;
   }).join("");
   tabsEl.querySelectorAll(".case-tab").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -916,7 +944,10 @@ function toggleRoute(ri) {
       <span class="route-detail-year">${(r.points || []).length} 站</span>
     </div>
     <ol class="route-detail-stops">
-      ${(r.points || []).map((p, i) => `<li><b>${i + 1}. ${esc(p.name || "")}</b></li>`).join("")}
+      ${(r.points || []).map((p, i) => `<li>
+        <div class="stop-head"><b>${i + 1}. ${esc(p.name || "")}</b>${p.year ? `<span class="stop-year">${esc(p.year)}</span>` : ""}</div>
+        ${p.event ? `<div class="stop-event">${esc(p.event)}</div>` : ""}
+      </li>`).join("")}
     </ol>`;
   syncRouteButtons();
 }

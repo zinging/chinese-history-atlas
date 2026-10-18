@@ -432,11 +432,15 @@ body[data-sect="myth"] {
 .entry-chip {
   border: none; border-radius: 999px; padding: 9px 18px;
   font-size: 15px; font-weight: 700; cursor: pointer; color: #fff;
-  font-family: inherit; transition: opacity .15s;
+  background: #ccc; font-family: inherit; transition: all .15s;
 }
-.entry-chip.chip-facts { background: var(--gold); color: var(--ink); }
-.entry-chip.chip-open  { background: var(--primary); }
-.entry-chip.chip-make  { background: var(--accent); }
+.entry-chip.chip-facts { background: var(--gold); color: var(--ink); opacity: .55; }
+.entry-chip.chip-open  { background: var(--primary); opacity: .55; }
+.entry-chip.chip-make  { background: var(--accent); opacity: .55; }
+.entry-chip:hover { opacity: .8; }
+.entry-chip.chip-facts.active { background: var(--gold); color: var(--ink); opacity: 1; }
+.entry-chip.chip-open.active  { background: var(--primary); color: #fff; opacity: 1; }
+.entry-chip.chip-make.active  { background: var(--accent); color: #fff; opacity: 1; }
 .entry-chip.dim { opacity: .45; }
 .entry-chip.dim:hover { opacity: .7; }
 .entry-chip.active { box-shadow: 0 0 0 3px rgba(192,57,43,.25); }
@@ -444,12 +448,18 @@ body[data-sect="myth"] {
 
 /* ---- 公案疑案：复刻 .case-card / .case-tabs / .case-section ---- */
 .case-tabs {
-  display: flex; gap: 10px; flex-wrap: wrap;
-  justify-content: center;
+  display: flex; gap: 10px; flex-wrap: nowrap;
+  justify-content: flex-start;
   margin: 8px 0 20px; padding-bottom: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin; scrollbar-color: #b99a55 #f0e6d2;
 }
+.case-tabs::-webkit-scrollbar { height: 5px; }
+.case-tabs::-webkit-scrollbar-thumb { background: #b99a55; border-radius: 3px; }
+.case-tabs::-webkit-scrollbar-track { background: #f0e6d2; }
 .case-tab {
   position: relative;
+  flex: 0 0 auto;
   border: 2.5px solid #b99a55;
   background: linear-gradient(180deg, #fbf3df 0%, #f3e6c8 100%);
   border-radius: 3px;
@@ -635,8 +645,14 @@ body[data-sect="myth"] {
 .route-detail-name { font-size: 18px; font-weight: 800; color: #8a4b1f; }
 .route-detail-year { font-size: 13px; color: var(--muted); }
 .route-detail-stops { margin: 0; padding-left: 22px; font-size: 14px; color: #5c5140; }
-.route-detail-stops li { margin-bottom: 6px; }
+.route-detail-stops li { margin-bottom: 10px; }
 .route-detail-stops b { color: var(--ink); }
+.stop-head { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.stop-year {
+  font-size: 12px; font-weight: 700; color: #a8352a;
+  background: rgba(168,53,42,.1); padding: 1px 8px; border-radius: 3px;
+}
+.stop-event { font-size: 13px; line-height: 1.6; color: #6b5d48; padding-left: 2px; }
 .map-popup {
   position: absolute; bottom: 20px; right: 20px; z-index: 1000;
   background: var(--card); border: 2px solid var(--gold); border-radius: 10px;
@@ -897,4 +913,57 @@ body[data-sect="myth"] {
   font-size: 14px;
   text-align: center;
   padding: 34px 16px;
+}
+
+/* ===== 全局加载动画（居中遮罩） ===== */
+#global-loader {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(253, 246, 233, .88);
+  backdrop-filter: blur(4px);
+  opacity: 0; visibility: hidden;
+  transition: opacity .25s ease, visibility .25s ease;
+  pointer-events: none;
+}
+#global-loader.show {
+  opacity: 1; visibility: visible;
+  pointer-events: all;
+}
+.gl-spinner {
+  width: 56px; height: 56px; position: relative;
+}
+.gl-spinner::before,
+.gl-spinner::after {
+  content: ""; position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+.gl-spinner::before {
+  border-top-color: #a8352a;
+  border-right-color: #a8352a;
+  animation: gl-spin 1s linear infinite;
+}
+.gl-spinner::after {
+  inset: 8px;
+  border-bottom-color: #c9a96a;
+  border-left-color: #c9a96a;
+  animation: gl-spin-rev 1.4s linear infinite;
+}
+@keyframes gl-spin { to { transform: rotate(360deg); } }
+@keyframes gl-spin-rev { to { transform: rotate(-360deg); } }
+.gl-text {
+  margin-top: 18px;
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: 15px; font-weight: 600; letter-spacing: 4px;
+  color: #6b5432;
+}
+.gl-dots::after {
+  content: "";
+  animation: gl-dots 1.5s steps(4, end) infinite;
+}
+@keyframes gl-dots {
+  0% { content: ""; }
+  25% { content: "·"; }
+  50% { content: "··"; }
+  75% { content: "···"; }
 }
