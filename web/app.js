@@ -1011,9 +1011,21 @@ function showEmperor(e) {
     ${renderRelGraph(e)}
     <div class="detail-panel entry-block">
       <h4>📜 生平时间线</h4>
-      <ul class="timeline-list">${timeline.map((t) => `
-        <li><span class="t-date">${t.date || ''}</span> <span class="t-title">${t.title}</span>
-        <div class="t-desc">${t.description || ''}</div></li>`).join('')}
+      <ul class="timeline">${timeline.map((t) => {
+        const isHighlight = /玄武门|靖难|陈桥|黄袍|土木堡|夺门|之变|案|亲征|被俘|禅位|亡国|迁都|驾崩|逝世|篡位|起兵|登基|即位|统一|灭[国梁陈齐周宋元]/i.test(t.title || "");
+        const year = t.date || "";
+        const yearHtml = /^\d{3,4}\s*[-—–]\s*\d{3,4}$/.test(year)
+          ? year.replace(/\s*[-—–]\s*/, '<br>-')
+          : year;
+        return `
+        <li class="tl-item ${isHighlight ? "tl-highlight" : ""}">
+          <div class="tl-year">${yearHtml}</div>
+          <div class="tl-body">
+            <div class="tl-event">${t.title}${isHighlight ? " ★" : ""}</div>
+            ${t.description ? `<div class="tl-note">${t.description}</div>` : ""}
+          </div>
+        </li>`;
+      }).join("")}
       </ul>
     </div>`;
   // 三个入口与其内容面板作为一个整体，挂在时间线之后

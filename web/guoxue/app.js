@@ -70,6 +70,8 @@ function ensureLeaflet() {
 let map = null;
 // 图层句柄：按类型分组，切换流派时只清这些，不动底图
 const mapLayers = { places: [], routes: [], routeLabels: [] };
+// 路线分组：每条路线一个 { line, marks[] }，默认隐藏，点按钮才显示
+let routeLayerGroups = [];
 // 路线动画定时器（切换流派/收起路线时统一清理）
 let routeTimers = [];
 // 当前展开的路线序号（null = 不展开）
@@ -95,6 +97,11 @@ function clearMapLayers() {
     mapLayers[k].forEach((l) => map.removeLayer(l));
     mapLayers[k] = [];
   }
+  routeLayerGroups.forEach((g) => {
+    map.removeLayer(g.line);
+    g.marks.forEach((m) => map.removeLayer(m));
+  });
+  routeLayerGroups = [];
 }
 
 const $ = (sel) => document.querySelector(sel);
@@ -606,10 +613,16 @@ function renderBookFilter() {
   const bar = $("#book-filter");
   if (!bar) return;
   if (currentPage !== "artifacts") { bar.style.display = "none"; bar.innerHTML = ""; return; }
-  const books = bookData.books || [];
+  let books = bookData.books || [];
+  // 顶部分类胶囊选中时，书籍胶囊同步过滤到该分类下的书
+  if (currentEra !== "all") {
+    books = books.filter((b) => b.category ? b.category === currentEra : b.era === currentEra);
+  }
   if (!books.length) { bar.style.display = "none"; return; }
   const all = bookData.artifacts || [];
-  const items = Array.isArray(all) ? all : [];
+  const rawItems = Array.isArray(all) ? all : [];
+  // 全部按钮计数也按顶部分类过滤
+  const items = currentEra === "all" ? rawItems : rawItems.filter((x) => x.cat === currentEra);
   const counts = {};
   for (const a of items) { const k = a.book || a.cat || a.from; if (k) counts[k] = (counts[k] || 0) + 1; }
   let html = `<button class="book-filter-btn${currentBook === "all" ? " active" : ""}" data-book="all">全部<em>${items.length}</em></button>`;
@@ -817,14 +830,13 @@ function initMap() {
   if (!window.L) return; // Leaflet 还没加载（懒加载），等用户切到地图标签再初始化
   if (!map) {
     map = L.map(container, { scrollWheelZoom: true });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    window.__tileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap",
       maxZoom: 12,
-      // 瓦片加载失败时给一句提示，图层功能仍可用
       errorTileUrl: "",
     }).addTo(map);
   }
-  renderMapData();
+  try { renderMapData(); } catch(e) { console.warn("initMap render:", e.message); }
   // 容器若处在隐藏的页面里，Leaflet 首次量到的尺寸是 0，图层会画到看不见的地方。
   // 这里不强行 invalidateSize（隐藏元素量不出尺寸），交由进入地图页时统一修正：
   // 见 tab 切换里的 requestAnimationFrame + invalidateSize + renderMapData。
@@ -841,7 +853,7 @@ function refreshMapWhenVisible() {
   requestAnimationFrame(() => {
     map.invalidateSize();
     map._dshSized = true;
-    renderMapData();
+    try { renderMapData(); } catch(e) { console.warn("renderMapData:", e.message); }
   });
 }
 
@@ -855,6 +867,7 @@ function renderMapData() {
 
   // 地名：圆点 + 常显名称标签，点击弹窗看今名与故事
   places.forEach((p) => {
+    if (typeof p.lat !== "number" || typeof p.lng !== "number") return;
     const kind = placeKind(p.name);
     const dot = L.circleMarker([p.lat, p.lng], {
       radius: 7, color: "#ffffff", weight: 2,
@@ -871,27 +884,55 @@ function renderMapData() {
     mapLayers.places.push(dot);
   });
 
-  // 路线：线 + 起终点常显标签（与帝王谱系图例同款配色）
+  // 路线：线 + 起终点标签，默认全部隐藏，点按钮才显示对应那条
+  routeLayerGroups = [];
   routes.forEach((r, ri) => {
-    const pts = r.points || [];
+    const pts = (r.points || []).filter(p => typeof p.lat === "number" && typeof p.lng === "number");
     if (pts.length < 2) return;
     const line = L.polyline(pts.map((p) => [p.lat, p.lng]), {
-      color: "#c0392b", weight: 3, opacity: 0.55, dashArray: "6 6",
-    }).addTo(map);
-    mapLayers.routes.push(line);
-
-    const start = pts[0], end = pts[pts.length - 1];
-    [[start, "route-start"], [end, "route-end"]].forEach(([pt, cls]) => {
-      const m = L.circleMarker([pt.lat, pt.lng], {
-        radius: 6, color: "#fff", weight: 2,
-        fillColor: cls === "route-start" ? "#2e7d32" : "#a0251c", fillOpacity: 1,
-      }).addTo(map);
-      m.bindTooltip(
-        `<span class="route-pt-tip">${esc(pt.name || "")}</span>`,
-        { direction: cls === "route-start" ? "top" : "bottom", offset: [0, 8], permanent: true, className: "map-route-tip" }
-      );
-      mapLayers.routes.push(m);
+      color: "#c0392b", weight: 4, opacity: 0, dashArray: null,
     });
+    routeLayerGroups.push({ line, marks: [], arrows: [] });
+
+    pts.forEach((pt, i) => {
+      const m = L.circleMarker([pt.lat, pt.lng], {
+        radius: i === 0 ? 7 : 5, color: "#fff", weight: 2,
+        fillColor: i === 0 ? "#2e7d32" : (i === pts.length - 1 ? "#a0251c" : "#c0392b"),
+        fillOpacity: 0,
+      });
+      m.bindTooltip(
+        `<span class="route-pt-tip"><b>${esc(pt.name || "")}</b>${pt.modern ? `<small>${esc(pt.modern)}</small>` : ""}</span>`,
+        { direction: "top", offset: [0, 8], permanent: true, className: "map-route-tip", opacity: 0 }
+      );
+      routeLayerGroups[routeLayerGroups.length - 1].marks.push(m);
+    });
+
+    // 每段中点放一个指向行进方向的三角箭头
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1];
+      const midLat = (a.lat + b.lat) / 2;
+      const midLng = (a.lng + b.lng) / 2;
+      // 北向为0、顺时针的方位角，墨卡托投影下东西向按纬度修正
+      const φ0 = midLat * Math.PI / 180;
+      const dy = (b.lat - a.lat);
+      const dx = (b.lng - a.lng) * Math.cos(φ0);
+      const ang = Math.atan2(dx, dy) * 180 / Math.PI;
+      const icon = L.divIcon({
+        className: "route-arrow-wrap",
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+        html: `<div class="route-arrow" style="transform:rotate(${ang}deg)"></div>`,
+      });
+      const am = L.marker([midLat, midLng], { icon, interactive: false, keyboard: false, opacity: 0 });
+      routeLayerGroups[routeLayerGroups.length - 1].arrows.push(am);
+    }
+  });
+
+  // 全部加到地图但默认透明
+  routeLayerGroups.forEach((g) => {
+    g.line.addTo(map);
+    g.marks.forEach((m) => m.addTo(map));
+    g.arrows.forEach((a) => a.addTo(map));
   });
 
   renderRouteButtons(routes);
@@ -924,7 +965,131 @@ function renderRouteButtons(routes) {
   box.classList.toggle("hidden", routes.length === 0);
 }
 
-/** 展开/收起一条路线：展示途经点，并高亮对应线条 */
+// 山海经示意图热点：严格按原著方位——昆仑居中，南山经在南（下），西山经在西（左），北山经在北（上），海外东经在东（右）
+const SCHEMATIC_HOTS = [
+  { x: 50, y: 45, name: "昆仑之丘", img: "kunlun.jpg", desc: "众神上下之都，西王母所居。《西山经》：『昆仑之丘，是实惟帝之下都，神陆吾司之。』西王母蓬发戴胜，虎齿豹尾，三青鸟为之取食。" },
+  { x: 50, y: 78, name: "青丘山", img: "qingqiu.jpg", desc: "《南山经》：『青丘之山，其阳多玉，其阴多青雘。有兽焉，其状如狐而九尾，其音如婴儿，能食人，食者不蛊。』" },
+  { x: 30, y: 40, name: "不周山", img: "buzhou.jpg", desc: "《西山经》：『不周之山，北望诸毗之山，临彼岳崇之山，东望泑泽，河水所潜也。』共工怒触不周山，天柱折，地维绝。" },
+  { x: 38, y: 22, name: "发鸠山", img: "jingwei.jpg", desc: "《北山经》：『发鸠之山，其上多柘木。有鸟焉，其状如乌，文首、白喙、赤足，名曰精卫，其鸣自詨。』炎帝少女女娃溺于东海，化为精卫，衔木石以填海。" },
+  { x: 25, y: 55, name: "姑射山", img: "gushe.jpg", desc: "《庄子·逍遥游》：『藐姑射之山，有神人居焉，肌肤若冰雪，绰约若处子，不食五谷，吸风饮露，乘云气，御飞龙，而游乎四海之外。』" },
+  { x: 55, y: 18, name: "钟山·烛龙", img: "zhulong.jpg", desc: "《大荒北经》：『钟山之神，名曰烛阴，视为昼，瞑为夜，吹为冬，呼为夏，不饮，不食，不息，息为风。人面蛇身，赤色。』" },
+  { x: 35, y: 12, name: "一目国", img: "yimu.jpg", desc: "《海外北经》：『一目国在其东，一目而中面。』其人只有一只眼睛，长在面部正中央。" },
+  { x: 22, y: 25, name: "无肠国", img: "wuchang.jpg", desc: "《海外北经》：『无肠国在其东，其为人长，无肠。』腹内无肠，食物直通。" },
+  { x: 12, y: 35, name: "奇肱国", img: "jigong.jpg", desc: "《海外西经》：『奇肱之国在其北，其人一臂三目，有阴有阳，乘文马。』其人善为机巧，能为飞车，从风远行。" },
+  { x: 15, y: 18, name: "羽民国", img: "yumin.jpg", desc: "《海外南经》：『羽民国在其东南，其为人长头，身生羽。』身生羽翼，能飞翔不远。" },
+  { x: 18, y: 50, name: "大人国", img: "daren.jpg", desc: "《海外东经》：『大人国在其北，为人大，坐而削船。』其人长大，孕三十六年而生。" },
+  { x: 20, y: 85, name: "贯胸国", img: "guanxiong.jpg", desc: "《海外南经》：『贯胸国在其东，其为人胸有窍。』胸前贯通一孔。" },
+  { x: 35, y: 90, name: "交胫国", img: "jiaojing.jpg", desc: "《海外南经》：『交胫国在其东，其为人交胫。』两脚交叉而行。" },
+  { x: 50, y: 92, name: "不死民", img: "busi.jpg", desc: "《海外南经》：『不死民在其东，其为人黑色，寿，不死。』肤色乌黑，长生不死。" },
+  { x: 65, y: 88, name: "三首国", img: "sanshou.jpg", desc: "《海外南经》：『三首国在其东，其为人一身三首。』一身而三首。" },
+  { x: 80, y: 85, name: "长臂国", img: "changbi.jpg", desc: "《海外南经》：『长臂国在其东，长臂三尺，捕鱼水中，两手各操一鱼。』其人手下垂至地。" },
+  { x: 88, y: 30, name: "黑齿国", img: "heichi.jpg", desc: "《海外东经》：『黑齿国在其北，为人黑齿，食稻啖蛇。』其人黑齿。" },
+  { x: 82, y: 65, name: "君子国", img: "junzi.jpg", desc: "《海外东经》：『君子国在其北，衣冠带剑，食兽，使二文虎在旁，其人好让不争。』" },
+  { x: 92, y: 45, name: "蓬莱仙岛", img: "penglai.jpg", desc: "《列子·汤问》：『勃海之东有大壑焉，其中有五山：一曰岱舆，二曰员峤，三曰方壶，四曰瀛洲，五曰蓬莱。』仙圣所居。" },
+  { x: 70, y: 78, name: "女儿国", img: "nverguo.jpg", desc: "《山海经·大荒西经》：『有女子之国。』女子国在巫咸北，两女子居，水周之。" },
+];
+
+// 每条路线的示意图配置：背景图 + 热点坐标
+const ROUTE_SCHEMATIC = [
+  {
+    bg: "world-map.jpg",
+    hots: SCHEMATIC_HOTS,
+  },
+  {
+    bg: "xiyou-map.jpg",
+    hots: [
+      { x: 92.5, y: 46, name: "长安", img: "", desc: "玄奘出发，唐太宗赐号三藏，出关西行。贞观十三年。" },
+      { x: 85.5, y: 15, name: "两界山", img: "", desc: "刘伯钦送唐僧至此，五行山下压着孙悟空，贴'唵嘛呢叭咪吽'揭帖，悟空脱困拜师父。第一难。" },
+      { x: 71.5, y: 39, name: "鹰愁涧", img: "", desc: "涧中白龙吞了白马，观音点化白龙为唐僧脚力，即白龙马。第二难。" },
+      { x: 67, y: 25, name: "观音禅院", img: "", desc: "老住持贪锦襕袈裟，纵火欲烧唐僧，广智广谋反害己命。黑熊怪趁乱窃袈裟。" },
+      { x: 61, y: 62, name: "高老庄", img: "", desc: "收服猪八戒，原为天蓬元帅，调戏嫦娥被贬下凡。" },
+      { x: 71, y: 65, name: "流沙河", img: "", desc: "八百流沙界，弱水三千。收服沙悟净，原为卷帘大将。" },
+      { x: 61.5, y: 32, name: "白虎岭", img: "", desc: "白骨夫人三变（村姑、老妇、老翁），孙悟空三打白骨精，被唐僧逐走。" },
+      { x: 45, y: 27, name: "乌鸡国", img: "", desc: "全真道人推国王入井，冒充国王三年。文殊菩萨青狮精作祟。" },
+      { x: 41, y: 38, name: "火云洞", img: "", desc: "红孩儿三昧真火，观音收为善财童子。" },
+      { x: 37, y: 26, name: "车迟国", img: "", desc: "虎力、鹿力、羊力三妖道惑君，悟空斗法砍头、剖腹、滚油。" },
+      { x: 33.5, y: 38, name: "通天河", img: "", desc: "灵感大王每年要吃童男童女，观音竹篮收妖。老鼋驮师徒过河。" },
+      { x: 26, y: 60, name: "女儿国", img: "nverguo.jpg", desc: "西梁女国，国王愿以一国为聘，留唐僧为王。蝎子精摄走唐僧。" },
+      { x: 47, y: 38, name: "火焰山", img: "", desc: "八百里火焰，需借芭蕉扇。三借芭蕉扇，降伏牛魔王与铁扇公主。" },
+      { x: 25, y: 23, name: "小雷音", img: "", desc: "黄眉大王假设雷音寺，诱师徒拜他，困悟空于金铙。" },
+      { x: 18, y: 36, name: "狮驼岭", img: "", desc: "青狮、白象、大鹏三魔，四万八千小妖，悟空钻肚降妖。" },
+      { x: 22, y: 26, name: "比丘国", img: "", desc: "国丈南极仙翁白鹿精，要一千一百一十一个小儿心肝做药引。" },
+      { x: 12.5, y: 23, name: "灵山", img: "", desc: "灵鹫峰雷音寺，拜见如来，取真经五千零四十八卷，成佛。贞观二十七年。" },
+    ],
+  },
+  {
+    bg: "fengshen-map.jpg",
+    hots: [
+      { x: 13, y: 13, name: "昆仑山", img: "", desc: "元始天尊道场，阐教发源地。姜子牙于玉虚宫修道四十年，受封神榜下山辅周。" },
+      { x: 9, y: 38, name: "西岐", img: "", desc: "武王起兵之地，姜子牙金台拜帅，周营大本营，六十万大军自此东进。" },
+      { x: 7, y: 62, name: "渭水", img: "", desc: "姜太公垂钓于渭水磻溪，直钩钓于石上，愿者上钩。文王出猎相遇，拜为丞相。" },
+      { x: 28, y: 44, name: "金鸡岭", img: "", desc: "孔宣兵阻金鸡岭，五色神光无人能敌。准提道人东来，收孔宣为孔雀大明王。" },
+      { x: 39, y: 46, name: "汜水关", img: "", desc: "五关之首，总兵韩荣把守，余化化血神刀连伤周将。哪吒、杨戬破关，余化授首。" },
+      { x: 46, y: 42, name: "界牌关", img: "", desc: "通天教主命多宝道人于界牌关下摆诛仙阵，四口仙剑诛戮陷绝。老子、元始、接引、准提四圣会破。" },
+      { x: 54, y: 41, name: "穿云关", img: "", desc: "总兵徐芳死守，瘟神吕岳布瘟㾮阵，周营染疫几尽。杨任持五火神焰扇下山破阵。" },
+      { x: 62, y: 33, name: "潼关", img: "", desc: "总兵余化龙父子把守，余德撒五斗毒痘，周营六十万人染天花。杨戬往火云洞求神农丹药得愈。" },
+      { x: 71, y: 33, name: "临潼关", img: "", desc: "潼关外通天教主再起万仙阵，四大天尊齐会破阵。总兵欧阳淳以幽魂白骨幡阻兵，邓昆、芮吉归周破关。" },
+      { x: 43, y: 70, name: "渑池县", img: "", desc: "守将张奎地行术，高兰英太阳神针。黄飞虎等五岳归天，土行孙、邓婵玉殒命。指地成钢，张奎授首。" },
+      { x: 76, y: 71, name: "孟津", img: "", desc: "黄河渡口，八百诸侯会盟。武王渡河，白鱼跃入王舟。梅山七怪袁洪、邬文化夜袭，终被收服。" },
+      { x: 86, y: 54, name: "牧野", img: "", desc: "甲子日誓师牧野，武王列纣王十大罪。商军前徒倒戈，血流漂杵，十七万商军土崩瓦解。" },
+      { x: 90, y: 22, name: "朝歌", img: "", desc: "商纣都城。纣王登鹿台，身衣珠玉自焚而死，六百年殷商遂亡。妲己被斩。" },
+      { x: 12, y: 82, name: "封神台", img: "", desc: "姜子牙归岐山封神台，张挂封神榜，封三百六十五位正神，周天列宿各归其位。" },
+    ],
+  },
+];
+
+function renderSchematicHotspots() {
+  const wrap = document.getElementById("schematic-hotspots");
+  if (!wrap) return;
+  const cfg = ROUTE_SCHEMATIC[activeRoute] || ROUTE_SCHEMATIC[0];
+  // 更新背景图
+  const bg = document.getElementById("schematic-bg");
+  if (bg && bg.src.indexOf(cfg.bg) < 0) {
+    bg.src = "../../data/portraits/myth-map/" + cfg.bg;
+  }
+  wrap.innerHTML = "";
+  cfg.hots.forEach((h) => {
+    const dot = document.createElement("div");
+    dot.className = "sch-hotspot";
+    dot.style.left = h.x + "%";
+    dot.style.top = h.y + "%";
+    dot.innerHTML = `<span class="hs-label">${h.name}</span>`;
+    dot.addEventListener("click", () => showSchematicDetail(h));
+    wrap.appendChild(dot);
+  });
+}
+
+function showSchematicDetail(h) {
+  // 移除旧面板
+  const old = document.querySelector(".sch-detail");
+  if (old) old.remove();
+  const panel = document.createElement("div");
+  panel.className = "sch-detail";
+  panel.innerHTML = `
+    <button class="sch-detail-close" aria-label="关闭">×</button>
+    ${h.img ? `<img src="../../data/portraits/myth-map/${h.img}" alt="${h.name}">` : ""}
+    <h4>${h.name}</h4>
+    <p>${h.desc}</p>
+  `;
+  document.querySelector(".map-wrap").appendChild(panel);
+  // 关闭按钮
+  panel.querySelector(".sch-detail-close").addEventListener("click", (e) => {
+    e.stopPropagation();
+    panel.remove();
+  });
+  // 点击面板外部关闭
+  setTimeout(() => {
+    const outsideHandler = (e) => {
+      if (!panel.contains(e.target)) {
+        panel.remove();
+        document.removeEventListener("click", outsideHandler);
+      }
+    };
+    document.addEventListener("click", outsideHandler);
+  }, 0);
+}
+
+/** 展开/收起一条路线：SVG从起点画到终点，途经点依次出现 */
 function toggleRoute(ri) {
   const routes = bookData.routes || [];
   const r = routes[ri];
@@ -932,8 +1097,107 @@ function toggleRoute(ri) {
   if (activeRoute === ri) { hideRouteDetail(); return; }
   activeRoute = ri;
 
-  // 仅当前路线加粗高亮，其余恢复默认淡线
-  setRouteStyles(ri, { opacity: 1, weight: 5, dashArray: null });
+  // 示意图路线（如山海经想象世界）：切换为古式世界示意图
+  const schematic = !!r.schematic;
+  // 清除旧的示意图详情面板
+  const oldSch = document.querySelector(".sch-detail");
+  if (oldSch) oldSch.remove();
+  const mapLeaf = document.getElementById("map-leaf");
+  const schematicEl = document.getElementById("map-schematic");
+  if (schematicEl) schematicEl.classList.toggle("hidden", !schematic);
+  if (mapLeaf) mapLeaf.style.display = schematic ? "none" : "";
+  if (window.__tileLayer) window.__tileLayer.setOpacity(schematic ? 0 : 1);
+  const mapWrap = document.querySelector(".map-wrap");
+  if (mapWrap) mapWrap.classList.toggle("schematic", schematic);
+  if (schematic) renderSchematicHotspots();
+
+  // 图例随路线切换
+  const legendPlace = document.getElementById("sch-legend-place");
+  const legendStart = document.getElementById("sch-legend-start");
+  const legendEnd = document.getElementById("sch-legend-end");
+  if (legendPlace) {
+    if (ri === 0) {
+      legendPlace.style.display = ""; legendStart.style.display = "none"; legendEnd.style.display = "none";
+      legendPlace.innerHTML = '<i class="dot dot-place"></i>神山异国';
+    } else if (ri === 1) {
+      legendPlace.style.display = "none"; legendStart.style.display = ""; legendEnd.style.display = "";
+      legendStart.innerHTML = '<i class="dot dot-route-start"></i>取经起点';
+      legendEnd.innerHTML = '<i class="dot dot-route-end"></i>灵山终点';
+    } else {
+      legendPlace.style.display = "none"; legendStart.style.display = ""; legendEnd.style.display = "";
+      legendStart.innerHTML = '<i class="dot dot-route-start"></i>伐纣起点';
+      legendEnd.innerHTML = '<i class="dot dot-route-end"></i>封神台';
+    }
+  }
+
+  // 清理旧动画定时器
+  routeTimers.forEach((t) => clearTimeout(t));
+  routeTimers = [];
+
+  // 隐藏所有路线
+  routeLayerGroups.forEach((g, gi) => {
+    g.line.setStyle({ opacity: 0 });
+    if (g.line._path) g.line._path.removeAttribute("marker-mid");
+    g.marks.forEach((m) => {
+      m.setStyle({ fillOpacity: 0 });
+      const tip = m.getTooltip && m.getTooltip();
+      if (tip) tip.setOpacity(0);
+    });
+    g.arrows.forEach((a) => {
+      if (a.getElement) { const el = a.getElement(); if (el) el.style.opacity = 0; }
+    });
+  });
+  // 有路线展开时，隐藏全局"故里"地名点，只保留当前路线站点
+  mapLayers.places.forEach((p) => {
+    p.setStyle({ opacity: 0, fillOpacity: 0 });
+    const tip = p.getTooltip && p.getTooltip();
+    if (tip) tip.setOpacity(0);
+  });
+
+  // 对选中路线做SVG画线路动画
+  const g = routeLayerGroups[ri];
+  if (g) {
+    const line = g.line;
+    line.setStyle({ opacity: 1, weight: 4 });
+    const pathEl = line._path;
+    const duration = 3500;
+    if (pathEl && pathEl.getTotalLength) {
+      const len = pathEl.getTotalLength();
+      pathEl.style.transition = 'none';
+      pathEl.style.strokeDasharray = len;
+      pathEl.style.strokeDashoffset = len;
+      void pathEl.getBoundingClientRect();
+      pathEl.style.transition = `stroke-dashoffset ${duration}ms linear`;
+      pathEl.style.strokeDashoffset = '0';
+      routeTimers.push(setTimeout(() => {
+        pathEl.style.transition = '';
+        pathEl.style.strokeDasharray = '10 6';
+        pathEl.style.strokeDashoffset = '0';
+      }, duration + 60));
+    }
+    // 途经点依次出现
+    g.marks.forEach((m, i) => {
+      const t = ((i + 1) / (g.marks.length + 1)) * duration;
+      routeTimers.push(setTimeout(() => {
+        m.setStyle({ fillOpacity: 1 });
+        const tip = m.getTooltip && m.getTooltip();
+        if (tip) tip.setOpacity(1);
+      }, t));
+    });
+    // 方向箭头随画线路进度依次出现
+    g.arrows.forEach((a, i) => {
+      const t = ((i + 1.5) / (g.arrows.length + 1)) * duration;
+      routeTimers.push(setTimeout(() => {
+        if (a.getElement) { const el = a.getElement(); if (el) el.style.opacity = 1; }
+      }, t));
+    });
+    // 视野切到当前路线范围
+    if (g.line.getBounds && !g.line.getBounds().isValid()) {
+      // 空路径保护
+    } else if (g.line.getBounds) {
+      map.fitBounds(g.line.getBounds(), { padding: [50, 50], maxZoom: 7 });
+    }
+  }
 
   const box = $("#route-detail");
   if (!box) return;
@@ -944,20 +1208,48 @@ function toggleRoute(ri) {
       <span class="route-detail-year">${(r.points || []).length} 站</span>
     </div>
     <ol class="route-detail-stops">
-      ${(r.points || []).map((p, i) => `<li>
-        <div class="stop-head"><b>${i + 1}. ${esc(p.name || "")}</b>${p.year ? `<span class="stop-year">${esc(p.year)}</span>` : ""}</div>
+      ${(r.points || []).map((p) => `<li>
+        <div class="stop-head"><b>${esc(p.name || "")}</b>${p.year ? `<span class="stop-year">${esc(p.year)}</span>` : ""}</div>
         ${p.event ? `<div class="stop-event">${esc(p.event)}</div>` : ""}
       </li>`).join("")}
     </ol>`;
   syncRouteButtons();
 }
 
-/** 收起路线详情，恢复所有线条默认样式 */
+/** 收起路线详情，隐藏所有路线线条 */
 function hideRouteDetail() {
   activeRoute = null;
+  // 恢复真实地图
+  if (window.__tileLayer) window.__tileLayer.setOpacity(1);
+  const mapLeaf = document.getElementById("map-leaf");
+  const schematicEl = document.getElementById("map-schematic");
+  if (mapLeaf) mapLeaf.style.display = "";
+  if (schematicEl) schematicEl.classList.add("hidden");
+  const mapWrap = document.querySelector(".map-wrap");
+  if (mapWrap) mapWrap.classList.remove("schematic");
+  // 移除示意图详情面板
+  const oldDetail = document.querySelector(".sch-detail");
+  if (oldDetail) oldDetail.remove();
   const box = $("#route-detail");
   if (box) { box.classList.add("hidden"); box.innerHTML = ""; }
-  setRouteStyles();
+  routeLayerGroups.forEach((g) => {
+    g.line.setStyle({ opacity: 0 });
+    if (g.line._path) g.line._path.removeAttribute("marker-mid");
+    g.marks.forEach((m) => {
+      m.setStyle({ fillOpacity: 0 });
+      const tip = m.getTooltip && m.getTooltip();
+      if (tip) tip.setOpacity(0);
+    });
+    g.arrows.forEach((a) => {
+      if (a.getElement) { const el = a.getElement(); if (el) el.style.opacity = 0; }
+    });
+  });
+  // 无路线展开时，恢复全局"故里"地名点
+  mapLayers.places.forEach((p) => {
+    p.setStyle({ opacity: 1, fillOpacity: 0.95 });
+    const tip = p.getTooltip && p.getTooltip();
+    if (tip) tip.setOpacity(1);
+  });
   syncRouteButtons();
 }
 
@@ -1006,6 +1298,23 @@ document.querySelectorAll(".tab").forEach(t => {
       ensureLeaflet().then(() => {
         initMap();
         refreshMapWhenVisible();
+        // 仅「神话异志」的路线是示意图（schematic）：默认打开山海经并弹出昆仑之丘卡片。
+        // 诗词鉴赏/思想源流等真实 Leaflet 路线默认展开第一条路线（如苏轼贬谪路线），不弹卡片。
+        const firstRoute = (bookData.routes || [])[0];
+        if (firstRoute && firstRoute.schematic) {
+          setTimeout(() => {
+            activeRoute = -1;
+            toggleRoute(0);
+            setTimeout(() => {
+              const kunlun = (ROUTE_SCHEMATIC[0].hots || []).find(h => h.name.indexOf("昆仑") >= 0);
+              if (kunlun) showSchematicDetail(kunlun);
+            }, 600);
+          }, 400);
+        } else if (firstRoute) {
+          setTimeout(() => {
+            if (activeRoute !== 0) toggleRoute(0);
+          }, 400);
+        }
       }).catch((e) => console.error(e));
     }
   });

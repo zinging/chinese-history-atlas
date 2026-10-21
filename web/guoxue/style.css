@@ -564,6 +564,7 @@ body[data-sect="myth"] {
   border: 2px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  min-height: 540px;
 }
 #map-leaf {
   width: 100%;
@@ -571,6 +572,89 @@ body[data-sect="myth"] {
   display: block;
 }
 .leaflet-container { font-family: inherit; }
+/* 示意图模式：山海经等"想象世界"路线，隐藏真实瓦片后用古纸色背景 */
+.map-wrap.schematic {
+  background: radial-gradient(ellipse at center, #f5ecd7 0%, #e8dcc0 100%);
+}
+.map-wrap.schematic .leaflet-tile-pane {
+  filter: sepia(0.3) saturate(0.6) brightness(1.05);
+}
+.map-wrap.schematic::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 30%, rgba(120, 80, 40, 0.08) 100%);
+  border: 1px solid rgba(120, 80, 40, 0.2);
+}
+
+/* 山海经古式世界示意图 */
+.map-schematic {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 500;
+  background: radial-gradient(ellipse at center, #f5ecd7 0%, #e8dcc0 100%);
+}
+.map-schematic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.map-schematic .hotspots {
+  position: absolute; inset: 0;
+}
+.sch-hotspot {
+  position: absolute;
+  width: 18px; height: 18px;
+  margin-left: -9px; margin-top: -9px;
+  border-radius: 50%;
+  background: #c0392b;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 3px rgba(192,57,43,0.3);
+  cursor: pointer;
+  transition: transform 0.15s;
+  z-index: 10;
+}
+.sch-hotspot:hover { transform: scale(1.4); }
+.sch-hotspot .hs-label {
+  position: absolute;
+  bottom: 22px; left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--ink);
+  background: rgba(255,255,255,0.9);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  pointer-events: none;
+}
+.sch-detail {
+  position: absolute; right: 16px; bottom: 16px;
+  width: 320px; max-height: 480px;
+  background: #fdf8ec;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  z-index: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  overflow-y: auto;
+}
+.sch-detail img {
+  width: 100%; border-radius: 6px; margin-bottom: 8px;
+}
+.sch-detail h4 { margin: 0 0 4px; color: var(--primary); font-size: 16px; }
+.sch-detail p { margin: 0; font-size: 13px; line-height: 1.7; color: var(--ink); }
+.sch-detail-close {
+  position: absolute; top: 8px; right: 8px;
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid var(--border); background: #fff;
+  font-size: 18px; line-height: 1; color: var(--ink);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  z-index: 10; padding: 0;
+}
+.sch-detail-close:hover { background: var(--primary); color: #fff; }
 .leaflet-popup-content { font-size: 14px; line-height: 1.6; color: var(--ink); }
 .leaflet-popup-content b { color: var(--primary); font-size: 15px; }
 .leaflet-popup-content .note { color: var(--muted); }
@@ -593,14 +677,27 @@ body[data-sect="myth"] {
 
 /* 路线起/终点常显标签（起=绿，终=深红，与图例一致） */
 .route-pt-tip {
-  display: inline-block;
+  display: inline-flex; align-items: baseline; gap: 4px;
   background: rgba(255, 255, 255, .95);
   border: 1.5px solid #2e7d32; border-radius: 999px;
-  padding: 1px 8px; font-size: 11px; font-weight: 700; color: #2e7d32;
+  padding: 2px 10px; font-size: 11px; font-weight: 700; color: #2e7d32;
   white-space: nowrap;
   box-shadow: 0 1px 3px rgba(0, 0, 0, .14);
 }
+.route-pt-tip small { font-size: 10px; font-weight: 400; color: #8a7a6a; }
 .leaflet-tooltip-bottom .route-pt-tip { border-color: #a0251c; color: #a0251c; }
+.leaflet-tooltip-bottom .route-pt-tip small { color: #a08a7a; }
+
+/* 路线每段中点的行进方向箭头（三角，CSS 内联旋转角度） */
+.route-arrow-wrap { background: transparent; border: none; opacity: 0; }
+.route-arrow {
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 11px solid #c0392b;
+  margin: 2px 0 0 2px;
+  filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, .95));
+}
 
 /* 地图右上角图例浮层 */
 .map-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: #5c5140; }

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>诗词鉴赏 · Poetry Appreciation</title>
-<link rel="stylesheet" href="style.css?v=v54">
+<link rel="stylesheet" href="style.css?v=v55">
 </head>
 <body data-sect="shiwen">
 <div id="global-loader">
@@ -14,7 +14,7 @@
 <div id="app">
   <div class="brand">🎋 诗词鉴赏</div>
   <!-- 诗词鉴赏按朝代分档：与帝王谱系顶部朝代条同一套类与样式（.sect-switch/.sect-btn 即朝代条），
-       点某朝代即筛选下方典籍卡片，副标题显示该朝诗人数量 -->
+       点某朝代即筛选下方典籍卡片，头部显示该朝诗人数目-->
   <div class="sect-switch" id="era-switch" role="tablist" aria-label="朝代切换">
     <button class="sect-btn active" data-era="all"><span class="sect-main">全部</span><span class="sect-sub"></span></button>
   </div>
@@ -32,13 +32,13 @@
     <div id="book-detail" class="book-detail hidden"></div>
   </main>
 
-  <!-- 模块二：公案 -->
+  <!-- 模块二：诗坛公案 -->
   <main id="page-cases" class="page hidden">
     <div id="case-tabs" class="case-tabs"></div>
     <div id="cases-list" class="cases-list"></div>
   </main>
 
-  <!-- 模块三：智慧舆图（对齐帝王谱系「舆图疆域」：图例浮层 + 地名/路线图层 + 途经点详情） -->
+  <!-- 模块三：诗路舆图（对齐帝王谱系的舆图疆域做法：图例+地名/事件图层+途经点详情） -->
   <main id="page-map" class="page hidden">
     <div class="map-wrap">
       <div id="map-leaf" role="img" aria-label="文化地图"></div>
@@ -50,14 +50,14 @@
       </div>
       <div id="map-popup" class="map-popup hidden"></div>
     </div>
-    <!-- 路线开关 + 途经点详情：与帝王谱系同款 -->
+    <!-- 地图线段+途经点详情：与帝王谱系同款 -->
     <div class="route-panel">
       <div class="route-toggle" id="map-route-btns"></div>
       <div class="route-detail hidden" id="route-detail"></div>
     </div>
   </main>
 
-  <!-- 模块四：答题 -->
+  <!-- 模块四：品诗问典 -->
   <main id="page-quiz" class="page hidden">
     <div id="quiz-list" class="quiz-list"></div>
   </main>
@@ -65,6 +65,6 @@
   <footer class="footer" id="footer">内容以《诗经》《楚辞》及唐宋元明清诗文集为依据 · 地图为示意 · 人物画像 AI 生成古风</footer>
 </div>
 
-<script src="app.js?v=v96"></script>
+<script src="app.js?v=v192"></script>
 </body>
 </html>

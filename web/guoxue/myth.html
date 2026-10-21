@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>神话异志 · Chinese Mythos</title>
-<link rel="stylesheet" href="style.css?v=v62">
+<link rel="stylesheet" href="style.css?v=v55">
 </head>
 <body data-sect="myth">
 <div id="global-loader">
@@ -20,6 +20,7 @@
   <nav class="tabs-v" id="tabs">
     <button class="tab active" data-page="books">典籍长廊</button>
     <button class="tab" data-page="artifacts">神兽图鉴</button>
+    <button class="tab" data-page="map">神话舆图</button>
     <button class="tab" data-page="quiz">探问异闻</button>
   </nav>
 
@@ -35,13 +36,34 @@
     <div class="artifacts-grid" id="artifacts-grid"></div>
   </main>
 
-  <!-- 模块三：探问异闻 -->
+  <!-- 模块三：神话舆图 -->
+  <main id="page-map" class="page hidden">
+    <div class="map-wrap">
+      <div id="map-leaf" role="img" aria-label="神话舆图"></div>
+      <div id="map-schematic" class="map-schematic hidden">
+        <img id="schematic-bg" src="../../data/portraits/myth-map/world-map.jpg" alt="古式世界示意图">
+        <div class="hotspots" id="schematic-hotspots"></div>
+      </div>
+      <div class="map-legend map-legend-float" id="sch-legend">
+        <span class="legend-item" id="sch-legend-place"><i class="dot dot-place"></i>神山异国</span>
+        <span class="legend-item" id="sch-legend-start"><i class="dot dot-route-start"></i>取经起点</span>
+        <span class="legend-item" id="sch-legend-end"><i class="dot dot-route-end"></i>灵山终点</span>
+      </div>
+      <div id="map-popup" class="map-popup hidden"></div>
+    </div>
+    <div class="route-panel">
+      <div class="route-toggle" id="map-route-btns"></div>
+      <div class="route-detail hidden" id="route-detail"></div>
+    </div>
+  </main>
+
+  <!-- 模块四：探问异闻 -->
   <main id="page-quiz" class="page hidden">
     <div id="quiz-list" class="quiz-list"></div>
   </main>
 
-  <footer class="footer" id="footer">据《山海经》郭璞注本及明清绘本想象还原 · 神兽图为工笔淡彩AI生成 · 非古画真迹</footer>
+  <footer class="footer" id="footer">内容以《山海经》郭璞注及明清绘本为据 · 古图为想象还原 · 神兽图为工笔淡彩 AI 生成 · 非古画真迹</footer>
 </div>
-<script src="app.js?v=v98"></script>
+<script src="app.js?v=v192"></script>
 </body>
 </html>
