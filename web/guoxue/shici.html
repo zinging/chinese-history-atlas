@@ -1,70 +1,70 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>诗词鉴赏 · Poetry Appreciation</title>
-<link rel="stylesheet" href="style.css?v=v56">
+<title>璇楄瘝閴磋祻 路 Poetry Appreciation</title>
+<link rel="stylesheet" href="style.css?v=v57">
 </head>
 <body data-sect="shiwen">
 <div id="global-loader">
   <div class="gl-spinner"></div>
-  <div class="gl-text">正在加载<span class="gl-dots"></span></div>
+  <div class="gl-text">姝ｅ湪鍔犺浇<span class="gl-dots"></span></div>
 </div>
 <div id="app">
-  <div class="brand">🎋 诗词鉴赏</div>
-  <!-- 诗词鉴赏按朝代分档：与帝王谱系顶部朝代条同一套类与样式（.sect-switch/.sect-btn 即朝代条），
-       点某朝代即筛选下方典籍卡片，头部显示该朝诗人数目-->
-  <div class="sect-switch" id="era-switch" role="tablist" aria-label="朝代切换">
-    <button class="sect-btn active" data-era="all"><span class="sect-main">全部</span><span class="sect-sub"></span></button>
+  <div class="brand">馃帇 璇楄瘝閴磋祻</div>
+  <!-- 璇楄瘝閴磋祻鎸夋湞浠ｅ垎妗ｏ細涓庡笣鐜嬭氨绯婚《閮ㄦ湞浠ｆ潯鍚屼竴濂楃被涓庢牱寮忥紙.sect-switch/.sect-btn 鍗虫湞浠ｆ潯锛夛紝
+       鐐规煇鏈濅唬鍗崇瓫閫変笅鏂瑰吀绫嶅崱鐗囷紝澶撮儴鏄剧ず璇ユ湞璇椾汉鏁扮洰-->
+  <div class="sect-switch" id="era-switch" role="tablist" aria-label="鏈濅唬鍒囨崲">
+    <button class="sect-btn active" data-era="all"><span class="sect-main">鍏ㄩ儴</span><span class="sect-sub"></span></button>
   </div>
 
   <nav class="tabs-v" id="tabs">
-    <button class="tab active" data-page="books">诗人长廊</button>
-    <button class="tab" data-page="cases">诗坛公案</button>
-    <button class="tab" data-page="map">诗路舆图</button>
-    <button class="tab" data-page="quiz">品诗问典</button>
+    <button class="tab active" data-page="books">璇椾汉闀垮粖</button>
+    <button class="tab" data-page="cases">璇楀潧鍏</button>
+    <button class="tab" data-page="map">璇楄矾鑸嗗浘</button>
+    <button class="tab" data-page="quiz">鍝佽瘲闂吀</button>
   </nav>
 
-  <!-- 模块一：典籍长廊 -->
+  <!-- 妯″潡涓€锛氬吀绫嶉暱寤?-->
   <main id="page-books" class="page">
     <div class="books-scroll" id="books-scroll"></div>
     <div id="book-detail" class="book-detail hidden"></div>
   </main>
 
-  <!-- 模块二：诗坛公案 -->
+  <!-- 妯″潡浜岋細璇楀潧鍏 -->
   <main id="page-cases" class="page hidden">
     <div id="case-tabs" class="case-tabs"></div>
     <div id="cases-list" class="cases-list"></div>
   </main>
 
-  <!-- 模块三：诗路舆图（对齐帝王谱系的舆图疆域做法：图例+地名/事件图层+途经点详情） -->
+  <!-- 妯″潡涓夛細璇楄矾鑸嗗浘锛堝榻愬笣鐜嬭氨绯荤殑鑸嗗浘鐤嗗煙鍋氭硶锛氬浘渚?鍦板悕/浜嬩欢鍥惧眰+閫旂粡鐐硅鎯咃級 -->
   <main id="page-map" class="page hidden">
     <div class="map-wrap">
-      <div id="map-leaf" role="img" aria-label="文化地图"></div>
+      <div id="map-leaf" role="img" aria-label="鏂囧寲鍦板浘"></div>
       <div class="map-legend map-legend-float">
-        <span class="legend-item"><i class="dot dot-place"></i>圣贤故里</span>
-        <span class="legend-item"><i class="dot dot-site"></i>书院寺观</span>
-        <span class="legend-item"><i class="dot dot-route-start"></i>路线起点</span>
-        <span class="legend-item"><i class="dot dot-route-end"></i>路线终点</span>
+        <span class="legend-item"><i class="dot dot-place"></i>鍦ｈ搐鏁呴噷</span>
+        <span class="legend-item"><i class="dot dot-site"></i>涔﹂櫌瀵鸿</span>
+        <span class="legend-item"><i class="dot dot-route-start"></i>璺嚎璧风偣</span>
+        <span class="legend-item"><i class="dot dot-route-end"></i>璺嚎缁堢偣</span>
       </div>
       <div id="map-popup" class="map-popup hidden"></div>
     </div>
-    <!-- 地图线段+途经点详情：与帝王谱系同款 -->
+    <!-- 鍦板浘绾挎+閫旂粡鐐硅鎯咃細涓庡笣鐜嬭氨绯诲悓娆?-->
     <div class="route-panel">
       <div class="route-toggle" id="map-route-btns"></div>
       <div class="route-detail hidden" id="route-detail"></div>
     </div>
   </main>
 
-  <!-- 模块四：品诗问典 -->
+  <!-- 妯″潡鍥涳細鍝佽瘲闂吀 -->
   <main id="page-quiz" class="page hidden">
     <div id="quiz-list" class="quiz-list"></div>
   </main>
 
-  <footer class="footer" id="footer">内容以《诗经》《楚辞》及唐宋元明清诗文集为依据 · 地图为示意 · 人物画像 AI 生成古风</footer>
+  <footer class="footer" id="footer">鍐呭浠ャ€婅瘲缁忋€嬨€婃杈炪€嬪強鍞愬畫鍏冩槑娓呰瘲鏂囬泦涓轰緷鎹?路 鍦板浘涓虹ず鎰?路 浜虹墿鐢诲儚 AI 鐢熸垚鍙ら</footer>
 </div>
 
-<script src="app.js?v=v199"></script>
+<script src="app.js?v=v204"></script>
 </body>
 </html>

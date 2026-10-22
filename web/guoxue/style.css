@@ -654,20 +654,25 @@ body[data-sect="myth"] {
 }
 .sch-detail {
   position: absolute; right: 16px; bottom: 16px;
-  width: 320px; max-height: 480px;
+  width: 400px; max-height: 500px;
   background: #fdf8ec;
   border: 2px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px;
+  padding: 16px;
   z-index: 600;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   overflow-y: auto;
 }
 .sch-detail img {
-  width: 100%; border-radius: 6px; margin-bottom: 8px;
+  width: 100%; border-radius: 6px; margin-bottom: 10px;
 }
 .sch-detail h4 { margin: 0 0 4px; color: var(--primary); font-size: 16px; }
 .sch-detail p { margin: 0; font-size: 13px; line-height: 1.7; color: var(--ink); }
+.sch-detail .tr {
+  display: block; margin: 3px 0 6px; padding: 3px 8px;
+  font-size: 12.5px; line-height: 1.65; color: #8a5a2e;
+  border-left: 3px solid #c9a06a; background: rgba(255,250,240,0.8);
+}
 .sch-detail-close {
   position: absolute; top: 8px; right: 8px;
   width: 28px; height: 28px; border-radius: 50%;
