@@ -1,4 +1,4 @@
-﻿// 国学图谱 · app.js
+// 国学图谱 · app.js
 
 // ===== 全局加载动画 =====
 let _glTimer = null;

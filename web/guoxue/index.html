@@ -1,71 +1,71 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>鍥藉鍥捐氨 路 Chinese Classics Atlas</title>
+  <title>国学图谱 · Chinese Classics Atlas</title>
 <link rel="stylesheet" href="style.css?v=v57">
 </head>
 <body class="mod-sixiang">
 <div id="global-loader">
   <div class="gl-spinner"></div>
-  <div class="gl-text">姝ｅ湪鍔犺浇<span class="gl-dots"></span></div>
+  <div class="gl-text">正在加载<span class="gl-dots"></span></div>
 </div>
 <div id="app">
-  <div class="brand">馃摎 鎬濇兂婧愭祦</div>
-  <div class="sect-switch" id="sect-switch" role="tablist" aria-label="娴佹淳鍒囨崲">
-    <button class="sect-btn active" data-s="all"><span class="sect-main">鍏ㄩ儴</span><span class="sect-sub">27閮ㄧ粡鍏?/span></button>
-    <button class="sect-btn" data-s="rujia"><span class="sect-main">鍎?路 瀛斿瓱</span><span class="sect-sub">鍓?51-鍓?35 路 5閮ㄧ粡鍏?/span></button>
-    <button class="sect-btn" data-s="daojia"><span class="sect-main">閬?路 鑰佸簞</span><span class="sect-sub">鍓?71-鍓?86 路 4閮ㄧ粡鍏?/span></button>
-    <button class="sect-btn" data-s="foxue"><span class="sect-main">浣?路 绂?/span><span class="sect-sub">67-907 路 5閮ㄧ粡鍏?/span></button>
-    <button class="sect-btn" data-s="zhuzi"><span class="sect-main">璇稿瓙</span><span class="sect-sub">鍓?70-鍓?21 路 7瀹朵唬琛ㄤ綔</span></button>
-    <button class="sect-btn" data-s="lixue"><span class="sect-main">鐞嗗 路 蹇冨</span><span class="sect-sub">960-1644 路 6閮ㄥ吀绫?/span></button>
+  <div class="brand">📚 思想源流</div>
+  <div class="sect-switch" id="sect-switch" role="tablist" aria-label="流派切换">
+    <button class="sect-btn active" data-s="all"><span class="sect-main">全部</span><span class="sect-sub">27部经典</span></button>
+    <button class="sect-btn" data-s="rujia"><span class="sect-main">儒 · 孔孟</span><span class="sect-sub">前551-前235 · 5部经典</span></button>
+    <button class="sect-btn" data-s="daojia"><span class="sect-main">道 · 老庄</span><span class="sect-sub">前571-前286 · 4部经典</span></button>
+    <button class="sect-btn" data-s="foxue"><span class="sect-main">佛 · 禅</span><span class="sect-sub">67-907 · 5部经典</span></button>
+    <button class="sect-btn" data-s="zhuzi"><span class="sect-main">诸子</span><span class="sect-sub">前770-前221 · 7家代表作</span></button>
+    <button class="sect-btn" data-s="lixue"><span class="sect-main">理学 · 心学</span><span class="sect-sub">960-1644 · 6部典籍</span></button>
   </div>
 
   <nav class="tabs-v" id="tabs">
-    <button class="tab active" data-page="books">鍏哥睄闀垮粖</button>
-    <button class="tab" data-page="cases">鍏鐤戞</button>
-    <button class="tab" data-page="map">鏅烘収鑸嗗浘</button>
-    <button class="tab" data-page="quiz">鎺㈤棶闂吀</button>
+    <button class="tab active" data-page="books">典籍长廊</button>
+    <button class="tab" data-page="cases">公案疑案</button>
+    <button class="tab" data-page="map">智慧舆图</button>
+    <button class="tab" data-page="quiz">探问问典</button>
   </nav>
 
-  <!-- 妯″潡涓€锛氬吀绫嶉暱寤?-->
+  <!-- 模块一：典籍长廊 -->
   <main id="page-books" class="page">
     <div class="books-scroll" id="books-scroll"></div>
     <div id="book-detail" class="book-detail hidden"></div>
   </main>
 
-  <!-- 妯″潡浜岋細鍏鐤戞 -->
+  <!-- 模块二：公案疑案 -->
   <main id="page-cases" class="page hidden">
     <div id="case-tabs" class="case-tabs"></div>
     <div id="cases-list" class="cases-list"></div>
   </main>
 
-  <!-- 妯″潡涓夛細鏅烘収鑸嗗浘锛堝榻愬笣鐜嬭氨绯荤殑鑸嗗浘鐤嗗煙鍋氭硶锛氬浘渚?鍦板悕/浜嬩欢鍥惧眰+閫旂粡鐐硅鎯咃級 -->
+  <!-- 模块三：智慧舆图（对齐帝王谱系的舆图疆域做法：图例+地名/事件图层+途经点详情） -->
   <main id="page-map" class="page hidden">
     <div class="map-wrap">
-      <div id="map-leaf" role="img" aria-label="鏂囧寲鍦板浘"></div>
+      <div id="map-leaf" role="img" aria-label="文化地图"></div>
       <div class="map-legend map-legend-float">
-        <span class="legend-item"><i class="dot dot-place"></i>鍦ｈ搐鏁呴噷</span>
-        <span class="legend-item"><i class="dot dot-site"></i>涔﹂櫌瀵鸿</span>
-        <span class="legend-item"><i class="dot dot-route-start"></i>璺嚎璧风偣</span>
-        <span class="legend-item"><i class="dot dot-route-end"></i>璺嚎缁堢偣</span>
+        <span class="legend-item"><i class="dot dot-place"></i>圣贤故里</span>
+        <span class="legend-item"><i class="dot dot-site"></i>书院寺观</span>
+        <span class="legend-item"><i class="dot dot-route-start"></i>路线起点</span>
+        <span class="legend-item"><i class="dot dot-route-end"></i>路线终点</span>
       </div>
       <div id="map-popup" class="map-popup hidden"></div>
     </div>
-    <!-- 鍦板浘绾挎+閫旂粡鐐硅鎯咃細涓庡笣鐜嬭氨绯诲悓娆?-->
+    <!-- 地图线段+途经点详情：与帝王谱系同款 -->
     <div class="route-panel">
       <div class="route-toggle" id="map-route-btns"></div>
       <div class="route-detail hidden" id="route-detail"></div>
     </div>
   </main>
 
-  <!-- 妯″潡鍥涳細鎺㈤棶闂吀 -->
+  <!-- 模块四：探问问典 -->
   <main id="page-quiz" class="page hidden">
     <div id="quiz-list" class="quiz-list"></div>
   </main>
 
-  <footer class="footer" id="footer">鍐呭浠ャ€婂彶璁般€嬨€婃眽涔︺€嬨€婇亾寰风粡銆嬨€婂簞瀛愩€嬬瓑鍘熷吀涓轰緷鎹?路 鍦板浘涓虹ず鎰?路 浜虹墿鐢诲儚 AI 鐢熸垚鍙ら</footer>
+  <footer class="footer" id="footer">内容以《史记》《汉书》《道德经》《庄子》等原典为依据 · 地图为示意 · 人物画像 AI 生成古风</footer>
 </div>
 
 <script src="app.js?v=v204"></script>
