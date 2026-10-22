@@ -41,7 +41,7 @@ const SECT_CACHE = {};
  * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
-const DATA_VER = "v117";
+const DATA_VER = "v121";
 
 // Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
 // 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
@@ -343,6 +343,23 @@ function renderEraSwitch() {
       currentBook = "all";
       renderSect();
       if (currentPage === "books") scrollBooksToTop();
+      // 神话舆图：顶部分类胶囊联动下方事件路线胶囊
+      // 上古神话→山海经、神魔长篇→西游记（封神可再点路线胶囊）、鬼狐笔记→聊斋、小说总集→太平
+      if (currentPage === "map" && initialSect === "myth") {
+        const catToRoute = { "all": 0, "上古神话": 0, "神魔长篇": 1, "鬼狐笔记": 3, "小说总集": 4 };
+        const target = Object.prototype.hasOwnProperty.call(catToRoute, key) ? catToRoute[key] : 0;
+        setTimeout(() => {
+          if (activeRoute !== target) {
+            toggleRoute(target);
+          } else {
+            // 同一路线（如「全部」与「上古神话」都是山海经）：点胶囊的外部点击
+            // 会关掉卡片，这里重新弹出该路线的默认热点卡。
+            const cfg = ROUTE_SCHEMATIC[target];
+            const first = cfg && cfg.hots && cfg.hots[0];
+            if (first) showSchematicDetail(first);
+          }
+        }, 60);
+      }
     });
   });
 }
@@ -827,6 +844,8 @@ async function renderQuiz() {
 function initMap() {
   const container = $("#map-leaf");
   if (!container) return;
+  // 神话异志·神话舆图：纯古式示意图（想象世界），不使用 Leaflet 真实地图
+  if (initialSect === "myth") return;
   if (!window.L) return; // Leaflet 还没加载（懒加载），等用户切到地图标签再初始化
   if (!map) {
     map = L.map(container, { scrollWheelZoom: true });
@@ -859,6 +878,8 @@ function refreshMapWhenVisible() {
 
 /** 按当前流派数据重绘地名与路线图层（切换流派/进入地图页时调用） */
 function renderMapData() {
+  // 神话异志：神话舆图全部为古式示意图，不渲染真实 Leaflet 图层
+  if (initialSect === "myth") return;
   if (!map) return;
   clearMapLayers();
 
@@ -958,7 +979,7 @@ function renderRouteButtons(routes) {
     const n = (r.points || []).length;
     const b = document.createElement("button");
     b.className = "route-btn";
-    b.textContent = `${r.name}（${n} 站）`;
+    b.textContent = `${r.name}（${n} ${r.unit || "站"}）`;
     b.addEventListener("click", () => toggleRoute(ri));
     box.appendChild(b);
   });
@@ -967,26 +988,28 @@ function renderRouteButtons(routes) {
 
 // 山海经示意图热点：严格按原著方位——昆仑居中，南山经在南（下），西山经在西（左），北山经在北（上），海外东经在东（右）
 const SCHEMATIC_HOTS = [
-  { x: 50, y: 45, name: "昆仑之丘", img: "kunlun.jpg", desc: "众神上下之都，西王母所居。《西山经》：『昆仑之丘，是实惟帝之下都，神陆吾司之。』西王母蓬发戴胜，虎齿豹尾，三青鸟为之取食。" },
-  { x: 50, y: 78, name: "青丘山", img: "qingqiu.jpg", desc: "《南山经》：『青丘之山，其阳多玉，其阴多青雘。有兽焉，其状如狐而九尾，其音如婴儿，能食人，食者不蛊。』" },
-  { x: 30, y: 40, name: "不周山", img: "buzhou.jpg", desc: "《西山经》：『不周之山，北望诸毗之山，临彼岳崇之山，东望泑泽，河水所潜也。』共工怒触不周山，天柱折，地维绝。" },
-  { x: 38, y: 22, name: "发鸠山", img: "jingwei.jpg", desc: "《北山经》：『发鸠之山，其上多柘木。有鸟焉，其状如乌，文首、白喙、赤足，名曰精卫，其鸣自詨。』炎帝少女女娃溺于东海，化为精卫，衔木石以填海。" },
-  { x: 25, y: 55, name: "姑射山", img: "gushe.jpg", desc: "《庄子·逍遥游》：『藐姑射之山，有神人居焉，肌肤若冰雪，绰约若处子，不食五谷，吸风饮露，乘云气，御飞龙，而游乎四海之外。』" },
-  { x: 55, y: 18, name: "钟山·烛龙", img: "zhulong.jpg", desc: "《大荒北经》：『钟山之神，名曰烛阴，视为昼，瞑为夜，吹为冬，呼为夏，不饮，不食，不息，息为风。人面蛇身，赤色。』" },
-  { x: 35, y: 12, name: "一目国", img: "yimu.jpg", desc: "《海外北经》：『一目国在其东，一目而中面。』其人只有一只眼睛，长在面部正中央。" },
-  { x: 22, y: 25, name: "无肠国", img: "wuchang.jpg", desc: "《海外北经》：『无肠国在其东，其为人长，无肠。』腹内无肠，食物直通。" },
-  { x: 12, y: 35, name: "奇肱国", img: "jigong.jpg", desc: "《海外西经》：『奇肱之国在其北，其人一臂三目，有阴有阳，乘文马。』其人善为机巧，能为飞车，从风远行。" },
-  { x: 15, y: 18, name: "羽民国", img: "yumin.jpg", desc: "《海外南经》：『羽民国在其东南，其为人长头，身生羽。』身生羽翼，能飞翔不远。" },
-  { x: 18, y: 50, name: "大人国", img: "daren.jpg", desc: "《海外东经》：『大人国在其北，为人大，坐而削船。』其人长大，孕三十六年而生。" },
-  { x: 20, y: 85, name: "贯胸国", img: "guanxiong.jpg", desc: "《海外南经》：『贯胸国在其东，其为人胸有窍。』胸前贯通一孔。" },
-  { x: 35, y: 90, name: "交胫国", img: "jiaojing.jpg", desc: "《海外南经》：『交胫国在其东，其为人交胫。』两脚交叉而行。" },
-  { x: 50, y: 92, name: "不死民", img: "busi.jpg", desc: "《海外南经》：『不死民在其东，其为人黑色，寿，不死。』肤色乌黑，长生不死。" },
-  { x: 65, y: 88, name: "三首国", img: "sanshou.jpg", desc: "《海外南经》：『三首国在其东，其为人一身三首。』一身而三首。" },
-  { x: 80, y: 85, name: "长臂国", img: "changbi.jpg", desc: "《海外南经》：『长臂国在其东，长臂三尺，捕鱼水中，两手各操一鱼。』其人手下垂至地。" },
-  { x: 88, y: 30, name: "黑齿国", img: "heichi.jpg", desc: "《海外东经》：『黑齿国在其北，为人黑齿，食稻啖蛇。』其人黑齿。" },
-  { x: 82, y: 65, name: "君子国", img: "junzi.jpg", desc: "《海外东经》：『君子国在其北，衣冠带剑，食兽，使二文虎在旁，其人好让不争。』" },
-  { x: 92, y: 45, name: "蓬莱仙岛", img: "penglai.jpg", desc: "《列子·汤问》：『勃海之东有大壑焉，其中有五山：一曰岱舆，二曰员峤，三曰方壶，四曰瀛洲，五曰蓬莱。』仙圣所居。" },
-  { x: 70, y: 78, name: "女儿国", img: "nverguo.jpg", desc: "《山海经·大荒西经》：『有女子之国。』女子国在巫咸北，两女子居，水周之。" },
+  { x: 50, y: 45, name: "昆仑之丘", img: "kunlun.jpg", desc: "《西山经》：『昆仑之丘，是实惟帝之下都，神陆吾司之。』陆吾虎身九尾、人面虎爪。《大荒西经》：『西海之南，流沙之滨，赤水之后，黑水之前，有大山，名曰昆仑之丘……其下有弱水之渊环之，其外有炎火之山，投物辄然。』西王母蓬发戴胜、虎齿豹尾，穴居于此，司天之厉及五残，三青鸟为之取食。" },
+  { x: 27, y: 80, name: "招摇山", img: "zhaoyao.jpg", desc: "《南山经》开篇第一山：『南山经之首曰鹊山，其首曰招摇之山，临于西海之上，多桂，多金玉。』有祝余草，状如韭而青华，食之不饥；有迷榖木，状如榖而黑理，其华四照，佩之不迷；有狌狌，状如禺而白耳，伏行人走，食之善走。丽麂之水出焉，西流注于海，其中多育沛，佩之无瘕疾。" },
+  { x: 50, y: 78, name: "青丘山", img: "qingqiu.jpg", desc: "《南山经》：『青丘之山，其阳多玉，其阴多青雘。有兽焉，其状如狐而九尾，其音如婴儿，能食人；食者不蛊。』有鸟曰灌灌，状如鸠，佩之不惑；英水南流注于即翼之泽，其中多赤鱬，鱼身人面，食之不疥。" },
+  { x: 22, y: 38, name: "长留山", img: "changliu.jpg", desc: "《西山经》：『又西二百里，曰长留之山，其神白帝少昊居之。其兽皆文尾，其鸟皆文首，是多文玉石。』山为员神磈氏之宫，其神主司反景——日入之时，霞光反照皆归其所司。山中文鸟、文兽、文玉五色相宣，是为西方白帝之庭。" },
+  { x: 30, y: 40, name: "不周山", img: "buzhou.jpg", desc: "《大荒西经》：『西北海之外，大荒之隅，有山而不合，名曰不周负子，有两黄兽守之。』《淮南子·天文训》：共工与颛顼争为帝，怒触不周之山，天柱折，地维绝。天倾西北，故日月星辰移焉；地不满东南，故水潦尘埃归焉。" },
+  { x: 38, y: 22, name: "发鸠山", img: "jingwei.jpg", desc: "《北山经》：『发鸠之山，其上多柘木。有鸟焉，其状如乌，文首、白喙、赤足，名曰精卫，其鸣自詨。』是炎帝之少女，名曰女娃，游于东海溺而不返，故为精卫，常衔西山之木石，以堙于东海。" },
+  { x: 55, y: 18, name: "钟山", img: "zhulong.jpg", desc: "《大荒北经》：『钟山之神，名曰烛阴，视为昼，瞑为夜，吹为冬，呼为夏，不饮，不食，不息，息为风，人面蛇身，赤色，身长千里，居钟山下。』开目为昼、闭目为夜，是为烛龙。其子曰鼓，人面龙身，曾与钦鴀杀葆江于昆仑之阳，帝戮之于钟山东崖。" },
+  { x: 25, y: 55, name: "姑射山", img: "gushe.jpg", desc: "《山海经》列姑射、北姑射、南姑射诸山。《庄子·逍遥游》：『藐姑射之山，有神人居焉，肌肤若冰雪，绰约若处子，不食五谷，吸风饮露，乘云气，御飞龙，而游乎四海之外。』神凝则物不疵疠而年谷熟。" },
+  { x: 35, y: 12, name: "一目国", img: "yimu.jpg", desc: "《海外北经》：『一目国在其东，一目中其面而居。』其人仅一目，生于面部正中。《大荒北经》：『有人一目，当面中生，一曰是威姓，少昊之子，食黍。』" },
+  { x: 22, y: 25, name: "无肠国", img: "wuchang.jpg", desc: "《海外北经》：『无肠国在深目东，其为人长而无肠。』郭璞注：其人长大，腹内无肠，食物过腹直通。《大荒北经》亦有无肠之国。" },
+  { x: 12, y: 35, name: "奇肱国", img: "jigong.jpg", desc: "《海外西经》：『奇肱之国在其北，其人一臂三目，有阴有阳，乘文马。』郭璞注：其人善为机巧，以杀百禽，能为飞车，从风远行。商汤时西风至，车随风至豫州，汤破其车，十年后东风起，乃复遣归。" },
+  { x: 15, y: 18, name: "羽民国", img: "yumin.jpg", desc: "《海外南经》：『羽民国在其东南，其为人长头，身生羽。』《大荒南经》：『有羽民之国，其民皆生毛羽。』卵生能飞而不能远，其地近鸾鸟自歌、凤鸟自舞之野。" },
+  { x: 18, y: 50, name: "大人国", img: "daren.jpg", desc: "《海外东经》：『大人国在其北，为人大，坐而削船。』《大荒东经》：『有波谷山者，有大人之国，有大人之市，名曰大人之堂。』《博物志》载其孕三十六年而生，生儿白头。" },
+  { x: 20, y: 85, name: "贯胸国", img: "guanxiong.jpg", desc: "《海外南经》：『贯胸国在其东，其为人胸有窍。』胸前贯通一孔，尊者出行，以竹木贯胸，使人舁抬而行。" },
+  { x: 35, y: 90, name: "交胫国", img: "jiaojing.jpg", desc: "《海外南经》：『交胫国在其东，其为人交胫。』郭璞注：脚胫曲戾相交，故谓之交胫。" },
+  { x: 50, y: 92, name: "不死民", img: "busi.jpg", desc: "《海外南经》：『不死民在其东，其为人黑色，寿，不死。』郭璞注：有员丘山，上有不死树，食之乃寿；有赤泉，饮之不老。其地又有甘木，食之长生。" },
+  { x: 65, y: 88, name: "三首国", img: "sanshou.jpg", desc: "《海外南经》：『三首国在其东，其为人一身三首。』一身而三首，三首各戴一面。" },
+  { x: 80, y: 85, name: "长臂国", img: "changbi.jpg", desc: "《海外南经》：『长臂国在其东，捕鱼水中，两手各操一鱼。』郭璞注：其人手下垂至地，长臂三丈，便于捕鱼海中，如常人之取物。" },
+  { x: 88, y: 30, name: "黑齿国", img: "heichi.jpg", desc: "《海外东经》：『黑齿国在其北，为人黑齿，食稻啖蛇，一赤一青，在其旁。』《大荒东经》：『有黑齿之国，姜姓，黍食，使四鸟。』其人以漆染齿，啖稻饭而食蛇。" },
+  { x: 82, y: 65, name: "君子国", img: "junzi.jpg", desc: "《海外东经》：『君子国在其北，衣冠带剑，食兽，使二大虎在旁，其人好让不争。有薰华草，朝生夕死。』国人谦谦有礼，市易相让，耕者让畔。" },
+  { x: 92, y: 45, name: "蓬莱仙岛", img: "penglai.jpg", desc: "《海内北经》：『蓬莱山在海中。』《列子·汤问》：『渤海之东不知几亿万里，有大壑焉……其中有五山焉：一曰岱舆，二曰员峤，三曰方壶，四曰瀛洲，五曰蓬莱。』所居皆仙圣之种，金银为宫阙，鸟兽尽白，五山之根无所连著，常随潮上下，帝命巨鳌十五举首而戴之。" },
+  { x: 70, y: 78, name: "女儿国", img: "nverguo.jpg", desc: "《海外西经》：『女子国在巫咸北，两女子居，水周之。一曰居一门中。』《大荒西经》：『有女子之国。』其国无男，四周环水，女子浴于黄池而孕。" },
 ];
 
 // 每条路线的示意图配置：背景图 + 热点坐标
@@ -998,42 +1021,70 @@ const ROUTE_SCHEMATIC = [
   {
     bg: "xiyou-map.jpg",
     hots: [
-      { x: 92.5, y: 46, name: "长安", img: "", desc: "玄奘出发，唐太宗赐号三藏，出关西行。贞观十三年。" },
-      { x: 85.5, y: 15, name: "两界山", img: "", desc: "刘伯钦送唐僧至此，五行山下压着孙悟空，贴'唵嘛呢叭咪吽'揭帖，悟空脱困拜师父。第一难。" },
-      { x: 71.5, y: 39, name: "鹰愁涧", img: "", desc: "涧中白龙吞了白马，观音点化白龙为唐僧脚力，即白龙马。第二难。" },
-      { x: 67, y: 25, name: "观音禅院", img: "", desc: "老住持贪锦襕袈裟，纵火欲烧唐僧，广智广谋反害己命。黑熊怪趁乱窃袈裟。" },
-      { x: 61, y: 62, name: "高老庄", img: "", desc: "收服猪八戒，原为天蓬元帅，调戏嫦娥被贬下凡。" },
-      { x: 71, y: 65, name: "流沙河", img: "", desc: "八百流沙界，弱水三千。收服沙悟净，原为卷帘大将。" },
-      { x: 61.5, y: 32, name: "白虎岭", img: "", desc: "白骨夫人三变（村姑、老妇、老翁），孙悟空三打白骨精，被唐僧逐走。" },
-      { x: 45, y: 27, name: "乌鸡国", img: "", desc: "全真道人推国王入井，冒充国王三年。文殊菩萨青狮精作祟。" },
-      { x: 41, y: 38, name: "火云洞", img: "", desc: "红孩儿三昧真火，观音收为善财童子。" },
-      { x: 37, y: 26, name: "车迟国", img: "", desc: "虎力、鹿力、羊力三妖道惑君，悟空斗法砍头、剖腹、滚油。" },
-      { x: 33.5, y: 38, name: "通天河", img: "", desc: "灵感大王每年要吃童男童女，观音竹篮收妖。老鼋驮师徒过河。" },
-      { x: 26, y: 60, name: "女儿国", img: "nverguo.jpg", desc: "西梁女国，国王愿以一国为聘，留唐僧为王。蝎子精摄走唐僧。" },
-      { x: 47, y: 38, name: "火焰山", img: "", desc: "八百里火焰，需借芭蕉扇。三借芭蕉扇，降伏牛魔王与铁扇公主。" },
-      { x: 25, y: 23, name: "小雷音", img: "", desc: "黄眉大王假设雷音寺，诱师徒拜他，困悟空于金铙。" },
-      { x: 18, y: 36, name: "狮驼岭", img: "", desc: "青狮、白象、大鹏三魔，四万八千小妖，悟空钻肚降妖。" },
-      { x: 22, y: 26, name: "比丘国", img: "", desc: "国丈南极仙翁白鹿精，要一千一百一十一个小儿心肝做药引。" },
-      { x: 12.5, y: 23, name: "灵山", img: "", desc: "灵鹫峰雷音寺，拜见如来，取真经五千零四十八卷，成佛。贞观二十七年。" },
+      { x: 92.5, y: 46, name: "长安", img: "xy-changan.jpg", desc: "贞观十三年，玄奘于长安化生寺讲经，观音菩萨显化，指点西天有大乘佛法。太宗赐号“三藏”，于长安关外率百官亲送，赐紫金钵盂、通关文牒；三藏执九环锡杖、披锦襕袈裟，跨白马西行。（《西游记》第十二回）" },
+      { x: 85.5, y: 15, name: "两界山", img: "xy-liangjie.jpg", desc: "《西游记》第十四回：王莽篡汉时天降五行山，下压神猴。三藏至两界山，揭下山顶“唵嘛呢叭咪吽”六字真言金帖，五行山崩裂，孙悟空破石而出，拜唐僧为师，戴上金箍，法号行者。" },
+      { x: 71.5, y: 39, name: "鹰愁涧", img: "xy-yingchou.jpg", desc: "《西游记》第十五回：蛇盘山鹰愁涧，西海龙王三太子玉龙吞了唐僧白马。观音菩萨以玉净瓶水化龙为马，白龙马从此驮负三藏西行，唐僧再得脚力。" },
+      { x: 67, y: 25, name: "观音禅院", img: "xy-chanyuan.jpg", desc: "《西游记》第十六回：黑风山观音禅院，金池长老贪图锦襕袈裟，欲放火烧死唐僧。悟空借辟火罩护住师父，黑风洞黑熊精趁乱盗走袈裟；后观音收黑熊精为落伽山守山大神。" },
+      { x: 61, y: 62, name: "高老庄", img: "xy-gaolao.jpg", desc: "《西游记》第十八回：高老庄高太公之女被妖怪强占。悟空变作高小姐模样于房中戏耍，得知妖怪本是天蓬元帅，错投猪胎。观音点化等候取经人；次回悟空于云栈洞收伏，唐僧收之为二徒，摩顶受戒，赐号八戒。" },
+      { x: 71, y: 65, name: "流沙河", img: "xy-liusha.jpg", desc: "《西游记》第二十二回：八百里流沙河，弱水三千，鹅毛不浮。卷帘大将被贬于此，红发蓝脸，颈挂九颗取经人骷髅。惠岸奉法旨以葫芦与骷髅结成法船，渡唐僧过河，收为三徒沙悟净。" },
+      { x: 61.5, y: 32, name: "白虎岭", img: "xy-baihu.jpg", desc: "《西游记》第二十七回：白虎岭白骨夫人三变村姑、老妇、老翁戏唐僧，悟空三打白骨精。唐僧不识妖魔，怒逐悟空回花果山，师徒因此离散，后宝象国遇难方和好。" },
+      { x: 45, y: 27, name: "乌鸡国", img: "xy-wuji.jpg", desc: "《西游记》第三十九回：青毛狮子精化作全真道人，将乌鸡国王推入御花园琉璃井，霸占王位三年。井底龙王以定颜珠护尸。悟空向太上老君求来还魂丹救活国王，文殊菩萨收伏狮猁怪。" },
+      { x: 41, y: 38, name: "火云洞", img: "xy-huoyun.jpg", desc: "《西游记》第四十回：号山枯松涧火云洞，红孩儿会三昧真火，假扮孩童掳走唐僧。悟空请四海龙王降雨反被烟熏，观音以净瓶海水、天罡刀化作莲花台，收红孩儿为善财童子。" },
+      { x: 37, y: 26, name: "车迟国", img: "xy-chechi.jpg", desc: "《西游记》第四十四回：车迟国虎力、鹿力、羊力三大仙尊道灭僧，与悟空赌求雨、坐禅、隔板猜物，又赌砍头、剖腹、下油锅，三妖皆现原形而亡，国中五百众僧获救。" },
+      { x: 33.5, y: 38, name: "通天河", img: "xy-tongtian.jpg", desc: "《西游记》第四十七回：八百里通天河，灵感大王（观音莲池金鱼）要陈家庄年年献童男童女。悟空、八戒变作童男陈关保、童女一秤金降妖；唐僧夜阻通天，老鼋驮渡，又因冰河陷落。" },
+      { x: 26, y: 60, name: "女儿国", img: "xy-nverguo.jpg", desc: "《西游记》第五十三回：三藏误饮子母河水怀胎，解阳山取落胎泉；第五十四回入西梁女国，女王欲以王位招赘，三藏坚辞；后毒敌山琵琶洞蝎子精摄走唐僧，昴日星官降伏。" },
+      { x: 47, y: 38, name: "火焰山", img: "xy-huoyan.jpg", desc: "《西游记》第五十九回：八百里火焰山，唯铁扇公主芭蕉扇能灭。悟空一借被扇至小须弥山，二借变虫入腹、三借大战牛魔王，得灵吉定风丹与八戒相助，终于扇灭大火，师徒过山。" },
+      { x: 25, y: 23, name: "小雷音", img: "xy-leiyin.jpg", desc: "《西游记》第六十五回：黄眉老佛假设小雷音寺，以金铙合住悟空，又以人种袋（后天袋）擒尽诸天神将。弥勒佛东来，以西瓜为计，令黄眉现形为黄眉童儿，师徒脱困。" },
+      { x: 18, y: 36, name: "狮驼岭", img: "xy-shituo.jpg", desc: "《西游记》第七十四回：八百里狮驼岭，青毛狮子、白象、大鹏金翅雕三魔王，骷髅若岭、骸骨如林。大鹏乃如来娘舅，掳唐僧入狮驼城。悟空求如来、文殊、普贤同至，三魔皆被收伏。" },
+      { x: 22, y: 26, name: "比丘国", img: "xy-biqiu.jpg", desc: "《西游记》第七十八回：比丘国（小子城）国丈白鹿精（南极仙翁坐骑）欲以一千一百一十一个小儿心肝做药引，美后白面狐狸精惑主。悟空救出群婴，南极仙翁收回白鹿。" },
+      { x: 12.5, y: 23, name: "灵山", img: "xy-lingshan.jpg", desc: "《西游记》第九十八回：师徒至灵鹫峰灵山雷音寺，阿傩、伽叶索人事，初传无字经，后以紫金钵盂换得真经。归途老鼋因唐僧忘问年寿，将师徒淬入水中，经书残缺，终完八十一难。" },
     ],
   },
   {
     bg: "fengshen-map.jpg",
     hots: [
-      { x: 13, y: 13, name: "昆仑山", img: "", desc: "元始天尊道场，阐教发源地。姜子牙于玉虚宫修道四十年，受封神榜下山辅周。" },
-      { x: 9, y: 38, name: "西岐", img: "", desc: "武王起兵之地，姜子牙金台拜帅，周营大本营，六十万大军自此东进。" },
-      { x: 7, y: 62, name: "渭水", img: "", desc: "姜太公垂钓于渭水磻溪，直钩钓于石上，愿者上钩。文王出猎相遇，拜为丞相。" },
-      { x: 28, y: 44, name: "金鸡岭", img: "", desc: "孔宣兵阻金鸡岭，五色神光无人能敌。准提道人东来，收孔宣为孔雀大明王。" },
-      { x: 39, y: 46, name: "汜水关", img: "", desc: "五关之首，总兵韩荣把守，余化化血神刀连伤周将。哪吒、杨戬破关，余化授首。" },
-      { x: 46, y: 42, name: "界牌关", img: "", desc: "通天教主命多宝道人于界牌关下摆诛仙阵，四口仙剑诛戮陷绝。老子、元始、接引、准提四圣会破。" },
-      { x: 54, y: 41, name: "穿云关", img: "", desc: "总兵徐芳死守，瘟神吕岳布瘟㾮阵，周营染疫几尽。杨任持五火神焰扇下山破阵。" },
-      { x: 62, y: 33, name: "潼关", img: "", desc: "总兵余化龙父子把守，余德撒五斗毒痘，周营六十万人染天花。杨戬往火云洞求神农丹药得愈。" },
-      { x: 71, y: 33, name: "临潼关", img: "", desc: "潼关外通天教主再起万仙阵，四大天尊齐会破阵。总兵欧阳淳以幽魂白骨幡阻兵，邓昆、芮吉归周破关。" },
-      { x: 43, y: 70, name: "渑池县", img: "", desc: "守将张奎地行术，高兰英太阳神针。黄飞虎等五岳归天，土行孙、邓婵玉殒命。指地成钢，张奎授首。" },
-      { x: 76, y: 71, name: "孟津", img: "", desc: "黄河渡口，八百诸侯会盟。武王渡河，白鱼跃入王舟。梅山七怪袁洪、邬文化夜袭，终被收服。" },
-      { x: 86, y: 54, name: "牧野", img: "", desc: "甲子日誓师牧野，武王列纣王十大罪。商军前徒倒戈，血流漂杵，十七万商军土崩瓦解。" },
-      { x: 90, y: 22, name: "朝歌", img: "", desc: "商纣都城。纣王登鹿台，身衣珠玉自焚而死，六百年殷商遂亡。妲己被斩。" },
-      { x: 12, y: 82, name: "封神台", img: "", desc: "姜子牙归岐山封神台，张挂封神榜，封三百六十五位正神，周天列宿各归其位。" },
+      { x: 13, y: 13, name: "昆仑山", img: "fs-kunlun.jpg", desc: "《封神演义》第十五回：姜子牙登昆仑，元始天尊命其下山封神，赐封神榜、打神鞭、杏黄旗，并嘱“旁人叫你，切不可应”。玉虚宫为阐教祖庭，十二金仙皆出于此，子牙由此辅佐周室。" },
+      { x: 9, y: 38, name: "西岐", img: "fs-xiqi.jpg", desc: "《封神演义》：西伯侯姬昌于岐山得姜尚，拜为丞相；武王姬发继位，以姜子牙为帅，凤鸣于岐山，三分天下有其二。西岐为周室龙兴之地，会诸侯、东进五关，兴兵伐商。" },
+      { x: 7, y: 62, name: "渭水", img: "fs-weishui.jpg", desc: "《封神演义》第二十四回：姜尚隐居渭水磻溪，以直钩垂钓，离水三尺，愿者上钩。周文王出猎遇之，同载而归，亲自拉车八百零八步，子牙遂保周朝八百零八年。" },
+      { x: 28, y: 44, name: "金鸡岭", img: "fs-jinjiling.jpg", desc: "《封神演义》第六十九回：孔宣兵阻金鸡岭，背后青、黄、赤、白、黑五色神光，刷物擒将，燃灯、陆压皆不能敌。准提道人至，以七宝妙树破神光，收孔宣现孔雀原形，引归西方。" },
+      { x: 39, y: 46, name: "汜水关", img: "fs-sishui.jpg", desc: "《封神演义》：汜水关为朝歌西部门户，守将韩荣父子把关，余化（七首将军）骑火眼金睛兽，以化血神刀连败周将，连伤哪吒、雷震子。后杨戬求得解药，余化授首，汜水关破。" },
+      { x: 46, y: 42, name: "界牌关", img: "fs-jiepai.jpg", desc: "《封神演义》第七十七回：通天教主于界牌关下布设诛仙阵，诛、戮、陷、绝四口仙剑分镇四方阵门，杀气冲天。老子、元始、接引、准提四圣会齐，共破诛仙阵，四剑尽归阐教。" },
+      { x: 54, y: 41, name: "穿云关", img: "fs-chuanyun.jpg", desc: "《封神演义》第八十回：瘟神吕岳于穿云关摆瘟癀阵，二十一把瘟癀伞、阵台高筑，令周营六师染疫。清虚道德真君门人杨任以五火神焰扇，会同哪吒、杨戬破阵，吕岳受戮，封瘟癀昊天大帝。" },
+      { x: 62, y: 33, name: "潼关", img: "fs-tongguan.jpg", desc: "《封神演义》第八十一回：潼关守将余化龙有五子，幼子余德施法，以五方斗布下痘疹毒，周营六师皆染天花。杨戬往火云洞求神农赐升麻丹药，全军痊愈。潼关破后余氏父子封五方痘神。" },
+      { x: 71, y: 33, name: "临潼关", img: "fs-lintong.jpg", desc: "《封神演义》第八十五回：临潼关守将邓昆、芮吉本为商臣，见纣王无道、周室当兴，遂献关归周，周军兵不血刃过临潼关，五关之路遂通，兵锋直抵渑池。" },
+      { x: 43, y: 70, name: "渑池县", img: "fs-mianchi.jpg", desc: "《封神演义》第八十六回：渑池县张奎精地行术，日行一千五百里，骑独角乌烟兽，连斩五岳（黄飞虎等）；夫人高兰英施日月神针、太阳神针，致周将目眩。后杨戬以指地成钢术、韦护降魔杵擒杀张奎。" },
+      { x: 76, y: 71, name: "孟津", img: "fs-mengjin.jpg", desc: "《封神演义》第八十八回：武王兵至孟津，天下八百诸侯不期而会，歃血为盟，共推姬发为盟主，陈兵黄河北岸，旌旗蔽日。诸侯之师于此誓师，牧野之战一触即发。" },
+      { x: 86, y: 54, name: "牧野", img: "fs-muye.jpg", desc: "《封神演义》：甲子昧爽，武王以革车三百乘、虎贲三千，与商军七十万战于牧野。姜尚以白旄黄钺麾师冲锋，商军前徒倒戈，血流漂杵，商师大溃，纣王败走朝歌。" },
+      { x: 90, y: 22, name: "朝歌", img: "fs-zhaoge.jpg", desc: "《封神演义》第九十七回：牧野兵败，纣王见大势已去，登摘星楼，于鹿台举火，殷商六百年社稷亡。妲己等轩辕坟三妖被女娲缚交杨戬，武王入殷，散鹿台之财、发巨桥之粟，商民大悦。" },
+      { x: 12, y: 82, name: "封神台", img: "fs-fengshen.jpg", desc: "《封神演义》第九十九回：姜子牙于岐山封神台开读封神榜，敕封三百六十五位正神：黄飞虎封东岳泰山天齐仁圣大帝、闻仲封九天应元雷声普化天尊、黄天化封管领三山正神炳灵公；杨戬、哪吒、李靖等七人肉身成圣，不在榜中，余者各有职司。" },
+    ],
+  },
+  {
+    // 聊斋志异·夜世界：场景分布图（非路线），热点按典型故事场景落位，不连线
+    bg: "liaozhai-map.jpg",
+    hots: [
+      { x: 17, y: 28, name: "兰若寺", img: "lanruosi.jpg", desc: "聂小倩葬于此。宁采臣借宿，小倩夜来诱之，宁正色拒绝。小倩感其正直，求他迁骨，后得复生，结为夫妻。《聂小倩》：『小倩，姓聂氏，十八夭殂，葬寺侧。』" },
+      { x: 10, y: 60, name: "闽江水滨", img: "liancheng.jpg", desc: "史连城，史孝廉之女，爱乔大年诗，以绣帕相赠。连城病逝，乔生往吊，一痛而绝。二人魂归地府，终得同返。《连城》：『连城，史孝廉女，知乔大年之才，终身相许。』" },
+      { x: 22, y: 78, name: "枉死城", img: "xifangping.jpg", desc: "席方平为父伸冤，魂入地府，历经城隍、冥王皆贪赃枉法，被火床拷打，皮肉糜烂，仍不屈。后二郎神昭雪，父子复生。《席方平》：『冥王命以火床，肉焦黑，问曰：「敢再讼乎？」席曰：「大冤未伸，寸心不死。」』" },
+      { x: 48, y: 40, name: "莒州山岗", img: "yingshan.jpg", desc: "王子服上山采药，遇一姑娘捻梅花一枝，容华绝代，笑容可掬。原来乃是姨表妹婴宁，狐女所生。婴宁爱笑，笑声不可抑制。《婴宁》：『捻梅花一枝，容华绝代，笑容可掬。』" },
+      { x: 50, y: 72, name: "陵阳地府", img: "lupan.jpg", desc: "朱尔旦与陆判官交好，求其为自己换慧心。陆判夜入，自腹中取一窍塞之，朱遂文思大进。后又为其妻换美人头。《陆判》：『陆曰：「君欲贵，须先换慧心。」乃解衣出刀，剖腹出肠胃，一一整理，复纳之。』" },
+      { x: 74, y: 38, name: "太原王宅", img: "huapi.jpg", desc: "太原王生早行，遇一女郎，携归书斋。后遇道士曰『君身妖气』。王生潜窥，见一恶鬼，翠面锯齿，铺人皮于榻，执彩笔绘之，披身化为女子。《画皮》：『铺人皮于榻上，执彩笔而绘之；已而，举皮如振衣状，披于身，遂化为女子。』" },
+      { x: 82, y: 70, name: "华阴小院", img: "cuzhi.jpg", desc: "宣德间宫中尚促织之戏，华阴成名被差役逼迫，倾尽家产寻蟋蟀。其子魂化一只小虫，轻捷善斗，献入宫中，竟得富贵。《促织》：『宣德间，宫中尚促织之戏，岁征民间。此物故非西产；有华阴令欲媚上官，以一头进。』" },
+      { x: 87, y: 20, name: "崂山", img: "laoshan.jpg", desc: "王生入崂山求道，不堪砍柴之苦。师父授以穿墙之咒，嘱其归后勿炫耀。王生回家向妻演示，头撞硬墙，额上起大包。《崂山道士》：『俯首骤入，勿逡巡。王果去墙数步，奔而入，及墙，虚若无物，回视，果在墙外矣。』" },
+    ],
+  },
+  {
+    // 太平广记·唐前奇闻时空图：跨汉魏至唐600年的故事叠加，不连线；热点带朝代小签（汉/唐）与卷次出处
+    bg: "taiping-map.jpg",
+    hots: [
+      { x: 90, y: 78, tag: "汉", name: "天台山", img: "tiantai.jpg", src: "《太平广记·卷六十一·女仙六·天台二女》（出《幽明录》）", desc: "东汉永平五年，刘晨、阮肇入天台山采药，迷不得返。经十三日饥，遥望山上桃树熟，跻险援葛，啖数枚，饥止体充。下山取水，见芜菁叶与胡麻饭随杯流出，遂遇二仙女，邀归留居半年。还乡时乡邑零落，已历七世。" },
+      { x: 6, y: 52, tag: "唐", name: "马嵬驿", img: "changhen.jpg", src: "《太平广记·卷四百八十六·杂传记三·长恨传》（陈鸿撰）", desc: "天宝十五载安史之乱，玄宗幸蜀，次马嵬驿。六军不发，诛杨国忠，赐杨贵妃缢于佛堂梨树下。陈鸿《长恨传》：『及玄宗幸蜀，次马嵬，六军徘徊，持戟不进。』" },
+      { x: 27, y: 42, tag: "唐", name: "长安平康坊", img: "liwa.jpg", src: "《太平广记·卷四百八十四·杂传记一·李娃传》（白行简撰）", desc: "天宝中，荥阳公子郑生赴长安应试，游平康坊，遇名妓李娃，两情相悦，资财荡尽。后郑生落魄为挽歌郎，几冻馁而死。李娃赎身相救，励其苦读，终登甲第，夫妇偕老，李娃封汧国夫人。" },
+      { x: 48, y: 13, tag: "唐", name: "邯郸客店", img: "zhenzhong.jpg", src: "《太平广记·卷八十二·异人·吕翁》（沈既济《枕中记》）", desc: "开元中，少年卢生途经邯郸客店，遇道士吕翁，自叹困顿。翁授青瓷枕，生枕之入梦：娶清河崔氏女、登进士第、出将入相，两度遭贬，寿逾八十。梦醒，店主人所炊黄粱饭尚未熟，顿悟荣枯皆幻。" },
+      { x: 38, y: 23, tag: "唐", name: "蒲州普救寺", img: "yingying.jpg", src: "《太平广记·卷四百八十八·杂传记五·莺莺传》（元稹撰）", desc: "贞元中，张生游蒲州，寓普救寺。值军人乘乱扰掠，张生护崔氏母女得全。崔女莺莺才色冠世，侍女红娘传书递简，西厢密会。后张生赴京另娶，始乱终弃，自辩为「善补过」，遂成千古恨事。" },
+      { x: 15, y: 46, tag: "唐", name: "长安西市", img: "renshi.jpg", src: "《太平广记·卷四百五十二·狐六·任氏》（沈既济撰）", desc: "天宝九年，郑子于长安西市遇狐女任氏，容色绝代，市人皆惊，遂倾心相许。任氏虽为狐精，却忠贞聪慧、不畏强暴，助郑子成家立业。后随郑子赴金城，途中为猎犬所害，哀恸而亡。" },
+      { x: 85, y: 42, tag: "唐", name: "广陵东槐里", img: "nanke.jpg", src: "《太平广记·卷四百七十五·昆虫三·淳于棼》（李公佐《南柯太守传》）", desc: "淳于棼家住广陵郡东十里，宅南有大古槐一株，清阴数亩。醉卧东庑，梦入槐安国，招为驸马，出守南柯郡二十年，贵极一时。后兵败妻丧，被遣归。醒后掘槐下蚁穴，宛然城郭，方知一梦。" },
+      { x: 61, y: 80, tag: "唐", name: "洞庭湖君山", img: "liuyi.jpg", src: "《太平广记·卷四百一十九·龙二·柳毅》（李朝威撰）", desc: "仪凤中，儒生柳毅应举下第，将还湘滨，至泾阳，遇洞庭龙君之女牧羊于野，风鬟雨鬓，蛾脸不舒。龙女托他传书洞庭。柳毅入龙宫送书，钱塘君救回龙女。几经曲折，柳毅终与龙女结为夫妻，同登仙籍。" },
     ],
   },
 ];
@@ -1053,7 +1104,7 @@ function renderSchematicHotspots() {
     dot.className = "sch-hotspot";
     dot.style.left = h.x + "%";
     dot.style.top = h.y + "%";
-    dot.innerHTML = `<span class="hs-label">${h.name}</span>`;
+    dot.innerHTML = `<span class="hs-label">${h.tag ? `<i class="hs-tag hs-tag-${h.tag}">${h.tag}</i>` : ""}${h.name}</span>`;
     dot.addEventListener("click", () => showSchematicDetail(h));
     wrap.appendChild(dot);
   });
@@ -1069,6 +1120,7 @@ function showSchematicDetail(h) {
     <button class="sch-detail-close" aria-label="关闭">×</button>
     ${h.img ? `<img src="../../data/portraits/myth-map/${h.img}" alt="${h.name}">` : ""}
     <h4>${h.name}</h4>
+    ${h.src ? `<p class="sch-detail-src">${h.src}</p>` : ""}
     <p>${h.desc}</p>
   `;
   document.querySelector(".map-wrap").appendChild(panel);
@@ -1123,10 +1175,18 @@ function toggleRoute(ri) {
       legendPlace.style.display = "none"; legendStart.style.display = ""; legendEnd.style.display = "";
       legendStart.innerHTML = '<i class="dot dot-route-start"></i>取经起点';
       legendEnd.innerHTML = '<i class="dot dot-route-end"></i>灵山终点';
-    } else {
+    } else if (ri === 2) {
       legendPlace.style.display = "none"; legendStart.style.display = ""; legendEnd.style.display = "";
       legendStart.innerHTML = '<i class="dot dot-route-start"></i>伐纣起点';
       legendEnd.innerHTML = '<i class="dot dot-route-end"></i>封神台';
+    } else if (ri === 4) {
+      // 太平广记·奇闻时空图：朝代小签图例（汉=青，唐=赭红）
+      legendPlace.style.display = ""; legendStart.style.display = "none"; legendEnd.style.display = "none";
+      legendPlace.innerHTML = '<i class="hs-tag hs-tag-汉">汉</i>汉代奇闻　<i class="hs-tag hs-tag-唐">唐</i>唐代传奇';
+    } else {
+      // 聊斋夜世界：场景分布图，无起终点
+      legendPlace.style.display = ""; legendStart.style.display = "none"; legendEnd.style.display = "none";
+      legendPlace.innerHTML = '<i class="dot dot-place"></i>聊斋夜话';
     }
   }
 
@@ -1205,7 +1265,7 @@ function toggleRoute(ri) {
   box.innerHTML = `
     <div class="route-detail-head" style="border-left-color:#c0392b">
       <span class="route-detail-name">${esc(r.name)}</span>
-      <span class="route-detail-year">${(r.points || []).length} 站</span>
+      <span class="route-detail-year">${(r.points || []).length} ${r.unit || "站"}</span>
     </div>
     <ol class="route-detail-stops">
       ${(r.points || []).map((p) => `<li>
@@ -1214,19 +1274,35 @@ function toggleRoute(ri) {
       </li>`).join("")}
     </ol>`;
   syncRouteButtons();
+  // 古式示意图：切换路线后自动弹出该路线第一个热点的卡片明细
+  // （昆仑之丘 / 长安 / 昆仑山 / 兰若寺 / 天台山）
+  if (schematic) {
+    const cfg = ROUTE_SCHEMATIC[ri];
+    const first = cfg && cfg.hots && cfg.hots[0];
+    if (first) {
+      routeTimers.push(setTimeout(() => showSchematicDetail(first), 450));
+    }
+  }
 }
 
 /** 收起路线详情，隐藏所有路线线条 */
 function hideRouteDetail() {
   activeRoute = null;
-  // 恢复真实地图
-  if (window.__tileLayer) window.__tileLayer.setOpacity(1);
   const mapLeaf = document.getElementById("map-leaf");
   const schematicEl = document.getElementById("map-schematic");
-  if (mapLeaf) mapLeaf.style.display = "";
-  if (schematicEl) schematicEl.classList.add("hidden");
   const mapWrap = document.querySelector(".map-wrap");
-  if (mapWrap) mapWrap.classList.remove("schematic");
+  if (initialSect === "myth") {
+    // 神话舆图：没有真实地图，古式示意图常驻（只收起底部路线详情与卡片）
+    if (mapLeaf) mapLeaf.style.display = "none";
+    if (schematicEl) schematicEl.classList.remove("hidden");
+    if (mapWrap) mapWrap.classList.add("schematic");
+  } else {
+    // 恢复真实地图
+    if (window.__tileLayer) window.__tileLayer.setOpacity(1);
+    if (mapLeaf) mapLeaf.style.display = "";
+    if (schematicEl) schematicEl.classList.add("hidden");
+    if (mapWrap) mapWrap.classList.remove("schematic");
+  }
   // 移除示意图详情面板
   const oldDetail = document.querySelector(".sch-detail");
   if (oldDetail) oldDetail.remove();
@@ -1275,7 +1351,7 @@ function syncRouteButtons() {
   const routes = bookData.routes || [];
   [...box.children].forEach((b, i) => {
     b.classList.toggle("on", i === activeRoute);
-    b.textContent = `${routes[i].name}（${(routes[i].points || []).length} 站）`;
+    b.textContent = `${routes[i].name}（${(routes[i].points || []).length} ${routes[i].unit || "站"}）`;
   });
 }
 
@@ -1295,27 +1371,36 @@ document.querySelectorAll(".tab").forEach(t => {
     // 进入地图页：容器由 display:none 变可见，必须让 Leaflet 重新量尺寸，
     // 否则地图显示为空白（尺寸停在 0）。
     if (currentPage === "map") {
-      ensureLeaflet().then(() => {
-        initMap();
-        refreshMapWhenVisible();
-        // 仅「神话异志」的路线是示意图（schematic）：默认打开山海经并弹出昆仑之丘卡片。
-        // 诗词鉴赏/思想源流等真实 Leaflet 路线默认展开第一条路线（如苏轼贬谪路线），不弹卡片。
-        const firstRoute = (bookData.routes || [])[0];
-        if (firstRoute && firstRoute.schematic) {
+      if (initialSect === "myth") {
+        // 神话舆图：全部为古式示意图，无真实 Leaflet 地图。
+        // 先渲染 5 条路线胶囊（renderMapData 在神话页被守卫跳过，需在此显式渲染），
+        // 再默认展开「山海经·想象世界」，由 toggleRoute 自动弹出昆仑之丘卡片。
+        const mapLeaf = document.getElementById("map-leaf");
+        if (mapLeaf) mapLeaf.style.display = "none";
+        const schematicEl = document.getElementById("map-schematic");
+        if (schematicEl) schematicEl.classList.remove("hidden");
+        const mapWrap = document.querySelector(".map-wrap");
+        if (mapWrap) mapWrap.classList.add("schematic");
+        renderRouteButtons(bookData.routes || []);
+        if (activeRoute !== 0) {
           setTimeout(() => {
             activeRoute = -1;
             toggleRoute(0);
-            setTimeout(() => {
-              const kunlun = (ROUTE_SCHEMATIC[0].hots || []).find(h => h.name.indexOf("昆仑") >= 0);
-              if (kunlun) showSchematicDetail(kunlun);
-            }, 600);
-          }, 400);
-        } else if (firstRoute) {
-          setTimeout(() => {
-            if (activeRoute !== 0) toggleRoute(0);
-          }, 400);
+          }, 300);
         }
-      }).catch((e) => console.error(e));
+      } else {
+        ensureLeaflet().then(() => {
+          initMap();
+          refreshMapWhenVisible();
+          // 诗词鉴赏/思想源流等真实 Leaflet 路线默认展开第一条路线（如苏轼贬谪路线），不弹卡片。
+          const firstRoute = (bookData.routes || [])[0];
+          if (firstRoute && !firstRoute.schematic) {
+            setTimeout(() => {
+              if (activeRoute !== 0) toggleRoute(0);
+            }, 400);
+          }
+        }).catch((e) => console.error(e));
+      }
     }
   });
 });

@@ -617,6 +617,21 @@ body[data-sect="myth"] {
   z-index: 10;
 }
 .sch-hotspot:hover { transform: scale(1.4); }
+/* 太平广记朝代小签：汉=青、唐=赭红 */
+.hs-tag {
+  display: inline-block;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  border-radius: 3px;
+  padding: 2px 3px;
+  margin-right: 4px;
+  vertical-align: 1px;
+}
+.hs-tag-汉 { background: #3a6b6b; }
+.hs-tag-唐 { background: #a8542e; }
 .sch-hotspot .hs-label {
   position: absolute;
   bottom: 22px; left: 50%;
@@ -629,6 +644,13 @@ body[data-sect="myth"] {
   border-radius: 10px;
   border: 1px solid var(--border);
   pointer-events: none;
+}
+.sch-detail-src {
+  font-size: 12px !important;
+  color: var(--muted) !important;
+  margin: 0 0 6px !important;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--border);
 }
 .sch-detail {
   position: absolute; right: 16px; bottom: 16px;
