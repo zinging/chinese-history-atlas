@@ -1118,7 +1118,7 @@ function showSchematicDetail(h) {
   panel.className = "sch-detail";
   panel.innerHTML = `
     <button class="sch-detail-close" aria-label="关闭">×</button>
-    ${h.img ? `<img src="../../data/portraits/myth-map/${h.img}" alt="${h.name}">` : ""}
+    ${h.img ? `<img src="../../data/portraits/myth-map-thumb/${h.img}" data-fallback="../../data/portraits/myth-map/${h.img}" alt="${h.name}" decoding="async">` : ""}
     <h4>${h.name}</h4>
     ${h.src ? `<p class="sch-detail-src">${h.src}</p>` : ""}
     <p>${h.desc}</p>
