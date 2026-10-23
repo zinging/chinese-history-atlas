@@ -458,7 +458,7 @@ function caseCard(c) {
       <div class="viewpoints">${(q.viewpoints || []).map((v) => `<p>• ${v}</p>`).join('')}</div>
     </div>`).join('');
   return `
-    <article class="case-card">
+    <article class="case-card" data-id="${c.id}">
       <div class="case-head">
         <div class="case-title">${c.name}</div>
         <div class="case-date">${c.date}年</div>
@@ -3185,6 +3185,73 @@ async function askLLM(message, history = []) {
   }
 })();
 
+// ---------- URL query 深链路由（供 MCP / 外部 AI 直接定位到皇帝、悬案、地图） ----------
+// 支持：?page=timeline|cases|map|detective&dynasty=ming&emperor=<id>&case=<id>&event=<id>
+const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitForEmp(fn, tries = 40, gap = 80) {
+  for (let i = 0; i < tries; i++) {
+    try { if (fn()) return true; } catch (e) { /* continue */ }
+    await sleepMs(gap);
+  }
+  try { return !!fn(); } catch (e) { return false; }
+}
+async function applyDeepLink() {
+  const params = new URLSearchParams(location.search);
+  const page = params.get('page');
+  const dynasty = params.get('dynasty');
+  if (dynasty && dynasty !== currentDynasty) {
+    await switchDynasty(dynasty);
+  }
+  if (page && ['timeline', 'cases', 'map', 'detective'].includes(page)) {
+    // 首页默认恢复的是上次停留的 iframe 模块，深链进帝王页必须先切回 history 内联面板
+    try { sessionStorage.setItem('dsh-active-module', 'history'); } catch { /* 忽略 */ }
+    if (typeof activateModule === 'function') {
+      // 等模块清单渲染完（侧栏按钮可能尚未就绪）
+      await waitForEmp(() => document.querySelector('.mega-btn[data-mega="history"]'));
+      activateModule('history');
+    }
+    switchPage(page);
+    // 兜底：模块切换可能在朝代切换之后异步完成，确保胶囊高亮与朝代一致
+    if (dynasty) {
+      document.querySelectorAll('.dynasty-btn').forEach((b) => {
+        b.classList.toggle('active', b.dataset.d === dynasty);
+      });
+      setBodyData('era', dynasty !== 'all' ? dynasty : null);
+    }
+  }
+  // 皇帝：展开指定皇帝
+  const emperorId = params.get('emperor');
+  if (emperorId && (!page || page === 'timeline')) {
+    const idx = (DATA.emperors || []).findIndex((e) => e.id === emperorId);
+    if (idx >= 0) {
+      const ok = await waitForEmp(() => document.querySelectorAll('#timeline-scroll .emp-card')[idx]);
+      if (ok) document.querySelectorAll('#timeline-scroll .emp-card')[idx].click();
+    }
+  }
+  // 悬案：切到对应分类并高亮
+  const caseId = params.get('case');
+  if (page === 'cases' && caseId) {
+    const c = (DATA.cases || []).find((x) => x.id === caseId);
+    if (c) { activeCaseCat = c.category; renderCases(); }
+    const ok = await waitForEmp(() => document.querySelector(`#cases-list .case-card[data-id="${caseId}"]`));
+    if (ok) {
+      const el = document.querySelector(`#cases-list .case-card[data-id="${caseId}"]`);
+      el.scrollIntoView({ block: 'start', behavior: 'instant' });
+      el.style.outline = '2px solid #b03a2e';
+      setTimeout(() => { el.style.outline = ''; }, 3000);
+    }
+  }
+  // 地图事件：定位并弹出单个事件
+  const eventId = params.get('event');
+  if (page === 'map' && eventId) {
+    const findEv = () =>
+      (DATA.mapEvents || []).find((e) => e.id === eventId || e.eventId === eventId) ||
+      (DATA.events || []).find((e) => e.id === eventId || e.eventId === eventId);
+    const ok = await waitForEmp(() => leafletMap && findEv());
+    if (ok) showSingleEvent(findEv());
+  }
+}
+
 (async function init() {
   try {
     // 只拉时间线必需的帝纪数据；边界 GeoJSON 是地图专用，延迟到首次开地图再取，
@@ -3243,6 +3310,8 @@ async function askLLM(message, history = []) {
       panel.appendChild(detail);
       legend.parentNode.insertBefore(panel, legend);
     })();
+    // URL query 深链：定位到具体皇帝/悬案/地图事件
+    await applyDeepLink();
   } catch (e) {
     document.body.innerHTML = `<div style="max-width:600px;margin:80px auto;text-align:center;font-size:18px">
       <h2>😢 数据加载失败</h2>

@@ -1,0 +1,20 @@
+{
+  "name": "chinese-history-atlas",
+  "version": "1.2.0",
+  "private": true,
+  "description": "中华历史图谱：纯静态国学可视化站点 + 零依赖本地 MCP Server（AI 讲解员）",
+  "type": "module",
+  "bin": {
+    "chinese-history-atlas-mcp": "web/tools/history-mcp-server.mjs"
+  },
+  "scripts": {
+    "start": "node web/serve.mjs",
+    "mcp": "node web/tools/history-mcp-server.mjs",
+    "mcp:selftest": "node web/tools/history-mcp-server.mjs --selftest",
+    "mcp:install": "powershell -ExecutionPolicy Bypass -File web/tools/install-mcp.ps1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

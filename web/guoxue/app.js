@@ -388,7 +388,7 @@ function renderBooks() {
     const cardMeta = b.cardMeta || (b.meta || "").split("·").pop().trim();
     const topLabel = b.collectionName ? `《${b.collectionName}》` : `《${b.name}》`;
     return `
-    <div class="book-card" data-i="${i}">
+    <div class="book-card" data-i="${i}" data-id="${b.id}">
       <div class="book-name">${topLabel}</div>
       ${b.portrait ? `<div class="portrait"><img src="../../data/portraits/${b.portrait}" alt="${b.person || b.name}" loading="lazy" decoding="async" width="84" height="84"></div>` : `<div class="icon">${b.icon || "📖"}</div>`}
       ${b.person ? `<div class="person-name">${b.person}</div>` : ""}
@@ -604,7 +604,7 @@ async function renderCases() {
         <div class="viewpoints">${(q.viewpoints || []).map(v => `<p>• ${v}</p>`).join("")}</div>
       </div>`).join("");
     return `
-    <article class="case-card">
+    <article class="case-card" data-id="${c.id}">
       <div class="case-head">
         <div class="case-title">⚖️ ${c.name}</div>
         <div class="case-date">${c.date}年</div>
@@ -1437,8 +1437,114 @@ document.addEventListener("click", (e) => {
   document.body.appendChild(lb);
 });
 
+// ---------- URL query 深链路由（供 MCP / 外部 AI 直接定位到具体卡片） ----------
+// 支持参数：
+//   ?sect=rujia|daojia|...（仅思想页）
+//   &tab=books|cases|artifacts|map|quiz
+//   &cat=<分类胶囊 id>   &book=<书 id>   &name=<器物/神兽名>
+//   &case=<案件 id>
+//   &route=<路线序号>    &hotspot=<神话热点名>
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(fn, tries = 30, gap = 60) {
+  for (let i = 0; i < tries; i++) {
+    try { if (fn()) return true; } catch (e) { /* 继续等 */ }
+    await sleep(gap);
+  }
+  try { return !!fn(); } catch (e) { return false; }
+}
+async function applyDeepLink() {
+  const params = new URLSearchParams(location.search);
+  // 1. 思想页先切宗派
+  const sect = params.get("sect");
+  if (sect && sect !== currentSect && SECT_META[sect]) {
+    await loadSect(sect);
+  }
+  // 2. 切 tab
+  const tab = params.get("tab");
+  if (tab) {
+    const tabBtn = document.querySelector(`.tab[data-page="${tab}"]`);
+    if (tabBtn) tabBtn.click();
+  }
+  // 3. 分类胶囊（books / artifacts / 神话 map 的路线联动）
+  const cat = params.get("cat");
+  if (cat) {
+    await waitFor(() => document.querySelector(`.sect-btn[data-era="${cat}"]`));
+    const btn = document.querySelector(`.sect-btn[data-era="${cat}"]`);
+    if (btn) btn.click();
+  }
+  // 4. 典籍卡片：打开指定书
+  const bookId = params.get("book");
+  if (tab === "books" && bookId) {
+    const ok = await waitFor(() => document.querySelector(`#books-scroll .book-card[data-id="${bookId}"]`));
+    if (ok) document.querySelector(`#books-scroll .book-card[data-id="${bookId}"]`).click();
+  }
+  // 5. 图鉴：打开指定器物/神兽（lightbox 放大）
+  const artName = params.get("name");
+  if (tab === "artifacts" && artName) {
+    const ok = await waitFor(() => {
+      const grid = document.getElementById("artifacts-grid");
+      return grid && [...grid.querySelectorAll("img")].some((im) => im.alt === artName);
+    });
+    if (ok) {
+      const im = [...document.querySelectorAll("#artifacts-grid img")].find((x) => x.alt === artName);
+      const cell = im && im.closest(".artifact-img");
+      if (cell) { cell.scrollIntoView({ block: "center", behavior: "instant" }); cell.click(); }
+    }
+  }
+  // 6. 公案：切到对应分类并高亮定位
+  const caseId = params.get("case");
+  if (tab === "cases" && caseId) {
+    const found = (bookData.cases || []).find((c) => c.id === caseId);
+    if (found && found.category) {
+      activeCaseCat = found.category;
+      renderCases();
+    }
+    const ok = await waitFor(() => document.querySelector(`.case-card[data-id="${caseId}"]`));
+    if (ok) {
+      const el = document.querySelector(`.case-card[data-id="${caseId}"]`);
+      el.scrollIntoView({ block: "start", behavior: "instant" });
+      el.style.outline = "2px solid #b03a2e";
+      setTimeout(() => { el.style.outline = ""; }, 3000);
+    }
+  }
+  // 7. 舆图：神话示意图热点 / 其他板块真实地图路线
+  const routeRaw = params.get("route");
+  const hotspot = params.get("hotspot");
+  if (tab === "map" && routeRaw !== null) {
+    const ri = parseInt(routeRaw, 10);
+    if (initialSect === "myth") {
+      // 切 tab 时默认会在 300ms 后打开路线0；等它渲染完
+      const btnsReady = await waitFor(() => document.querySelectorAll("#map-route-btns .route-btn").length);
+      if (!btnsReady) return;
+      const openHotspot = () => {
+        if (!hotspot) return;
+        const cfg = ROUTE_SCHEMATIC[ri] || ROUTE_SCHEMATIC[0];
+        const h = (cfg.hots || []).find((x) => x.name === hotspot);
+        if (h) showSchematicDetail(h);
+      };
+      if (ri === 0) {
+        // 默认 toggleRoute(0) 在 300ms 后触发，其内部 450ms 后自动弹首点卡片；
+        // 指定热点必须排在那之后再覆盖弹出
+        await waitFor(() => activeRoute === 0);
+        setTimeout(openHotspot, 900);
+      } else {
+        await sleep(360);
+        toggleRoute(ri);
+        setTimeout(openHotspot, 900);
+      }
+    } else {
+      // Leaflet 真实地图：切 tab 后默认 400ms 打开路线0
+      await waitFor(() => document.querySelectorAll("#map-route-btns .route-btn").length);
+      if (!Number.isNaN(ri)) {
+        await sleep(500);
+        if (activeRoute !== ri) toggleRoute(ri);
+      }
+    }
+  }
+}
+
 // 启动
-loadSect(currentSect);
+loadSect(currentSect).then(() => applyDeepLink()).catch(() => {});
 
 // 测试钩子（生产无害）：供自动化检查直接驱动地图渲染
 window.__guoxueMapTest = {

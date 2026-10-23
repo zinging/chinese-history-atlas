@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "chinese-history-atlas": {
+      "command": "node",
+      "args": [
+        "请替换为本机 history-mcp-server.mjs 的绝对路径，例如 D:/quant/chinese-history-atlas/web/tools/history-mcp-server.mjs"
+      ],
+      "env": {
+        "CHAT_BASE_URL": "http://127.0.0.1:5173/web/"
+      }
+    }
+  }
+}

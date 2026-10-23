@@ -1,6 +1,6 @@
-# 儿童交互层（Phase 2，web/）
+# 前端（web/）
 
-面向小学生的明朝历史学习前端，消费知识层 `data/` 数据。纯原生 HTML/CSS/JS，零构建依赖（地图底图使用本地化的 Leaflet + 在线 OpenStreetMap 瓦片）。
+纯原生 HTML / CSS / JS，零构建、零框架、零运行时依赖。地图库 Leaflet 本地化，字体走系统字体栈。
 
 ## 运行
 
@@ -9,50 +9,73 @@ node web/serve.mjs          # 默认 5173
 # 浏览器打开 http://127.0.0.1:5173/web/
 ```
 
-必须通过本地服务器打开（`fetch` 读取 `../data`，直接双击 HTML 会被浏览器 CORS 拦截）。
+必须通过本地服务器打开（前端用 `fetch` 读 `data/`，双击 HTML 会被 CORS 拦截）。端口占用时 `node web/serve.mjs 8080`。
 
-## 四个界面
+## 目录
+
+```
+web/
+├── index.html        主站壳：侧栏 + 帝王谱系 inline 面板 + 四个 iframe 面板
+├── app.js            帝王谱系全部逻辑（3429 行：数据加载、四页渲染、地图、侦探题库）
+├── style.css         主站样式（1313 行）
+├── search-core.js    检索核心（与 MCP Server 同规则）
+├── serve.mjs         本地静态服务器 + LLM 配置/对话代理 API
+├── modules.json      模块清单（唯一事实来源，见 MODULES.md）
+├── guoxue/           四个 iframe 子站共用一份代码
+│   ├── app.js        1479 行，靠 <body data-sect> 与 SECT_META 切换数据源
+│   ├── style.css     1049 行
+│   ├── index.html    思想源流（五流派 + 全部）
+│   ├── shici.html    诗词鉴赏（锁定诗文，无流派切换条）
+│   ├── gewu.html     格物致知（锁定格物）
+│   ├── myth.html     神话异志（锁定神话）
+│   └── smoke-map.mjs 子站地图数据层冒烟测试
+├── tools/            MCP Server、缩略图生成、结构守卫、数据校验
+└── vendor/           Leaflet 1.9.4 本地化
+```
+
+## 主站四个界面
 
 | 界面 | 说明 |
 |---|---|
-| 时间线首页 | 1368-1644 十六帝卡片横向滑动，点击展开详情 |
-| 皇帝详情页 | 画像位（Q 版 emoji）＋生平时间线＋趣味冷知识/争议话题/动手做三入口 |
-| 地图探索页 | Leaflet 底图（可缩放/平移）＋疆域边界（geojson 优先，回退手绘色块）＋城市点古今对照弹窗＋动画路线＋事件点 |
-| 历史侦探页 | 每周任务＋线索由知识库动态检索生成（带出处）＋孩子自主追问框＋创作保存 |
+| 帝王世系 | 七朝 77 帝卡片横向滑动，按朝代切换；点开是生平时间线、人物关系图、争议、趣闻 |
+| 悬案疑案 | 36 件八段式档案，按朝代与分类筛选 |
+| 舆图疆域 | Leaflet 底图 + 疆域 GeoJSON + 36 条路线动画 + 98 个事件点 + 古地名今址对照 |
+| 探案问史 | 77 道史论选择题（论证判断 / 因果链两类）+ 侦探案卷 + AI 老师配置 |
 
-## 历史侦探：线索动态检索
+## 子站四个界面
 
-线索不再硬编码。每个任务配置检索词（`queries`）与一个开放问题（`open`），由 `search-core.js` 在知识库实时检索生成，每条带出处。孩子还能在"追问框"里自己输入问题，实时查知识库（与 DSH 插件 `ming_search` 同规则）。检索模块单测：`node web/search-core.test.mjs`。
+四个子站结构相同：典籍/诗人卡片条、公案/悬案、图鉴（器物或神兽）、地图、问典。差异只在数据源与有没有流派切换条。
 
-## 地图策略（Leaflet 重绘，2026-10-05）
+- 思想源流有流派切换（儒 / 道 / 佛 / 诸子 / 理学心学 / 全部），地图是真实地理路线。
+- 诗词、格物、神话三个页面锁定单一数据集，`SECT_META` 仍保留完整定义。
+- 神话异志的地图是俯视工笔古舆图，不是 Leaflet 真实地图。
 
-- **底图：Leaflet + OpenStreetMap 瓦片**。`vendor/leaflet.js`（1.9.4，本地化，无 CDN 依赖）渲染真实海岸线/河流/城市名，支持滚轮缩放、拖动平移；历史图层叠加其上。需联网加载瓦片，离线时显示"地图组件未加载"提示（页面其余功能不受影响）。
-- **疆域边界**：`data/boundaries/<key>.geojson`（明/唐/元/清有，宋无）经 `L.geoJSON()` 渲染；文件不存在则该朝回退 `FALLBACK_SHAPES` 手绘示意色块。数据来源与许可见 [data/boundaries/README.md](../data/boundaries/README.md)。
-- **城市点古今对照**：应天（今南京）等 22 个点，点击弹窗显示故事。
-- **动画路线**：靖难之役南下、迁都北京等 9 条画在主图，郑和航线（国内段＋远洋段）单独按钮，点击动态绘制并展示途经点详情。
-- **事件点**：选中具体年号时显示该朝事件标记，点击弹事件详情。
-- 说明：历史疆域叠加现代底图必然有偏差，儿童示意策略不变。
+## 地图
 
-## 文件
+- **帝王谱系**：Leaflet + 高德矢量底图（`web/vendor/`，无 CDN）。边界走 `data/boundaries/<朝>.geojson`，缺失回退 `FALLBACK_SHAPES` 手绘色块。明、清、唐、元有 GeoJSON（16/10/12/12 要素），宋无。
+- **神话异志**：`data/portraits/myth-map/` 的俯视古舆图 + `index.json` 里按原著方位写死的热点坐标。
+- `buildMapData()` 只算数据，`renderMap()` 只管画，两者分离让数据层可以脱离 Leaflet 测试。
 
-- `index.html` 四页骨架
-- `style.css` 儿童向样式（大字体/圆角/暖色）
-- `app.js` 数据加载 + 渲染 + 交互（含 `window.__mingTest` 测试钩子；`buildMapData()` 为纯数据层，可脱离 Leaflet 测试）
-- `search-core.js` 检索核心（与插件 `ming_search` 同规则，历史侦探/追问框用）
-- `vendor/leaflet.js` + `vendor/leaflet.css` Leaflet 1.9.4（本地化）
-- `serve.mjs` 本地静态服务器
-- `smoke.mjs` 冒烟测试（mock DOM：四页渲染 + buildMapData 数据层）
-- `smoke-geo.mjs` 冒烟测试（GeoJSON 存在/缺失两条路径 + renderMap 全链路 L 桩）
-- `smoke-dynasties.mjs` 冒烟测试（五朝地图数据层各自正确）
-- `search-core.test.mjs` 检索核心单元测试
+## 模块清单
+
+侧栏按钮、面板显隐、iframe 懒加载全由 `modules.json` 驱动。新增模块、停用模块、用户侧开关的完整说明见 [MODULES.md](MODULES.md)。
 
 ## 测试
 
 ```bash
-node --check web/app.js
-node web/search-core.test.mjs   # 检索规则单测（与插件一致）
-node web/smoke.mjs              # 四页渲染 + 地图数据层（明）
-node web/smoke-geo.mjs          # 真实边界/回退两条路径 + renderMap 全链路
-node web/smoke-dynasties.mjs    # 五朝地图数据层
-node web/serve.mjs              # 起服务后浏览器人工验收
+node --check web/app.js                              # 语法
+node web/search-core.test.mjs                        # 检索规则
+node web/smoke.mjs                                   # 四页渲染 + 地图数据层
+node web/smoke-geo.mjs                               # 边界两条路径 + renderMap 全链路
+node web/smoke-dynasties.mjs                         # 各朝地图数据层
+node web/guoxue/smoke-map.mjs                        # 子站地图数据层
+node web/tools/history-mcp-server.mjs --selftest     # MCP 协议与数据链路
+node tools/validate-data.mjs                         # 数据完整性
+node web/tools/check-structure.mjs                   # HTML 结构守卫
 ```
+
+## 图片懒加载
+
+- 图鉴卡片走缩略图（`data/portraits/artifacts-thumb/`、`myth-map-thumb/`），点开才取原图，缺失自动回退。
+- 人物像与器物图 `loading="lazy"`。
+- JSON 按板块 + 分片加载，切到才 fetch；iframe 模块首次进入才设 `src`。
