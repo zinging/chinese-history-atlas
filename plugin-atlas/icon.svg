@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#fdf6e9"/>
+  <!-- 朱印：外框 -->
+  <rect x="10" y="10" width="44" height="44" rx="6" fill="none" stroke="#a8352a" stroke-width="2.5"/>
+  <!-- 三横：典籍的层叠感 -->
+  <path d="M19 24h26M19 32h26M19 40h26" stroke="#a8352a" stroke-width="2.2" stroke-linecap="round" opacity=".85"/>
+  <!-- 右侧竖笔：一笔书写的意象 -->
+  <path d="M45 20c3 6 3 18 0 24" stroke="#c0392b" stroke-width="2.6" stroke-linecap="round" fill="none" opacity=".7"/>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Chinese History Atlas",
+    "description": "Read-only MCP connector for the Chinese History Atlas site: five sections (emperors / thought / poetry / crafts / myth). The model can search, return deep links, and explain against in-site content."
+  }
+}

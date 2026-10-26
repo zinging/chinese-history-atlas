@@ -215,6 +215,11 @@ const server = createServer(async (req, res) => {
     }
 
     // ---- 静态文件 ----
+    // 本站标记：MCP 的探活靠它区分「端口是本项目服务」与「被其它程序占用」。
+    // 统一在静态响应前设置，覆盖首页、目录补斜杠后的 index.html 等所有分支；
+    // 只是响应头，不改变任何页面内容、渲染或前端交互。
+    res.setHeader('X-DSH-Atlas', '1');
+
     // 根路径优先返回仓库根的 index.html（跳转页）；本地没有该文件时才回退到 /web/。
     // 这样本地与 GitHub Pages 行为一致——线上没有把 / 改写成 /web/ 的逻辑，
     // 若本地强制改写，根目录的跳转页就永远测不到。
@@ -289,6 +294,16 @@ const server = createServer(async (req, res) => {
     res.writeHead(500);
     res.end('Server Error');
   }
+});
+
+// 端口被占用时明确报错退出：MCP 的 session_start 依赖这条信息判断「是本站占了端口」还是「别的程序占了」
+server.on('error', (e) => {
+  if (e.code === 'EADDRINUSE') {
+    console.error(`端口 ${PORT} 已被占用。换端口：node web/serve.mjs 8080`);
+    process.exit(2);
+  }
+  console.error('服务启动失败：' + (e && e.message || e));
+  process.exit(1);
 });
 
 server.listen(PORT, () => {

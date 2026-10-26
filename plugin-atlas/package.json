@@ -1,0 +1,26 @@
+{
+  "name": "@chinese-history/atlas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Chinese History Atlas · 中华历史图谱 AI 讲解员（MCP 连接器）",
+  "icon": "./icon.svg",
+  "exports": {
+    ".": "./index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "icon.svg",
+    "cordis.patch.yml",
+    "locale/*.json"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "MIT"
+}

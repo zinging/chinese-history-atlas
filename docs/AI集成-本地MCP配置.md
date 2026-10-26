@@ -1,7 +1,9 @@
-# 豆包 / MCP 客户端接入说明（本地 STDIO）
+# MCP 客户端接入说明（本地 STDIO）
 
 本站内置一个零依赖的本地 MCP Server：`web/tools/history-mcp-server.mjs`（当前 v1.2.0，15 个只读工具）。
-配置后，AI 助手可以直接检索站点的全部结构化数据（77 帝、76 案、典籍、器物、神兽、舆图热点、诗路、选择题等），
+豆包、DSH（DeepSeek Harness）、Cursor、Claude Desktop 等支持 STDIO MCP 的客户端都能接入。
+
+接入后，AI 助手可以直接检索站点的全部结构化数据（77 帝、76 案、典籍、器物、神兽、舆图热点、诗路、选择题等），
 并在回答中给出**可点击的深链**，一键跳转到站内对应页面（皇帝卡、悬案、地图事件、典籍、神兽、舆图热点等）。
 
 > 架构理念：**前端是展厅，AI 是讲解员**。AI 只读站内数据、不联网；讲解在对话框，图鉴、古舆图、时间线等可视化仍在网页里打开。
@@ -10,9 +12,9 @@
 
 1. 已安装 Node.js（18 及以上，命令行 `node -v` 可用）。
 2. **本地服务零命令启动**：MCP 提供 `session_start` 开场工具，AI 新会话开场调用它即可——工具会自己探活 `http://127.0.0.1:5173/web/`，
-   若未运行则**由 MCP 进程自己在后台拉起** `node web/serve.mjs`（脱离 MCP 进程独立存活，实测探活约 0.8 秒）。AI 全程不需要执行任何命令、不需要知道项目路径；
-   只有当浏览器确实打不开页面时，才使用返回里的 `fallback_windows` / `fallback_unix` 兜底命令。
-3. 人工备用：双击项目根目录 `启动网站.bat`，或执行 `npm start`（即 `node web/serve.mjs`）。
+   若未运行则**由 MCP 进程自己在后台拉起** `node web/serve.mjs`（脱离 MCP 进程独立存活，实测探活约 0.8 秒）。
+   端口被别的程序占用时，工具会返回 `port_taken` 并给出换端口办法——AI 不需要、也不应该自己查端口、查进程。
+3. 人工备用：双击项目根目录 `服务管理.bat`（前台运行、关闭窗口即停服务，便于看日志），或执行 `npm start`（即 `node web/serve.mjs`）。
 
 ## 二、一键生成连接器配置（推荐，跨机器/跨平台）
 
@@ -54,16 +56,50 @@
 
 AI 进入会话后自动执行一次：
 
-1. 调用 `session_start`（工具自动探活、必要时自启动站点，返回 `ready`、`home_url`、`project_root`、`next_action`）；
-2. `ready=true` 时，**直接**在右侧内置浏览器导航到 `home_url`（`http://127.0.0.1:5173/web/`），不执行任何命令；
-3. 回复一句「站点已就绪，可以开始提问」并待命；
-4. 只有 `ready=false` 或浏览器打不开页面时，才执行 `fallback_windows` / `fallback_unix` 里的兜底命令。
+1. 调用 `session_start`。探活、按需启动、端口占用判定全部在 MCP 进程内完成，工具直接返回结论（`status`、`ready`、`home_url`、`status_note`）；
+2. `ready=true` 时，把 `home_url` 作为**可点击链接**发给用户，并说一句「站点已就绪，可以开始提问」；
+3. `ready=false` 时，把 `status_note` 与 `fix` 如实转述给用户，等用户处理后再复检一次。
 
-服务端指令明确禁止搜索硬盘、查进程、改 hosts、测 DNS、拼路径；若模型在调用 `session_start` 之前先调用其他工具，
-结果会自动前置「请先执行开场流程、禁止搜索硬盘或自行查找项目路径」的提醒。
+模型**不执行任何命令行**。`session_start` 的返回里不含任何探活或启动命令——这是刻意的设计，把确定性步骤收进工具内部，避免模型自由发挥。
 
-> 关于「每个人项目路径不同」：路径由 MCP 进程按自身文件位置自动解析（`project_root`），跨机器、跨工作目录均不依赖任何硬编码；
-> 连接器配置仅需一次绝对路径（由 `npm run mcp:install` 自动生成），或直接使用项目根 `.mcp.json` 的相对路径。
+三种状态：
+
+| status | 含义 | 模型该做什么 |
+|---|---|---|
+| `running` | 服务已在运行，且响应头确认是本站 | 给链接，待命 |
+| `started_by_mcp` | 原本未运行，本工具已后台拉起并通过探活 | 给链接，待命 |
+| `port_taken` | 端口被别的程序占用（响应头没有本站标记 `X-DSH-Atlas`） | 转述占用情况与换端口办法 |
+| `start_failed` | 拉起后仍不通 | 转述 `fix` 里那一条命令，让用户自己执行 |
+
+> 关于「每个人项目路径不同」：路径由 MCP 进程按自身文件位置自动解析（`project_root`），跨机器、跨工作目录均不依赖任何硬编码。
+
+## 三之二、DSH（DeepSeek Harness）接入
+
+DSH 的 MCP 配置写在 profile 的 `cordis.patch.yml` 里，不走 `.mcp.json`。安装器直接写入该文件，无需手工粘贴：
+
+```bash
+node web/tools/install-dsh.mjs              # 安装（幂等：已存在则更新路径）
+node web/tools/install-dsh.mjs --check      # 只检查，不写入
+node web/tools/install-dsh.mjs --uninstall  # 移除本项目的条目
+node web/tools/install-dsh.mjs --port 8080  # 换端口
+```
+
+写入位置 `$DSH_HOME/profiles/<profile>/cordis.patch.yml`（默认 profile 为 `desktop`，默认端口 5173）。安装器会：
+
+- 写前自动备份为 `cordis.patch.yml.bak-before-atlas-<时间戳>`；
+- 只增删本项目 `id: chinese-history-atlas` 那一条，不碰其它配置；
+- 写入后复核「条目恰好一份、transport/serverName/路径正确、文件未被截断」，任一不通过立即从备份还原并报错。
+
+装完重启 DSH，新建会话即可。工具以 `mcp__atlas__session_start` 这样的名字出现。
+
+### 关于「AI 自动打开右侧浏览器」
+
+当前 DSH 的右侧浏览器（`dsh-client-ui-sidebar-browser`）**不向模型注册任何工具**——它是用户侧呈现状态。所以模型无法自己把页面推到右侧窗口，本连接器的做法是：
+
+- 模型给出可点击的深链（`http://127.0.0.1:5173/web/index.html?page=...`），用户点一下即在右侧打开并定位；
+- 页面内的深链路由（`web/app.js` 与 `web/guoxue/app.js` 的 `applyDeepLink()`）负责切朝代、展开皇帝卡、弹出案件、定位地图事件。
+
+已验证的深链行为：皇帝深链会切到对应朝代并展开该帝详情；地图事件深链会定位地图、弹出事件卡并展开对应路线。 
 
 ## 四、工具清单（15 个，只读）
 
@@ -115,8 +151,8 @@ AI 进入会话后自动执行一次：
 
 1. `server/discover` 与 `initialize` 握手均返回完整开场指令；
 2. 连接器的 **提示词模板（prompts）** 里有两个可点击模板：
-   - 「开场：打开中华历史图谱」——新会话点一下，模型必走 `session_start` → 打开首页 → 待命；
-   - 「按站内内容讲解」——填入话题（如「土木堡之变」），自动锁定「只检索站内、深链定位、再讲解」。
+   - 「开场：打开中华历史图谱」——新会话点一下，模型必走 `session_start` → 给出首页链接 → 待命；
+   - 「按站内内容讲解」——填入话题（如「土木堡之变」），自动锁定「只检索站内、给深链、再讲解」。
 3. 若模型在 `session_start` 之前调用任何其他工具，结果会自动前置开场提醒。
 
 若所用客户端不渲染提示词模板、模型仍先翻硬盘，把下面这段作为**新会话的第一句话**发给它（一次性、确定性约束）：

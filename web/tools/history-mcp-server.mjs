@@ -38,41 +38,82 @@ function dlog(msg) {
   try { fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`, 'utf8'); } catch { /* 忽略 */ }
 }
 
-// ---------- 本地站点探活与自动拉起（由 MCP 进程自己完成，AI 无需执行任何命令） ----------
+// ---------- 本地站点探活与自动拉起（全部由 MCP 进程完成，AI 不需要执行任何命令） ----------
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** 探活。返回 { up, own }：own=true 表示响应头带本站标记，说明端口是本站服务。 */
 async function probeSite(timeoutMs = 1500) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(LOCAL_BASE, { signal: ctrl.signal });
-    return res.status >= 200 && res.status < 500;
-  } catch { return false; }
+    if (res.status < 200 || res.status >= 500) return { up: false, own: false };
+    return { up: true, own: res.headers.get('x-dsh-atlas') === '1' };
+  } catch { return { up: false, own: false }; }
   finally { clearTimeout(timer); }
 }
+
 // 同一 STDIO 进程内只尝试拉起一次，避免重复 spawn
 let mcpSpawnedServer = false;
+
+/**
+ * 确保本地服务可用。返回结构化结论，模型只读结论、不跑命令：
+ *   running        已在运行且确认为本站
+ *   started_by_mcp 原本未运行，已由本工具后台拉起并探活通过
+ *   port_taken     端口被其它程序占用（会给出占用方线索与换端口办法）
+ *   start_failed   拉起后仍不通，附最后一段错误输出
+ */
 async function ensureLocalServer() {
-  if (await probeSite()) return 'running';
+  const first = await probeSite();
+  if (first.up && first.own) return { state: 'running' };
+  if (first.up && !first.own) {
+    return {
+      state: 'port_taken',
+      detail: '端口有服务在响应，但响应头没有本站标记，很可能不是本项目的服务。',
+      fix: `换一个端口后重新连接：设置环境变量 CHAT_BASE_URL=http://127.0.0.1:<端口>/web/ 再拉起本 MCP Server；或先停掉占用该端口的程序。`,
+    };
+  }
+
   const servePath = path.join(ROOT, 'web', 'serve.mjs');
   let port = '';
   try { const u = new URL(LOCAL_BASE); if (u.port && u.port !== '5173') port = u.port; } catch { /* 默认端口 */ }
   const args = port ? [servePath, port] : [servePath];
+
   if (!mcpSpawnedServer) {
+    mcpSpawnedServer = true;
     try {
-      const child = spawn(process.execPath, args, {
-        cwd: ROOT, detached: true, stdio: 'ignore', windowsHide: true,
-      });
+      // 用 pipe 捕获 stderr：端口占用时 serve.mjs 会以 exit code 2 退出并打印原因，
+      // 这样 MCP 能把「端口被占」这个确定性结论直接告诉模型，而不是让它自己排查。
+      const child = spawn(process.execPath, args, { cwd: ROOT, detached: true, stdio: ['ignore', 'ignore', 'pipe'] });
+      let err = '';
+      child.stderr.on('data', (c) => { err += String(c); if (err.length > 2000) err = err.slice(-2000); });
       child.on('error', (e) => dlog('自启动站点失败: ' + e.message));
+      child.on('exit', (code) => dlog('自启动的站点退出 code=' + code + ' ' + err.slice(0, 300)));
       child.unref();
-      mcpSpawnedServer = true;
       dlog('已由 MCP 自动拉起本地站点: ' + process.execPath + ' ' + args.join(' '));
-    } catch (e) { dlog('spawn 异常: ' + e.message); }
+    } catch (e) {
+      dlog('spawn 异常: ' + e.message);
+      return { state: 'start_failed', detail: '无法启动本地服务进程：' + e.message };
+    }
   }
-  for (let i = 0; i < 8; i++) {
+
+  for (let i = 0; i < 10; i++) {
     await sleep(700);
-    if (await probeSite()) return 'started_by_mcp';
+    const r = await probeSite();
+    if (r.up && r.own) return { state: 'started_by_mcp' };
+    if (r.up && !r.own) {
+      return {
+        state: 'port_taken',
+        detail: '启动过程中端口被其它程序占用。',
+        fix: '换端口后重新拉起本 MCP Server：CHAT_BASE_URL=http://127.0.0.1:<端口>/web/',
+      };
+    }
   }
-  return 'start_failed';
+  return {
+    state: 'start_failed',
+    detail: '已尝试拉起本地服务，但连续探活仍失败。',
+    fix: '手动执行一条命令确认：node ' + args.join(' '),
+  };
 }
 
 // ---------- 基础工具 ----------
@@ -483,6 +524,42 @@ function tGetRoute({ module, sect, route }) {
   if (module === 'emperors') {
     // 帝王舆图：返回指定朝代（默认全部）的路线与事件
     const dyns = sect ? [sect] : DYNASTIES;
+    // 单条路线：按 id 或名称命中（与 myth 分支同一套语义）
+    if (route !== undefined && route !== null) {
+      const key = norm(route);
+      for (const d of dyns) {
+        const b = loadDynasty(d);
+        const hit = (b.routes || []).find((r) =>
+          norm(r.id) === key
+          || norm(r.name).includes(key)
+          || (r.keywords || []).some((k) => norm(k) === key || norm(k).includes(key))
+          || (r.points || []).some((p) => norm(p.name) === key || norm(p.title || '') === key));
+        if (hit) {
+          return {
+            dynasty: d,
+            dynasty_label: DYNASTY_LABEL[d],
+            route: {
+              ...hit,
+              points: (hit.points || []).map((p) => ({
+                ...p,
+                ...deepLink(`index.html?page=map&dynasty=${d}&route=${enc(hit.id)}`),
+              })),
+            },
+            ...deepLink(`index.html?page=map&dynasty=${d}&route=${enc(hit.id)}`),
+          };
+        }
+      }
+      // 未命中：回退到清单，并明确说明（避免模型以为没有数据）
+      const avail = [];
+      for (const d of dyns) {
+        (loadDynasty(d).routes || []).forEach((r) => avail.push(`${d}/${r.id}`));
+      }
+      return {
+        matched: false,
+        query: route,
+        hint: `没有id或名称为「${route}」的路线。可用路线 id：${avail.join(', ')}`,
+      };
+    }
     const out = {};
     for (const d of dyns) {
       const b = loadDynasty(d);
@@ -616,6 +693,22 @@ function buildSearchDocs() {
     for (const ev of b.mapEvents || []) {
       add('emperors', '地图事件', ev.name, JSON.stringify(ev), ev.summary || ev.note,
         deepLink(`index.html?page=map&dynasty=${d}&event=${enc(ev.eventId || ev.id)}`).url);
+    }
+    // 帝王路线（靖难/郑和/土木堡……）：整条导览 + 逐站都建索引，
+    // 命中后直接打开讲解员导览（step 精确到某一站）
+    for (const r of b.routes || []) {
+      const tourBase = `index.html?page=map&dynasty=${d}&route=${enc(r.id)}`;
+      const routeText = [r.name, r.year, r.desc, r.intro,
+        (r.keywords || []).join(' '),
+        (r.points || []).map((p) => `${p.name} ${p.title || ''} ${p.narrate || p.note || ''}`).join(' ')]
+        .filter(Boolean).join(' ');
+      add('emperors', '路线导览', r.name, routeText,
+        r.intro || r.desc, deepLink(`${tourBase}&step=0&autoplay=0&muted=1`).url);
+      (r.points || []).forEach((p, i) => {
+        const txt = [r.name, p.name, p.modern, p.title, p.date, p.narrate, p.note, (r.keywords || []).join(' ')].filter(Boolean).join(' ');
+        add('emperors', '导览站点', `${p.title || p.name}（${r.name}）`, txt,
+          p.narrate || p.note || '', deepLink(`${tourBase}&step=${i}&autoplay=0&muted=1`).url);
+      });
     }
   }
   // 国学板块：典籍 / 公案 / 神兽器物 / 路线 / 问典
@@ -758,63 +851,75 @@ function tSearch({ q, module, limit }) {
 }
 
 // ---------- 工具清单 ----------
+/**
+ * 开场：把「服务是否可用」这个确定性问题在本进程内解决完，只把结论交给模型。
+ * 这里刻意不返回任何命令行——模型不需要、也不应该执行命令。
+ */
 async function tSessionStart() {
-  const servePath = path.join(ROOT, 'web', 'serve.mjs');
-  const batPath = path.join(ROOT, '启动网站.bat');
   const status = await ensureLocalServer();
-  const fallback = {
-    fallback_windows: [
-      '仅当右侧内置浏览器打不开 home_url 时才执行（PowerShell）：',
-      `1. 探活：try { (Invoke-WebRequest -Uri '${LOCAL_BASE}' -UseBasicParsing -TimeoutSec 3).StatusCode } catch { 'DOWN' }`,
-      `2. 若为 DOWN 才后台启动：Start-Process -FilePath node -ArgumentList '${servePath}' -WorkingDirectory '${ROOT}' -WindowStyle Hidden；2 秒后重复探活直到 200。`,
-      `3. 再在右侧内置浏览器导航到 ${LOCAL_BASE}（禁止运行 ${batPath}，它会另开外部浏览器）。`,
-    ],
-    fallback_unix: [
-      '仅当右侧内置浏览器打不开 home_url 时才执行（shell）：',
-      `1. 探活：curl -s -o /dev/null -w '%{http_code}' '${LOCAL_BASE}'`,
-      `2. 若输出 000 才后台启动：nohup node '${servePath}' >/dev/null 2>&1 &；sleep 2 后重复探活直到 200。`,
-      `3. 再在右侧内置浏览器导航到 ${LOCAL_BASE}。`,
-    ],
+  const base = {
+    site_name: '中华历史图谱',
+    project_root: ROOT,
+    server_script: path.join(ROOT, 'web', 'serve.mjs'),
+    local_base_url: LOCAL_BASE,
   };
-  if (status === 'running' || status === 'started_by_mcp') {
+
+  if (status.state === 'running' || status.state === 'started_by_mcp') {
     return {
-      status,
-      site_name: '中华历史图谱',
-      home_url: LOCAL_BASE,
-      project_root: ROOT,
-      server_script: servePath,
+      ...base,
       ready: true,
-      status_note: status === 'started_by_mcp'
-        ? '本地服务原本未运行，已由本工具（MCP）自动在后台启动并探活通过。'
-        : '本地服务已在运行并探活通过。',
-      next_action: `无需执行任何命令行。直接在你右侧的内置浏览器窗口导航到 ${LOCAL_BASE}，然后回复用户「站点已就绪，可以开始提问」并静默等待提问。`,
-      ...fallback,
+      status: status.state,
+      status_note: status.state === 'started_by_mcp'
+        ? '本地服务原本未运行，已由本工具在后台自动启动，探活通过。'
+        : '本地服务已在运行，探活通过。',
+      home_url: LOCAL_BASE,
+      next_action: [
+        '站点已就绪。请把下面这个地址作为可点击链接回复用户（用户点击即可在右侧浏览器打开）：',
+        LOCAL_BASE,
+        '然后说一句「站点已就绪，可以开始提问」，静默等待提问。不要执行任何命令。',
+      ].join('\n'),
       rules: [
-        '不要搜索硬盘、查找项目目录、解析 hosts、测试 DNS、查端口占用、查进程（Get-Process/ps）——项目路径、网址本工具已全部给出，直接使用。',
-        '只有右侧内置浏览器打不开 home_url 时，才允许执行 fallback_windows / fallback_unix 中的命令。',
-        '禁止运行 启动网站.bat（会另开外部浏览器）；禁止重复启动服务。',
+        '本工具已完成探活与启动，你不需要执行任何命令行。',
+        '不要搜索硬盘、查找项目目录、查 hosts / DNS、查端口占用、查进程——路径与网址都在本返回里。',
+        '禁止运行 服务管理.bat：它以前台窗口方式启动服务，并会另开系统浏览器，破坏右侧浏览器内的统一体验。',
+        '你只需把 home_url 作为可点击链接发给用户，不要自己尝试打开浏览器。',
       ],
     };
   }
+
+  if (status.state === 'port_taken') {
+    return {
+      ...base,
+      ready: false,
+      status: 'port_taken',
+      status_note: status.detail,
+      home_url: LOCAL_BASE,
+      fix: status.fix,
+      next_action: [
+        '把结论如实告诉用户：端口被其它程序占用，站点未能启动。',
+        '给出上面 fix 字段里的换端口办法，等用户处理后再调用一次 session_start 复检。',
+        '不要自己尝试查端口、查进程或改系统配置。',
+      ].join('\n'),
+    };
+  }
+
   return {
-    status: 'start_failed',
-    site_name: '中华历史图谱',
-    home_url: LOCAL_BASE,
-    project_root: ROOT,
-    server_script: servePath,
+    ...base,
     ready: false,
-    status_note: '本工具自动启动本地服务后探活仍失败（可能是运行环境网络隔离）。请按 fallback 中的命令在宿主系统执行。',
-    next_action: '按当前操作系统选择 fallback_windows 或 fallback_unix 逐步执行；服务探活通过后再在右侧内置浏览器打开 home_url。',
-    ...fallback,
-    rules: [
-      '只允许执行 fallback 中的探活与启动命令；禁止搜索硬盘、解析 hosts、测试 DNS、查端口占用、查进程。',
-      '禁止运行 启动网站.bat（会另开外部浏览器）。',
-    ],
+    status: 'start_failed',
+    status_note: status.detail,
+    home_url: LOCAL_BASE,
+    fix: status.fix,
+    next_action: [
+      '把结论如实告诉用户：本地服务未能自动启动。',
+      '给出上面 fix 字段里的一条命令，让用户自行执行；执行完再调用一次 session_start 复检。',
+      '不要自己反复尝试启动或排查环境。',
+    ].join('\n'),
   };
 }
 
 const TOOLS = [
-  { name: 'session_start', description: '【每次会话开场必须第一个调用】本工具会自动探活本地站点，未运行时由本工具直接在后台拉起（无需你执行任何命令），并返回可直接在右侧内置浏览器打开的首页地址。调用后按 next_action 导航并待命；你永远不需要自己搜索或拼接项目路径。',
+  { name: 'session_start', description: '【每次会话开场必须第一个调用】本工具会自动探活本地站点，未运行时由本工具直接在后台拉起（无需你执行任何命令），并返回可直接打开或分享的首页地址。调用后按 next_action 把链接给用户并待命；你永远不需要自己搜索或拼接项目路径。',
     inputSchema: { type: 'object', properties: {} },
     run: () => tSessionStart() },
   { name: 'list_modules', description: '列出站点全部五个学习板块（帝王谱系/思想源流/诗词鉴赏/格物致知/神话异志）及其数据规模与入口。不确定内容归属时先调用本工具。',
@@ -909,16 +1014,16 @@ const TOOLS = [
 // 开场提示词模板（MCP prompts）：客户端 UI 中可点击，强制锁定正确开场
 const OPENING_PROMPT = [
   '你已连接「中华历史图谱」连接器，请严格按以下顺序执行，不要跳过：',
-  '1. 立即调用 session_start 工具。它会自动探活并启动本地站点，你不需要、也不允许执行任何命令行，不允许搜索硬盘、查找项目目录、查 hosts 或 DNS、查进程。',
-  '2. 拿到返回后，在右侧内置浏览器打开返回的 home_url。',
-  '3. 回复「站点已就绪，可以开始提问」并等待，不要主动讲解。',
-  '之后我的所有问题，只能用连接器的 15 个工具检索站内数据回答，禁止联网搜索或浏览外部网页；回答时先用工具返回的 url 在右侧浏览器定位对应页面，再对照数据讲解。',
+  '1. 立即调用 session_start 工具。它会自己探活、必要时自己在后台拉起本地站点，并把结论返回给你。你不需要、也不允许为此执行任何命令行。',
+  '2. 若返回 ready=true：把返回的 home_url 作为可点击链接发给用户（用户点击即可在右侧浏览器打开），并说一句「站点已就绪，可以开始提问」，然后静默等待。',
+  '3. 若返回 ready=false：把 status_note 与 fix 如实告诉用户，等用户处理后再调用一次 session_start。',
+  '之后我的所有问题，只能用连接器的只读工具检索站内数据回答，禁止联网搜索或浏览外部网页；把返回的 url 作为可点击深链发给用户，再对照数据讲解。',
 ].join('\n');
 
 const PROMPTS = [
   {
     name: '开场：打开中华历史图谱',
-    description: '新会话点此开场：自动启动本地站点并在右侧浏览器打开首页（无需任何命令行与路径）',
+    description: '新会话点此开场：自动启动本地站点并给出首页链接（无需任何命令行与路径）',
     arguments: [],
   },
   {
@@ -930,34 +1035,32 @@ const PROMPTS = [
 
 // 服务端指令：握手时通过 instructions 字段下发给客户端模型，约束其行为
 const SERVER_INSTRUCTIONS = [
-  '你是「中华历史图谱」国学站点的 AI 讲解员。该站点是一个纯静态中国历史与国学可视化网站，包含帝王谱系、思想源流、诗词鉴赏、格物致知、神话异志五大板块。',
-  '【开场 SOP——进入会话后第一个动作，无需用户要求，只做一次】',
-  '1. 立即调用 session_start 工具。它会自己探活、未运行时自己在后台拉起站点，你不需要执行任何命令行。',
-  '2. 拿到返回后：若 ready=true，直接在右侧内置浏览器导航到返回的 home_url，然后告诉用户"站点已就绪，可以开始提问"，随后静默等待；只有 ready=false（或浏览器确实打不开 home_url）时，才允许执行返回里的 fallback_windows / fallback_unix 命令。',
-  '3. 严禁搜索硬盘、查找项目目录、解析 hosts、测试 DNS、检查端口占用、读系统配置、Get-Process/ps 查进程——项目路径（project_root）与网址都在 session_start 返回里，直接使用。严禁运行 启动网站.bat（会另开外部浏览器），统一用右侧内置浏览器。',
-  '【回答问题 SOP——用户每次提问都严格按此顺序】',
-  '第1步：调用工具拿数据。检索类问题先 search；单个人物用 get_emperor；案件悬案用 get_case；书籍/诗人用 get_book；神兽器物用 get_artifact；地图与舆图路线用 get_route。',
-  '第2步：每个结果里的 url 字段就是一个完整的、可以直接打开的 http://127.0.0.1:5173/... 地址（它不是字段名、不是域名，不要把它当作主机名解析）。在右侧内置浏览器直接导航到该 url（页面会自动定位到皇帝卡片/案件弹窗/地图事件/舆图热点）；若无法操作浏览器，再把完整 url 原样给用户点击。',
-  '第3步：对照工具返回的 JSON 数据做讲解：来龙去脉、因果背景、人物动机、历史意义。',
+  '你是「中华历史图谱」站点的 AI 讲解员。该站点是一个纯静态中国历史与国学可视化网站，包含帝王谱系、思想源流、诗词鉴赏、格物致知、神话异志五大板块。',
+  '【开场 SOP——进入会话后的第一个动作，无需用户要求，只做一次】',
+  '1. 立即调用 session_start。它会在服务端完成探活与按需启动，只把结论返回给你。你不需要执行任何命令行。',
+  '2. ready=true：把返回的 home_url 作为可点击链接发给用户（用户点击即可在右侧浏览器打开），并说一句「站点已就绪，可以开始提问」，随后静默等待。',
+  '3. ready=false：把 status_note 与 fix 原样告诉用户，等用户处理后再调用一次 session_start。',
+  '【其他问题 SOP】',
+  '检索类问题先 search；单个人物用 get_emperor；案件悬案用 get_case；书籍/诗人用 get_book；神兽器物用 get_artifact；地图与舆图概览用 get_route。把结果里的 url 作为可点击深链发给用户，然后对照 JSON 讲解。',
   '【禁止事项】',
-  'A. 禁止联网搜索、网页浏览去检索或补充本站相关事实；禁止引用维基百科、百科、新闻网页。工具没返回的内容，直接说"站点暂未收录"。',
-  'B. 禁止自行编写/生成 HTML、地图或任何替代站点页面的产物。',
-  'C. 禁止在浏览器中打开任何外部网站，只访问 127.0.0.1:5173 与工具返回的 url。',
-  'D. 图片字段 thumb 是对话内展示图，full 是原图链接；不要输出 base64。',
-  'E. 只有用户明确说要把链接分享给别人时，才用 online_url（GitHub Pages 在线地址）。',
+  'A. 禁止搜索本地文件、硬盘、项目目录、hosts/DNS、端口、进程；站点已经在运行，网址都在工具返回里，找不到内容就再调工具，不要翻文件系统。',
+  'B. 禁止联网搜索或浏览外部网页来检索、补充本站相关事实；禁止引用维基百科、百科、新闻网页。工具没返回的内容，直接说「站点暂未收录」。',
+  'C. 禁止自行编写 HTML、地图或任何替代站点页面的产物。',
+  'D. 只打开工具返回的 127.0.0.1 地址，不要打开外部网站。图片字段 thumb 用于对话内展示，full 是原图链接；不要输出 base64。',
+  'E. 只有用户明确要把链接分享给别人时，才用 online_url（GitHub Pages 在线地址）。',
   '【其他】涉及演义小说（《三国演义》《西游记》《封神演义》《聊斋志异》等）保留数据中的出处标注，不与正史混淆；默认使用简体中文。',
 ].join('\n');
 
 // 每条工具结果开头的强制提醒（模型对刚读到的工具内容关注度最高，写在这里比握手 instructions 更有效）
 const RESULT_REMINDER = [
-  '【下一步操作指引·立即执行】',
-  '1. 以上 JSON 就是「中华历史图谱」站内人工整理的权威内容，是回答本题的唯一事实来源，禁止再联网搜索、浏览网页或执行命令行排查。',
-  '2. 下面每条结果的 url 字段都是一个完整的、可以直接打开的 http://127.0.0.1:5173/... 地址：若能操作浏览器，立即在右侧内置浏览器导航到该 url；否则把完整 url 原样给用户点击。',
-  '3. 页面打开后，再对照 JSON 内容进行讲解。',
+  '【下一步操作指引】',
+  '1. 以上 JSON 是「中华历史图谱」站内人工整理的权威内容，是回答本题的唯一事实来源。禁止联网搜索、浏览网页、搜索本地文件或执行命令行排查。',
+  '2. 把结果中的 url 字段作为可点击深链发给用户，打开后页面会定位到对应条目。',
+  '3. 讲解必须落在返回的字段上；返回里没有的内容，说「站点暂未收录」。',
 ].join('\n');
 
 // 模型跳过开场流程时的附加提醒
-const NOT_STARTED_REMINDER = '【提醒：你还没有执行开场流程】请立即先调用 session_start 工具（它会自动探活并启动本地服务，无需执行任何命令），然后在右侧内置浏览器打开返回的 home_url，再处理本问题。禁止搜索硬盘或自行查找项目路径。';
+const NOT_STARTED_REMINDER = '【提醒：你还没有执行开场流程】请先调用 session_start（它会自己探活并在需要时启动本地服务，你不需要执行任何命令），把返回的 home_url 作为可点击链接发给用户，再处理本问题。';
 
 // ---------- JSON-RPC over STDIO ----------
 function rpcResult(id, result) {
@@ -976,7 +1079,7 @@ async function handle(msg) {
     return rpcResult(id, {
       protocolVersion: '2024-11-05',
       capabilities: { tools: { listChanged: false }, prompts: { listChanged: false } },
-      serverInfo: { name: 'chinese-history-atlas', version: '1.2.0' },
+      serverInfo: { name: 'chinese-history-atlas', version: '1.3.0' },
       instructions: SERVER_INSTRUCTIONS,
     });
   }
@@ -1005,7 +1108,7 @@ async function handle(msg) {
     }
     if (pname === '按站内内容讲解') {
       const topic = (params && params.arguments && params.arguments['话题']) || '（请在此填入话题）';
-      const text = OPENING_PROMPT + `\n\n现在请讲解：${topic}\n要求：先用 search 等工具检索，再用结果中的 url 在右侧内置浏览器定位对应页面，然后对照返回的 JSON 数据讲解；工具未收录的内容直接说「站点暂未收录」，禁止联网补充。`;
+      const text = OPENING_PROMPT + `\n\n现在请讲解：${topic}\n要求：先用 search 等工具检索；把返回的 url 作为可点击深链发给用户（打开即定位到对应条目）；再对照返回的 JSON 数据讲解。工具未收录的内容直接说「站点暂未收录」，禁止联网补充。`;
       return rpcResult(id, {
         description: '仅用连接器数据讲解：' + topic,
         messages: [{ role: 'user', content: { type: 'text', text } }],

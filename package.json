@@ -11,7 +11,10 @@
     "start": "node web/serve.mjs",
     "mcp": "node web/tools/history-mcp-server.mjs",
     "mcp:selftest": "node web/tools/history-mcp-server.mjs --selftest",
-    "mcp:install": "powershell -ExecutionPolicy Bypass -File web/tools/install-mcp.ps1"
+    "mcp:install": "powershell -ExecutionPolicy Bypass -File web/tools/install-mcp.ps1",
+    "mcp:install:dsh": "node web/tools/install-dsh.mjs",
+    "mcp:check:dsh": "node web/tools/install-dsh.mjs --check",
+    "mcp:uninstall:dsh": "node web/tools/install-dsh.mjs --uninstall"
   },
   "engines": {
     "node": ">=18"
