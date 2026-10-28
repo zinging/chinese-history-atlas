@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中国历史图谱 · Chinese History Atlas</title>
-<link rel="stylesheet" href="style.css?v=gapp">
+<link rel="stylesheet" href="style.css?v=gapp2">
 </head>
 <body>
 <div id="global-loader">
@@ -46,6 +46,38 @@
         </p>
         <div id="modules-list" class="modules-list"></div>
         <button class="create-save modules-reset" id="modules-reset">恢复全部模块</button>
+      </div>
+    </div>
+
+    <!-- 导览设置：朗读 / 文本推进两个开关，默认全关；关闭后页面回到纯静态浏览 -->
+    <div class="mega-support">
+      <button class="support-btn" id="guide-btn" aria-haspopup="true" aria-expanded="false" title="导览设置">
+        <span class="support-icon">🔊</span><span>导览设置</span>
+      </button>
+      <div class="support-pop hidden" id="guide-pop" role="dialog" aria-label="导览设置">
+        <div class="support-pop-head">
+          <span class="support-pop-star">🔊</span>
+          <b>导览设置</b>
+          <button class="support-pop-close" id="guide-close" aria-label="关闭">✕</button>
+        </div>
+        <p class="support-pop-text">
+          默认全关：页面就是普通的静态网页。开启后，讲解链接会在句间自动推进并高亮。
+        </p>
+        <label class="guide-item">
+          <input type="checkbox" id="guide-speech" />
+          <span class="guide-item-body">
+            <b>朗读功能</b>
+            <i>用浏览器自带语音逐句朗读，念完一句自动跳下一句（节奏来自真实语音时长）</i>
+          </span>
+        </label>
+        <label class="guide-item">
+          <input type="checkbox" id="guide-dwell" />
+          <span class="guide-item-body">
+            <b>文本推进</b>
+            <i>不朗读，只按句子长度自动切换高亮，配合 AI 的文字导读</i>
+          </span>
+        </label>
+        <p class="support-pop-text guide-hint" id="guide-hint"></p>
       </div>
     </div>
 
@@ -178,6 +210,7 @@
 </div>
 <script src="search-core.js?v=sc6"></script>
 <script>window.__dbg={};</script>
-<script src="app.js?v=gapp"></script>
+<script src="app.js?v=gapp2"></script>
+<script src="guide-highlight.js?v=gh7"></script>
 </body>
 </html>

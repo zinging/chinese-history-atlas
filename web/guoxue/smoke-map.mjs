@@ -143,6 +143,13 @@ const routeInfo = await evalJs(`(async () => {
   btn.click();
   await new Promise(r => setTimeout(r, 250));
   const stops = [...document.querySelectorAll('#route-detail .route-detail-stops li')].map(li => li.textContent.trim());
+  // 编号是 <ol> 的 list-style 生成的，不在 textContent 里；改为核对 DOM 顺序 == 数据顺序
+  const stopNames = [...document.querySelectorAll('#route-detail .route-detail-stops li')].map(li => {
+    const b = li.querySelector('.stop-head b') || li.querySelector('b');
+    return b ? b.textContent.trim() : '';
+  });
+  const dataNames = (r0.points || []).map(p => String(p.name || '').trim());
+  const orderedNames = stopNames.length === dataNames.length && stopNames.every((n, i) => n === dataNames[i]);
   const activeOn = btn.classList.contains('on');
   const styled = T.mapLayers.routes.filter(l => l instanceof L.Polyline && l.options.weight === 5).length;
   // 再点一次收起
@@ -151,13 +158,17 @@ const routeInfo = await evalJs(`(async () => {
   return {
     name: r0.name, points: (r0.points||[]).length,
     stopCount: stops.length, stops, activeOn, highlightedLines: styled,
+    orderedNames, stopNames, dataNames,
     afterToggleHidden: document.getElementById('route-detail').classList.contains('hidden'),
     afterToggleOn: btn.classList.contains('on'),
     weightBack: T.mapLayers.routes.filter(l => l instanceof L.Polyline).every(l => l.options.weight === 3),
   };
 })()`);
 ok(routeInfo.stopCount === routeInfo.points, `路线「${routeInfo.name}」详情列出 ${routeInfo.points} 个途经点`);
-ok(routeInfo.stops.every((s, i) => s.includes(`${i + 1}.`)), '途经点按顺序编号');
+// 编号由 <ol> 的 list-style 自动生成，textContent 里没有「1.」字面量。
+// 因此校验 DOM 顺序与数据站点名逐一对应——序号由浏览器按 DOM 顺序渲染，顺序对即编号对。
+ok(routeInfo.orderedNames === true,
+  `途经点按数据顺序编号（${routeInfo.stops.length} 项逐一对应 routes[0].points）`);
 ok(routeInfo.activeOn === true, '展开时按钮呈选中态');
 ok(routeInfo.highlightedLines === 1, '当前路线折线高亮（weight=5）');
 ok(routeInfo.afterToggleHidden === true, '再点一次收起详情');

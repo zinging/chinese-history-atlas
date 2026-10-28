@@ -133,7 +133,7 @@ const context = {
     const body = readFileSync(file, 'utf8');
     return { ok: true, status: 200, json: async () => JSON.parse(body) };
   },
-  console, URL, setTimeout, clearTimeout, Promise, requestAnimationFrame: (cb) => setTimeout(cb, 0), module: { exports: {} }, exports: {},
+  console, URL, URLSearchParams, location: { search: '', hash: '' }, setTimeout, clearTimeout, Promise, requestAnimationFrame: (cb) => setTimeout(cb, 0), module: { exports: {} }, exports: {},
 };
 vm.createContext(context);
 vm.runInContext(searchSrc, context);

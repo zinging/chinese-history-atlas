@@ -6,7 +6,7 @@
   },
   "events": [
     {
-      "eventId": "sui-event-jianguo",
+      "eventId": "sui-ev-581",
       "name": "杨坚代周建隋",
       "date": "581",
       "kind": "coup",
@@ -17,7 +17,7 @@
       "place": { "name": "大兴城", "modern": "陕西西安", "note": "隋朝首都。" }
     },
     {
-      "eventId": "sui-event-pingchen",
+      "eventId": "sui-ev-589",
       "name": "隋灭陈统一南北",
       "date": "589",
       "kind": "battle",
@@ -28,7 +28,7 @@
       "place": { "name": "建康", "modern": "江苏南京", "note": "陈朝都城，隋军渡江灭陈处。" }
     },
     {
-      "eventId": "sui-event-digou",
+      "eventId": "sui-ev-canal",
       "name": "开凿大运河",
       "date": "605",
       "kind": "reform",
@@ -39,7 +39,7 @@
       "place": { "name": "通济渠", "modern": "河南、安徽、江苏间", "note": "大运河中段，连接黄河淮河。" }
     },
     {
-      "eventId": "sui-event-luoyang",
+      "eventId": "sui-ev-605",
       "name": "营建东都洛阳",
       "date": "605",
       "kind": "reform",
@@ -50,7 +50,7 @@
       "place": { "name": "洛阳", "modern": "河南洛阳", "note": "隋东都，大运河中枢。" }
     },
     {
-      "eventId": "sui-event-zhuojun",
+      "eventId": "sui-ev-goguryeo",
       "name": "三征高句丽集结涿郡",
       "date": "612",
       "kind": "battle",
@@ -83,7 +83,7 @@
       "place": { "name": "高鸡泊", "modern": "河北故城西南", "note": "窦建德起兵处。" }
     },
     {
-      "eventId": "sui-event-jiangdu",
+      "eventId": "sui-ev-jiangdu",
       "name": "江都宫变",
       "date": "618",
       "kind": "coup",

@@ -6,7 +6,7 @@
   },
   "events": [
     {
-      "eventId": "wudai-event-houliang",
+      "eventId": "wudai-ev-907",
       "name": "朱温建后梁",
       "date": "907",
       "kind": "coup",
@@ -28,7 +28,7 @@
       "place": { "name": "大梁", "modern": "河南开封", "note": "后梁都城，被后唐军攻破。" }
     },
     {
-      "eventId": "wudai-event-shijingtang",
+      "eventId": "wudai-ev-yanyun",
       "name": "石敬瑭割燕云建后晋",
       "date": "936",
       "kind": "coup",
@@ -39,7 +39,7 @@
       "place": { "name": "晋阳", "modern": "山西太原", "note": "石敬瑭起兵处，后唐北京。" }
     },
     {
-      "eventId": "wudai-event-yanyun",
+      "eventId": "wudai-ev-yanyun-ge",
       "name": "燕云十六州割让",
       "date": "938",
       "kind": "diplomacy",
@@ -83,7 +83,7 @@
       "place": { "name": "瓦桥关", "modern": "河北雄县", "note": "周世宗收复三关之一。" }
     },
     {
-      "eventId": "wudai-event-chenqiao",
+      "eventId": "wudai-ev-chenqiao",
       "name": "陈桥兵变",
       "date": "960",
       "kind": "coup",

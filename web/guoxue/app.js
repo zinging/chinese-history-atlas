@@ -907,13 +907,18 @@ function renderMapData() {
 
   // 路线：线 + 起终点标签，默认全部隐藏，点按钮才显示对应那条
   routeLayerGroups = [];
+  // mapLayers.routes 与主站 leafletLayers.routes 保持同一约定：登记本流派的路线图层
+  // （折线 + 起终点圆点），供 setRouteStyles 与冒烟测试按顺序读取。此前只写 routeLayerGroups，
+  // 导致 setRouteStyles 成为永远遍历空数组的死代码、且 mapLayers.routes 恒为空。
+  mapLayers.routes = [];
   routes.forEach((r, ri) => {
     const pts = (r.points || []).filter(p => typeof p.lat === "number" && typeof p.lng === "number");
     if (pts.length < 2) return;
     const line = L.polyline(pts.map((p) => [p.lat, p.lng]), {
-      color: "#c0392b", weight: 4, opacity: 0, dashArray: null,
+      color: "#c0392b", weight: 3, opacity: 0, dashArray: null,
     });
     routeLayerGroups.push({ line, marks: [], arrows: [] });
+    mapLayers.routes.push(line);
 
     pts.forEach((pt, i) => {
       const m = L.circleMarker([pt.lat, pt.lng], {
@@ -926,6 +931,9 @@ function renderMapData() {
         { direction: "top", offset: [0, 8], permanent: true, className: "map-route-tip", opacity: 0 }
       );
       routeLayerGroups[routeLayerGroups.length - 1].marks.push(m);
+      // 只登记起终点（首尾两点）到 mapLayers.routes，与主站「路线图层只含线 + 起终点」的约定一致；
+      // 途经点圆点归 routeLayerGroups[].marks，不混进路线图层列表。
+      if (i === 0 || i === pts.length - 1) mapLayers.routes.push(m);
     });
 
     // 每段中点放一个指向行进方向的三角箭头
@@ -1218,7 +1226,8 @@ function toggleRoute(ri) {
   const g = routeLayerGroups[ri];
   if (g) {
     const line = g.line;
-    line.setStyle({ opacity: 1, weight: 4 });
+    // 高亮用 5：比默认 3 更粗，视觉上明确区分当前路线
+    line.setStyle({ opacity: 1, weight: 5 });
     const pathEl = line._path;
     const duration = 3500;
     if (pathEl && pathEl.getTotalLength) {
@@ -1268,7 +1277,7 @@ function toggleRoute(ri) {
       <span class="route-detail-year">${(r.points || []).length} ${r.unit || "站"}</span>
     </div>
     <ol class="route-detail-stops">
-      ${(r.points || []).map((p) => `<li>
+      ${(r.points || []).map((p, i) => `<li data-station="${i}"${(p.lat != null && p.lng != null) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ""}>
         <div class="stop-head"><b>${esc(p.name || "")}</b>${p.year ? `<span class="stop-year">${esc(p.year)}</span>` : ""}</div>
         ${p.event ? `<div class="stop-event">${esc(p.event)}</div>` : ""}
       </li>`).join("")}
@@ -1309,7 +1318,8 @@ function hideRouteDetail() {
   const box = $("#route-detail");
   if (box) { box.classList.add("hidden"); box.innerHTML = ""; }
   routeLayerGroups.forEach((g) => {
-    g.line.setStyle({ opacity: 0 });
+    // 收起时同时复位 weight（高亮用 5），否则下次展开前折线仍是加粗态
+    g.line.setStyle({ opacity: 0, weight: 3 });
     if (g.line._path) g.line._path.removeAttribute("marker-mid");
     g.marks.forEach((m) => {
       m.setStyle({ fillOpacity: 0 });
@@ -1554,4 +1564,12 @@ window.__guoxueMapTest = {
   get bookData() { return bookData; },
   get activeRoute() { return activeRoute; },
   loadSect,
+};
+
+// 讲解员模式：高亮走到某一路线站点时，地图平滑平移到该站（不缩放，避免频繁跳动）。
+// 与主站 web/app.js 的 __guideFlyTo 同签名、同语义，供 web/guide-highlight.js 调用。
+window.__guideFlyTo = function (lat, lng) {
+  if (!map) return;
+  if (typeof lat !== 'number' || typeof lng !== 'number') return;
+  map.panTo([lat, lng], { animate: true, duration: 1.0 });
 };

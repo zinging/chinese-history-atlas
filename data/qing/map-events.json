@@ -6,7 +6,7 @@
   },
   "events": [
     {
-      "eventId": "qing-event-hetuala",
+      "eventId": "qing-ev-1616",
       "name": "努尔哈赤起兵建后金",
       "date": "1616",
       "kind": "coup",
@@ -17,7 +17,7 @@
       "place": { "name": "赫图阿拉", "modern": "辽宁新宾", "note": "后金第一都城。" }
     },
     {
-      "eventId": "qing-event-saerhu",
+      "eventId": "qing-ev-1619",
       "name": "萨尔浒之战",
       "date": "1619",
       "kind": "battle",
@@ -50,7 +50,7 @@
       "place": { "name": "宁远", "modern": "辽宁兴城", "note": "袁崇焕击退努尔哈赤处。" }
     },
     {
-      "eventId": "qing-event-huangtaiji",
+      "eventId": "qing-ev-1636",
       "name": "皇太极改国号清",
       "date": "1636",
       "kind": "coup",
@@ -61,7 +61,7 @@
       "place": { "name": "盛京", "modern": "辽宁沈阳", "note": "清朝入关前都城。" }
     },
     {
-      "eventId": "qing-event-ruguan",
+      "eventId": "qing-ev-1644",
       "name": "清军入关",
       "date": "1644",
       "kind": "battle",
@@ -105,7 +105,7 @@
       "place": { "name": "昆明", "modern": "云南昆明", "note": "吴三桂根据地，三藩最后据点。" }
     },
     {
-      "eventId": "qing-event-taiwan",
+      "eventId": "qing-ev-1683",
       "name": "统一台湾",
       "date": "1683",
       "kind": "battle",
@@ -182,7 +182,7 @@
       "place": { "name": "虎门", "modern": "广东东莞虎门", "note": "林则徐销烟、关天培殉国处。" }
     },
     {
-      "eventId": "qing-event-taiping",
+      "eventId": "qing-ev-1851",
       "name": "太平天国运动",
       "date": "1851",
       "kind": "uprising",
@@ -193,7 +193,7 @@
       "place": { "name": "金田村", "modern": "广西桂平", "note": "太平天国起义首发地。" }
     },
     {
-      "eventId": "qing-event-yuanmingyuan",
+      "eventId": "qing-ev-1860",
       "name": "英法联军火烧圆明园",
       "date": "1860",
       "kind": "battle",
@@ -204,7 +204,7 @@
       "place": { "name": "圆明园", "modern": "北京海淀", "note": "被英法联军焚毁的皇家园林。" }
     },
     {
-      "eventId": "qing-event-jiawu",
+      "eventId": "qing-ev-1895",
       "name": "甲午中日战争",
       "date": "1894",
       "kind": "battle",
@@ -215,7 +215,7 @@
       "place": { "name": "威海卫", "modern": "山东威海", "note": "北洋水师基地和最后覆灭处。" }
     },
     {
-      "eventId": "qing-event-wuxu",
+      "eventId": "qing-ev-1898",
       "name": "戊戌变法",
       "date": "1898",
       "kind": "reform",
@@ -226,7 +226,7 @@
       "place": { "name": "紫禁城", "modern": "北京故宫", "note": "光绪帝变法、后被囚禁处。" }
     },
     {
-      "eventId": "qing-event-gengzi",
+      "eventId": "qing-ev-1900",
       "name": "八国联军侵华",
       "date": "1900",
       "kind": "battle",
@@ -237,7 +237,7 @@
       "place": { "name": "北京", "modern": "北京", "note": "八国联军攻占、分区占领处。" }
     },
     {
-      "eventId": "qing-event-xinhai",
+      "eventId": "qing-ev-1912",
       "name": "辛亥革命",
       "date": "1911",
       "kind": "coup",

@@ -75,18 +75,20 @@
 | 神话异志 | 9 部经典 · 113 只神兽 · 5 条古舆图路线 |
 | 共用 | 29 处古今地名 · 20 条史料出处 |
 
-图片共 802 张（含缩略图）：
+图片共 820 张（含缩略图）：
 
 | 目录 | 张数 | 体积 | 内容 |
 |---|---|---|---|
 | `data/portraits/artifacts/` | 172 | 89.2MB | 格物 59 件器物 + 神话 113 只神兽，共用同一目录 |
 | `data/portraits/artifacts-thumb/` | 172 | 5.5MB | 上者的缩略图 |
+| `data/portraits/event-gongbi/` | 9 | 7.7MB | 事件详情卡配图（文件名即 map-events 的 eventId） |
+| `data/portraits/event-gongbi-thumb/` | 9 | 0.9MB | 上者的缩略图 |
 | `data/portraits/myth-map/` | 74 | 48.4MB | 古舆图底图 + 热点配图 |
 | `data/portraits/myth-map-thumb/` | 69 | 7.4MB | 上者的缩略图 |
 | `data/portraits/people/` | 163 | 2.6MB | 关系图人物 |
 | `data/portraits/`（根） | 152 | 2.1MB | 皇帝与典籍作者 |
 
-缩略图由 `web/tools/make-artifact-thumbs.mjs`、`make-mythmap-thumbs.mjs` 生成，卡片用缩略图、点开取原图。
+缩略图由 `web/tools/make-artifact-thumbs.mjs`、`make-mythmap-thumbs.mjs`、`make-event-thumbs.mjs` 生成，卡片用缩略图、点开取原图。事件配图按约定路径 `event-gongbi(-thumb)/<eventId>.jpg` 直接取，不依赖数据字段；缺图时前端整块移除，不留破图。
 
 ## 地图
 

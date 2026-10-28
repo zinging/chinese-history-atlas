@@ -94,7 +94,7 @@
       "place": { "name": "开平", "modern": "内蒙古正蓝旗", "note": "忽必烈龙兴之地，元上都。" }
     },
     {
-      "eventId": "yuan-event-jianguo",
+      "eventId": "yuan-ev-1271",
       "name": "忽必烈建元定都大都",
       "date": "1271",
       "kind": "coup",
@@ -105,7 +105,7 @@
       "place": { "name": "大都", "modern": "北京", "note": "元朝首都，当时世界著名国际都市。" }
     },
     {
-      "eventId": "yuan-event-miesong",
+      "eventId": "yuan-ev-1279",
       "name": "元灭南宋",
       "date": "1279",
       "kind": "battle",
@@ -127,7 +127,7 @@
       "place": { "name": "大都", "modern": "北京", "note": "马可·波罗朝见忽必烈处。" }
     },
     {
-      "eventId": "yuan-event-hongjin",
+      "eventId": "yuan-ev-1351",
       "name": "红巾军起义",
       "date": "1351",
       "kind": "uprising",
@@ -149,7 +149,7 @@
       "place": { "name": "集庆", "modern": "江苏南京", "note": "朱元璋根据地，后为明初首都。" }
     },
     {
-      "eventId": "yuan-event-beiyuan",
+      "eventId": "yuan-ev-1368",
       "name": "元顺帝北逃",
       "date": "1368",
       "kind": "coup",

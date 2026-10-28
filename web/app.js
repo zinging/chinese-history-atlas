@@ -135,26 +135,13 @@ function renderEraInfo() {
   if (!box) return;
   const emp = currentEraEmperor();
   if (!emp) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  const evs = eventsForEra(emp.id);
   const people = (emp.people || []).map((p) => p.name).join('、') || '—';
   box.classList.remove('hidden');
+  // 该年号的事件统一在下方「该年号事件」胶囊面板呈现，此处不再重复列出「地图上的事件」
   box.innerHTML = `
     <h4>${emp.eraName[0]}年间 · ${emp.name}（${emp.templeName}） ${emp.reign.start}-${emp.reign.end}</h4>
     <div class="era-row"><b>核心人物：</b>${people}</div>
-    <div class="era-row"><b>地图上的事件：</b>${evs.length ? evs.map((ev) => `<span class="era-event-chip" data-ev="${ev.eventId}">${ev.date} ${ev.name}</span>`).join('') : '（这个时代没有标记在地图上的事件）'}</div>
   `;
-  box.querySelectorAll('.era-event-chip').forEach((chip) => {
-    chip.addEventListener('click', () => {
-      box.querySelectorAll('.era-event-chip').forEach((c) => c.classList.remove('active'));
-      chip.classList.add('active');
-      const ev = (DATA.mapEvents || []).find((e) => e.eventId === chip.dataset.ev);
-      if (ev) {
-        // 胶囊点击：清场只留该事件地点 + 关联路线 + 定位（不放大）
-        showSingleEvent(ev, { zoom: false });
-        document.querySelector('.map-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    });
-  });
 }
 
 // ---------- 网络请求数据 ----------
@@ -2132,7 +2119,10 @@ function showEventsSummary(opts) {
       // 胶囊变红（单选效果）
       box.querySelectorAll('.evt-summary-chip').forEach((c) => c.classList.remove('on'));
       chip.classList.add('on');
-      showSingleEvent(ev);
+      // 普通浏览：同地多事件仍弹聚合列表（HEAD 行为）。仅讲解员模式（guide=1）需逐句讲
+      // 单个事件正文，才强制展开详情，不弹聚合。
+      const guideOn = new URLSearchParams(location.search).get('guide') === '1';
+      showSingleEvent(ev, guideOn ? { forceDetail: true } : {});
       document.querySelector('.map-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   });
@@ -2165,24 +2155,24 @@ const EVENT_ROUTE_MAP = {
   'tang-event-zheng-gaogouli': 'tang-zheng-gaogouli',
   'tang-event-anshi-baofa': 'tang-anshi',
   'tang-event-caizhou': 'tang-caizhou',
-  'tang-event-huangchao-qiyi': 'tang-huangchao',
+  'tang-event-huangchao': 'tang-huangchao',
   // 元朝
   'yuan-event-miejin': 'yuan-miejin',
-  'yuan-event-miesong': 'yuan-miesong',
-  'yuan-event-hongjin': 'yuan-hongjin',
-  'yuan-event-beiyuan': 'yuan-beiyuan',
+  'yuan-ev-1279': 'yuan-miesong',
+  'yuan-ev-1351': 'yuan-hongjin',
+  'yuan-ev-1368': 'yuan-beiyuan',
   'yuan-event-zhenghe': 'yuan-makeluo',
   // 清朝
-  'qing-event-ruguan': 'qing-ruguan-beijing',
+  'qing-ev-1644': 'qing-ruguan-beijing',
   'qing-event-sanshun': 'qing-pingding-sanfan',
-  'qing-event-taiwan': 'qing-taiwan',
+  'qing-ev-1683': 'qing-taiwan',
   'qing-event-gaerdan': 'qing-san-zheng-gaerdan',
-  'qing-event-taiping': 'qing-taiping',
-  'qing-event-gengzi': 'qing-baguo',
+  'qing-ev-1851': 'qing-taiping',
+  'qing-ev-1900': 'qing-baguo',
   // 隋朝
-  'sui-event-pingchen': 'sui-pingchen',
-  'sui-event-zhuojun': 'sui-zheng-gaogouli',
-  'sui-event-jiangdu': 'sui-jiangdu',
+  'sui-ev-589': 'sui-pingchen',
+  'sui-ev-goguryeo': 'sui-zheng-gaogouli',
+  'sui-ev-jiangdu': 'sui-jiangdu',
   // 五代
   'wudai-event-houtang': 'wudai-houtang-mie-liang',
   'wudai-event-chairong': 'wudai-chairong-beifa',
@@ -2211,11 +2201,22 @@ function showEventRoute(ev) {
 
 function showSingleEvent(ev, opts = {}) {
   if (!leafletMap) return;
+  // 年号联动：仅在讲解员模式（深链带 guide=1）下自动切换年号，保证事件点落在年号过滤集里
+  // （如靖难之役 1402 年 → 建文）。普通浏览不联动——否则点「全部」里的胶囊会因重渲染
+  // 而把列表换成另一年号的子集，用户点的胶囊当场消失（发布前审查发现的回归）。
+  if (new URLSearchParams(location.search).get('guide') === '1') {
+    const eraId = eraForYear(ev.date);
+    if (eraId && eraId !== activeEraId) {
+      activeEraId = eraId;
+      evtSummaryShowAll = false;
+      renderEraStrip(); renderMap(); renderEraInfo();
+      showEventsSummary({ noScroll: true });
+    }
+  }
   // 清理旧的路线动画定时器，防止残留动画覆盖新状态（两条路线问题）
   clearRouteAnimations();
   // 默认 zoom=8 放大定位；胶囊点击传 {zoom:false} 只定位不放大（保持当前缩放）
   const targetZoom = opts.zoom === false ? Math.max(leafletMap.getZoom(), 4) : 8;
-  // 隐藏所有国内路线与郑和
   (leafletLayers.routes || []).forEach((l) => {
     l.line.setStyle({ opacity: 0, fillOpacity: 0 });
     l.wps.forEach((w) => w.setStyle({ opacity: 0, fillOpacity: 0 }));
@@ -2252,8 +2253,9 @@ function showSingleEvent(ev, opts = {}) {
   }
   // 飞到该地点，到达后弹窗
   mapFlyTo({ lat: ev.lat, lng: ev.lng }, targetZoom, 1.4, () => {
-    // 若目标是聚合（多事件同地），弹该地全部事件；单事件弹详情
-    const clusterEvs = flyTarget._evtIds && flyTarget._evtIds.length > 1
+    // 若目标是聚合（多事件同地），弹该地全部事件；单事件弹详情。
+    // 讲解员模式（深链带 guide=1 且 forceDetail）要逐句讲这一个事件的正文，直接展开其详情。
+    const clusterEvs = (!opts.forceDetail && flyTarget._evtIds && flyTarget._evtIds.length > 1)
       ? (flyTarget._evtIds.map((id) => (DATA.mapEvents || []).find((e) => e.eventId === id)).filter(Boolean))
       : null;
     if (clusterEvs && clusterEvs.length > 1) {
@@ -2288,8 +2290,8 @@ function showRouteDetail(r) {
     </div>
     <div class="route-detail-desc">${r.desc || ''}</div>
     <div class="route-detail-path"><b>路线：</b>${stops}</div>
-    <ol class="route-detail-stops">${(r.points || []).map((p) => `
-      <li><b>${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}</b> —— ${p.note || ''}</li>`).join('')}
+    <ol class="route-detail-stops">${(r.points || []).map((p, i) => `
+      <li data-station="${i}"${(p.lat && p.lng) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ''}><b>${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}</b><span class="rs-dash"> —— </span><span class="rs-note">${p.note || ''}</span></li>`).join('')}
     </ol>`;
   box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -2298,6 +2300,14 @@ function hideRouteDetail() {
   const box = $('#route-detail');
   if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
 }
+
+// 讲解员模式：高亮走到某一路线站点时，地图平滑平移到该站（不缩放，避免频繁跳动）
+window.__guideFlyTo = function (lat, lng) {
+  if (!leafletMap) return;
+  if (new URLSearchParams(location.search).get('guide') !== '1') return;
+  if (typeof lat !== 'number' || typeof lng !== 'number') return;
+  leafletMap.panTo([lat, lng], { animate: true, duration: 1.0 });
+};
 
 function showPopup(name, modern, story) {
   const pop = $('#map-popup');
@@ -2350,13 +2360,38 @@ function showEventPopup(evs, cluster) {
   const people = full && full.participants ? full.participants.join('、') : '';
   const place = ev.place || {};
   const placeTxt = place.name ? `${place.name}${place.modern ? '（今' + place.modern + '）' : ''}` : '';
+  const eid = ev.eventId || ev.id;
+  // 事件工笔彩绘图：约定 data/portraits/event-gongbi(-thumb)/<事件id>.jpg。
+  // 无图时 img onerror 直接移除整块，绝不破图；点击放大看原图（与格物图鉴一致）。
+  const fullImg = `../data/portraits/event-gongbi/${eid}.jpg`;
+  const thumbImg = `../data/portraits/event-gongbi-thumb/${eid}.jpg`;
+  const fig = `<figure class="event-fig" data-full="${fullImg}">
+      <img src="${thumbImg}" alt="${ev.name}"
+        onload="this.closest('.event-fig').classList.add('loaded')"
+        onerror="this.closest('.event-fig').remove()"/>
+    </figure>`;
   pop.innerHTML = `<button class="close" aria-label="关闭">✕</button>
     <h4>${ev.name} <small style="color:#8a7a5c">· ${ev.date}年</small></h4>
+    ${fig}
     ${placeTxt ? `<p style="font-size:13px;color:#247bc1;font-weight:600;margin:0 0 4px">📍 ${placeTxt}</p>` : ''}
     <p style="font-size:13px;color:#c0392b;font-weight:600;margin:0 0 6px">${place.note || ev.note || ''}</p>
     ${people ? `<p style="font-size:13px;color:#247bc1;margin:0 0 6px"><b>核心人物：</b>${people}</p>` : ''}
     <p>${story}</p>`;
   pop.querySelector('.close').addEventListener('click', () => pop.classList.add('hidden'));
+}
+
+// 事件工笔图：点击放大（轻量 lightbox，与格物图鉴一致）
+// 守卫 mock-DOM 环境（冒烟测试的 document 没有 addEventListener），与文件内其它 DOM 能力检测一致
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  document.addEventListener('click', (e) => {
+    const box = e.target.closest('.event-fig[data-full]');
+    if (!box) return;
+    const lb = document.createElement('div');
+    lb.className = 'event-lightbox';
+    lb.innerHTML = `<img src="${box.dataset.full}" alt=""/><span class="lb-close">×</span>`;
+    lb.addEventListener('click', () => lb.remove());
+    document.body.appendChild(lb);
+  });
 }
 
 // ---------- 界面四：历史侦探 ----------
@@ -3143,6 +3178,7 @@ async function askLLM(message, history = []) {
   const PAIRS = [
     { btn: 'ai-sidebar-btn', pop: 'ai-sidebar-pop', close: 'ai-sidebar-close' },
     { btn: 'modules-btn', pop: 'modules-pop', close: 'modules-close' },
+    { btn: 'guide-btn', pop: 'guide-pop', close: 'guide-close' },
   ].map((p) => ({
     ...p,
     btnEl: document.getElementById(p.btn),
@@ -3199,6 +3235,25 @@ async function applyDeepLink() {
   const params = new URLSearchParams(location.search);
   const page = params.get('page');
   const dynasty = params.get('dynasty');
+  // 国学子站深链：?module=myth&tab=books&book=shanhaijing
+  // 走主壳是为了保留左侧栏（用户可自行切换板块），而不是直接打开裸 iframe 页面。
+  const moduleId = params.get('module');
+  if (moduleId && moduleId !== 'history' && typeof activateModule === 'function') {
+    await waitForEmp(() => document.querySelector('.mega-btn[data-mega="' + moduleId + '"]'));
+    activateModule(moduleId);
+    // 把子站自己的参数原样转发给 iframe（tab/book/case/sect/route/hotspot 等）
+    const forward = new URLSearchParams();
+    for (const [k, v] of params.entries()) {
+      if (k === 'module') continue;
+      forward.set(k, v);
+    }
+    const frame = document.getElementById(moduleId + '-frame');
+    if (frame) {
+      const entry = (frame.getAttribute('src') || '').split('?')[0];
+      if (entry) frame.src = entry + (forward.toString() ? '?' + forward.toString() : '');
+    }
+    return;   // 子站自己处理后续定位；主站不再走 page/emperor 分支
+  }
   if (dynasty && dynasty !== currentDynasty) {
     await switchDynasty(dynasty);
   }
@@ -3248,7 +3303,10 @@ async function applyDeepLink() {
       (DATA.mapEvents || []).find((e) => e.id === eventId || e.eventId === eventId) ||
       (DATA.events || []).find((e) => e.id === eventId || e.eventId === eventId);
     const ok = await waitForEmp(() => leafletMap && findEv());
-    if (ok) showSingleEvent(findEv());
+    if (ok) {
+      const guideOn = params.get('guide') === '1';
+      showSingleEvent(findEv(), guideOn ? { forceDetail: true } : {});
+    }
   }
 }
 
@@ -3573,5 +3631,68 @@ function renderModuleManager() {
   reset.addEventListener('click', () => {
     saveDisabledModules(new Set());
     location.reload();
+  });
+})();
+
+/* 「导览设置」：朗读 / 文本推进两个开关。
+   默认全关 = 纯静态网页（不建控制条、不排计时、不出声）。
+   开关状态由 web/guide-highlight.js 持久化到 localStorage（键 dsh-guide-settings），
+   本文件只负责 UI 同步与调用 window.__guide.setSettings。 */
+(function setupGuideSettings() {
+  const SPEECH = document.getElementById('guide-speech');
+  const DWELL = document.getElementById('guide-dwell');
+  const HINT = document.getElementById('guide-hint');
+  if (!SPEECH || !DWELL) return;
+
+  /** 每帧轮询直到 guider-haighlight 暴露接口（脚本加载顺序可能在其后） */
+  function withGuide(fn) {
+    if (window.__guide && typeof window.__guide.setSettings === 'function') { fn(window.__guide); return; }
+    let tries = 0;
+    const t = setInterval(() => {
+      tries++;
+      if (window.__guide && typeof window.__guide.setSettings === 'function') {
+        clearInterval(t); fn(window.__guide);
+      } else if (tries > 40) {
+        clearInterval(t); renderHint(null);
+      }
+    }, 100);
+  }
+
+  function renderHint(cur) {
+    if (!HINT) return;
+    if (!cur) { HINT.textContent = ''; return; }
+    if (cur.speech && window.__guide && !window.__guide.hasSpeech()) {
+      HINT.textContent = '当前浏览器不支持语音朗读，已自动改用文本推进。';
+    } else if (cur.speech) {
+      HINT.textContent = '朗读已开启：讲解链接会逐句朗读并自动跳转下一句。';
+    } else if (cur.dwell) {
+      HINT.textContent = '文本推进已开启：高亮会按句子长度自动切换，不出声。';
+    } else {
+      HINT.textContent = '两项均关闭：页面处于纯静态浏览状态。';
+    }
+  }
+
+  function syncUI(cur) {
+    if (!cur) return;
+    SPEECH.checked = !!cur.speech;
+    DWELL.checked = !!cur.dwell;
+    renderHint(cur);
+  }
+
+  withGuide((g) => {
+    syncUI(g.getSettings());
+    SPEECH.addEventListener('change', () => {
+      const next = g.setSettings({ speech: SPEECH.checked });
+      // 朗读不可用时退回文本推进
+      if (SPEECH.checked && !g.hasSpeech()) {
+        const r = g.setSettings({ speech: false, dwell: true });
+        syncUI(r);
+        return;
+      }
+      syncUI(next);
+    });
+    DWELL.addEventListener('change', () => {
+      syncUI(g.setSettings({ dwell: DWELL.checked }));
+    });
   });
 })();

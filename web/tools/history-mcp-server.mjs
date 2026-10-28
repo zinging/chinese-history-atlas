@@ -7,7 +7,7 @@
  *
  * 数据全部来自项目 data/ 目录，实时读取、不缓存到外部；返回结果中：
  *   - 图片优先给缩略图 URL（artifacts-thumb / myth-map-thumb），另附原图 URL；
- *   - 每个实体都带 url（本地 127.0.0.1 完整地址）与 online_url（GitHub Pages），
+ *   - 每个实体都带 url（本地 127.0.0.1 完整地址），
  *     AI 回答后可直接把用户引回网页对应卡片/热点（前端需支持 query 深链）。
  *
  * 用法：
@@ -30,7 +30,6 @@ const ROOT = path.resolve(path.dirname(__filename), '..', '..');
 const DATA = path.join(ROOT, 'data');
 
 const LOCAL_BASE = (process.env.CHAT_BASE_URL || 'http://127.0.0.1:5173/web/').replace(/\/?$/, '/');
-const ONLINE_BASE = 'https://zinging.github.io/chinese-history-atlas/web/';
 
 // 连接诊断日志：客户端每拉起一次 STDIO 进程都会记录，用于排查连接器是否真正启动
 const LOG_FILE = path.join(ROOT, '.sessions', 'mcp-connector.log');
@@ -126,11 +125,131 @@ const pick = (obj, keys) => {
   return o;
 };
 
-/** 深链：同时返回本地（本地服务）与在线（GitHub Pages）两个完整 URL */
+/** 深链：只返回本地（127.0.0.1）完整 URL。
+ *  全部讲解能力基于本地版本，不与 GitHub Pages 线上镜像做任何关联——
+ *  线上镜像可能与本地不一致，给出线上地址会让读者看到旧内容、掩盖本地改动。 */
 function deepLink(relQuery) {
-  return { url: LOCAL_BASE + relQuery, online_url: ONLINE_BASE + relQuery };
+  return { url: LOCAL_BASE + relQuery };
 }
 const enc = encodeURIComponent;
+
+// ---------- 讲解员「歌词跟随」：前后端共享切句规则 ----------
+// 必须与 web/guide-highlight.js 的 splitSentences 完全一致（按 。！？…；;!? 切分并保留句末标点），
+// 保证服务端 steps[i] 与页面 <span class="gh-line" data-s="i"> 一一对齐。
+function splitSentences(text) {
+  const s = String(text == null ? '' : text);
+  const out = [];
+  let buf = '';
+  for (const ch of s) {
+    buf += ch;
+    if ('。！？；;!?'.includes(ch)) {
+      const t = buf.trim();
+      if (t) out.push(t);
+      buf = '';
+    }
+  }
+  const tail = buf.trim();
+  if (tail) out.push(tail);
+  // 残句合并：仅由引号/括号收尾符组成的孤立残句（如『…』切出的「』」）并回上一句，必须与前端 guide-highlight.js 一致
+  const merged = [];
+  for (const t of out) {
+    if (merged.length && /^[\s』」”）》〉、，]+$/.test(t)) {
+      merged[merged.length - 1] += t;
+    } else {
+      merged.push(t);
+    }
+  }
+  return merged;
+}
+
+// 神话热点 desc 形如：原文……<span class='tr'>译文：……</span>原文……<span class='tr'>译文：……</span>；
+// 按出现顺序拆成若干 {type:'main'|'tr', text} 段（一张卡片可能有多组原文/译文）；
+// 同时返回 main/tr（首组，供扁平字段使用）。该顺序必须与前端 guide-highlight.js 的 hotSeq 完全一致。
+function stripMythTr(desc) {
+  const html = String(desc || '');
+  const re = /<span class='tr'>([\s\S]*?)<\/span>/g;
+  const segments = [];
+  let last = 0, m;
+  const plain = (s) => s.replace(/<[^>]+>/g, '').trim();
+  const pushMain = (s) => { const t = plain(s); if (t) segments.push({ type: 'main', text: t }); };
+  const pushTr = (s) => { const t = plain(s); if (t) segments.push({ type: 'tr', text: t }); };
+  while ((m = re.exec(html))) {
+    pushMain(html.slice(last, m.index));
+    pushTr(m[1]);
+    last = re.lastIndex;
+  }
+  pushMain(html.slice(last));
+  if (!segments.length) {
+    const t = plain(html);
+    return { main: t, tr: '', segments: t ? [{ type: 'main', text: t }] : [] };
+  }
+  return {
+    main: (segments.find((s) => s.type === 'main') || {}).text || '',
+    tr: (segments.find((s) => s.type === 'tr') || {}).text || '',
+    segments,
+  };
+}
+
+/**
+ * 构造一个讲解对象的「锚点表」（anchors）——AI 写导读时的布景清单，不是台词本。
+ *
+ * 语义：每个 anchor 表示「页面上第 i 个可定位位置讲的是什么」，供 AI 判断该讲哪个、按什么顺序讲。
+ * AI 的讲解稿由它自己组织，讲到某处时挂 anchor.url（含 #s=i）让页面跳到该位置高亮；
+ * 页面只负责定位与呈现（原文、配图、地图、路线动画），不承担朗读。
+ *
+ * blocks: [{label, text, sources?, role?}]，顺序必须与前端渲染顺序一致。
+ * 返回 { anchor_count, guide_url, anchors:[{i, scene, role, gist, chars, sources, url}] }
+ */
+/**
+ * 讲解视角：按对象类型给出「该往哪想」，只给思考方向，不规定篇幅、不规定写法。
+ * 这是导览员的关注点清单，不是填空模板——模型据此判断重点，具体措辞由它自己组织。
+ */
+const GUIDE_LENS = {
+  event: '这件事为什么会发生、关键人物是谁、他（他们）发动或卷入此事的动机是什么、转折点在哪、代价与后果是什么、历史意义在哪',
+  person: '他面对的时代困局是什么、做过哪些关键抉择、付出了什么代价、取得了什么成就、后世如何评价他',
+  book: '这部书的核心思想或主要内容是什么、作者当时的处境如何、它回应了那个时代的什么问题、在此后的时代产生了怎样的意义与影响',
+  craft: '古人在解决什么实际难题、具体怎么做、巧在哪里、局限又在哪里、这套方法后来如何演变',
+  myth: '这个想象回应了人对什么的困惑或恐惧、原著是怎么写的、后世如何变形与流传',
+  route: '这条路线的走向与地理逻辑、沿途每一站的关键事件、整条线串起的因果推进关系',
+  hotspot: '这处地点在原著中为什么重要、在故事里起什么叙事作用、它对应的地貌与文本依据',
+};
+
+function guidePack(relQuery, blocks, kind) {
+  const base = deepLink(relQuery);
+  const guideUrl = base.url + '&guide=1';
+  const anchors = [];
+  for (const blk of blocks) {
+    // 一条 block 按其句数展开成多个可定位位置。
+    // 只给 gist（约 30 字摘要）而不是整句原文：原文给太全，模型会直接搬运，
+    // 讲解退化成复述网页；摘要足够判断这处讲什么，具体措辞由模型自己组织。
+    const sents = splitSentences(blk.text);
+    for (const text of sents) {
+      const i = anchors.length;
+      anchors.push({
+        i,
+        scene: blk.label,                              // 这一处讲的是什么（语义单位）
+        role: blk.role || null,                        // 背景 / 转折 / 结局等，供 AI 组织顺序
+        gist: gistOf(text),                            // 摘要，供 AI 判断内容，不是台词
+        chars: text.replace(/\s/g, "").length,         // 原文长度，供 AI 估算篇幅
+        sources: blk.sources || null,                  // 出处随锚点自动带出
+        url: `${guideUrl}#s=${i}`,                     // 直接可跳转的定位链接
+      });
+    }
+  }
+  return {
+    anchor_count: anchors.length,
+    guide_url: guideUrl,
+    kind: kind || null,
+    lens: (kind && GUIDE_LENS[kind]) || null,
+    anchors,
+  };
+}
+
+/** 取一句话的摘要：前 30 个非空字符 + 省略号；短句原样返回。 */
+function gistOf(text) {
+  const s = String(text || "").replace(/\s+/g, "");
+  return s.length <= 30 ? s : s.slice(0, 30) + "…";
+}
 
 /** data/portraits 下的图片地址；thumb=true 时返回 {thumb, full} */
 function portraitHref(rel, { thumb = false, thumbDir = null } = {}) {
@@ -140,7 +259,6 @@ function portraitHref(rel, { thumb = false, thumbDir = null } = {}) {
   const full = 'data/portraits/' + sub;
   const pair = (f) => ({
     url: LOCAL_BASE + '../' + f,
-    online_url: ONLINE_BASE + '../' + f,
   });
   if (!thumb) return pair(full);
   const thumbFull = thumbDir
@@ -156,6 +274,52 @@ const DYNASTY_LABEL = {
   yuan: '元朝', ming: '明朝', qing: '清朝', all: '全部朝代',
 };
 const DYNASTY_DIR = { ming: '', tang: 'tang/', song: 'song/', yuan: 'yuan/', qing: 'qing/', sui: 'sui/', wudai: 'wudai/' };
+
+/** 事件 → 关联路线映射（必须与 web/app.js 的 EVENT_ROUTE_MAP 保持一致）。
+ *  讲解员逐句讲解某事件时，命中此处会把路线概述与逐站解说一并纳入 guide。 */
+const EVENT_ROUTE_MAP = {
+  // 明朝
+  'ming-event-jingnan': 'jingnan-south',
+  'ming-event-zhenghe-qihang': 'zhenghe-west',
+  'ming-event-tumu': 'yexian-nanxia',
+  'ming-event-shanhaiguan': 'qing-ruguan',
+  'ming-event-zhangxianzhong': 'zhangxianzhong-sichuan',
+  'ming-event-yangzhou': 'nanmin-liuwang',
+  'ming-event-ke-dadu': 'qing-ruguan',
+  'ming-event-chongzhen-ziyi': 'lizicheng-north',
+  // 宋朝
+  'song-event-chenqiao': 'song-chenqiao',
+  'song-event-nandu': 'song-nandu',
+  'song-event-yuefei': 'song-yuefei',
+  'song-event-yashan': 'song-yashan',
+  // 唐朝
+  'tang-event-jinyang': 'tang-jinyang-changan',
+  'tang-event-mie-dongtujue': 'tang-mie-dongtujue',
+  'tang-event-zheng-gaogouli': 'tang-zheng-gaogouli',
+  'tang-event-anshi-baofa': 'tang-anshi',
+  'tang-event-caizhou': 'tang-caizhou',
+  'tang-event-huangchao': 'tang-huangchao',
+  // 元朝
+  'yuan-event-miejin': 'yuan-miejin',
+  'yuan-ev-1279': 'yuan-miesong',
+  'yuan-ev-1351': 'yuan-hongjin',
+  'yuan-ev-1368': 'yuan-beiyuan',
+  'yuan-event-zhenghe': 'yuan-makeluo',
+  // 清朝
+  'qing-ev-1644': 'qing-ruguan-beijing',
+  'qing-event-sanshun': 'qing-pingding-sanfan',
+  'qing-ev-1683': 'qing-taiwan',
+  'qing-event-gaerdan': 'qing-san-zheng-gaerdan',
+  'qing-ev-1851': 'qing-taiping',
+  'qing-ev-1900': 'qing-baguo',
+  // 隋朝
+  'sui-ev-589': 'sui-pingchen',
+  'sui-ev-goguryeo': 'sui-zheng-gaogouli',
+  'sui-ev-jiangdu': 'sui-jiangdu',
+  // 五代
+  'wudai-event-houtang': 'wudai-houtang-mie-liang',
+  'wudai-event-chairong': 'wudai-chairong-beifa',
+};
 
 const dynCache = {};
 function loadDynasty(d) {
@@ -281,10 +445,14 @@ function loadGuoxue(module, sect) {
   return bundle;
 }
 
+/**
+ * 国学子站深链：统一指向主壳 index.html?module=<板块>&...，
+ * 而不是裸 guoxue/xxx.html。裸页面没有左侧栏，用户无法自行切换板块；
+ * 主壳的 applyDeepLink 读到 module 后会切到对应面板并把参数转发给 iframe。
+ */
 function gxDeepLink(module, sect, query) {
-  const page = GUOXUE_PAGE[module];
   const q = module === 'thought' ? `sect=${sect}&` : '';
-  return deepLink(page + '?' + q + query);
+  return deepLink('index.html?module=' + module + '&' + q + query);
 }
 
 function bookSummary(module, sect, b) {
@@ -355,13 +523,13 @@ function tListModules() {
       { id: 'emperors', name: MODULE_LABEL.emperors, desc: '隋至清七朝 77 位皇帝生平时间线、重大事件、悬案疑案、史论选择题、舆图疆域',
         ...deepLink('index.html'), counts: counts.emperors },
       { id: 'thought', name: MODULE_LABEL.thought, desc: '儒释道/诸子/理学心学五宗经典、公案、问典与圣贤行迹路线',
-        sects: THOUGHT_SECTS, ...deepLink('guoxue/index.html'), counts: counts.thought },
+        sects: THOUGHT_SECTS, ...deepLink('index.html?module=thought'), counts: counts.thought },
       { id: 'shiwen', name: MODULE_LABEL.shiwen, desc: '22 位诗人、71 篇名篇精读、95 条金句、13 条诗路与品诗问典',
-        ...deepLink('guoxue/shici.html'), counts: counts.shiwen },
+        ...deepLink('index.html?module=shiwen'), counts: counts.shiwen },
       { id: 'gewu', name: MODULE_LABEL.gewu, desc: '17 部科技典籍、59 件器物图谱、工艺公案与格物问典',
-        ...deepLink('guoxue/gewu.html'), counts: counts.gewu },
+        ...deepLink('index.html?module=gewu'), counts: counts.gewu },
       { id: 'myth', name: MODULE_LABEL.myth, desc: '9 部志怪典籍、113 只神兽、五条古舆图路线（山海经/西游/封神/聊斋/太平广记）',
-        ...deepLink('guoxue/myth.html'), counts: counts.myth },
+        ...deepLink('index.html?module=myth'), counts: counts.myth },
     ],
     note: '所有结果均为站点内数据；涉及《三国演义》《西游记》等演义文本时内容会注明出处。图片字段为缩略图+原图，url 可直接打开对应网页。',
   };
@@ -379,6 +547,19 @@ function tGetEmperor({ id, name }) {
   if (!key) throw new Error('需要提供 id 或 name（皇帝名/年号）');
   const e = findEmperor(key);
   if (!e) throw new Error('未找到皇帝：' + key);
+  // 锚点表：生平简介 → 时间线每条 description（顺序与前端 .intro + .tl-note 一致）
+  // sources 随锚点带出（简介用皇帝顶层 sources，时间线用该条自身的 sources），AI 无需自行标注出处
+  const guideBlocks = [];
+  if (e.intro) guideBlocks.push({ label: '生平简介', text: e.intro, role: '背景', sources: e.sources || null });
+  (e.timeline || []).forEach((t, idx) => {
+    if (t && t.description) {
+      guideBlocks.push({
+        label: '时间线·' + (t.date || t.title || ('第' + idx + '条')),
+        text: t.description,
+        sources: t.sources || null,
+      });
+    }
+  });
   return {
     ...pick(e, ['id', 'name', 'templeName', 'eraName', 'reign', 'intro', 'timeline',
       'majorEvents', 'people', 'controversies', 'funFacts', 'places', 'sources']),
@@ -386,6 +567,7 @@ function tGetEmperor({ id, name }) {
     dynastyKey: e._dynasty,
     portrait: portraitHref('data/portraits/' + e.portrait),
     ...deepLink(`index.html?page=timeline&dynasty=${e._dynasty}&emperor=${enc(e.id)}`),
+    guide: guidePack(`index.html?page=timeline&dynasty=${e._dynasty}&emperor=${enc(e.id)}`, guideBlocks, 'person'),
   };
 }
 
@@ -472,7 +654,23 @@ function tGetBook({ module, sect, id, name }) {
       || p.books.find((x) => norm(x.name).includes(target));
     if (b) {
       const { src: _src, ...rest } = b;
-      return { ...rest, ...gxDeepLink(module, p.sect, `tab=books&book=${enc(b.id)}`) };
+      // 锚点表：按章节顺序，每章 背景→原文→译文→点评（顺序与前端 .chapter 内一致）
+      const guideBlocks = [];
+      (b.chapters || []).forEach((c, ci) => {
+        const cname = c.title ? String(c.title).replace(/^《|》$/g, '') : ('第' + (ci + 1) + '篇');
+        if (c.context) guideBlocks.push({ label: cname + '·背景', text: c.context, role: '背景' });
+        if (c.original) guideBlocks.push({ label: cname + '·原文', text: c.original, role: '原文' });
+        if (c.gloss) guideBlocks.push({ label: cname + '·译文', text: c.gloss, role: '译文' });
+        if (c.afterword) guideBlocks.push({ label: cname + '·点评', text: c.afterword, role: '点评' });
+      });
+      const sectQ = module === 'thought' ? `sect=${p.sect}&` : '';
+      // 相对主壳的查询串（带 module），与 gxDeepLink 一致，保证打开后保留左侧栏
+      const rel = `index.html?module=${module}&` + sectQ + `tab=books&book=${enc(b.id)}`;
+      return {
+        ...rest,
+        ...gxDeepLink(module, p.sect, `tab=books&book=${enc(b.id)}`),
+        ...(guideBlocks.length ? { guide: guidePack(rel, guideBlocks, 'book') } : {}),
+      };
     }
   }
   throw new Error('未找到典籍：' + (id || name));
@@ -520,10 +718,66 @@ function tGetArtifact({ module, name }) {
   return artifactLike(module, a);
 }
 
-function tGetRoute({ module, sect, route }) {
+function tGetRoute({ module, sect, route, event }) {
   if (module === 'emperors') {
     // 帝王舆图：返回指定朝代（默认全部）的路线与事件
     const dyns = sect ? [sect] : DYNASTIES;
+    // 单个地图事件详情（讲解员逐句高亮）：正文取 events.json 的完整 narrative，与页面单事件弹窗一致
+    if (event) {
+      const key = norm(event);
+      for (const d of dyns) {
+        const b = loadDynasty(d);
+        const ev = (b.mapEvents || []).find((x) =>
+          norm(x.eventId || x.id) === key || norm(x.name).includes(key));
+        if (ev) {
+          const eid = ev.eventId || ev.id;
+          const full = (b.events || []).find((x) => (x.eventId || x.id) === eid);
+          const story = (full && full.narrative) ? full.narrative : (ev.narrative || ev.summary || ev.note || '');
+          const link = deepLink(`index.html?page=map&dynasty=${d}&event=${enc(eid)}`);
+          // 若该事件关联路线：锚点顺序 = 事件正文 → 路线概述 → 逐站解说，
+          // 前端按同一顺序包裹 #map-popup 与 #route-detail，保证 anchors[i] 与页面 data-s 对齐。
+          const routeId = EVENT_ROUTE_MAP[eid] || null;
+          // 与前端对齐：郑和航线（zhenghe-west）是特殊海外图层，前端只做动画、不渲染路线详情，
+          // 故讲解不追加路线概述/逐站（否则服务端步数多于页面 #s 行数，逐句高亮会错位）。
+          const route = (routeId && routeId !== 'zhenghe-west')
+            ? (b.routes || []).find((r) => r.id === routeId)
+            : null;
+          const guideBlocks = [{
+            label: '事件叙述', text: story, role: '正文',
+            sources: (full && full.sources) || null,
+          }];
+          let routeBrief = null;
+          if (route && (route.points || []).length) {
+            guideBlocks.push({ label: '路线概述', text: route.desc || '', role: '路线' });
+            routeBrief = {
+              id: route.id, name: route.name, year: route.year || '',
+              station_count: route.points.length,
+              path: route.points.map((p) => p.name + (p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : '')).join(' → '),
+            };
+            route.points.forEach((p, i) => {
+              guideBlocks.push({ label: `路线第${i + 1}站·${p.name}`, text: p.note || '', role: '路线站' });
+            });
+          }
+          // 事件工笔彩绘图（存在才返回，未生成的事件不带该字段，避免破图）
+          const imgFullPath = path.join(DATA, 'portraits', 'event-gongbi', `${eid}.jpg`);
+          const eventImage = exists(imgFullPath)
+            ? portraitHref(`data/portraits/event-gongbi/${eid}.jpg`, { thumb: true, thumbDir: 'event-gongbi-thumb' })
+            : null;
+          return {
+            dynasty: d,
+            dynasty_label: DYNASTY_LABEL[d],
+            ...pick(ev, ['eventId', 'name', 'date', 'kind', 'place', 'summary', 'note']),
+            participants: (full && full.participants) || null,
+            narrative: story,
+            route: routeBrief,
+            image: eventImage,
+            ...link,
+            guide: guidePack(`index.html?page=map&dynasty=${d}&event=${enc(eid)}`, guideBlocks, 'event'),
+          };
+        }
+      }
+      return { matched: false, query: event, hint: '未找到该地图事件；可先调用 get_route(module=emperors) 查看各朝事件清单。' };
+    }
     // 单条路线：按 id 或名称命中（与 myth 分支同一套语义）
     if (route !== undefined && route !== null) {
       const key = norm(route);
@@ -563,10 +817,19 @@ function tGetRoute({ module, sect, route }) {
     const out = {};
     for (const d of dyns) {
       const b = loadDynasty(d);
-      const mapEvents = (b.mapEvents || []).map((ev) => ({
-        ...ev,
-        ...deepLink(`index.html?page=map&dynasty=${d}&event=${enc(ev.eventId || ev.id)}`),
-      }));
+      const mapEvents = (b.mapEvents || []).map((ev) => {
+        const link = deepLink(`index.html?page=map&dynasty=${d}&event=${enc(ev.eventId || ev.id)}`);
+        const eid = ev.eventId || ev.id;
+        const full = (b.events || []).find((x) => (x.eventId || x.id) === eid);
+        const story = (full && full.narrative) ? full.narrative : (ev.narrative || ev.summary || ev.note || '');
+        return {
+          ...ev,
+          ...link,
+          // 讲解员逐句高亮：列表只给计数与直达；逐句正文调 get_route(module=emperors, event=事件id)
+          guide_count: splitSentences(story).length,
+          guide_url: link.url + '&guide=1',
+        };
+      });
       out[d] = {
         dynasty: DYNASTY_LABEL[d],
         routes: b.routes, mapEvents, places: b.places,
@@ -584,23 +847,35 @@ function tGetRoute({ module, sect, route }) {
       const hots = cfg.hots || [];
       const points = (r.points || []).map((p) => {
         const h = hots.find((x) => x.name === p.name) || {};
+        const { segments } = stripMythTr(h.desc);
+        const rel = `index.html?module=myth&tab=map&route=${i}&hotspot=${enc(p.name)}`;
+        const guideBlocks = [];
+        if (h.src) guideBlocks.push({ label: '出处', text: h.src, role: '出处' });
+        segments.forEach((seg) => guideBlocks.push({
+          label: seg.type === 'tr' ? '译文' : '原文',
+          text: seg.text,
+          role: seg.type === 'tr' ? '译文' : '原文',
+        }));
+        const mainAll = segments.filter((s) => s.type === 'main').map((s) => s.text).join('');
+        const trAll = segments.filter((s) => s.type === 'tr').map((s) => s.text).join('');
         return {
           name: p.name,
           year: p.year || h.tag || null,
           event: p.event,
           x: h.x, y: h.y,
           src: h.src || null,
+          main_text: mainAll || null,
+          tr_text: trAll || null,
           image: h.img ? {
             thumb: {
               url: LOCAL_BASE + '../data/portraits/myth-map-thumb/' + h.img,
-              online_url: ONLINE_BASE + '../data/portraits/myth-map-thumb/' + h.img,
             },
             full: {
               url: LOCAL_BASE + '../data/portraits/myth-map/' + h.img,
-              online_url: ONLINE_BASE + '../data/portraits/myth-map/' + h.img,
             },
           } : null,
           ...gxDeepLink('myth', 'myth', `tab=map&route=${i}&hotspot=${enc(p.name)}`),
+          guide: guideBlocks.length ? guidePack(rel, guideBlocks, 'hotspot') : null,
         };
       });
       return {
@@ -693,22 +968,6 @@ function buildSearchDocs() {
     for (const ev of b.mapEvents || []) {
       add('emperors', '地图事件', ev.name, JSON.stringify(ev), ev.summary || ev.note,
         deepLink(`index.html?page=map&dynasty=${d}&event=${enc(ev.eventId || ev.id)}`).url);
-    }
-    // 帝王路线（靖难/郑和/土木堡……）：整条导览 + 逐站都建索引，
-    // 命中后直接打开讲解员导览（step 精确到某一站）
-    for (const r of b.routes || []) {
-      const tourBase = `index.html?page=map&dynasty=${d}&route=${enc(r.id)}`;
-      const routeText = [r.name, r.year, r.desc, r.intro,
-        (r.keywords || []).join(' '),
-        (r.points || []).map((p) => `${p.name} ${p.title || ''} ${p.narrate || p.note || ''}`).join(' ')]
-        .filter(Boolean).join(' ');
-      add('emperors', '路线导览', r.name, routeText,
-        r.intro || r.desc, deepLink(`${tourBase}&step=0&autoplay=0&muted=1`).url);
-      (r.points || []).forEach((p, i) => {
-        const txt = [r.name, p.name, p.modern, p.title, p.date, p.narrate, p.note, (r.keywords || []).join(' ')].filter(Boolean).join(' ');
-        add('emperors', '导览站点', `${p.title || p.name}（${r.name}）`, txt,
-          p.narrate || p.note || '', deepLink(`${tourBase}&step=${i}&autoplay=0&muted=1`).url);
-      });
     }
   }
   // 国学板块：典籍 / 公案 / 神兽器物 / 路线 / 问典
@@ -990,12 +1249,13 @@ const TOOLS = [
       name: { type: 'string', description: '如“九尾狐”“商代后母戊鼎”' },
     } },
     run: (a) => tGetArtifact(a) },
-  { name: 'get_route', description: '获取路线舆图：神话板块返回五条古舆图路线（山海经22/西游17/封神14/聊斋8/太平8，含每个热点的坐标、原著原文+译文、配图与深链）；诗词/思想返回真实地理路线；帝王返回各朝舆图事件。',
+  { name: 'get_route', description: '获取路线舆图：神话板块返回五条古舆图路线（山海经22/西游17/封神14/聊斋8/太平8，含每个热点的坐标、原著原文+译文、配图与深链）；诗词/思想返回真实地理路线；帝王返回各朝舆图事件。讲解单个帝王舆图事件时传 event（事件 id 或名称），返回该事件的完整正文与逐句 guide（歌词跟随）。',
     inputSchema: { type: 'object', properties: {
       module: { type: 'string', enum: ['emperors', 'thought', 'shiwen', 'myth'] },
       sect: { type: 'string', enum: Object.keys(THOUGHT_SECTS) },
       route: { description: '路线序号（0 起）或名称；不传则只返回路线清单',
         oneOf: [{ type: 'number' }, { type: 'string' }] },
+      event: { type: 'string', description: '仅帝王板块：单个地图事件的 id 或名称（如 ming-event-jingnan / 靖难之役）。传入后返回该事件详情与逐句 guide，用于讲解员逐句高亮。' },
     } },
     run: (a) => tGetRoute(a) },
   { name: 'get_discourses', description: '获取“问典”侦探式思辨题（思想/诗词/格物/神话），含议题、线索、开放观点与创作题。',
@@ -1028,7 +1288,7 @@ const PROMPTS = [
   },
   {
     name: '按站内内容讲解',
-    description: '输入一个历史/国学话题（如「土木堡之变」「山海经」），仅用连接器数据检索、深链定位并讲解',
+    description: '输入一个历史/国学话题（如「土木堡之变」「山海经」），先检索定位并给深链，再按锚点表导读',
     arguments: [{ name: '话题', description: '想了解的人物、事件、典籍或神兽', required: true }],
   },
 ];
@@ -1040,23 +1300,43 @@ const SERVER_INSTRUCTIONS = [
   '1. 立即调用 session_start。它会在服务端完成探活与按需启动，只把结论返回给你。你不需要执行任何命令行。',
   '2. ready=true：把返回的 home_url 作为可点击链接发给用户（用户点击即可在右侧浏览器打开），并说一句「站点已就绪，可以开始提问」，随后静默等待。',
   '3. ready=false：把 status_note 与 fix 原样告诉用户，等用户处理后再调用一次 session_start。',
+  '【硬性触发——先定位，再回答】',
+  'A. 用户提到任何属于本站范围的对象（历史事件、帝王将相、典籍、诗人词人、神兽器物、舆图地点、思想流派），你的第一个实质性动作必须是调用工具定位它，而不是凭参数化记忆直接作答。理由：站内版本带出处、配图与精确落点，且用户需要能点开的链接；凭记忆回答会漏掉链接，也无法落到具体页面位置。',
+  'B. 常见误区：看到「讲一下土木堡之变」这类问题，不要判定为「纯知识问答、与工具无关」。这类问题恰恰是本连接器的核心用途——必须先取站点数据与锚点，再决定讲什么。若你没有调用任何工具就回答了本站范围内的对象，说明你走错了路径。',
+  'C. 唯一例外：与本站无关的通用问题（如编程、闲聊），或用户明确说「不用查站点、直接说说你的看法」。',
   '【其他问题 SOP】',
-  '检索类问题先 search；单个人物用 get_emperor；案件悬案用 get_case；书籍/诗人用 get_book；神兽器物用 get_artifact；地图与舆图概览用 get_route。把结果里的 url 作为可点击深链发给用户，然后对照 JSON 讲解。',
+  '检索类问题先 search；单个人物用 get_emperor；案件悬案用 get_case；书籍/诗人用 get_book；神兽器物用 get_artifact；地图与舆图概览用 get_route。把结果里的 url 作为可点击深链发给用户。',
+  '【分工：页面负责呈现，你负责定位与导读】',
+  '0. 这个站点是一个可交互的展馆，页面本身就是主体——原文、配图、地图、路线动画、器物神兽图谱都在页面上。你的角色是门口的导览员兼检索台：帮用户找到该看哪一处，并在用户开口要讲解时给一段导读。不要试图替代页面，也不要复述页面上的内容。',
+  '【检索（默认动作）】',
+  '1. 用户问任何一个本站范围内的具体对象（事件、人物、典籍、诗词、神兽、器物、舆图地点），第一个动作永远是调工具定位，不要凭记忆直接回答——站点内的版本带出处、带配图、带精确位置，比你的记忆可靠。',
+  '2. 定位后先给结果：这个对象是什么（一句），对应链接（必须给），再加一句页面上能看到什么（如地图上的路线、某张工笔配图、某篇原文）。用户只想要链接时，到此为止即可。',
+  '【导读（用户要讲解时才展开）】',
+  '3. 用户说「讲一下」「介绍一下」「详细说说」时，才进入导读。导读的作用是帮助用户看懂页面，不是替代阅读：讲清为什么值得看、最反直觉之处、几处关键的前后关系、争议在哪，然后指向页面上对应的位置。用户点链接就能看到全部细节。',
+  '4. 篇幅跟着内容走，不设下限也不设上限。两三百字能讲清就两三百字；内容确实丰富就分几小节。判断标准只有一个：有没有帮用户更顺地看这个页面。不要为了显得充实而填充，也不要为了简洁砍掉真正关键的判断。',
+  '5. guide 字段是一张「锚点表」：guide.kind 是对象类型（event/person/book/craft/myth/route/hotspot），guide.lens 是该类型的关注点清单——它告诉你这类对象该往哪想（例如 event 该想「为什么发生、关键人物与动机、转折、代价与意义」；book 该想「核心思想或主要内容、作者处境、时代意义」）。lens 只是思考方向，不是填空模板，也不规定篇幅与写法。',
+  '   anchors[i] = { scene 这处讲什么、role 角色（背景/转折/路线站/原文/点评等）、gist 摘要（约 30 字，仅供你判断）、sources 出处、url 直达链接 }。用 scene 与 role 决定该指向哪一处，用 url 给链接；gist 是供你判断的摘要，不是要你复述的原文。',
+  '6. 挂链接由你判断：哪一处真的值得让用户离开对话、去页面上看一眼，就在那里给 anchors[i].url。可能三处、可能一处、也可能用户只想要答案时一处不给。唯一硬要求是指向不同位置——不要开头结尾各给一个却指向同一处，也不要每句话都塞一个链接。',
+  '6a. 允许并鼓励补充页面没有的内容：背景常识、因果分析、学界另一种说法、后世的回响，这些是页面做不到而你能做到的。但要与站内记载分层说清哪些是延伸，且不要在延伸里编造可查证的具体事实。',
+  '7. 事实边界：你讲的具体史实（人名、年份、地名、细节）必须有返回字段作依据，不得自造。解释、因果、评价、类比都是你的判断空间，不算越界。',
+  '8. 地图事件（靖难之役、土木堡之变等）：先 get_route(module=emperors,event=事件id或名称)。若关联路线，anchors 里有「路线概述」与逐站解说（role=路线站），顺着地理走向把站点串成一条线，别逐条复述每站 note。',
+  '9. 一律使用返回的本地 127.0.0.1 地址；本站全部能力基于本地版本。',
   '【禁止事项】',
   'A. 禁止搜索本地文件、硬盘、项目目录、hosts/DNS、端口、进程；站点已经在运行，网址都在工具返回里，找不到内容就再调工具，不要翻文件系统。',
-  'B. 禁止联网搜索或浏览外部网页来检索、补充本站相关事实；禁止引用维基百科、百科、新闻网页。工具没返回的内容，直接说「站点暂未收录」。',
+  'B. 禁止联网搜索或浏览外部网页来检索、补充本站相关事实；禁止引用维基百科、百科、新闻网页。站内确实没有的具体条目，如实说明收录范围即可。',
   'C. 禁止自行编写 HTML、地图或任何替代站点页面的产物。',
   'D. 只打开工具返回的 127.0.0.1 地址，不要打开外部网站。图片字段 thumb 用于对话内展示，full 是原图链接；不要输出 base64。',
-  'E. 只有用户明确要把链接分享给别人时，才用 online_url（GitHub Pages 在线地址）。',
+  'E. 只打开工具返回的 127.0.0.1 本地地址。',
   '【其他】涉及演义小说（《三国演义》《西游记》《封神演义》《聊斋志异》等）保留数据中的出处标注，不与正史混淆；默认使用简体中文。',
 ].join('\n');
 
 // 每条工具结果开头的强制提醒（模型对刚读到的工具内容关注度最高，写在这里比握手 instructions 更有效）
 const RESULT_REMINDER = [
   '【下一步操作指引】',
-  '1. 以上 JSON 是「中华历史图谱」站内人工整理的权威内容，是回答本题的唯一事实来源。禁止联网搜索、浏览网页、搜索本地文件或执行命令行排查。',
-  '2. 把结果中的 url 字段作为可点击深链发给用户，打开后页面会定位到对应条目。',
-  '3. 讲解必须落在返回的字段上；返回里没有的内容，说「站点暂未收录」。',
+  '1. 以上 JSON 是「中华历史图谱」站内人工整理的权威内容，是本题的事实来源。禁止联网搜索、浏览网页、搜索本地文件或执行命令行排查。',
+  '2. 把结果中的 url 字段作为可点击深链发给用户，打开后页面会定位到对应条目（带左侧栏，用户可自行切换板块）。页面负责呈现，你负责指路。',
+  '3. 不许编造具体史实（人名、年份、地名、事件细节）——这些必须来自返回字段。但解释、因果分析、评价、类比是你的判断空间，不算越界。',
+  '4. 若结果含 guide 字段：先看 guide.kind 与 guide.lens——lens 告诉你这类对象该想什么（事件想动机与转折，典籍想思想与时代意义，等等）。链接挂在真正值得去页面看一眼的地方，由你判断几处，但不要重复同一处。用户要「讲一下」时再展开导读；只想知道在哪时，给链接加一句说明即可。讲地图事件先用 get_route(module=emperors,event=...) 取完整 guide。',
 ].join('\n');
 
 // 模型跳过开场流程时的附加提醒
@@ -1108,7 +1388,7 @@ async function handle(msg) {
     }
     if (pname === '按站内内容讲解') {
       const topic = (params && params.arguments && params.arguments['话题']) || '（请在此填入话题）';
-      const text = OPENING_PROMPT + `\n\n现在请讲解：${topic}\n要求：先用 search 等工具检索；把返回的 url 作为可点击深链发给用户（打开即定位到对应条目）；再对照返回的 JSON 数据讲解。工具未收录的内容直接说「站点暂未收录」，禁止联网补充。`;
+      const text = OPENING_PROMPT + `\n\n现在请讲解：${topic}\n要求：先用 search 等工具检索定位（站内版本带出处、配图与精确落点，优先于记忆）；把返回结果里的 url 作为可点击深链发给用户（打开即定位到对应条目）。若结果含 guide 字段，先读 guide.kind 与 guide.lens 确定该讲哪几处、往哪想，再用 anchors[i].url 把链接挂在真正值得去页面看一眼的位置。若站内确实没有该具体条目，如实说「站点暂未收录」；允许补充页面没有的背景常识与分析，但延伸内容须与站内记载分层说清，不得编造可查证的具体事实，禁止联网补充。`;
       return rpcResult(id, {
         description: '仅用连接器数据讲解：' + topic,
         messages: [{ role: 'user', content: { type: 'text', text } }],
@@ -1194,16 +1474,82 @@ async function selftest() {
   const emp = await call({ jsonrpc: '2.0', id: 4, method: 'tools/call', params: { name: 'get_emperor', arguments: { name: '朱元璋' } } });
   const empData = JSON.parse(emp.result.content.at(-1).text);
   assert(empData.name === '朱元璋' && empData.portrait.url.includes('taizu.jpg'), 'get_emperor 朱元璋');
+  assert(!!empData.guide && empData.guide.anchor_count === empData.guide.anchors.length
+    && /&guide=1$/.test(empData.guide.guide_url)
+    && empData.guide.anchors.every((a, i) => a.i === i && a.gist && a.scene
+      && new RegExp('#s=' + i + '$').test(a.url))
+    && empData.guide.anchors.some((a) => a.sources && a.sources.length && a.role === '背景'),
+    '皇帝 guide 为锚点表（count=anchors，每项带 scene/gist/url#s=i，简介锚点带 sources）');
+  // 摘要必须是摘要而非原文全文：否则模型会直接搬运，讲解退化成复述
+  assert(empData.guide.anchors.some((a) => a.gist.length < (a.chars || 0) || a.chars <= 30),
+    '锚点 gist 为摘要而非完整原文（防止模型照搬）');
+  // 类型视角：人物 guide 应带 kind=person 与对应 lens，供模型判断该往哪想
+  assert(empData.guide.kind === 'person' && /时代困局|关键抉择/.test(empData.guide.lens || ''),
+    '人物 guide 带 kind=person 与类型视角 lens');
   const route = await call({ jsonrpc: '2.0', id: 5, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'myth', route: 1 } } });
   const routeData = JSON.parse(route.result.content.at(-1).text);
   assert(routeData.point_count === 17 && routeData.points[0].image && routeData.points[0].url,
     '神话西游路线 17 热点，含图片与深链');
+  const shj = await call({ jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'myth', route: 0 } } });
+  const shjData = JSON.parse(shj.result.content.at(-1).text);
+  const guidedPts = shjData.points.filter((p) => p.guide);
+  assert(shjData.point_count === 22 && guidedPts.length >= 1
+    && guidedPts.every((p) => p.guide.anchor_count === p.guide.anchors.length && /&guide=1$/.test(p.guide.guide_url)
+      && p.main_text && p.guide.anchors.some((a) => a.role === '原文') && p.guide.anchors.some((a) => a.role === '译文')),
+    '山海经 22 热点且含原文/译文锚点');
+  const empRoute = await call({ jsonrpc: '2.0', id: 10, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'emperors' } } });
+  const mingMap = JSON.parse(empRoute.result.content.at(-1).text).ming.mapEvents;
+  assert(mingMap.length > 0 && mingMap.every((e) => e.guide_url && /&guide=1$/.test(e.guide_url) && Number.isInteger(e.guide_count)),
+    '明地图事件全部带 guide_url/guide_count');
+  const ev1 = await call({ jsonrpc: '2.0', id: 11, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'emperors', event: 'ming-event-jingnan' } } });
+  const ev1Data = JSON.parse(ev1.result.content.at(-1).text);
+  assert(ev1Data.narrative && ev1Data.guide && ev1Data.guide.anchor_count === ev1Data.guide.anchors.length
+    && /&guide=1$/.test(ev1Data.guide.guide_url) && ev1Data.guide.anchor_count > 2,
+    '单事件详情含完整 narrative 锚点表（靖难之役）');
+  // 事件类型视角必须包含「关键人物」与「动机」，以及转折与意义
+  assert(ev1Data.guide.kind === 'event'
+    && /关键人物/.test(ev1Data.guide.lens || '')
+    && /动机/.test(ev1Data.guide.lens || '')
+    && /转折|代价/.test(ev1Data.guide.lens || ''),
+    '事件 guide 带 kind=event 与「关键人物 + 动机 + 转折」视角');
+  // 路线逐站：靖难应关联 5 站南下路线；锚点数=正文+路线概述+逐站解说，且路线站锚点可直接跳转
+  {
+    const g = ev1Data.guide;
+    const ming = loadDynasty('ming');
+    const r = (ming.routes || []).find((x) => x.id === 'jingnan-south');
+    const expected = splitSentences(ev1Data.narrative).length
+      + splitSentences(r.desc || '').length
+      + r.points.reduce((n, p) => n + splitSentences(p.note || '').length, 0);
+    assert(r && r.points.length === 5 && ev1Data.route && ev1Data.route.station_count === 5
+      && g.anchor_count === expected
+      && g.anchors.some((a) => a.scene === '路线概述' && a.role === '路线')
+      && g.anchors.some((a) => /^路线第5站/.test(a.scene) && a.role === '路线站')
+      && g.anchors.every((a) => /#s=\d+$/.test(a.url)),
+      '靖难事件锚点表含路线概述+5 站逐站解说，锚点数与前端一致，每项可跳转');
+  }
+  // 郑和起锚关联的是特殊海外图层 zhenghe-west：前端只做动画、不渲染路线详情，
+  // 服务端 guide 必须只含事件正文，与前端包裹的 #s 行数一致，不能追加路线块。
+  const zh = await call({ jsonrpc: '2.0', id: 12, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'emperors', event: 'ming-event-zhenghe-qihang' } } });
+  const zhData = JSON.parse(zh.result.content.at(-1).text);
+  assert(zhData.route === null
+    && zhData.guide.anchor_count === splitSentences(zhData.narrative).length
+    && !zhData.guide.anchors.some((a) => /路线/.test(a.scene)),
+    '郑和起锚事件不追加特殊航线块，锚点数与前端一致');
   const creature = await call({ jsonrpc: '2.0', id: 6, method: 'tools/call', params: { name: 'get_artifact', arguments: { module: 'myth', name: '九尾狐' } } });
   const cData = JSON.parse(creature.result.content.at(-1).text);
   assert(cData.image.thumb && cData.image.full, '九尾狐缩略图+原图');
   const book = await call({ jsonrpc: '2.0', id: 7, method: 'tools/call', params: { name: 'get_book', arguments: { module: 'shiwen', name: '李白' } } });
   const bData = JSON.parse(book.result.content.at(-1).text);
   assert(Array.isArray(bData.chapters), 'get_book 李白含名篇精读');
+  assert(!!bData.guide && bData.guide.anchor_count === bData.guide.anchors.length
+    && /&guide=1$/.test(bData.guide.guide_url) && bData.guide.anchors.length > 0
+    && bData.guide.anchors.some((a) => a.role === '原文') && bData.guide.anchors.some((a) => a.role === '点评'),
+    '典籍 guide 为锚点表（章节 背景→原文→译文→点评 各带 role）');
+  // 典籍类型视角应包含「核心思想/主要内容」与「时代意义」
+  assert(bData.guide.kind === 'book'
+    && /核心思想|主要内容/.test(bData.guide.lens || '')
+    && /时代/.test(bData.guide.lens || ''),
+    '典籍 guide 带 kind=book 与「核心思想/主要内容 + 时代意义」视角');
   const sch = await call({ jsonrpc: '2.0', id: 8, method: 'tools/call', params: { name: 'search', arguments: { q: '空印案', limit: 5 } } });
   const sData = JSON.parse(sch.result.content.at(-1).text);
   assert(sData.items.some((x) => x.title === '空印案'), 'search 空印案命中');

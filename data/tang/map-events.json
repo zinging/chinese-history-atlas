@@ -39,7 +39,7 @@
       "place": { "name": "虎牢关", "modern": "河南荥阳汜水镇", "note": "李世民一战定中原的古关隘。" }
     },
     {
-      "eventId": "tang-event-xuanwumen",
+      "eventId": "tang-event-xuanwu",
       "name": "玄武门之变",
       "date": "626",
       "kind": "coup",
@@ -116,7 +116,7 @@
       "place": { "name": "平壤", "modern": "朝鲜平壤", "note": "高句丽末期都城。" }
     },
     {
-      "eventId": "tang-event-wuzeitian",
+      "eventId": "tang-event-wuwei",
       "name": "武则天称帝",
       "date": "690",
       "kind": "coup",
@@ -259,7 +259,7 @@
       "place": { "name": "大明宫", "modern": "陕西西安", "note": "甘露之变发生地。" }
     },
     {
-      "eventId": "tang-event-huangchao-qiyi",
+      "eventId": "tang-event-huangchao",
       "name": "黄巢起义",
       "date": "875",
       "kind": "uprising",
