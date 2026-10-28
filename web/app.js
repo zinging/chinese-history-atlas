@@ -375,7 +375,27 @@ async function _fetchDynasty(dyn) {
 }
 
 // ---------- 界面切换 ----------
+/** 页面内容切换（朝代/皇帝/页签/模块）时停止逐句朗读与自动推进。
+ *  不停止的话，旧内容的播放状态会延续到新内容：hash 里的 #s=N 指向新内容中的
+ *  同序号句子，于是朗读"跨页"继续念新内容，看起来像根本停不下来。
+ *  导览脚本未加载或未激活时 __guide 不存在/为空实现，调用无副作用。
+ *  注意：国学四个板块是独立 iframe，各自有一份 __guide，必须一并停，
+ *  否则从「格物致知」切到别的模块后，iframe 里的朗读/推进还在跑。 */
+function stopGuideIfAny() {
+  try {
+    if (window.__guide && typeof window.__guide.stopGuide === 'function') window.__guide.stopGuide();
+  } catch (e) { /* 导览不可用不影响主流程 */ }
+  // 逐个通知已装载的 iframe（未装载的 src 为空、contentWindow 无 __guide，自动跳过）
+  document.querySelectorAll('iframe.guoxue-frame').forEach((f) => {
+    try {
+      const g = f.contentWindow && f.contentWindow.__guide;
+      if (g && typeof g.stopGuide === 'function') g.stopGuide();
+    } catch (e) { /* 跨域或子页未就绪，忽略 */ }
+  });
+}
+
 function switchPage(name) {
+  stopGuideIfAny();                 // 换页签即停：朗读/推进不得跨页面继续
   for (const p of ['timeline', 'cases', 'map', 'detective']) {
     const page = document.getElementById(`page-${p}`);
     const tab = document.querySelector(`.tab[data-page="${p}"]`);
@@ -972,6 +992,7 @@ function renderRelGraph(e) {
 }
 
 function showEmperor(e) {
+  stopGuideIfAny();                 // 换皇帝即停：朗读/推进不得跨人物继续
   const d = $('#emperor-detail');
   d.classList.remove('hidden');
   currentEmperorKey = e.id || e.name;
@@ -2978,6 +2999,7 @@ function setBodyData(key, value) {
 
 async function switchDynasty(d) {
   if (d === currentDynasty) return;
+  stopGuideIfAny();                 // 换朝即停：朗读/推进不得跨内容继续
   currentDynasty = d;
   setBodyData('era', d === 'all' ? null : d); // 全部视图用默认背板纹样
   // 令牌：快速连点朝代时，只有最后一次切换的结果允许落地渲染（旧版会被先返回的旧朝数据覆盖）
@@ -3481,6 +3503,7 @@ let MEGA_MODULES = [];
 
 /** 切换到指定模块：其余面板隐藏，选中项首次进入时懒加载 */
 function activateModule(which) {
+  stopGuideIfAny();                 // 换模块即停：朗读/推进不得跨模块继续
   document.querySelectorAll('.mega-btn[data-mega]').forEach((b) => {
     b.classList.toggle('active', b.dataset.mega === which);
   });
@@ -3664,9 +3687,9 @@ function renderModuleManager() {
     if (cur.speech && window.__guide && !window.__guide.hasSpeech()) {
       HINT.textContent = '当前浏览器不支持语音朗读，已自动改用文本推进。';
     } else if (cur.speech) {
-      HINT.textContent = '朗读已开启：讲解链接会逐句朗读并自动跳转下一句。';
+      HINT.textContent = '朗读已开启：点正文任意一句，从该句开始逐句朗读并自动往下走。';
     } else if (cur.dwell) {
-      HINT.textContent = '文本推进已开启：高亮会按句子长度自动切换，不出声。';
+      HINT.textContent = '文本推进已开启：点正文任意一句，从该句开始自动切换高亮，不出声。';
     } else {
       HINT.textContent = '两项均关闭：页面处于纯静态浏览状态。';
     }

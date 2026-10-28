@@ -1,5 +1,14 @@
 // 国学图谱 · app.js
 
+/** 内容切换（换书/换神话热点）时停止逐句朗读与自动推进。
+ *  不停止的话，旧内容的播放会延续到新内容，表现为"换了内容还在念/还在动"。
+ *  导览脚本未加载或未激活时 __guide 为空实现，调用无副作用。 */
+function stopGuideIfAny() {
+  try {
+    if (window.__guide && typeof window.__guide.stopGuide === 'function') window.__guide.stopGuide();
+  } catch (e) { /* 导览不可用不影响主流程 */ }
+}
+
 // ===== 全局加载动画 =====
 let _glTimer = null;
 function showLoader() {
@@ -421,6 +430,7 @@ function renderBooks() {
 /** 打开某本书：详情在分片里则先按需加载（卡片字段清单已具备，先给骨架，再渲染）。 */
 async function openBook(b) {
   if (!b) return;
+  stopGuideIfAny();                 // 换书即停：朗读/推进不得跨书继续
   const el = $("#book-detail");
   if (b.src && !b.__loaded) {
     el.classList.remove("hidden");
@@ -1119,6 +1129,7 @@ function renderSchematicHotspots() {
 }
 
 function showSchematicDetail(h) {
+  stopGuideIfAny();                 // 换神话热点即停：朗读/推进不得跨卡继续
   // 移除旧面板
   const old = document.querySelector(".sch-detail");
   if (old) old.remove();
@@ -1368,6 +1379,7 @@ function syncRouteButtons() {
 // 切换 tab
 document.querySelectorAll(".tab").forEach(t => {
   t.addEventListener("click", () => {
+    stopGuideIfAny();               // 换页签即停：朗读/推进不得跨板块继续
     document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
     t.classList.add("active");
     currentPage = t.dataset.page;

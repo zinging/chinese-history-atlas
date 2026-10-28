@@ -49,7 +49,7 @@
       </div>
     </div>
 
-    <!-- 导览设置：朗读 / 文本推进两个开关，默认全关；关闭后页面回到纯静态浏览 -->
+    <!-- 导览设置：朗读 / 文本推进两个开关，默认全关；这是网页自带功能，与 AI 讲解无关 -->
     <div class="mega-support">
       <button class="support-btn" id="guide-btn" aria-haspopup="true" aria-expanded="false" title="导览设置">
         <span class="support-icon">🔊</span><span>导览设置</span>
@@ -61,7 +61,7 @@
           <button class="support-pop-close" id="guide-close" aria-label="关闭">✕</button>
         </div>
         <p class="support-pop-text">
-          默认全关：页面就是普通的静态网页。开启后，讲解链接会在句间自动推进并高亮。
+          默认全关：页面就是普通的静态网页。开启后，点正文任意一句即从该句开始自动推进（可按需朗读）。
         </p>
         <label class="guide-item">
           <input type="checkbox" id="guide-speech" />
@@ -74,7 +74,7 @@
           <input type="checkbox" id="guide-dwell" />
           <span class="guide-item-body">
             <b>文本推进</b>
-            <i>不朗读，只按句子长度自动切换高亮，配合 AI 的文字导读</i>
+            <i>不朗读，只按句子长度自动切换高亮，可配合 AI 导读，也可单独使用</i>
           </span>
         </label>
         <p class="support-pop-text guide-hint" id="guide-hint"></p>

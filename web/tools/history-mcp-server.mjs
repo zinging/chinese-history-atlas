@@ -21,6 +21,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import readline from 'node:readline';
@@ -30,6 +31,8 @@ const ROOT = path.resolve(path.dirname(__filename), '..', '..');
 const DATA = path.join(ROOT, 'data');
 
 const LOCAL_BASE = (process.env.CHAT_BASE_URL || 'http://127.0.0.1:5173/web/').replace(/\/?$/, '/');
+
+const SERVER_VERSION = '1.4.0';
 
 // 连接诊断日志：客户端每拉起一次 STDIO 进程都会记录，用于排查连接器是否真正启动
 const LOG_FILE = path.join(ROOT, '.sessions', 'mcp-connector.log');
@@ -239,6 +242,9 @@ function guidePack(relQuery, blocks, kind) {
   return {
     anchor_count: anchors.length,
     guide_url: guideUrl,
+    // 打开即自动按句推进（页面播放器支持 ?autoplay=1）：用户点一个链接，页面就逐句金色高亮，
+    // 讲解员再对照锚点顺序口述；无需模型手动发多个 #s=i 链接。
+    autoplay_url: guideUrl + '&autoplay=1',
     kind: kind || null,
     lens: (kind && GUIDE_LENS[kind]) || null,
     anchors,
@@ -946,7 +952,105 @@ const TYPE_BOOST = {
   '神兽': 3, '器物': 3, '问典': 3, '路线': 2,
 };
 
+// 预构建检索索引落盘位置（data/ 下，随包发布，让新用户开箱即快查）
+const SEARCH_INDEX_FILE = path.join(DATA, 'search-index.json');
+
+// 常见别称 / 简称 → 标准词（高价值、且可能不在正文字段里的称呼；已在正文里的别称命中也无害）
+const SEARCH_ALIASES = {
+  '朱重八': '朱元璋', '洪武帝': '朱元璋', '朱洪武': '朱元璋',
+  '三宝太监': '郑和', '三保太监': '郑和',
+  '诸葛孔明': '诸葛亮', '孔明': '诸葛亮', '关云长': '关羽', '云长': '关羽',
+  '李太白': '李白', '太白': '李白', '李青莲': '李白',
+  '杜工部': '杜甫', '杜子美': '杜甫', '子美': '杜甫',
+  '苏东坡': '苏轼', '苏子瞻': '苏轼', '坡仙': '苏轼',
+  '永乐帝': '朱棣', '永乐大帝': '朱棣',
+  '玄烨': '康熙', '爱新觉罗玄烨': '康熙',
+  '弘历': '乾隆', '胤禛': '雍正',
+};
+
 let searchDocs = null;
+let searchIndex = null;
+
+/** 列出 data/ 下全部 JSON（排除预构建索引自身），按相对路径排序，供计算数据签名 */
+function listJsonFiles() {
+  const out = [];
+  (function walk(dir) {
+    for (const name of fs.readdirSync(dir)) {
+      const p = path.join(dir, name);
+      const st = fs.statSync(p);
+      if (st.isDirectory()) walk(p);
+      else if (name.endsWith('.json') && path.resolve(p) !== SEARCH_INDEX_FILE) out.push(p);
+    }
+  })(DATA);
+  return out.sort();
+}
+/** 数据签名：对全部 JSON 的「路径 + 原始字节」做哈希。读 3MB 原始字节很快（约几十毫秒），
+ * 且 git clone 后字节一致 → 签名一致 → 可直接复用随包发布的索引；内容一改签名即变。 */
+function dataSignature() {
+  const h = crypto.createHash('sha1');
+  for (const f of listJsonFiles()) {
+    h.update(path.relative(DATA, f).replace(/\\/g, '/'));
+    h.update(fs.readFileSync(f));
+  }
+  return h.digest('hex');
+}
+function buildPostings(docs) {
+  const post = new Map();
+  const bump = (token, idx, weight) => {
+    let m = post.get(token);
+    if (!m) { m = new Map(); post.set(token, m); }
+    m.set(idx, (m.get(idx) || 0) + weight);
+  };
+  docs.forEach((doc, idx) => {
+    for (const ch of doc.tnorm) bump('u:' + ch, idx, 3);
+    for (const bg of bigrams(doc.tnorm)) bump('t:' + bg, idx, 1);
+    for (const bg of bigrams(doc.body)) bump('b:' + bg, idx, 1);
+  });
+  return post;
+}
+const serializePost = (post) => {
+  const o = {};
+  for (const [tk, m] of post) o[tk] = Object.fromEntries(m);
+  return o;
+};
+const inflatePost = (o) => {
+  const post = new Map();
+  for (const tk of Object.keys(o)) {
+    post.set(tk, new Map(Object.entries(o[tk]).map(([k, v]) => [Number(k), v])));
+  }
+  return post;
+};
+function writeSearchIndex(docs, post, sig) {
+  const payload = {
+    version: SERVER_VERSION, sig,
+    // body 不持久化（其双字已编码进 post），只留展示/做摘要所需字段
+    docs: docs.map((d) => ({
+      module: d.module, moduleName: d.moduleName, type: d.type,
+      title: d.title, tnorm: d.tnorm, summary: d.summary, raw: d.raw, url: d.url,
+    })),
+    post: serializePost(post),
+  };
+  fs.writeFileSync(SEARCH_INDEX_FILE, JSON.stringify(payload), 'utf8');
+}
+function getSearchIndex() {
+  if (searchDocs && searchIndex) return { searchDocs, post: searchIndex };
+  let sig = null;
+  try { sig = dataSignature(); } catch (e) { dlog('计算数据签名失败: ' + e.message); }
+  let pre = null;
+  try { pre = readJson(SEARCH_INDEX_FILE); } catch { /* 无预构建 */ }
+  if (pre && pre.sig === sig && Array.isArray(pre.docs) && pre.post && pre.version === SERVER_VERSION) {
+    // 命中预构建索引：只做一次 JSON.parse，省去 parse + stringify + 建双字（约 2.6s → 数百毫秒）
+    searchDocs = pre.docs.map((d) => ({ ...d, body: '' }));
+    searchIndex = inflatePost(pre.post);
+  } else {
+    searchDocs = buildSearchDocs();
+    searchIndex = buildPostings(searchDocs);
+    try { writeSearchIndex(searchDocs, searchIndex, sig || dataSignature()); }
+    catch (e) { dlog('写检索索引失败: ' + e.message); }
+  }
+  return { searchDocs, post: searchIndex };
+}
+
 function buildSearchDocs() {
   const docs = [];
   const add = (m, type, title, raw, summary, url) => {
@@ -1017,25 +1121,6 @@ function bigrams(str) {
   return out;
 }
 
-let searchIndex = null;
-function getSearchIndex() {
-  if (searchDocs && searchIndex) return searchIndex;
-  searchDocs = buildSearchDocs();
-  const post = new Map();
-  const bump = (token, idx, weight) => {
-    let m = post.get(token);
-    if (!m) { m = new Map(); post.set(token, m); }
-    m.set(idx, (m.get(idx) || 0) + weight);
-  };
-  searchDocs.forEach((doc, idx) => {
-    for (const ch of doc.tnorm) bump('u:' + ch, idx, 3);
-    for (const bg of bigrams(doc.tnorm)) bump('t:' + bg, idx, 1);
-    for (const bg of bigrams(doc.body)) bump('b:' + bg, idx, 1);
-  });
-  searchIndex = post;
-  return searchIndex;
-}
-
 function makeSnippet(doc, chunks) {
   const base = (doc.summary || doc.raw).replace(/<[^>]+>/g, '');
   const hay = norm(base);
@@ -1049,11 +1134,12 @@ function makeSnippet(doc, chunks) {
 function tSearch({ q, module, limit }) {
   const max = Math.min(Number(limit) || 20, 50);
   const raw = String(q || '').trim();
+  const aliasOf = (s) => SEARCH_ALIASES[s] || s;
   const chunks = raw.toLowerCase()
     .replace(/[·・《》「」『』，,。、？?！!：:；;()（）]/g, ' ')
-    .split(/\s+/).map((c) => norm(c)).filter(Boolean);
+    .split(/\s+/).map((c) => aliasOf(norm(c))).filter(Boolean);
   if (!chunks.length) throw new Error('需要提供 q（检索词）');
-  const post = getSearchIndex();
+  const { post } = getSearchIndex();
   const allowed = new Set();
   searchDocs.forEach((d, i) => { if (!module || d.module === module) allowed.add(i); });
   const scores = new Map();
@@ -1091,6 +1177,29 @@ function tSearch({ q, module, limit }) {
   for (let i = 1; i < perChunk.length; i++) {
     candidates = new Set([...candidates].filter((x) => perChunk[i].has(x)));
   }
+  // 宽松回退：严格 AND 为空（别称、非相邻字、口语化问法）时，改为「任一 token 命中即计分」
+  // 的 OR 召回 + 标题包含，保证简称也能找到；权重低于严格匹配，排序自然靠后。
+  const loose = new Map();
+  if (!candidates.size) {
+    for (const chunk of chunks) {
+      const toks = chunk.length === 1
+        ? ['u:' + chunk]
+        : bigrams(chunk).flatMap((bg) => ['t:' + bg, 'b:' + bg]);
+      for (const tk of toks) {
+        const m = post.get(tk);
+        if (!m) continue;
+        for (const [idx, cnt] of m) {
+          if (!allowed.has(idx)) continue;
+          loose.set(idx, (loose.get(idx) || 0) + (tk[0] === 't' ? 3 : 1) * cnt);
+        }
+      }
+    }
+    searchDocs.forEach((doc, idx) => {
+      if (!allowed.has(idx)) return;
+      for (const ch of chunks) if (doc.tnorm.includes(ch)) loose.set(idx, (loose.get(idx) || 0) + 8);
+    });
+    candidates = new Set(loose.keys());
+  }
   const items = [];
   for (const idx of candidates) {
     const doc = searchDocs[idx];
@@ -1099,6 +1208,7 @@ function tSearch({ q, module, limit }) {
       if (doc.tnorm === chunk) score += 100;
       else if (doc.tnorm.includes(chunk)) score += 55;
     }
+    if (loose.has(idx)) score += loose.get(idx) * 0.4;   // 宽松召回权重打折
     score += TYPE_BOOST[doc.type] || 0;
     items.push({
       module: doc.module, moduleName: doc.moduleName, type: doc.type,
@@ -1305,7 +1415,7 @@ const SERVER_INSTRUCTIONS = [
   'B. 常见误区：看到「讲一下土木堡之变」这类问题，不要判定为「纯知识问答、与工具无关」。这类问题恰恰是本连接器的核心用途——必须先取站点数据与锚点，再决定讲什么。若你没有调用任何工具就回答了本站范围内的对象，说明你走错了路径。',
   'C. 唯一例外：与本站无关的通用问题（如编程、闲聊），或用户明确说「不用查站点、直接说说你的看法」。',
   '【其他问题 SOP】',
-  '检索类问题先 search；单个人物用 get_emperor；案件悬案用 get_case；书籍/诗人用 get_book；神兽器物用 get_artifact；地图与舆图概览用 get_route。把结果里的 url 作为可点击深链发给用户。',
+  '检索类问题先 search；单个人物用 get_emperor；案件悬案用 get_case；书籍/诗人用 get_book；神兽器物用 get_artifact；地图与舆图概览用 get_route。单对象结果最前面的 open_url 是唯一应先发给用户打开的链接（讲解类对象打开即逐句金色高亮），先让用户在右侧打开页面，再对照页面讲解。',
   '【分工：页面负责呈现，你负责定位与导读】',
   '0. 这个站点是一个可交互的展馆，页面本身就是主体——原文、配图、地图、路线动画、器物神兽图谱都在页面上。你的角色是门口的导览员兼检索台：帮用户找到该看哪一处，并在用户开口要讲解时给一段导读。不要试图替代页面，也不要复述页面上的内容。',
   '【检索（默认动作）】',
@@ -1315,6 +1425,7 @@ const SERVER_INSTRUCTIONS = [
   '3. 用户说「讲一下」「介绍一下」「详细说说」时，才进入导读。导读的作用是帮助用户看懂页面，不是替代阅读：讲清为什么值得看、最反直觉之处、几处关键的前后关系、争议在哪，然后指向页面上对应的位置。用户点链接就能看到全部细节。',
   '4. 篇幅跟着内容走，不设下限也不设上限。两三百字能讲清就两三百字；内容确实丰富就分几小节。判断标准只有一个：有没有帮用户更顺地看这个页面。不要为了显得充实而填充，也不要为了简洁砍掉真正关键的判断。',
   '5. guide 字段是一张「锚点表」：guide.kind 是对象类型（event/person/book/craft/myth/route/hotspot），guide.lens 是该类型的关注点清单——它告诉你这类对象该往哪想（例如 event 该想「为什么发生、关键人物与动机、转折、代价与意义」；book 该想「核心思想或主要内容、作者处境、时代意义」）。lens 只是思考方向，不是填空模板，也不规定篇幅与写法。',
+  '   guide.autoplay_url 是「打开即自动逐句推进」的链接（页面会逐句金色高亮，桌面歌词风），用户要讲解时优先发它；guide_url 是不自动播放的版本。',
   '   anchors[i] = { scene 这处讲什么、role 角色（背景/转折/路线站/原文/点评等）、gist 摘要（约 30 字，仅供你判断）、sources 出处、url 直达链接 }。用 scene 与 role 决定该指向哪一处，用 url 给链接；gist 是供你判断的摘要，不是要你复述的原文。',
   '6. 挂链接由你判断：哪一处真的值得让用户离开对话、去页面上看一眼，就在那里给 anchors[i].url。可能三处、可能一处、也可能用户只想要答案时一处不给。唯一硬要求是指向不同位置——不要开头结尾各给一个却指向同一处，也不要每句话都塞一个链接。',
   '6a. 允许并鼓励补充页面没有的内容：背景常识、因果分析、学界另一种说法、后世的回响，这些是页面做不到而你能做到的。但要与站内记载分层说清哪些是延伸，且不要在延伸里编造可查证的具体事实。',
@@ -1334,7 +1445,7 @@ const SERVER_INSTRUCTIONS = [
 const RESULT_REMINDER = [
   '【下一步操作指引】',
   '1. 以上 JSON 是「中华历史图谱」站内人工整理的权威内容，是本题的事实来源。禁止联网搜索、浏览网页、搜索本地文件或执行命令行排查。',
-  '2. 把结果中的 url 字段作为可点击深链发给用户，打开后页面会定位到对应条目（带左侧栏，用户可自行切换板块）。页面负责呈现，你负责指路。',
+  '2. 若结果最前面带 open_url（单对象）：它是唯一应先发给用户的链接，先让用户在右侧打开页面、定位到对应条目，再对照页面讲解；讲解类对象的 open_url 打开即逐句金色高亮。列表类结果则把其中 url 作为可点击深链。页面负责呈现，你负责指路。',
   '3. 不许编造具体史实（人名、年份、地名、事件细节）——这些必须来自返回字段。但解释、因果分析、评价、类比是你的判断空间，不算越界。',
   '4. 若结果含 guide 字段：先看 guide.kind 与 guide.lens——lens 告诉你这类对象该想什么（事件想动机与转折，典籍想思想与时代意义，等等）。链接挂在真正值得去页面看一眼的地方，由你判断几处，但不要重复同一处。用户要「讲一下」时再展开导读；只想知道在哪时，给链接加一句说明即可。讲地图事件先用 get_route(module=emperors,event=...) 取完整 guide。',
 ].join('\n');
@@ -1359,7 +1470,7 @@ async function handle(msg) {
     return rpcResult(id, {
       protocolVersion: '2024-11-05',
       capabilities: { tools: { listChanged: false }, prompts: { listChanged: false } },
-      serverInfo: { name: 'chinese-history-atlas', version: '1.3.0' },
+      serverInfo: { name: 'chinese-history-atlas', version: SERVER_VERSION },
       instructions: SERVER_INSTRUCTIONS,
     });
   }
@@ -1401,8 +1512,15 @@ async function handle(msg) {
     const tool = TOOLS.find((t) => t.name === name);
     if (!tool) return rpcError(id, -32601, '未知工具：' + name);
     try {
-      const data = await tool.run((params && params.arguments) || {});
+      let data = await tool.run((params && params.arguments) || {});
       if (name === 'session_start') sessionStarted = true;
+      // 单对象结果（皇帝/事件/典籍/器物）：把「唯一应先打开的链接」置顶。
+      // 讲解类对象用 autoplay 链接（打开即逐句高亮），让模型的第一个动作就是让用户在右侧打开页面，
+      // 而不是凭记忆作答或去翻文件；列表类结果（items/数组）不置顶。
+      if (data && typeof data === 'object' && !Array.isArray(data) && !data.open_url) {
+        const first = (data.guide && data.guide.autoplay_url) || data.url || null;
+        if (first) data = { open_url: first, ...data };
+      }
       const blocks = [];
       if (!sessionStarted) blocks.push({ type: 'text', text: NOT_STARTED_REMINDER });
       blocks.push({ type: 'text', text: RESULT_REMINDER });
@@ -1474,12 +1592,14 @@ async function selftest() {
   const emp = await call({ jsonrpc: '2.0', id: 4, method: 'tools/call', params: { name: 'get_emperor', arguments: { name: '朱元璋' } } });
   const empData = JSON.parse(emp.result.content.at(-1).text);
   assert(empData.name === '朱元璋' && empData.portrait.url.includes('taizu.jpg'), 'get_emperor 朱元璋');
+  assert(!!empData.open_url && /&autoplay=1$/.test(empData.open_url), '单对象结果置顶 open_url（讲解类=autoplay）');
   assert(!!empData.guide && empData.guide.anchor_count === empData.guide.anchors.length
     && /&guide=1$/.test(empData.guide.guide_url)
+    && /&autoplay=1$/.test(empData.guide.autoplay_url)
     && empData.guide.anchors.every((a, i) => a.i === i && a.gist && a.scene
       && new RegExp('#s=' + i + '$').test(a.url))
     && empData.guide.anchors.some((a) => a.sources && a.sources.length && a.role === '背景'),
-    '皇帝 guide 为锚点表（count=anchors，每项带 scene/gist/url#s=i，简介锚点带 sources）');
+    '皇帝 guide 为锚点表（count=anchors，带 guide_url/autoplay_url，每项带 scene/gist/url#s=i，简介锚点带 sources）');
   // 摘要必须是摘要而非原文全文：否则模型会直接搬运，讲解退化成复述
   assert(empData.guide.anchors.some((a) => a.gist.length < (a.chars || 0) || a.chars <= 30),
     '锚点 gist 为摘要而非完整原文（防止模型照搬）');
@@ -1553,10 +1673,27 @@ async function selftest() {
   const sch = await call({ jsonrpc: '2.0', id: 8, method: 'tools/call', params: { name: 'search', arguments: { q: '空印案', limit: 5 } } });
   const sData = JSON.parse(sch.result.content.at(-1).text);
   assert(sData.items.some((x) => x.title === '空印案'), 'search 空印案命中');
+  // 别称别名：搜「李太白」应命中李白（别名映射）
+  const alias = await call({ jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name: 'search', arguments: { q: '李太白', limit: 5 } } });
+  const aData = JSON.parse(alias.result.content.at(-1).text);
+  assert(aData.items.some((x) => x.title === '李白'), 'search 别称「李太白」命中李白');
+  // 宽松回退：非相邻字 / 口语化问法（严格 AND 为空）也能召回，如「苏东坡」应命中苏轼
+  const loose = await call({ jsonrpc: '2.0', id: 10, method: 'tools/call', params: { name: 'search', arguments: { q: '苏东坡', limit: 5 } } });
+  const lData = JSON.parse(loose.result.content.at(-1).text);
+  assert(lData.items.some((x) => x.title === '苏轼'), 'search 宽松回退「苏东坡」命中苏轼');
   console.log('\n全部自测通过。');
 }
 
-if (process.argv.includes('--selftest')) {
+if (process.argv.includes('--build-index')) {
+  // 数据改动后强制重建检索索引并落盘（发布前跑一次，随包发布让新用户开箱即快查）
+  const t0 = process.hrtime.bigint();
+  const docs = buildSearchDocs();
+  const post = buildPostings(docs);
+  writeSearchIndex(docs, post, dataSignature());
+  const ms = Number(process.hrtime.bigint() - t0) / 1e6;
+  const sizeMB = fs.statSync(SEARCH_INDEX_FILE).size / 1048576;
+  console.log(`检索索引已重建：${docs.length} 条文档，用时 ${ms.toFixed(0)}ms，文件 ${sizeMB.toFixed(1)}MB`);
+} else if (process.argv.includes('--selftest')) {
   await selftest();
 } else {
   runStdio();
