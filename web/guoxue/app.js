@@ -399,7 +399,7 @@ function renderBooks() {
     return `
     <div class="book-card" data-i="${i}" data-id="${b.id}">
       <div class="book-name">${topLabel}</div>
-      ${b.portrait ? `<div class="portrait"><img src="../../data/portraits/${b.portrait}" alt="${b.person || b.name}" loading="lazy" decoding="async" width="84" height="84"></div>` : `<div class="icon">${b.icon || "📖"}</div>`}
+      ${b.portrait ? `<div class="portrait"><img src="../../data/portraits/${b.portrait}" alt="${b.person || b.name}" loading="lazy" decoding="async" width="84" height="84"></div>` : `<div class="icon">${b.icon || ""}</div>`}
       ${b.person ? `<div class="person-name">${b.person}</div>` : ""}
       <div class="meta">${cardMeta}</div>
     </div>`;
@@ -450,7 +450,7 @@ function renderBookDetail(b) {
   el.classList.remove("hidden");
   const portraitHtml = b.portrait
     ? `<img class="detail-portrait" src="../../data/portraits/${b.portrait}" alt="${b.person || b.name}">`
-    : `<div class="detail-icon">${b.icon || "📖"}</div>`;
+    : `<div class="detail-icon">${b.icon || ""}</div>`;
   const bookTagHtml = b.person
     ? `<span class="book-tag">《${b.name}》</span> · `
     : "";
@@ -497,9 +497,9 @@ function renderBookDetail(b) {
   const hasGolden = b.golden && b.golden.length;
   const hasFunFacts = b.funFacts && b.funFacts.length;
   const chips = [];
-  if (hasChapters) chips.push({ key: "chapters", label: "📖 名篇精读", color: "chip-facts" });
+  if (hasChapters) chips.push({ key: "chapters", label: "名篇精读", color: "chip-facts" });
   if (hasGolden)   chips.push({ key: "golden",   label: "✨ 金句",     color: "chip-open" });
-  if (hasFunFacts) chips.push({ key: "funfacts", label: "💡 冷知识",   color: "chip-make" });
+  if (hasFunFacts) chips.push({ key: "funfacts", label: "冷知识",   color: "chip-make" });
   if (chips.length) {
     const defaultTab = chips[0].key;
     html += `<div class="entry-chip-row">`;
@@ -522,10 +522,10 @@ function renderBookDetail(b) {
         return `
         <div class="chapter">
           ${titleHtml}
-          ${c.context ? `<div class="context">📍 ${c.context}</div>` : ""}
+          ${c.context ? `<div class="context">${c.context}</div>` : ""}
           <div class="original">${c.original || ""}</div>
           <div class="gloss">${c.gloss || ""}</div>
-          ${c.afterword ? `<div class="afterword"><span class="afterword-tag">💡 点评</span>${c.afterword}</div>` : ""}
+          ${c.afterword ? `<div class="afterword"><span class="afterword-tag">点评</span>${c.afterword}</div>` : ""}
         </div>`;
       }).join("");
       html += `</div>`;
@@ -792,13 +792,13 @@ async function renderQuiz() {
 
   const cluesHtml = (d.clues || []).map((c, i) => `
     <div class="det-clue">
-      <div class="det-clue-label">📌 ${esc(c.label)}</div>
+      <div class="det-clue-label">${esc(c.label)}</div>
       <div class="det-clue-text">${esc(c.text)}</div>
     </div>`).join("");
 
   const openHtml = d.open ? `
     <div class="det-debate">
-      <span class="det-debate-label">💬 思辨一下（没有标准答案）</span><span class="det-debate-quest">${esc(d.open.question)}</span>
+      <span class="det-debate-label">思辨一下（没有标准答案）</span><span class="det-debate-quest">${esc(d.open.question)}</span>
       <div class="det-debate-views">${(d.open.viewpoints || []).map((v) => esc(v)).join("<span class='det-sep'>｜</span>")}</div>
     </div>` : "";
 
@@ -809,7 +809,7 @@ async function renderQuiz() {
   list.innerHTML = `
     <div class="det-wrap">
       <div class="det-card">
-        <div class="det-quest">🕵️ ${esc(d.quest)}</div>
+        <div class="det-quest">${esc(d.quest)}</div>
         ${openHtml}
         <div class="det-nav">
           <button class="det-btn" id="disc-prev">◀ 上一题</button>
@@ -819,15 +819,15 @@ async function renderQuiz() {
       </div>
 
       <div class="det-section">
-        <h4 class="det-sec-title">🔍 收集到的线索 <small>（来自本项目已核对史料）</small></h4>
+        <h4 class="det-sec-title">收集到的线索 <small>（来自本项目已核对史料）</small></h4>
         ${cluesHtml}
       </div>
 
       <div class="det-section">
-        <h4 class="det-sec-title">🖊️ 你的回答</h4>
+        <h4 class="det-sec-title">你的回答</h4>
         <div class="det-answer-box">
           <div class="det-answer-quest"><b>围绕本题作答：</b>${esc(d.quest)}</div>
-          <div class="det-answer-hint">💡 ${esc(d.create)}</div>
+          <div class="det-answer-hint">${esc(d.create)}</div>
           <textarea id="disc-input" placeholder="结合上面的线索，写下你的判断或答案…"></textarea>
         </div>
       </div>

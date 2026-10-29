@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 /**
- * 事件工笔彩绘图瘦身（data/portraits/event-gongbi）：
- * 事件详情卡配图最大约 300px 宽（2x 屏 600px），原图统一缩到 800px 宽生成缩略图，
- * 输出到 data/portraits/event-gongbi-thumb/ 同名文件，卡片直接引缩略图；
- * 原图保留在 event-gongbi/，供点击放大与日后再生成。
+ * 事件工笔彩绘图瘦身：把事件图缩到 680px 宽，落到 data/portraits/event-gongbi-thumb/。
+ * 站点只用这一份——事件卡最宽 380px，图渲染宽 275~327px，680 宽在 2x 高分屏下仍有 0.81~0.96
+ * 的余量（实测见 .sessions/gh-measure-fig.mjs），再大就是用不上的像素。
+ * 事件图不做点击放大，因此不保留原图：event-gongbi/ 只是「新图进来时的暂存区」，用完可删。
+ * 没有暂存区时本脚本原地重压 event-gongbi-thumb/，所以只有缩略图的常态下也能跑。
  * 已小于等于目标宽度的直接复制（保证目录齐全、零 404）。
  *
- * 用法：node web/tools/make-event-thumbs.mjs [--dry-run] [--width=800] [--quality=82]
+ * 用法：node web/tools/make-event-thumbs.mjs [--dry-run] [--width=680] [--quality=82]
  * 依赖：Windows 自带 PowerShell + System.Drawing，无需 npm 安装。
  */
 import { readdirSync, existsSync, statSync, mkdirSync, rmSync, copyFileSync } from 'node:fs';
@@ -17,7 +18,7 @@ import { tmpdir } from 'node:os';
 import { writeFileSync } from 'node:fs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SRC_DIR = join(HERE, '..', '..', 'data', 'portraits', 'event-gongbi');
+const FULL_DIR = join(HERE, '..', '..', 'data', 'portraits', 'event-gongbi');
 const THUMB_DIR = join(HERE, '..', '..', 'data', 'portraits', 'event-gongbi-thumb');
 
 const args = process.argv.slice(2);
@@ -26,14 +27,31 @@ const num = (name, def) => {
   const hit = args.find((a) => a.startsWith(`--${name}=`));
   return hit ? Number(hit.split('=')[1]) : def;
 };
-const WIDTH = num('width', 800);
+const WIDTH = num('width', 680);
 const QUALITY = num('quality', 82);
 
-if (!existsSync(SRC_DIR)) { console.error('未找到原图目录：', SRC_DIR); process.exit(1); }
+// 图片来源：优先用 event-gongbi/（新生成的高分辨率原图，用完即可删）；
+// 没有该目录时直接在 event-gongbi-thumb/ 上原地重压——
+// 站点只保留缩略图，所以「只有缩略图」是常态，流水线必须在这种常态下也能跑。
+// 原地重压安全：读源图 → 编码到临时目录 → 再拷回，不会边读边写同一个文件。
+const SRC_DIR = existsSync(FULL_DIR) ? FULL_DIR : THUMB_DIR;
+const inPlace = SRC_DIR === THUMB_DIR;
 mkdirSync(THUMB_DIR, { recursive: true });
 
 const files = readdirSync(SRC_DIR).filter((f) => /\.jpe?g$/i.test(f));
-if (!files.length) { console.log('event-gongbi 目录下暂无 jpg（图片生成后再跑本脚本）。'); process.exit(0); }
+if (!files.length) {
+  console.error('没有可处理的事件图：event-gongbi/ 与 event-gongbi-thumb/ 里都没有 jpg。');
+  process.exit(1);
+}
+if (inPlace && !dryRun) {
+  // 原地重压：先把每张图备份为 .bak，全部成功后再删，避免中途失败丢图。
+  // 只在真正写盘时备份——dry-run 必须零副作用。
+  for (const n of files) {
+    const b = join(THUMB_DIR, n + '.bak');
+    if (existsSync(b)) continue;          // 已有备份说明上轮失败过，保留最初那份，别用重压结果覆盖它
+    try { copyFileSync(join(THUMB_DIR, n), b); } catch {}
+  }
+}
 
 const LIST = join(HERE, '.event-list.txt');
 writeFileSync(LIST, files.map((name, i) => `${i}\t${join(SRC_DIR, name)}\t${name}`).join('\r\n'), 'utf8');
@@ -116,6 +134,13 @@ files.forEach((name, i) => {
     if (!dryRun) copyFileSync(out, dstPath);
   } else { fail++; after += sz; }
 });
+
+if (inPlace && !dryRun) {
+  // 全部成功后清掉刚才留的备份，半途失败的图靠备份恢复
+  const okAll = fail === 0 && made + copied === files.length;
+  if (okAll) { for (const n of files) { const b = join(THUMB_DIR, n + '.bak'); try { rmSync(b, { force: true }); } catch {} } }
+  else { console.error('重压未全部成功，已保留 .bak 备份，请排查后重跑。'); process.exitCode = 1; }
+}
 
 rmSync(OUT_DIR, { recursive: true, force: true });
 rmSync(LIST, { force: true });

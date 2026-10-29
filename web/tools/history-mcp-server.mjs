@@ -764,10 +764,10 @@ function tGetRoute({ module, sect, route, event }) {
               guideBlocks.push({ label: `路线第${i + 1}站·${p.name}`, text: p.note || '', role: '路线站' });
             });
           }
-          // 事件工笔彩绘图（存在才返回，未生成的事件不带该字段，避免破图）
-          const imgFullPath = path.join(DATA, 'portraits', 'event-gongbi', `${eid}.jpg`);
-          const eventImage = exists(imgFullPath)
-            ? portraitHref(`data/portraits/event-gongbi/${eid}.jpg`, { thumb: true, thumbDir: 'event-gongbi-thumb' })
+          // 事件工笔彩绘图（只有缩略图，存在才返回，未生成的事件不带该字段，避免破图）
+          const imgThumbPath = path.join(DATA, 'portraits', 'event-gongbi-thumb', `${eid}.jpg`);
+          const eventImage = exists(imgThumbPath)
+            ? portraitHref(`data/portraits/event-gongbi-thumb/${eid}.jpg`)
             : null;
           return {
             dynasty: d,

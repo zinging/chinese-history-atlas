@@ -19,6 +19,7 @@
   --sidebar-w-collapsed: 64px;
   /* 正文限宽：与典籍长河 web/guoxue/style.css 的 #app 完全一致，两模块共用 */
   --content-max: 1080px;
+  --content-max-wide: 1095px;  /* 向左扩 15px 后的总宽，见 .module-inner 注释 */
   /* 胶囊相对「可用区中心」的偏移。典籍长河在 iframe 内用的是 calc(50% - 680px)，
      这里可用区 = 视口 − 侧栏，故换成同样的写法（两模块实测间隙均为 14px）。 */
   --rail-offset: 680px;
@@ -124,10 +125,17 @@ body::after {
 #app { max-width: none; margin: 0; padding: 0; }
 
 /* 模块正文容器：与典籍长河 web/guoxue/style.css 的 #app 逐值相同（限宽 1080 居中 + 同内边距）。
-   两模块共用同一套数学，正文宽度与位置必然一致。 */
+   两模块共用同一套数学，正文宽度与位置必然一致。
+   2026-04：按用户要求「主体内容统一向左扩 15px」，正文框 1080 → 1095，
+   左缘左移 15px、右缘钉在原位（不侵占右侧胶囊沟槽）：
+     目标左缘 = (C−1080)/2 − 15 = (C−1110)/2  → margin-left: calc(50% − 555px)
+     目标右缘 = (C+1080)/2                      → 由 max-width 1095 + margin-right:auto 自然得到
+   C 为 .mega-area 的宽度。窄窗口下左式会变负，用 max(0px,…) 兜底退化为满宽，
+   与改动前窄窗口的表现一致。实测见 .sessions/gh-measure-inner.mjs。 */
 .module-inner {
-  max-width: var(--content-max);
-  margin: 0 auto;
+  max-width: var(--content-max-wide);
+  margin-left: max(0px, calc(50% - 555px));
+  margin-right: auto;
   padding: 12px 16px 40px;
 }
 /* 可用区（视口 − 侧栏）放不下「正文 + 胶囊」时，给正文右侧留出胶囊沟槽。
@@ -170,18 +178,14 @@ body::after {
 
 /* 折叠面板：标题行 + chevron */
 .ai-config-card { padding: 0; overflow: hidden; }
-.ai-config-toggle {
-  width: 100%; display: flex; align-items: center; gap: 12px;
-  padding: 15px 20px; background: none; border: none; cursor: pointer;
-  text-align: left; font-family: inherit;
-}
-.ai-config-toggle:hover { background: #fbf3e0; }
-.ai-config-toggle-title { font-size: 18px; font-weight: 800; color: #8a4b1f; }
-.ai-config-toggle-sub { font-size: 13px; color: var(--muted); flex: 1; }
-.ai-config-chevron { font-size: 18px; color: #8a4b1f; transition: transform .25s ease; }
-.ai-config-toggle.open .ai-config-chevron { transform: rotate(180deg); }
-.ai-config-body { padding: 6px 20px 18px; }
-.ai-config-body.collapsed { display: none; }
+
+
+
+
+
+
+
+
 
 /* 模型 combobox：输入框 + 拉取按钮 + 下拉按钮 + 浮层菜单 */
 .model-combo { position: relative; margin-top: 5px; display: flex; gap: 6px; align-items: stretch; }
@@ -232,8 +236,8 @@ body::after {
 .ask-chip:hover { background: #f5e6c4; }
 .ask-result .ask-answer-q { font-weight: 700; margin-bottom: 6px; }
 .ask-result .llm-answer { line-height: 1.75; }
-.ask-loading { color: #8a7a5c; }
-.ask-error { line-height: 1.7; }
+
+
 
 /* 侦探页「上一案 / 下一案」导航 */
 .detective-nav { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
@@ -371,45 +375,61 @@ body.sidebar-collapsed .tabs {
   transition: all .15s;
 }
 .support-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(201,169,106,.35); }
-.support-icon { font-size: 16px; color: #d4a017; }
+/* 图标位：收起态只显示它，所以必须是可缩放的矢量图标（内联 SVG 用 currentColor 继承金色）。
+   不用 emoji：带变体选择符的字符在不同字体栈下宽度与着色不可控。 */
+.support-icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; font-size: 16px; color: #d4a017; flex: 0 0 auto; }
+.support-icon svg { width: 16px; height: 16px; display: block; }
+.support-pop-star { display: inline-flex; align-items: center; justify-content: center; color: #d4a017; }
+.support-pop-star svg { width: 17px; height: 17px; display: block; }
 
-/* 侧栏底部的入口容器：固定占侧栏宽，贴底居中 */
+/* 侧栏底部的入口容器：固定占侧栏宽，贴底居中，四个入口等高紧凑排布。
+   flex:0 0 auto 是关键——底部组不参与压缩，把「高度不够」全部转嫁给上方的
+   模块按钮列表（那里才是唯一该让步的地方），否则最后两个入口会被推出视口。 */
 .mega-support {
-  margin-top: auto; padding: 6px 8px 0;
+  margin-top: auto; padding: 2px 8px 0;
+  flex: 0 0 auto;
   display: flex; flex-direction: column; align-items: center;
 }
-/* 矮窗口保护：侧栏底部入口从 3 个增到 4 个（新增「导览设置」），
-   固定高度 + 无滚动会让最后一个按钮溢出视口且点不到。
-   允许底部这组在空间不足时自身滚动，保证所有入口可点。 */
-.mega-sidebar { overflow-y: auto; overflow-x: hidden; }
-.mega-sidebar::-webkit-scrollbar { width: 0; }
-.mega-sidebar { scrollbar-width: none; }
-.mega-support:last-child { padding-bottom: 10px; }
+/* 侧栏不滚动：底部四个入口（模块管理/导览设置/AI 配置/支持）必须始终在视口内可点。
+   早先为了「装不下就滚动」设了 overflow-y:auto + 隐藏滚动条，结果反而害了两件事：
+     1) 1440×900 这类常见窗口下内容 886px > 可用 804px，最后两个按钮被推到视口外，
+        而滚动条被隐藏，用户看不出能滚 → 表现为「点不到」；
+     2) overflow 非 visible 会裁剪掉子元素溢出的部分，
+        #modules-pop / #ai-sidebar-pop 这类以按钮为锚点、向右上方展开的卡片
+        被裁在侧栏框内，点击穿透到正文（.mega-area）→ 同样表现为「点不到」。
+   改为 overflow:visible，靠紧凑排布把四个入口压进常规高度。 */
+.mega-sidebar { overflow: visible; }
+.mega-support:last-child { padding-bottom: 6px; }
+.mega-support + .mega-support { margin-top: 2px; padding-top: 0; }
 /* 侧栏收缩态：按钮变窄只留图标，避免挤压 */
-body.sidebar-collapsed .mega-support { padding: 6px 0 0; align-self: stretch; width: 100%; }
-body.sidebar-collapsed .mega-support:last-child { padding-bottom: 8px; }
+body.sidebar-collapsed .mega-support { padding: 2px 0 0; align-self: stretch; width: 100%; }
+body.sidebar-collapsed .mega-support:last-child { padding-bottom: 6px; }
+body.sidebar-collapsed .mega-support + .mega-support { margin-top: 2px; padding-top: 0; }
 body.sidebar-collapsed .support-btn > span:not(.support-icon) { display: none; }
 
-/* 两个胶囊（AI 配置 / 支持）：同宽、同高、圆角矩形、间距 5px。
-   侧栏只有 104px 宽，固定宽度保证两枚胶囊视觉对齐，不受文字长度影响。 */
+/* 四个胶囊（模块管理 / 导览设置 / AI 配置 / 支持）：同宽、同高、圆角矩形。
+   侧栏只有 104px 宽，固定宽度保证视觉对齐，不受文字长度影响。
+   矮窗口下的进一步压缩见文件末尾 @media (max-height: …)（须在主定义之后）。 */
 .mega-support .support-btn {
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 12.5px;
   width: 88px;
-  height: 32px;
+  height: 28px;
   padding: 0 6px;
   justify-content: center;
   border-radius: 6px;          /* 圆角矩形，非胶囊 */
   letter-spacing: -0.3px;
 }
 .mega-support .support-icon { font-size: 14px; }
-.mega-support + .mega-support { margin-top: 5px; padding-top: 0; }
-body.sidebar-collapsed .mega-support + .mega-support { margin-top: 5px; padding-top: 0; }
-body.sidebar-collapsed .mega-support .support-btn { width: 100%; height: 40px; padding: 0; }
+body.sidebar-collapsed .mega-support .support-btn { width: 100%; height: 34px; padding: 0; }
 
-/* 侧栏胶囊的弹出卡片：从按钮右侧展开，落在侧栏右缘之外，不遮挡正文。
-   「支持」卡片内容短，贴视口底部；「AI 配置」有表单，改为紧贴按钮上方展开，
-   避免出现在页面最底部而与按钮脱节。 */
+
+/* 侧栏四个入口的弹出卡片：全部用 position:fixed（相对视口），不用 absolute。
+   原因：absolute 依赖 .mega-support 作定位祖先，而侧栏是 flex + 定高容器，
+   卡片向上展开时会被侧栏边框裁掉（曾实测：卡片 getBoundingClientRect 正常返回，
+   但 elementFromPoint 命中的是正文 .mega-area，点击穿透 → 「点不到」）。
+   fixed 不受任何祖先裁剪，只需把 left 移到侧栏右缘之外即可，与「导览设置」同一套。
+   桥高：卡片竖向位置由下方各自的 bottom / top 规则决定，保证贴着对应按钮。 */
 .support-pop {
   position: fixed; z-index: 999;
   left: calc(var(--sidebar-w) + 12px); bottom: 12px;
@@ -420,33 +440,37 @@ body.sidebar-collapsed .mega-support .support-btn { width: 100%; height: 40px; p
   animation: support-pop-in .18s ease-out;
 }
 body.sidebar-collapsed .support-pop { left: calc(var(--sidebar-w-collapsed) + 12px); }
-/* AI 配置与模块管理的卡片：以各自的按钮容器为锚点定位。
-   不用 bottom 相对视口的固定值——侧栏里胶囊一多一少，那个值就会漂移
-   （模块管理曾因写死 bottom:186px 而与按钮错位）。
-   .mega-support 设 position:relative 后，卡片 absolute 相对本容器定位，
-   永远紧贴自己的按钮；容器在侧栏内的实际位置由布局决定，不受影响。 */
-.mega-support { position: relative; }
+/* AI 配置与模块管理的卡片：竖向贴各自按钮，横向固定在侧栏右缘之外。
+   竖向用「距底高度」表达——侧栏底部四个入口自下而上依次是
+   支持(0) / AI 配置(1) / 导览设置(2) / 模块管理(3)，每格约 33px（30 高 + 3 间距）。
+   不用 absolute + bottom:100% 的原因见上一条注释。 */
 #ai-sidebar-pop,
 #modules-pop {
-  position: absolute;
-  left: calc(100% + 12px);    /* 按钮右侧，落在侧栏之外 */
-  bottom: calc(100% + 10px);  /* 贴按钮上沿，向上展开 */
-  right: auto; top: auto;
+  position: fixed;
+  left: calc(var(--sidebar-w) + 12px);
+  right: auto;
   margin: 0;
 }
+body.sidebar-collapsed #ai-sidebar-pop,
+body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12px); }
+/* AI 配置卡片：底边对齐自己的按钮（第 2 格，距侧栏底约 8+33+3=44px） */
 #ai-sidebar-pop {
+  bottom: 52px;
+  top: auto;
   z-index: 999;
   width: 420px;
   max-height: min(560px, calc(100vh - 120px));
   overflow-y: auto;
 }
+/* 模块管理卡片：更高一层，底边对齐第 4 格（距底约 8+33*3 ≈ 115px） */
 #modules-pop {
-  /* 层级高于 AI 卡片：两者同时打开时，「模块管理」压在上层，不会被遮住按钮 */
   z-index: 1002;
+  bottom: 122px;
+  top: auto;
   width: 300px;
+  max-height: min(520px, calc(100vh - 160px));
+  overflow-y: auto;
 }
-body.sidebar-collapsed #ai-sidebar-pop,
-body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 
 /* 卡片风格与侧栏暖色体系一致，不再沿用侦探页的深色卡片 */
 #ai-sidebar-pop, #modules-pop {
@@ -537,7 +561,7 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 .support-pop-gh:hover { background: rgba(201,169,106,.18); border-color: #e8c86a; color: #ffe9a8; }
 
 .page-title { font-size: 24px; margin: 18px 0 2px; text-align: center; }
-.page-sub { color: var(--muted); margin: 2px 0 18px; font-size: 15px; text-align: center; }
+
 .hidden { display: none !important; }
 
 /* ---- 时间线 ---- */
@@ -702,11 +726,8 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 .case-tab.active .case-tab-n { background: rgba(255, 255, 255, 0.22); }
 .cases-list { display: flex; flex-direction: column; gap: 18px; }
 .case-category { display: flex; flex-direction: column; gap: 14px; }
-.case-cat-title {
-  margin: 0 0 6px; font-size: 22px; color: var(--primary);
-  border-left: 6px solid var(--gold); padding-left: 12px;
-}
-.case-cat-note { margin: -2px 0 12px 18px; color: var(--muted); font-size: 14px; }
+
+
 .case-card {
   background: var(--card); border: 2px solid var(--border);
   border-radius: var(--radius); padding: 18px 22px;
@@ -960,12 +981,8 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 /* 事件工笔彩绘图（事件卡顶部），无图时整块不渲染，绝不破图 */
 .event-fig { display: none; margin: 0 0 8px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: #f4ecd8; }
 .event-fig.loaded { display: block; }
-.event-fig img { display: block; width: 100%; height: auto; cursor: zoom-in; }
+.event-fig img { display: block; width: 100%; height: auto; }
 .event-fig figcaption { font-size: 12px; color: #8a7a5c; text-align: center; padding: 3px 6px; background: #faf4e4; }
-/* 事件图放大灯箱（与格物图鉴一致的轻量 lightbox） */
-.event-lightbox { position: fixed; inset: 0; z-index: 99998; background: rgba(30, 22, 10, .82); display: flex; align-items: center; justify-content: center; padding: 4vw; cursor: zoom-out; }
-.event-lightbox img { max-width: 92vw; max-height: 92vh; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
-.event-lightbox .lb-close { position: absolute; top: 18px; right: 28px; color: #f3e6c4; font-size: 40px; line-height: 1; cursor: pointer; }
 .map-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: 14px; color: #5c5140; }
 .map-legend-float {
   position: absolute; top: 12px; right: 12px; z-index: 800;
@@ -997,8 +1014,8 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 .dot-capital { background: #c0392b; }
 .dot-city { background: #247bc1; }
 .dot-site { background: #f0a500; }
-.dot-overseas { background: #8e44ad; }
-.dot-event { background: #c0392b; }
+
+
 .dot-route-start { background: #2e7d32; }
 .dot-route-end { background: #a0251c; }
 
@@ -1015,6 +1032,23 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
   padding: 7px 14px; border-radius: 999px; font-size: 14px; cursor: pointer; font-weight: 600;
 }
 .route-btn.on { color: #fff; border-color: transparent; }
+/* 「该朝事件」开关：与路线胶囊刻意区分——
+   路线胶囊是白底圆角胶囊（999px）带 ▶；这里是矩形（8px）+ 暖色底 + 列表图标。
+   背景用暖米色而非白，和正文卡片的 --bg/#fdf6e9 同一色系。 */
+.route-btn.evt-toggle-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border-radius: 8px;
+  background: #fbeed0;
+  border-color: #d9b56b;
+  color: #8a4b1f;
+}
+.route-btn.evt-toggle-btn svg { width: 14px; height: 14px; display: block; flex: 0 0 auto; }
+.route-btn.evt-toggle-btn:hover { background: #f7e4bd; }
+/* 选中态：同色系加深，不用路线胶囊那种整块填色，保持「开关」而非「图层」的观感。
+   选择器比 .route-btn.on 多一个类，确保覆盖它的 color:#fff / border-color:transparent。 */
+.route-btn.evt-toggle-btn.on {
+  background: #f3d9a4; border-color: #c9a15a; color: #7a3f16;
+}
 
 /* ---- 历史侦探 ---- */
 .detective-week, .detective-clues, .detective-create {
@@ -1038,8 +1072,8 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 }
 .clue-card .clue-title { font-weight: 700; }
 .clue-card .clue-src { color: var(--muted); font-size: 13px; }
-.ask-box { border-top: 2px dashed var(--gold); margin-top: 14px; padding-top: 12px; }
-.ask-title { font-weight: 700; margin-bottom: 6px; }
+
+
 .ask-row { display: flex; gap: 8px; }
 .ask-row input { flex: 1; border: 2px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 15px; font-family: inherit; }
 .ask-hint { color: var(--muted); font-size: 14px; margin-top: 6px; }
@@ -1057,7 +1091,7 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
   margin-top: 10px; background: var(--primary); color: #fff; border: none;
   padding: 9px 22px; border-radius: 999px; font-size: 15px; font-weight: 700; cursor: pointer;
 }
-.create-saved { color: #2e7d32; font-weight: 700; margin-top: 8px; }
+
 
 /* ---- 史论工坊 ---- */
 .ws { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: #fffdf7; }
@@ -1069,13 +1103,10 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 .ws-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .ws-pane.hidden { display: none; }
 .ws-hint { font-size: 14px; color: var(--muted); background: #fbf3e0; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; }
-.ws-field { display: block; margin-bottom: 12px; }
-.ws-label { display: block; font-size: 14px; font-weight: 700; color: #5a4a2a; margin-bottom: 5px; }
-.ws-input {
-  width: 100%; border: 2px solid var(--border); border-radius: 10px;
-  padding: 10px; font-size: 15px; font-family: inherit; min-height: 64px; resize: vertical; line-height: 1.5;
-}
-.ws-input:focus { outline: none; border-color: var(--gold); }
+
+
+
+
 .ws-result { margin-top: 10px; }
 
 /* ---- 史论工坊 · 选择题卡片 ---- */
@@ -1106,7 +1137,7 @@ body.sidebar-collapsed #modules-pop { left: calc(100% + 12px); }
 .qq-open { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .quiz-progress, .quiz-score { font-size: 14.5px; font-weight: 700; color: #5a4a2a; margin-bottom: 8px; }
 .quiz-score { font-size: 16px; color: #96352e; }
-.quiz-gen-msg { margin-top: 8px; }
+
 
 /* ---- 争议话题作答 ---- */
 .debate-item { list-style: none; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; background: #fffdf7; }
@@ -1171,7 +1202,8 @@ a, button, [role='button'], .tab, .timeline-arrow, .era-chip, .place, .route-btn
 input, textarea { cursor: text; }
 .timeline-arrow:disabled { cursor: not-allowed !important; }
 /* 时间线头像/年号行可拖拽 */
-.drag-hover, .dragging { cursor: var(--cur-grab) !important; }
+.dragging { cursor: var(--cur-grab) !important; }
+
 /* 十国甘特图 */
 .shiguo-gantt { margin: 18px 0 8px; background: #f5ead2; border: 1px solid #d9c08c; border-radius: 14px; padding: 18px 20px; }
 .shiguo-gantt h3 { margin: 0 0 4px; font-size: 18px; color: #6b4a1f; }
@@ -1389,3 +1421,38 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   font-style: normal; font-size: 12px; line-height: 1.6; color: #8a7a5c;
 }
 .guide-hint { margin: 10px 0 0 !important; font-size: 12px !important; }
+
+/* ===== 矮窗口：压缩模块按钮，保证侧栏底部四个入口全部可点 =====
+   .mega-btn 主定义在上方（101px 高卡片 + 12px 下边距）。
+   实测（1440 宽、headless Chrome、默认字体）：
+     无压缩时侧栏内容 scrollHeight=876px。视口高 900 时 clientHeight 也是 900，
+     余量恰好为 0——再矮 1px 就开始溢出；视口高 804（1440×900 扣掉浏览器界面后的常见值）
+     溢出 72px，「AI 配置」「支持」两个入口落到视口外。
+   注意「窗口高」不等于「视口高」：1440×900 的窗口，innerHeight 通常只有 790~810。
+   所以这里按视口高（max-height 媒体查询测的就是视口）分档收紧密度，只改密度不改层次。
+   另注：必须写在 .mega-btn 主定义之后——同权重下后定义者胜出，
+   放到前面会被主定义覆盖（曾因此压缩完全没生效）。 */
+@media (max-height: 960px) {
+  .mega-btn { padding: 9px 6px 7px; margin-bottom: 8px; }
+  .mega-logo { margin-bottom: 8px; }
+  .mega-collapse-btn { margin-bottom: 6px; }
+}
+@media (max-height: 820px) {
+  .mega-btn { padding: 7px 6px 6px; margin-bottom: 6px; }
+  .mega-btn .mega-sub { display: none; }
+  .mega-logo { margin-bottom: 6px; }
+  .mega-logo img { max-height: 48px; object-fit: contain; }
+  .mega-collapse-btn { margin-bottom: 4px; height: 30px; }
+  .mega-support .support-btn { height: 26px; font-size: 12px; }
+}
+/* 极矮视口（上网本 1024×600、或 1440×900 上 125% 缩放）：
+   上面两档已压到最紧，再矮就装不下。侧栏不滚动是「四个入口永远可点」的前提，
+   所以这里不放宽滚动，而是继续收 logo 与折叠钮，把余量再挤出约 40px。 */
+@media (max-height: 640px) {
+  .mega-btn { padding: 6px 5px 5px; margin-bottom: 5px; }
+  .mega-logo { margin-bottom: 4px; }
+  .mega-logo img { max-height: 38px; object-fit: contain; }
+  .mega-collapse-btn { margin-bottom: 2px; height: 26px; }
+  .mega-support .support-btn { height: 24px; font-size: 11.5px; }
+  .mega-support + .mega-support { margin-top: 1px; }
+}

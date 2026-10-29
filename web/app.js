@@ -170,37 +170,37 @@ const DYNASTY_LAYOUT = {
 // 各朝文案：品牌名、朝代胶囊副标题（帝数）、地图 aria、图例注、页脚
 const DYNASTY_TEXT = {
   ming: {
-    brand: '🏮 明朝', dynSub: '十六帝', mapAria: '明朝示意地图',
+    brand: '明朝', dynSub: '十六帝', mapAria: '明朝示意地图',
     legendNote: '省界据《中国历史地图集·明时期》手绘简化示意',
     footer: '疆域轮廓据《明史·地理志》示意，非精确边界 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《明史》《明实录》为主要依据',
   },
   tang: {
-    brand: '🏮 大唐风华', dynSub: '二十一帝', mapAria: '唐朝示意地图',
+    brand: '大唐风华', dynSub: '二十一帝', mapAria: '唐朝示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·唐时期》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》唐时期示意，非精确边界 · 内容以《旧唐书》《新唐书》《资治通鉴》为主要依据',
   },
   song: {
-    brand: '🏮 大宋风云', dynSub: '十八帝', mapAria: '宋朝示意地图',
+    brand: '大宋风云', dynSub: '十八帝', mapAria: '宋朝示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·北宋/南宋》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》两宋部分示意，非精确边界 · 人物头像为示意占位 · 内容以《宋史》《续资治通鉴长编》为主要依据',
   },
   yuan: {
-    brand: '🏮 大元兴起', dynSub: '十一帝', mapAria: '元朝示意地图',
+    brand: '大元兴起', dynSub: '十一帝', mapAria: '元朝示意地图',
     legendNote: '省界据《中国历史地图集·元时期》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》元时期示意，非精确边界 · 内容以《元史》《新元史》为主要依据',
   },
   qing: {
-    brand: '🏮 大清三百年', dynSub: '十二帝', mapAria: '清朝示意地图',
+    brand: '大清三百年', dynSub: '十二帝', mapAria: '清朝示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·清时期》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》清时期示意，非精确边界 · 内容以《清史稿》《清实录》为主要依据',
   },
   sui: {
-    brand: '🏮 大隋一统', dynSub: '三帝', mapAria: '隋朝示意地图',
+    brand: '大隋一统', dynSub: '三帝', mapAria: '隋朝示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·隋时期》手绘简化示意',
     footer: '疆域轮廓据谭其骧《中国历史地图集》隋时期示意，非精确边界 · 内容以《隋书》《资治通鉴》为主要依据',
   },
   wudai: {
-    brand: '🏮 五代十国', dynSub: '五代14帝·十国41主', mapAria: '五代十国示意地图',
+    brand: '五代十国', dynSub: '五代14帝·十国41主', mapAria: '五代十国示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·五代十国时期》手绘简化示意',
     footer: '五代十国是唐末到宋初的大分裂时期 · 内容以《新五代史》《资治通鉴》为主要依据',
   },
@@ -460,7 +460,7 @@ function caseCard(c) {
     `<div class="case-person"><div class="case-person-head"><b>${p.name}</b><span class="case-person-role">${p.role}</span></div><div class="case-person-note">${p.note}</div></div>`).join('');
   const questions = (c.openQuestions || []).map((q) => `
     <div class="case-question">
-      <div class="q">❓ ${q.question}</div>
+      <div class="q">${q.question}</div>
       <div class="ctx">${q.context || ''}</div>
       <div class="viewpoints">${(q.viewpoints || []).map((v) => `<p>• ${v}</p>`).join('')}</div>
     </div>`).join('');
@@ -509,14 +509,13 @@ function sourceTitle(id) {
 function renderTimeline() {
   const wrap = $('#timeline-scroll');
   wrap.innerHTML = '';
-  const emojis = ['👑','🧧','🏯','📜','⚔️','🐉','🛡️','🎨','🪷','🐎','🔮','🕊️','🏛️','🏮','🔨','🌙'];
   DATA.emperors.forEach((e, i) => {
     const card = el('div', 'emp-card');
     // 头像按需加载 + 声明尺寸：首屏只取视口内几张卡片，其余等滚到再取（避免首屏一次性请求十几张画像）
     const lazy = ' loading="lazy" decoding="async" width="84" height="84"';
     const portrait = e.portrait
       ? `<img class="emp-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" ${lazy} onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')"/>`
-      : `<div class="emp-portrait">${emojis[i % emojis.length]}</div>`;
+      : `<div class="emp-portrait emp-portrait-fallback">${e.name ? e.name.slice(0, 1) : '?'}</div>`;
     card.innerHTML = `
       ${portrait}
       <div class="name">${e.name}</div>
@@ -625,7 +624,7 @@ function renderShiguoGantt() {
   }).join('');
   const axisTicks = ticks.map((t) => `<div class="tick" style="left:${pct(t)}%">${t}</div>`).join('');
   box.innerHTML = `
-    <h3>🏯 十国并立图 · 历代君主时间线（与五代同时存在）</h3>
+    <h3>十国并立图 · 历代君主时间线（与五代同时存在）</h3>
     <div class="gantt-axis">${axisTicks}</div>
     ${bars}
     <div class="gantt-legend">
@@ -633,7 +632,7 @@ function renderShiguoGantt() {
       <span><i class="sw" style="background:#c8553d"></i>被北宋所灭</span>
       <span><i class="sw" style="background:#fff;border:1px solid #c9a96a"></i>点按块看君主在位年</span>
     </div>
-    <div class="gantt-note">💡 吴越最长（钱镠祖孙三代，978年纳土归宋）；北汉唯一在北方（太原）；前蜀被后唐庄宗李存勖所灭。</div>
+    <div class="gantt-note">吴越最长（钱镠祖孙三代，978年纳土归宋）；北汉唯一在北方（太原）；前蜀被后唐庄宗李存勖所灭。</div>
   `;
   // hover 已用 title 提示，无需额外绑定
   box.classList.remove('hidden');
@@ -965,7 +964,7 @@ function renderRelGraph(e) {
     const portrait = personPortrait(nd.p.name);
     const img = portrait
       ? `<image x="-36" y="-36" width="72" height="72" href="${portrait}" clip-path="circle(36px)" preserveAspectRatio="xMidYMid slice" loading="lazy" />`
-      : `<text x="0" y="12" text-anchor="middle" font-size="26">👤</text>`;
+      : `<text x="0" y="12" text-anchor="middle" font-size="26">人</text>`;
     const title = PERSON_TITLES[nd.p.name] ? ` · ${PERSON_TITLES[nd.p.name]}` : '';
     return `<g transform="translate(${nd.x},${nd.y})">
       <circle r="38" fill="#fff" stroke="#c9a96a" stroke-width="2.5" />
@@ -976,7 +975,7 @@ function renderRelGraph(e) {
   }).join('');
   const centerImg = e.portrait
     ? `<image x="-60" y="-60" width="120" height="120" href="../data/portraits/${e.portrait}" clip-path="circle(60px)" preserveAspectRatio="xMidYMid slice" />`
-    : `<text x="0" y="20" text-anchor="middle" font-size="36">👑</text>`;
+    : `<text x="0" y="20" text-anchor="middle" font-size="36">帝</text>`;
   const center = `
     <g transform="translate(${cx},${cy})">
       <circle r="70" fill="#fff7e0" stroke="#c9a96a" stroke-width="4" />
@@ -984,7 +983,7 @@ function renderRelGraph(e) {
       <text x="0" y="92" text-anchor="middle" font-size="17" font-weight="800" fill="#8a4b1f">${e.name}</text>
     </g>`;
   return `<div class="detail-panel">
-    <h4 style="font-size:18px">🕸️ ${e.name}的人物关系</h4>
+    <h4 style="font-size:18px">${e.name}的人物关系</h4>
     <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:960px" role="img" aria-label="${e.name}人物关系图">
       ${lines}${relLabels}${center}${dots}
     </svg>
@@ -1009,7 +1008,7 @@ function showEmperor(e) {
     <div class="detail-head">
       ${e.portrait
         ? `<img class="detail-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')" />`
-        : `<div class="detail-portrait">👑</div>`}
+        : `<div class="detail-portrait">帝</div>`}
       <div class="meta">
         <h3 style="color:#c0392b;font-size:26px">${e.name} <small style="color:#8a7a5c;font-size:16px;font-weight:normal">${e.templeName}</small></h3>
         <div class="intro">${intro}</div>
@@ -1018,7 +1017,7 @@ function showEmperor(e) {
     </div>
     ${renderRelGraph(e)}
     <div class="detail-panel entry-block">
-      <h4>📜 生平时间线</h4>
+      <h4>生平时间线</h4>
       <ul class="timeline">${timeline.map((t) => {
         const isHighlight = /玄武门|靖难|陈桥|黄袍|土木堡|夺门|之变|案|亲征|被俘|禅位|亡国|迁都|驾崩|逝世|篡位|起兵|登基|即位|统一|灭[国梁陈齐周宋元]/i.test(t.title || "");
         const year = t.date || "";
@@ -1065,7 +1064,7 @@ function showEmperor(e) {
 
 function renderFacts(facts) {
   if (!facts || !facts.length) return '<p>（暂无）</p>';
-  return `<ul class="fact-list">${facts.map((f) => `<li>💡 ${f.fact || f}</li>`).join('')}</ul>`;
+  return `<ul class="fact-list">${facts.map((f) => `<li>${f.fact || f}</li>`).join('')}</ul>`;
 }
 
 function renderOpen(cs) {
@@ -1075,11 +1074,11 @@ function renderOpen(cs) {
     const key = `deb-${currentDynasty}-${currentEmperorKey}-${i}`;
     return `
     <li class="debate-item" data-di="${i}" data-q="${escapeHtml(c.question || '')}" data-vp="${escapeHtml(vp)}">
-      <div class="q">❓ ${c.question}</div>
+      <div class="q">${c.question}</div>
       <div class="ctx">${c.context || ''}</div>
       <div class="viewpoints">${(c.viewpoints || []).map((v) => `<p>• ${v}</p>`).join('')}</div>
       <textarea class="deb-input" data-key="${key}" placeholder="你怎么看？写下你的理由（可以引用上面的视角或史实）…"></textarea>
-      <button type="button" class="create-save llm-btn deb-ai" data-di="${i}">🤖 请 AI 老师点评我的理由</button>
+      <button type="button" class="create-save llm-btn deb-ai" data-di="${i}">请 AI 老师点评我的理由</button>
       <div class="deb-result" data-di="${i}"></div>
     </li>`;
   }).join('')}</ul>`;
@@ -1166,11 +1165,11 @@ function renderQuizSlot(ws, mode, emperorKey) {
     : 0;
   const footer = st.graded
     ? `<div class="quiz-score">选对 ${correct} / ${items.length}</div>
-       <button type="button" class="create-save llm-btn quiz-review" data-mode="${mode}">🤖 请 AI 老师点评</button>
-       <button type="button" class="create-save llm-btn quiz-reset" data-mode="${mode}" style="background:#8a7a5c">🔄 重做</button>
+       <button type="button" class="create-save llm-btn quiz-review" data-mode="${mode}">请 AI 老师点评</button>
+       <button type="button" class="create-save llm-btn quiz-reset" data-mode="${mode}" style="background:#8a7a5c">重做</button>
        <div class="ws-result quiz-review-result"></div>`
     : `<div class="quiz-progress">已选 ${answered} / ${items.length}</div>
-       <button type="button" class="create-save llm-btn quiz-submit" data-mode="${mode}">✅ 提交看答案</button>`;
+       <button type="button" class="create-save llm-btn quiz-submit" data-mode="${mode}">提交看答案</button>`;
   slot.innerHTML = quizQuestionsHTML(items, st) + footer;
 }
 
@@ -1257,14 +1256,14 @@ function wireWorkshop(block, e) {
         const good = it.options.map((o, k) => (o.ok ? (o.t || o) : null)).filter(Boolean).join(' / ');
         return `第${i + 1}题：${it.q}\n  我选：${chosen}\n  更有依据：${good}\n  史实解析：${it.why || ''}`;
       }).join('\n');
-      out.innerHTML = '<div class="ask-hint">🤖 AI 老师正在结合史实点评…</div>';
+      out.innerHTML = '<div class="ask-hint">AI 老师正在结合史实点评…</div>';
       const prompt = `下面是关于${label}${e.name}的选择题作答（题目为本项目内置）：
 ${digest}
 
 请点评：我选错的题，错在哪个理解误区，用史实讲清楚；选对但题目偏开放的，补充一点我没想到的角度；最后用一句话总结我最该记住的认识。通俗简练，分点说。`;
       const d = await askHistoryTeacher(prompt);
       out.innerHTML = d.ok
-        ? `<div class="ask-hit llm-answer"><b>🤖 AI 老师点评</b>：${formatReply(d.reply)}</div>`
+        ? `<div class="ask-hit llm-answer"><b>AI 老师点评</b>：${formatReply(d.reply)}</div>`
         : `<div class="ask-hint">${escapeHtml(d.error || 'AI 点评失败')}</div>`;
       return;
     }
@@ -1276,14 +1275,14 @@ ${digest}
       const result = item.querySelector('.deb-result');
       const v = ta.value.trim();
       if (!v) { result.innerHTML = '<div class="ask-hint">先写下你的理由，AI 才能点评。</div>'; return; }
-      result.innerHTML = '<div class="ask-hint">🤖 AI 老师正在结合史实点评…</div>';
+      result.innerHTML = '<div class="ask-hint">AI 老师正在结合史实点评…</div>';
       const prompt = `【争议问题】${item.dataset.q}
 【常见的两种视角】${item.dataset.vp || '（无）'}
 【我的理由】${v}
 请中立地点评：我的理由是否站得住、用了哪些史实（指出与史实不符处）、有没有忽略对方视角中有力的一点；最后提一个能让我继续思考的问题。通俗简练。`;
       const d = await askHistoryTeacher(prompt);
       result.innerHTML = d.ok
-        ? `<div class="ask-hit llm-answer"><b>🤖 AI 老师点评</b>：${formatReply(d.reply)}</div>`
+        ? `<div class="ask-hit llm-answer"><b>AI 老师点评</b>：${formatReply(d.reply)}</div>`
         : `<div class="ask-hint">${escapeHtml(d.error || 'AI 点评失败')}</div>`;
     }
   });
@@ -1465,8 +1464,7 @@ const SONG_NEIGHBORS = [
   { name: "南海", lng: 115, lat: 16.5, sub: "" },
 ];
 
-// 各朝事件标记的图标与颜色
-const EVT_ICON = { battle: '⚔', coup: '🏛', siege: '⚔', reform: '📜', culture: '📚', uprising: '🔥', diplomacy: '🚢' };
+// 各朝事件标记的颜色（图标位已不再用 emoji：见 .map-event-icon 的样式化方块）
 const EVT_COLOR = { battle: '#c0392b', coup: '#8e44ad', siege: '#d35400', reform: '#1e8449', culture: '#2980b9', uprising: '#e67e22', diplomacy: '#16a085' };
 
 // 各朝地图视口中心/缩放（让疆域大致占满画布）
@@ -1803,7 +1801,7 @@ function renderMap() {
       if (el2 && !document.querySelector('#map-leaf .map-tile-warn')) {
         const w = document.createElement('div');
         w.className = 'map-tile-warn';
-        w.textContent = '🌐 底图瓦片加载失败（需联网）。疆域/城市/事件等历史图层仍可查看。';
+        w.textContent = '底图瓦片加载失败（需联网）。疆域/城市/事件等历史图层仍可查看。';
         document.querySelector('#map-leaf').appendChild(w);
       }
     });
@@ -1987,10 +1985,6 @@ function renderMapControls(data) {
     const overseasLine = (leafletLayers.zhenghe || [])[1];
     [domesticLine, overseasLine].forEach((l) => l && animateRoute({ line: l, wps: [], sMark: null, eMark: null }, 1800));
   };
-  const hideRouteDetail = () => {
-    const box = $('#route-detail');
-    if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
-  };
   visibleDomestic.forEach((r, ri) => {
     const realRi = data.routes.indexOf(r);
     const btn = el('button', 'route-btn');
@@ -2043,16 +2037,21 @@ function renderMapControls(data) {
     legend.appendChild(btn);
   }
   // 事件按钮（默认激活）：点击后在地图下方汇总事件涉及的古地名。
-  // 文案跟随年号切换，与汇总面板标题保持一致（点年号后只汇总该年号的事件）
-  const evtBtn = el('button', 'route-btn');
-  evtBtn.textContent = curEmp ? `📍 该年号事件` : '📍 该朝事件';
+  // 文案跟随年号切换，与汇总面板标题保持一致（点年号后只汇总该年号的事件）。
+  // 外观与路线胶囊刻意区分：矩形 + 暖色底 + 列表图标（路线胶囊是白底圆角胶囊 + ▶）。
+  const evtBtn = el('button', 'route-btn evt-toggle-btn');
+  evtBtn.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">`
+    + `<circle cx="3.1" cy="4" r="1.35" fill="currentColor"/>`
+    + `<circle cx="3.1" cy="8" r="1.35" fill="currentColor"/>`
+    + `<circle cx="3.1" cy="12" r="1.35" fill="currentColor"/>`
+    + `<rect x="6.1" y="3.25" width="8.3" height="1.6" rx=".8" fill="currentColor"/>`
+    + `<rect x="6.1" y="7.2" width="8.3" height="1.6" rx=".8" fill="currentColor"/>`
+    + `<rect x="6.1" y="11.15" width="8.3" height="1.6" rx=".8" fill="currentColor"/>`
+    + `</svg><span>${curEmp ? '该年号事件' : '该朝事件'}</span>`;
   evtBtn.dataset.layer = 'events';
-  evtBtn.style.borderColor = '#c0392b';
   evtBtn.classList.add('on');
-  evtBtn.style.background = '#c0392b';
   evtBtn.addEventListener('click', () => {
     legend.querySelectorAll('.route-btn').forEach((b) => { b.style.background = ''; b.classList.remove('on'); });
-    evtBtn.style.background = '#c0392b';
     evtBtn.classList.add('on');
     showEvents();
     showEventsSummary();
@@ -2118,7 +2117,7 @@ function showEventsSummary(opts) {
   box.classList.remove('hidden');
   box.innerHTML = `
     <div class="route-detail-head" style="border-color:#c0392b">
-      <span class="route-detail-name">${curEmp ? `📍 该年号事件 · ${curEmp.eraName[0]}年间` : '📍 该朝事件 · 事件名（古地名）'}</span>
+      <span class="route-detail-name">${curEmp ? `该年号事件 · ${curEmp.eraName[0]}年间` : '该朝事件 · 事件名（古地名）'}</span>
       <span class="route-detail-year">共 ${list.length} 个${overflow && !evtSummaryShowAll ? ` · 显示前 ${EVT_SUMMARY_LIMIT}` : ''}</span>
     </div>
     ${noteLine}
@@ -2137,13 +2136,10 @@ function showEventsSummary(opts) {
     chip.addEventListener('click', () => {
       const ev = (DATA.mapEvents || []).find((e) => e.eventId === chip.dataset.evtId);
       if (!ev) return;
-      // 胶囊变红（单选效果）
       box.querySelectorAll('.evt-summary-chip').forEach((c) => c.classList.remove('on'));
       chip.classList.add('on');
-      // 普通浏览：同地多事件仍弹聚合列表（HEAD 行为）。仅讲解员模式（guide=1）需逐句讲
-      // 单个事件正文，才强制展开详情，不弹聚合。
-      const guideOn = new URLSearchParams(location.search).get('guide') === '1';
-      showSingleEvent(ev, guideOn ? { forceDetail: true } : {});
+      // 事件胶囊统一弹该事件的卡片正文，不弹地点聚合列表（聚合归地图地点标记）。
+      showSingleEvent(ev);
       document.querySelector('.map-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   });
@@ -2199,7 +2195,8 @@ const EVENT_ROUTE_MAP = {
   'wudai-event-chairong': 'wudai-chairong-beifa',
 };
 
-/** 显示与事件关联的路线（动态绘制，起终点按图例颜色：起点绿/终点深红） */
+/** 显示与事件关联的路线（动态绘制，起终点按图例颜色：起点绿/终点深红）
+ *  只画线、不展开 #route-detail —— 路线详情面板只由「路线胶囊」驱动。 */
 function showEventRoute(ev) {
   const routeId = EVENT_ROUTE_MAP[ev.eventId];
   if (!routeId) return;
@@ -2215,9 +2212,6 @@ function showEventRoute(ev) {
   const idx = domesticRoutes.findIndex((r) => r.id === routeId);
   const layer = (leafletLayers.routes || [])[idx];
   if (layer) animateRoute(layer, 1500);
-  // 同步详情面板
-  const route = domesticRoutes[idx];
-  if (route) showRouteDetail(route);
 }
 
 function showSingleEvent(ev, opts = {}) {
@@ -2274,17 +2268,10 @@ function showSingleEvent(ev, opts = {}) {
   }
   // 飞到该地点，到达后弹窗
   mapFlyTo({ lat: ev.lat, lng: ev.lng }, targetZoom, 1.4, () => {
-    // 若目标是聚合（多事件同地），弹该地全部事件；单事件弹详情。
-    // 讲解员模式（深链带 guide=1 且 forceDetail）要逐句讲这一个事件的正文，直接展开其详情。
-    const clusterEvs = (!opts.forceDetail && flyTarget._evtIds && flyTarget._evtIds.length > 1)
-      ? (flyTarget._evtIds.map((id) => (DATA.mapEvents || []).find((e) => e.eventId === id)).filter(Boolean))
-      : null;
-    if (clusterEvs && clusterEvs.length > 1) {
-      showEventPopup(clusterEvs, { name: (ev.place && ev.place.name) || ev.name, modern: (ev.place && ev.place.modern) || '' });
-    } else {
-      showEventPopup(ev);
-    }
-    // 若事件关联路线，动态绘制该路线（起终点按图例色：绿起点/深红终点）
+    // 事件胶囊 / 事件深链 → 弹【单事件卡片】（含该事件正文介绍）。
+    // 多地事件的聚合列表只属于「地图上的地点标记」（见 addEventMarker）。
+    showEventPopup(ev);
+    // 关联路线只画线，不展开路线详情面板——路线详情属于「路线胶囊」的职责。
     showEventRoute(ev);
     setTimeout(() => {
       const el = flyTarget.getElement && flyTarget.getElement();
@@ -2306,7 +2293,7 @@ function showRouteDetail(r) {
   box.classList.remove('hidden');
   box.innerHTML = `
     <div class="route-detail-head" style="border-color:${r.color || '#c0392b'}">
-      <span class="route-detail-name">🛤️ ${r.name}</span>
+      <span class="route-detail-name">${r.name}</span>
       <span class="route-detail-year">${r.year || ''}</span>
     </div>
     <div class="route-detail-desc">${r.desc || ''}</div>
@@ -2361,7 +2348,7 @@ function showEventPopup(evs, cluster) {
       </button>`;
     }).join('');
     pop.innerHTML = `<button class="close" aria-label="关闭">✕</button>
-      <h4>📍 ${placeName}${modern}</h4>
+      <h4>${placeName}${modern}</h4>
       <p style="font-size:13px;color:#5c5140;margin:0 0 8px">这里发生了 ${evs.length} 个事件：</p>
       <div class="popup-event-list">${rows}</div>`;
     pop.querySelector('.close').addEventListener('click', () => pop.classList.add('hidden'));
@@ -2382,11 +2369,12 @@ function showEventPopup(evs, cluster) {
   const place = ev.place || {};
   const placeTxt = place.name ? `${place.name}${place.modern ? '（今' + place.modern + '）' : ''}` : '';
   const eid = ev.eventId || ev.id;
-  // 事件工笔彩绘图：约定 data/portraits/event-gongbi(-thumb)/<事件id>.jpg。
-  // 无图时 img onerror 直接移除整块，绝不破图；点击放大看原图（与格物图鉴一致）。
-  const fullImg = `../data/portraits/event-gongbi/${eid}.jpg`;
+  // 事件工笔彩绘图：约定 data/portraits/event-gongbi-thumb/<事件id>.jpg。
+  // 弹窗宽上限 380px、扣内边距后图最大约 342px，2x 屏需 684px；缩略图为 680×510（覆盖 99.4%，
+  // 最坏 0.6% 上采样，肉眼不可见），故只保留缩略图、不做点击放大。
+  // 无图时 img onerror 直接移除整块，绝不破图。
   const thumbImg = `../data/portraits/event-gongbi-thumb/${eid}.jpg`;
-  const fig = `<figure class="event-fig" data-full="${fullImg}">
+  const fig = `<figure class="event-fig">
       <img src="${thumbImg}" alt="${ev.name}"
         onload="this.closest('.event-fig').classList.add('loaded')"
         onerror="this.closest('.event-fig').remove()"/>
@@ -2394,24 +2382,28 @@ function showEventPopup(evs, cluster) {
   pop.innerHTML = `<button class="close" aria-label="关闭">✕</button>
     <h4>${ev.name} <small style="color:#8a7a5c">· ${ev.date}年</small></h4>
     ${fig}
-    ${placeTxt ? `<p style="font-size:13px;color:#247bc1;font-weight:600;margin:0 0 4px">📍 ${placeTxt}</p>` : ''}
+    ${placeTxt ? `<p style="font-size:13px;color:#247bc1;font-weight:600;margin:0 0 4px">${placeTxt}</p>` : ''}
     <p style="font-size:13px;color:#c0392b;font-weight:600;margin:0 0 6px">${place.note || ev.note || ''}</p>
     ${people ? `<p style="font-size:13px;color:#247bc1;margin:0 0 6px"><b>核心人物：</b>${people}</p>` : ''}
     <p>${story}</p>`;
   pop.querySelector('.close').addEventListener('click', () => pop.classList.add('hidden'));
 }
 
-// 事件工笔图：点击放大（轻量 lightbox，与格物图鉴一致）
-// 守卫 mock-DOM 环境（冒烟测试的 document 没有 addEventListener），与文件内其它 DOM 能力检测一致
+// 点事件卡以外的任意位置即关闭（与侧栏卡片同一套交互习惯）。
+// 守卫 mock-DOM 环境：冒烟测试的 document 没有 addEventListener。
+// 放行三类会「自己开卡/换卡」的元素，否则会出现刚点开就被这条监听关掉的闪烁：
+//   .map-event        地图上的事件标记（点它由 addEventMarker 弹卡）
+//   .evt-summary-chip 该朝事件的胶囊
+//   .popup-event-row  地点聚合列表里的条目
 if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
   document.addEventListener('click', (e) => {
-    const box = e.target.closest('.event-fig[data-full]');
-    if (!box) return;
-    const lb = document.createElement('div');
-    lb.className = 'event-lightbox';
-    lb.innerHTML = `<img src="${box.dataset.full}" alt=""/><span class="lb-close">×</span>`;
-    lb.addEventListener('click', () => lb.remove());
-    document.body.appendChild(lb);
+    const pop = document.getElementById('map-popup');
+    if (!pop || pop.classList.contains('hidden')) return;
+    const t = e.target;
+    if (!t || typeof t.closest !== 'function') return;
+    if (pop.contains(t)) return;
+    if (t.closest('.map-event, .evt-summary-chip, .popup-event-row')) return;
+    pop.classList.add('hidden');
   });
 }
 
@@ -2651,12 +2643,12 @@ function renderDetective() {
   detectiveIndex = detectiveIndex % tasks.length;
   const t = tasks[detectiveIndex];
   const openHtml = t.open ? `<div class="open-question">
-      <span class="open-tag">💬 思辨一下（没有标准答案）</span>
+      <span class="open-tag">思辨一下（没有标准答案）</span>
       <span class="open-q">${t.open.question}${t.open.context ? '　' + t.open.context : ''}</span>
       ${t.open.viewpoints && t.open.viewpoints.length ? `<span class="open-views">${t.open.viewpoints.join('　｜　')}</span>` : ''}
     </div>` : '';
   const weekEl = $('#detective-week');
-  weekEl.innerHTML = `<h3>${t.title}</h3><div class="quest">🕵️ ${t.quest}</div>${openHtml}
+  weekEl.innerHTML = `<h3>${t.title}</h3><div class="quest">${t.quest}</div>${openHtml}
     <div class="detective-nav">
       <button id="detective-prev" class="route-btn">◀ 上一案</button>
       <span class="detective-count">第 ${detectiveIndex + 1} / ${tasks.length} 案</span>
@@ -2680,12 +2672,12 @@ function renderDetective() {
   }
 
   const cluesWrap = $('#detective-clues');
-  cluesWrap.innerHTML = '<h4>🧩 收集到的线索 <small style="color:#8a7a5c;font-weight:400">（来自本项目已核对史料，每条附出处）</small></h4>';
+  cluesWrap.innerHTML = '<h4>收集到的线索 <small style="color:#8a7a5c;font-weight:400">（来自本项目已核对史料，每条附出处）</small></h4>';
   // 动态检索生成线索
   const clues = SEARCH.cluesFor(t);
   clues.forEach((c) => {
     const card = el('div', 'clue-card');
-    card.innerHTML = `<div class="clue-title">📌 ${c.title}</div><div>${c.text}</div><div class="clue-src">${c.src}</div>`;
+    card.innerHTML = `<div class="clue-title">${c.title}</div><div>${c.text}</div><div class="clue-src">${c.src}</div>`;
     cluesWrap.appendChild(card);
   });
 
@@ -2694,12 +2686,12 @@ function renderDetective() {
 
   // 你的回答（放在线索下方，作为档案作答区；输入静默保存不丢稿）
   const storeKey = `${currentDynasty}-create-${detectiveIndex}`;
-  $('#detective-create').innerHTML = `<h4>✍️ 你的回答</h4>
+  $('#detective-create').innerHTML = `<h4>你的回答</h4>
     <div class="create-box">
-      <div class="create-prompt"><b>围绕本案作答：</b>${t.quest}<br><small style="color:#8a7a5c">💡 ${t.create}</small></div>
+      <div class="create-prompt"><b>围绕本案作答：</b>${t.quest}<br><small style="color:#8a7a5c">${t.create}</small></div>
       <textarea id="create-input" placeholder="结合上面的线索，写下你的判断或答案…"></textarea>
       <div class="create-actions">
-        <button id="create-ai" class="create-save llm-btn" title="让 AI 老师结合线索与史实点评">🤖 请 AI 老师点评</button>
+        <button id="create-ai" class="create-save llm-btn" title="让 AI 老师结合线索与史实点评">请 AI 老师点评</button>
       </div>
       <div id="create-ai-result" class="create-ai-result"></div>
     </div>`;
@@ -2710,7 +2702,7 @@ function renderDetective() {
     const v = $('#create-input').value.trim();
     const out = $('#create-ai-result');
     if (!v) { out.innerHTML = '<div class="ask-hint">先写下你的回答，AI 老师才能点评哦～</div>'; return; }
-    out.innerHTML = '<div class="ask-hint">🤖 AI 老师正在结合线索点评…</div>';
+    out.innerHTML = '<div class="ask-hint">AI 老师正在结合线索点评…</div>';
     const clueDigest = clues.map((c) => `${c.title}：${c.text}`).join('\n');
     const d = await askHistoryTeacher(
 `【本案要回答】${t.quest}
@@ -2721,7 +2713,7 @@ ${clueDigest}
 
 请结合上面的线索与史实点评我的回答：先用一句话肯定我抓对的地方；再指出与线索/史实不符、或遗漏的关键点；最后提一个能引我深入思考的问题。语气通俗、对学生友好。`);
     out.innerHTML = d.ok
-      ? `<div class="ask-hit llm-answer"><b>🤖 AI 老师点评</b>：${formatReply(d.reply)}</div>`
+      ? `<div class="ask-hit llm-answer"><b>AI 老师点评</b>：${formatReply(d.reply)}</div>`
       : `<div class="ask-hint">${escapeHtml(d.error || 'AI 点评失败')}</div>`;
   });
 
@@ -2742,7 +2734,7 @@ function renderDetectiveAsk() {
   const card = el('div', 'detective-ask-card');
   card.innerHTML = `
     <div class="ask-head">
-      <span class="ask-head-title">🔎 还有疑问？问问 AI 史老师</span>
+      <span class="ask-head-title">还有疑问？问问 AI 史老师</span>
       <span class="ask-head-sub">让 AI 基于史实为你讲解、辩论，还能出「假如」题</span>
     </div>
     <div class="ask-chips">
@@ -2760,14 +2752,14 @@ function renderDetectiveAsk() {
     const question = String(q || '').trim();
     const res = $('#ask-result');
     if (!question) { res.innerHTML = '<div class="ask-hint">先输入一个问题吧～</div>'; return; }
-    res.innerHTML = '<div class="ask-hint">🤖 AI 史老师正在翻史料…</div>';
+    res.innerHTML = '<div class="ask-hint">AI 史老师正在翻史料…</div>';
     const d = await askHistoryTeacher(question);
     if (d.ok) {
-      res.innerHTML = `<div class="ask-hit llm-answer"><b>问：</b>${escapeHtml(question)}<br><b>🤖 AI 史老师：</b>${formatReply(d.reply)}</div>`;
+      res.innerHTML = `<div class="ask-hit llm-answer"><b>问：</b>${escapeHtml(question)}<br><b>AI 史老师：</b>${formatReply(d.reply)}</div>`;
     } else {
       const needConfig = /配置|接口|模型|connect|fetch|Failed/i.test(d.error || '');
       res.innerHTML = needConfig
-        ? `<div class="ask-hint">还没连上 AI 史老师。点下方【🤖 AI老师配置】，填入接口地址、API Key 和模型即可。<br><button type="button" class="create-save llm-btn" id="ask-go-config" style="margin-top:8px">去配置 AI 老师</button></div>`
+        ? `<div class="ask-hint">还没连上 AI 史老师。点下方【AI老师配置】，填入接口地址、API Key 和模型即可。<br><button type="button" class="create-save llm-btn" id="ask-go-config" style="margin-top:8px">去配置 AI 老师</button></div>`
         : `<div class="ask-hint">${escapeHtml(d.error || 'AI 提问失败')}</div>`;
       $('#ask-go-config')?.addEventListener('click', () => {
         expandAIConfig(true);
@@ -2809,7 +2801,7 @@ function renderDetectiveAI() {
       <div class="ai-config-row">
         <label class="ai-field ai-field-model">默认模型
           <div class="model-combo">
-            <input id="ai-model-input" type="text" placeholder="如：点右侧 ⬇ 自动拉取模型，再点 ▾ 选择" autocomplete="off" />
+            <input id="ai-model-input" type="text" placeholder="如：点右侧 自动拉取模型，再点下拉选择" autocomplete="off" />
             <button type="button" id="ai-model-fetch" class="model-icon-btn" title="拉取该接口支持的模型列表">⬇</button>
             <button type="button" id="ai-model-open" class="model-icon-btn" title="展开模型列表选择">▾</button>
             <div class="model-menu hidden" id="ai-model-menu">
@@ -2869,15 +2861,15 @@ function renderDetectiveAI() {
       if (d.ok && Array.isArray(d.models) && d.models.length) {
         fetchedModels = d.models;
         renderModelOptions('');
-        msg.textContent = `✅ 已拉取 ${d.models.length} 个模型，点 ▾ 选择`;
+        msg.textContent = `已拉取 ${d.models.length} 个模型，点 ▾ 选择`;
         msg.style.color = '#2e7d32';
         openMenu(true);
         return true;
       }
-      msg.textContent = '❌ 没拉到模型，请确认接口地址和密钥';
+      msg.textContent = '没拉到模型，请确认接口地址和密钥';
       msg.style.color = '#c0392b';
     } catch (e) {
-      msg.textContent = '❌ 拉取失败：' + (e && e.message ? e.message : e);
+      msg.textContent = '拉取失败：' + (e && e.message ? e.message : e);
       msg.style.color = '#c0392b';
     } finally {
       fetchBtn.classList.remove('spinning');
@@ -2940,10 +2932,10 @@ function renderDetectiveAI() {
     const d = await r.json();
     if (d.ok) {
       llmConfig = Object.assign({}, llmConfig, body);
-      msg.textContent = '✅ 已保存，可以去问 AI 史老师了';
+      msg.textContent = '已保存，可以去问 AI 史老师了';
       msg.style.color = '#2e7d32';
     } else {
-      msg.textContent = '❌ ' + (d.error || '保存失败');
+      msg.textContent = '' + (d.error || '保存失败');
       msg.style.color = '#c0392b';
     }
   });
@@ -3325,10 +3317,7 @@ async function applyDeepLink() {
       (DATA.mapEvents || []).find((e) => e.id === eventId || e.eventId === eventId) ||
       (DATA.events || []).find((e) => e.id === eventId || e.eventId === eventId);
     const ok = await waitForEmp(() => leafletMap && findEv());
-    if (ok) {
-      const guideOn = params.get('guide') === '1';
-      showSingleEvent(findEv(), guideOn ? { forceDetail: true } : {});
-    }
+    if (ok) showSingleEvent(findEv());
   }
 }
 
@@ -3394,7 +3383,7 @@ async function applyDeepLink() {
     await applyDeepLink();
   } catch (e) {
     document.body.innerHTML = `<div style="max-width:600px;margin:80px auto;text-align:center;font-size:18px">
-      <h2>😢 数据加载失败</h2>
+      <h2>数据加载失败</h2>
       <p>${e.message}</p>
       <p style="color:#8a7a5c">请确认用本地服务器打开（node web/serve.mjs），而不是直接双击 HTML。</p>
     </div>`;
