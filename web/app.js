@@ -1935,10 +1935,14 @@ function renderMap() {
 }
 
 /** 地图下方的路线按钮区 + 郑和航次选择（与图例一起挂在 route-panel） */
+// 路线胶囊是否已展开（默认收起，只露前 8 条）。每次重渲染都回到收起态。
+let routeShowAll = false;
+
 function renderMapControls(data) {
   const legend = $('#map-route-btns');
   if (!legend) return;
   legend.innerHTML = '';
+  routeShowAll = false;
   const curEmp = currentEraEmperor();
   const inEra = (r) => {
     if (!curEmp || !r.year) return true;
@@ -2010,6 +2014,10 @@ function renderMapControls(data) {
     const overseasLine = (leafletLayers.zhenghe || [])[1];
     [domesticLine, overseasLine].forEach((l) => l && animateRoute({ line: l, wps: [], sMark: null, eMark: null }, 1800));
   };
+  // 路线胶囊默认只露出前 8 个，其余折进「展示更多」——「全部」朝代下七朝合计三十余条，
+  // 全平铺会把地图挤出视口。郑和航线也算一条，按整体顺序一起折叠。
+  const ROUTE_LIMIT = 8;
+  const routeBtns = [];
   visibleDomestic.forEach((r, ri) => {
     const realRi = data.routes.indexOf(r);
     const btn = el('button', 'route-btn');
@@ -2026,6 +2034,7 @@ function renderMapControls(data) {
       document.querySelector('#route-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
     legend.appendChild(btn);
+    routeBtns.push(btn);
   });
   // 郑和航线：拆成国内段 + 远洋段两条 polyline（替代旧插页），点击后高亮
   if (data.zhenghe && inEra(data.zhenghe)) {
@@ -2062,10 +2071,31 @@ function renderMapControls(data) {
       if (box) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
     legend.appendChild(btn);
+    routeBtns.push(btn);
+  }
+  // 折叠路口：超出 8 个时先藏起来，给一个「展示更多」胶囊（与该朝事件的同款）。
+  // 只切 class、不重渲染，避免把已选中的路线和地图图层状态清掉。
+  if (routeBtns.length > ROUTE_LIMIT) {
+    const applyFold = (expand) => {
+      routeBtns.forEach((b, i) => { if (i >= ROUTE_LIMIT) b.classList.toggle('hidden', !expand); });
+    };
+    applyFold(routeShowAll);
+    const more = el('button', 'route-btn route-more-btn');
+    more.textContent = routeShowAll
+      ? '收起 ▴'
+      : `展示更多（还有 ${routeBtns.length - ROUTE_LIMIT} 个）▾`;
+    more.addEventListener('click', () => {
+      routeShowAll = !routeShowAll;
+      applyFold(routeShowAll);
+      more.textContent = routeShowAll
+        ? '收起 ▴'
+        : `展示更多（还有 ${routeBtns.length - ROUTE_LIMIT} 个）▾`;
+    });
+    legend.appendChild(more);
   }
   // 事件按钮（默认激活）：点击后在地图下方汇总事件涉及的古地名。
   // 文案跟随年号切换，与汇总面板标题保持一致（点年号后只汇总该年号的事件）。
-  // 外观与路线胶囊刻意区分：矩形 + 暖色底 + 列表图标（路线胶囊是白底圆角胶囊 + ▶）。
+  // 外观与路线胶囊刻意区分：矩形 + 列表图标（路线胶囊是圆角胶囊 + ▶）。
   const evtBtn = el('button', 'route-btn evt-toggle-btn');
   evtBtn.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">`
     + `<circle cx="3.1" cy="4" r="1.35" fill="currentColor"/>`

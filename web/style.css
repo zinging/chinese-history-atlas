@@ -938,15 +938,19 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .evt-summary-chip.on b { color: #ffd9d9; }
 .evt-summary-chip.on .evt-summary-name { color: #ffd9d9; }
 /* 「展示更多 / 收起」：事件多时默认只显示前 12 条，其余折在这里
-   （「全部」视图下七朝合计 141 条，全平铺会把地图挤出视口） */
+   （「全部」视图下七朝合计 141 条，全平铺会把地图挤出视口）。
+   路线区那个同时带 .route-btn，而 .route-btn 的定义在本文件更靠后、权重相同，
+   所以这里必须写成 .route-btn.route-more-btn（两个类）才能盖过它的边框与字重。 */
 .evt-summary-more { margin-top: 10px; text-align: center; }
-.evt-more-btn {
-  border: 1.5px dashed var(--border); background: transparent;
-  border-radius: 999px; padding: 5px 16px;
-  font-size: 13px; font-family: inherit; color: var(--primary);
+.evt-more-btn,
+.route-btn.route-more-btn {
+  border: 2px solid #b99a55; background: var(--card);
+  border-radius: 999px; padding: 6px 18px;
+  font-size: 13.5px; font-weight: 700; font-family: inherit; color: var(--primary);
   cursor: var(--cur-pointer); transition: all .12s;
 }
-.evt-more-btn:hover { border-style: solid; background: #fdf3e8; }
+.evt-more-btn:hover,
+.route-btn.route-more-btn:hover { border-color: #8a1c1c; background: #fdf3e8; }
 /* 城市/事件标记可点击（配合全局 --cur-pointer） */
 .leaflet-marker-icon { cursor: var(--cur-pointer); }
 /* Leaflet 默认控件配色与站点圆点跟随主题 */
@@ -1050,8 +1054,8 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
   display: inline-flex; align-items: center; gap: 7px;
   border-radius: 8px;
   background: var(--card);
-  border-color: var(--border);
-  color: var(--ink);
+  border-color: #b99a55;
+  color: #6b5836;
 }
 .route-btn.evt-toggle-btn svg { width: 14px; height: 14px; display: block; flex: 0 0 auto; }
 .route-btn.evt-toggle-btn:hover { background: #fdf6e9; border-color: #d9b56b; }
