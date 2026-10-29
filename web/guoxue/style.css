@@ -52,12 +52,17 @@ body[data-sect="myth"] {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%237a6a4c' stroke-width='0.9' opacity='0.2'%3E%3C!-- 祥云 --%3E%3Cpath d='M20 30 Q30 20 45 28 Q55 22 65 30 Q72 26 78 32'/%3E%3Cpath d='M15 35 Q25 30 35 35'/%3E%3Ccircle cx='40' cy='28' r='2.5'/%3E%3Ccircle cx='58' cy='30' r='2'/%3E%3C!-- 山 --%3E%3Cpath d='M90 100 L105 75 L118 95 L128 80 L138 100'/%3E%3Cpath d='M95 100 L105 85 L115 100'/%3E%3C!-- 卷云纹 --%3E%3Cpath d='M25 90 Q35 80 45 90 Q52 85 58 92'/%3E%3Ccircle cx='42' cy='88' r='2'/%3E%3C!-- 星斗 --%3E%3Ccircle cx='110' cy='35' r='1.5'/%3E%3Ccircle cx='125' cy='50' r='1'/%3E%3Ccircle cx='95' cy='55' r='1.2'/%3E%3Cpath d='M110 35 L125 50 L95 55'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
 }
 
-/* 正文容器：与帝王谱系一致（限宽 1080 居中）
+/* 正文容器：与帝王谱系一致（限宽 1080 居中 + 同内边距）
    父页 iframe 已占据侧栏右侧区域，此处 #app 在 iframe 内居中，
-   与主站「#app 在 .mega-area(margin-left:90px) 内居中」的位置关系等价。 */
+   与主站「#app 在 .mega-area 内居中」的位置关系等价。
+   2026-04：与主站 web/style.css 的 .module-inner 同一套数学——
+   主体内容向左扩 25px（左缘左移 25px、右缘不动）：正文框 1080 → 1105，
+   左缘目标 = (C−1130)/2 → margin-left: calc(50% − 565px)。
+   两处必须同步改，否则帝王谱系与国学四板块会错位。 */
 #app {
-  max-width: 1080px;
-  margin: 0 auto;
+  max-width: 1105px;
+  margin-left: max(0px, calc(50% - 565px));
+  margin-right: auto;
   padding: 12px 16px 40px;
 }
 

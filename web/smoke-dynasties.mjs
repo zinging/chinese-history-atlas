@@ -45,7 +45,8 @@ const LStub = {
 const dom = {
   querySelector(sel) {
     if (sel === '#map-leaf') return mapLeaf;
-    if (sel === '#map-route-btns') return { innerHTML: '', appendChild: () => {}, parentNode: { insertBefore: () => {} } };
+    // insertBefore / firstChild：renderMapControls 用 insertBefore 把「该朝事件」放到最前
+    if (sel === '#map-route-btns') return { innerHTML: '', appendChild: () => {}, insertBefore: () => {}, firstChild: null, parentNode: { insertBefore: () => {} } };
     if (sel === '#timeline-scroll') return { innerHTML: '', appendChild: (n) => timelineCards.push(n), querySelector: () => null, addEventListener: () => {}, scrollLeft: 0, clientWidth: 1000, scrollWidth: 1000, scrollBy: () => {} };
     if (sel === '#era-strip') return { innerHTML: '', appendChild: () => {}, addEventListener: () => {}, scrollLeft: 0, clientWidth: 1000, scrollWidth: 1000, scrollBy: () => {} };
     if (sel === '#era-prev' || sel === '#era-next') return { disabled: false, onclick: null };

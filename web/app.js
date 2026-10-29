@@ -1642,6 +1642,15 @@ function mapFlyTo(target, zoom, duration = 1.4, onArrive) {
   }, 110);
 }
 
+/** 把地图收回该朝的默认视野。
+ *  事件胶囊会把镜头飞到 zoom 8 的单点；此后点「路线胶囊」或「该朝事件」都是回到总览，
+ *  必须把镜头一起收回，否则会停在某个事件的放大视野上看整朝路线。 */
+function resetMapView() {
+  if (!leafletMap) return;
+  const v = MAP_VIEW[currentDynasty] || MAP_VIEW.ming;
+  leafletMap.setView(v.center, v.zoom, { animate: true });
+}
+
 /** 按古地名聚合事件：同 place.name 合并成一个标记，避免地图上一堆重复地名标签
  *  输入：events[]（单个事件）→ 输出：clusters[] [{name, modern, lat, lng, events:[...]}] */
 function buildEventClusters(events) {
@@ -1995,6 +2004,7 @@ function renderMapControls(data) {
       legend.querySelectorAll('.route-btn').forEach((b) => { b.style.background = ''; b.classList.remove('on'); });
       btn.style.background = r.color;
       btn.classList.add('on');
+      resetMapView();   // 从事件卡的放大视野收回该朝默认视野，再画整条路线
       showRoute(realRi);
       showRouteDetail(r);
       document.querySelector('#route-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -2029,6 +2039,7 @@ function renderMapControls(data) {
       legend.querySelectorAll('.route-btn').forEach((b) => { b.style.background = ''; b.classList.remove('on'); });
       btn.style.background = zh.color;
       btn.classList.add('on');
+      resetMapView();
       showRouteZhenghe();
       showRouteDetail(zh);
       const box = $('#route-detail');
@@ -2053,10 +2064,12 @@ function renderMapControls(data) {
   evtBtn.addEventListener('click', () => {
     legend.querySelectorAll('.route-btn').forEach((b) => { b.style.background = ''; b.classList.remove('on'); });
     evtBtn.classList.add('on');
+    resetMapView();   // 回到总览：镜头从某个事件的放大视野收回该朝默认视野
     showEvents();
     showEventsSummary();
   });
-  legend.appendChild(evtBtn);
+  // 放在最前面：它是「总览」入口，比各条路线更基础
+  legend.insertBefore(evtBtn, legend.firstChild);
   // 初始状态：显示城市点 + 事件点（默认"该朝事件"视图）
   showEvents();
 }

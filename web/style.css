@@ -19,7 +19,7 @@
   --sidebar-w-collapsed: 64px;
   /* 正文限宽：与典籍长河 web/guoxue/style.css 的 #app 完全一致，两模块共用 */
   --content-max: 1080px;
-  --content-max-wide: 1095px;  /* 向左扩 15px 后的总宽，见 .module-inner 注释 */
+  --content-max-wide: 1105px;  /* 主体内容左移 25px 后的总宽，见 .module-inner 注释 */
   /* 胶囊相对「可用区中心」的偏移。典籍长河在 iframe 内用的是 calc(50% - 680px)，
      这里可用区 = 视口 − 侧栏，故换成同样的写法（两模块实测间隙均为 14px）。 */
   --rail-offset: 680px;
@@ -126,15 +126,15 @@ body::after {
 
 /* 模块正文容器：与典籍长河 web/guoxue/style.css 的 #app 逐值相同（限宽 1080 居中 + 同内边距）。
    两模块共用同一套数学，正文宽度与位置必然一致。
-   2026-04：按用户要求「主体内容统一向左扩 15px」，正文框 1080 → 1095，
-   左缘左移 15px、右缘钉在原位（不侵占右侧胶囊沟槽）：
-     目标左缘 = (C−1080)/2 − 15 = (C−1110)/2  → margin-left: calc(50% − 555px)
-     目标右缘 = (C+1080)/2                      → 由 max-width 1095 + margin-right:auto 自然得到
-   C 为 .mega-area 的宽度。窄窗口下左式会变负，用 max(0px,…) 兜底退化为满宽，
-   与改动前窄窗口的表现一致。实测见 .sessions/gh-measure-inner.mjs。 */
+   2026-04：主体内容整体向左扩 25px（帝王谱系与国学四板块同时生效）：
+   正文框 1080 → 1105，左缘左移 25px、右缘钉在原位（不侵占右侧胶囊沟槽）：
+     目标左缘 = (C−1080)/2 − 25 = (C−1130)/2  → margin-left: calc(50% − 565px)
+     目标右缘 = (C+1080)/2                     → 由 max-width 1105 + margin-right:auto 自然得到
+   C 为容器宽。窄窗口下左式会变负，用 max(0px,…) 兜底退化为满宽，与改动前一致。
+   实测见 .sessions/gh-verify-left25.mjs。 */
 .module-inner {
   max-width: var(--content-max-wide);
-  margin-left: max(0px, calc(50% - 555px));
+  margin-left: max(0px, calc(50% - 565px));
   margin-right: auto;
   padding: 12px 16px 40px;
 }
@@ -1033,21 +1033,22 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 }
 .route-btn.on { color: #fff; border-color: transparent; }
 /* 「该朝事件」开关：与路线胶囊刻意区分——
-   路线胶囊是白底圆角胶囊（999px）带 ▶；这里是矩形（8px）+ 暖色底 + 列表图标。
-   背景用暖米色而非白，和正文卡片的 --bg/#fdf6e9 同一色系。 */
+   与路线胶囊靠形状与图标区分（矩形 8px + 列表图标），底色一致。
+   常态白底，选中态用主色深红（与顶部模块页签 .tab.active 同色）。 */
 .route-btn.evt-toggle-btn {
   display: inline-flex; align-items: center; gap: 7px;
   border-radius: 8px;
-  background: #fbeed0;
-  border-color: #d9b56b;
-  color: #8a4b1f;
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--ink);
 }
 .route-btn.evt-toggle-btn svg { width: 14px; height: 14px; display: block; flex: 0 0 auto; }
-.route-btn.evt-toggle-btn:hover { background: #f7e4bd; }
-/* 选中态：同色系加深，不用路线胶囊那种整块填色，保持「开关」而非「图层」的观感。
-   选择器比 .route-btn.on 多一个类，确保覆盖它的 color:#fff / border-color:transparent。 */
+.route-btn.evt-toggle-btn:hover { background: #fdf6e9; border-color: #d9b56b; }
+/* 选中态填主色深红。选择器比 .route-btn.on 多一个类，确保覆盖其 border-color:transparent。 */
 .route-btn.evt-toggle-btn.on {
-  background: #f3d9a4; border-color: #c9a15a; color: #7a3f16;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
 }
 
 /* ---- 历史侦探 ---- */
