@@ -50,7 +50,7 @@ const SECT_CACHE = {};
  * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
-const DATA_VER = "v125";
+const DATA_VER = "v126";
 
 // Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
 // 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
@@ -138,7 +138,10 @@ async function loadSect(sect) {
     const allQuiz = [];
     const allDiscourses = [];
     const allCats = [];
+    const allPlaces = [];
+    const allRoutes = [];
     const seenCat = new Set();
+    const seenPlace = new Set();
     for (const s of sects) {
       try {
         const meta = SECT_META[s];
@@ -159,10 +162,21 @@ async function loadSect(sect) {
           for (const c of (Array.isArray(d.categories) ? d.categories : [])) {
             if (!seenCat.has(c.id)) { seenCat.add(c.id); allCats.push(c); }
           }
+          // 古今地名与路线：此前「全部」下一律留空，导致智慧舆图在默认视图里既没点也没线。
+          // 地名按名字去重（洛阳、长安这类会被多个流派同时提到），并打上流派标记。
+          (Array.isArray(d.places) ? d.places : []).forEach((p) => {
+            if (!p || !p.name || seenPlace.has(p.name)) return;
+            seenPlace.add(p.name);
+            allPlaces.push({ ...p, _sect: s, _sectName: meta.name });
+          });
+          (Array.isArray(d.routes) ? d.routes : []).forEach((r) => {
+            if (!r || !r.name) return;
+            allRoutes.push({ ...r, _sect: s, _sectName: meta.name });
+          });
         }
       } catch(e) { /* 跳过该流派，不影响其余 */ }
     }
-    bookData = { books: allBooks, cases: allCases, quiz: allQuiz, discourses: allDiscourses, categories: allCats, places: [], routes: [] };
+    bookData = { books: allBooks, cases: allCases, quiz: allQuiz, discourses: allDiscourses, categories: allCats, places: allPlaces, routes: allRoutes };
     SECT_CACHE['all'] = bookData;
     renderSect();
     return;
@@ -988,19 +1002,48 @@ function renderMapData() {
   }
 }
 
-/** 路线开关按钮：点一下展开该条路线的途经点详情，再点收起 */
+/** 路线开关按钮：点一下展开该条路线的途经点详情，再点收起。
+ *  「全部」流派下五派路线合计十余条，与帝王谱系舆图疆域同一套做法：
+ *  默认只露前 8 个，其余折进「展示更多」，展开/收起只切 .hidden、不重渲染，
+ *  避免把已选中的路线和地图图层状态清掉。每次重渲染回到收起态。 */
+const BOOK_ROUTE_LIMIT = 8;
+let bookRouteShowAll = false;
+
 function renderRouteButtons(routes) {
   const box = $("#map-route-btns");
   if (!box) return;
   box.innerHTML = "";
+  bookRouteShowAll = false;
+  const btns = [];
   routes.forEach((r, ri) => {
     const n = (r.points || []).length;
     const b = document.createElement("button");
     b.className = "route-btn";
+    b.dataset.ri = String(ri);
     b.textContent = `${r.name}（${n} ${r.unit || "站"}）`;
+    if (r._sectName) b.title = `${r._sectName} · ${r.name}`;
     b.addEventListener("click", () => toggleRoute(ri));
     box.appendChild(b);
+    btns.push(b);
   });
+  if (btns.length > BOOK_ROUTE_LIMIT) {
+    const applyFold = (expand) => {
+      btns.forEach((b, i) => { if (i >= BOOK_ROUTE_LIMIT) b.classList.toggle("hidden", !expand); });
+    };
+    applyFold(false);
+    const label = () => (bookRouteShowAll
+      ? "收起 ▴"
+      : `展示更多（还有 ${btns.length - BOOK_ROUTE_LIMIT} 个）▾`);
+    const more = document.createElement("button");
+    more.className = "route-btn route-more-btn";
+    more.textContent = label();
+    more.addEventListener("click", () => {
+      bookRouteShowAll = !bookRouteShowAll;
+      applyFold(bookRouteShowAll);
+      more.textContent = label();
+    });
+    box.appendChild(more);
+  }
   box.classList.toggle("hidden", routes.length === 0);
 }
 
@@ -1365,14 +1408,18 @@ function setRouteStyles(hiIndex = -1, hiStyle = null) {
   });
 }
 
-/** 让当前展开的路线按钮呈选中态 */
+/** 让当前展开的路线按钮呈选中态。
+ *  按按钮上记的 data-ri 取路线，不能拿 DOM 顺序当索引——按钮组里还混着
+ *  「展示更多」这个非路线按钮，按位置取会越界读到 undefined。 */
 function syncRouteButtons() {
   const box = $("#map-route-btns");
   if (!box) return;
   const routes = bookData.routes || [];
-  [...box.children].forEach((b, i) => {
-    b.classList.toggle("on", i === activeRoute);
-    b.textContent = `${routes[i].name}（${(routes[i].points || []).length} ${routes[i].unit || "站"}）`;
+  [...box.children].forEach((b) => {
+    const ri = Number(b.dataset && b.dataset.ri);
+    if (!Number.isInteger(ri) || !routes[ri]) return;
+    b.classList.toggle("on", ri === activeRoute);
+    b.textContent = `${routes[ri].name}（${(routes[ri].points || []).length} ${routes[ri].unit || "站"}）`;
   });
 }
 

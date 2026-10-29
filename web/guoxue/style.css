@@ -762,6 +762,14 @@ body[data-sect="myth"] {
 .route-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0, 0, 0, .08); }
 .route-btn.on { background: var(--primary); color: #fff; border-color: var(--primary); }
 .route-btn.on:hover { color: #fff; }
+/* 「展示更多 / 收起」：与帝王谱系舆图疆域同款——实线边框 + 加粗。
+   两个类是为了盖过上面 .route-btn 的边框与字重（同权重、此处虽在后面，
+   但用两个类可以不受后续规则顺序影响）。 */
+.route-btn.route-more-btn {
+  border: 2px solid #b99a55; background: var(--card);
+  padding: 6px 18px; font-size: 13.5px; font-weight: 700; color: var(--primary);
+}
+.route-btn.route-more-btn:hover { border-color: #8a1c1c; background: #fdf3e8; }
 .route-detail {
   margin: 10px 0 0; padding: 14px 18px;
   background: var(--card); border: 2px solid var(--border);
