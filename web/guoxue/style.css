@@ -790,10 +790,66 @@ body[data-sect="myth"] {
   background: rgba(168,53,42,.1); padding: 1px 8px; border-radius: 3px;
 }
 .stop-event { font-size: 13px; line-height: 1.6; color: #6b5d48; padding-left: 2px; }
+/* 事件弹窗：与帝王谱系舆图疆域同一位置与尺寸——贴地图左上角，宽 min(380px,46%)，
+   内容超长时卡片内部滚动，不遮挡地图右下角的图例。 */
 .map-popup {
-  position: absolute; bottom: 20px; right: 20px; z-index: 1000;
-  background: var(--card); border: 2px solid var(--gold); border-radius: 10px;
-  padding: 14px 16px; max-width: 280px; font-size: 14px; line-height: 1.7;
+  position: absolute; top: 12px; left: 12px; z-index: 1000;
+  width: min(380px, 46%);
+  max-height: calc(540px - 24px); overflow-y: auto; overscroll-behavior: contain;
+  background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+  padding: 14px 16px; font-size: 14px; line-height: 1.7;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+}
+.map-popup h4 { margin: 0 22px 6px 0; font-size: 18px; color: var(--primary); line-height: 1.35; }
+.map-popup h4 small { font-size: 13px; font-weight: 400; color: var(--muted); }
+.map-popup .close {
+  position: absolute; top: 6px; right: 10px; border: none; background: none;
+  font-size: 18px; cursor: pointer; color: var(--muted); line-height: 1;
+}
+.map-popup .evt-place { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: #247bc1; }
+.map-popup .evt-summary { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #a8352a; }
+.map-popup .evt-people { margin: 0 0 6px; font-size: 13px; color: #247bc1; }
+.map-popup .evt-body { margin: 0; font-size: 14px; color: #5c5140; }
+/* 事件配图：按约定路径 data/portraits/sect-events/<id>.jpg 取；无图时 onerror 整块移除，
+   不会留下破图空框。图片就位后自动出现，无需再改代码。 */
+.map-popup .event-fig {
+  display: none; margin: 0 0 8px; border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--border); background: #f4ecd8;
+}
+.map-popup .event-fig.loaded { display: block; }
+.map-popup .event-fig img { display: block; width: 100%; height: auto; }
+
+/* 「思想大事」汇总：标题条 + 事件胶囊网格 */
+.sect-evt-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.sect-evt-chip {
+  border: 2px solid var(--border); background: #fffdf7; border-radius: 8px;
+  padding: 6px 10px; font-size: 13.5px; font-family: inherit; color: var(--ink);
+  cursor: var(--cur-pointer); text-align: left; line-height: 1.4; transition: all .12s;
+}
+.sect-evt-chip b { color: var(--primary); font-weight: 700; margin-right: 2px; }
+.sect-evt-chip i { display: block; font-style: normal; font-size: 12px; color: var(--muted); }
+.sect-evt-chip:hover { border-color: #b99a55; background: #fdf3e8; }
+.sect-evt-chip.on { border-color: var(--primary); background: #fdf0ec; }
+.sect-evt-chip.on b { color: var(--primary); }
+.evt-summary-more { margin-top: 10px; text-align: center; }
+.evt-more-btn {
+  border: 2px solid #b99a55; background: var(--card);
+  border-radius: 999px; padding: 6px 18px;
+  font-size: 13.5px; font-weight: 700; font-family: inherit; color: var(--primary);
+  cursor: var(--cur-pointer); transition: all .12s;
+}
+.evt-more-btn:hover { border-color: #8a1c1c; background: #fdf3e8; }
+
+/* 「思想大事 / 该派事件」开关：矩形 + 列表图标，与圆角路线胶囊区分；
+   常态白底，选中态填主色（与顶部板块页签同色）。 */
+.route-btn.evt-toggle-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  border-radius: 8px; background: var(--card); border-color: #b99a55; color: #6b5836;
+}
+.route-btn.evt-toggle-btn svg { width: 14px; height: 14px; display: block; flex: 0 0 auto; }
+.route-btn.evt-toggle-btn:hover { background: #fdf3e8; border-color: #d9b56b; }
+.route-btn.evt-toggle-btn.on {
+  background: var(--primary); border-color: var(--primary); color: #fff;
 }
 
 /* ---- 探问问典：复刻史论工坊 .qq / .qq-opt ---- */

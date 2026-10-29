@@ -50,7 +50,7 @@ const SECT_CACHE = {};
  * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
-const DATA_VER = "v126";
+const DATA_VER = "v127";
 
 // Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
 // 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
@@ -140,6 +140,7 @@ async function loadSect(sect) {
     const allCats = [];
     const allPlaces = [];
     const allRoutes = [];
+    const allEvents = [];
     const seenCat = new Set();
     const seenPlace = new Set();
     for (const s of sects) {
@@ -173,10 +174,14 @@ async function loadSect(sect) {
             if (!r || !r.name) return;
             allRoutes.push({ ...r, _sect: s, _sectName: meta.name });
           });
+          (Array.isArray(d.events) ? d.events : []).forEach((e) => {
+            if (!e || !e.id) return;
+            allEvents.push({ ...e, _sect: s, _sectName: meta.name });
+          });
         }
       } catch(e) { /* 跳过该流派，不影响其余 */ }
     }
-    bookData = { books: allBooks, cases: allCases, quiz: allQuiz, discourses: allDiscourses, categories: allCats, places: allPlaces, routes: allRoutes };
+    bookData = { books: allBooks, cases: allCases, quiz: allQuiz, discourses: allDiscourses, categories: allCats, places: allPlaces, routes: allRoutes, events: allEvents };
     SECT_CACHE['all'] = bookData;
     renderSect();
     return;
@@ -989,7 +994,14 @@ function renderMapData() {
   });
 
   renderRouteButtons(routes);
-  hideRouteDetail();
+  // 默认展示「思想大事」汇总（与舆图疆域默认展开「该朝事件」一致）；
+  // 没有事件的流派（诗词鉴赏）仍按原样收起面板。
+  if ((bookData.events || []).length) {
+    sectEventShowAll = false;
+    showSectEventsSummary();
+  } else {
+    hideRouteDetail();
+  }
 
   // 视野：优先按路线外接框，否则按地名外接框；都没有则保持默认中国视野
   const bounds = (routes.length
@@ -1044,7 +1056,134 @@ function renderRouteButtons(routes) {
     });
     box.appendChild(more);
   }
-  box.classList.toggle("hidden", routes.length === 0);
+  // 「思想大事 / 该派事件」开关：与帝王谱系舆图疆域的「该朝事件」同款，放在最前面。
+  // 没有事件的流派（如诗词鉴赏）不出现这个开关。
+  if ((bookData.events || []).length) {
+    const evtBtn = document.createElement("button");
+    evtBtn.className = "route-btn evt-toggle-btn on";
+    evtBtn.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
+      + '<circle cx="3.1" cy="4" r="1.35" fill="currentColor"/>'
+      + '<circle cx="3.1" cy="8" r="1.35" fill="currentColor"/>'
+      + '<circle cx="3.1" cy="12" r="1.35" fill="currentColor"/>'
+      + '<rect x="6.1" y="3.25" width="8.3" height="1.6" rx=".8" fill="currentColor"/>'
+      + '<rect x="6.1" y="7.2" width="8.3" height="1.6" rx=".8" fill="currentColor"/>'
+      + '<rect x="6.1" y="11.15" width="8.3" height="1.6" rx=".8" fill="currentColor"/>'
+      + `</svg><span>${sectEventLabel()}</span>`;
+    evtBtn.addEventListener("click", () => {
+      box.querySelectorAll(".route-btn").forEach((b) => b.classList.remove("on"));
+      evtBtn.classList.add("on");
+      showSectEventsSummary();
+    });
+    box.insertBefore(evtBtn, box.firstChild);
+  }
+  box.classList.toggle("hidden", routes.length === 0 && !(bookData.events || []).length);
+}
+
+// ---------- 思想大事（对应舆图疆域的「该朝事件」） ----------
+const SECT_ACCENT = "#a8352a";   // 与站点主色一致，用作汇总面板标题的左侧色条
+let sectEventShowAll = false;
+let activeSectEventId = null;
+
+/** 开关文案：单派看本派事件，全部看各派合起来的思想史大事。
+ *  用 currentSect 而不是 initialSect——切换流派后 initialSect 仍是首屏那个。 */
+function sectEventLabel() {
+  return currentSect === "all" ? "思想大事" : "该派事件";
+}
+
+/** 事件汇总：把「思想大事」的胶囊列进 #route-detail（与路线详情共用同一面板） */
+function showSectEventsSummary() {
+  const events = bookData.events || [];
+  const box = $("#route-detail");
+  if (!box) return;
+  if (!events.length) { hideRouteDetail(); return; }
+  // 先复位路线图层与高亮，但保留面板（马上要往里写事件胶囊）
+  hideRouteDetail({ keepPanel: true });
+  activeSectEventId = null;
+
+  const LIMIT = 12;
+  const overflow = events.length > LIMIT;
+  const shown = (overflow && !sectEventShowAll) ? events.slice(0, LIMIT) : events;
+  const chips = shown.map((e) => {
+    const where = (e.place && e.place.name) || "";
+    return `<button class="sect-evt-chip${e.id === activeSectEventId ? " on" : ""}" data-eid="${esc(e.id)}">`
+      + `<b>${esc(e.date)}</b> ${esc(e.name)}${where ? `<i>${esc(where)}</i>` : ""}</button>`;
+  }).join("");
+
+  box.classList.remove("hidden");
+  box.innerHTML = `
+    <div class="route-detail-head" style="border-color:${SECT_ACCENT}">
+      <span class="route-detail-name">${sectEventLabel()}</span>
+      <span class="route-detail-year">共 ${events.length} 件${overflow && !sectEventShowAll ? ` · 显示前 ${LIMIT}` : ""}</span>
+    </div>
+    <div class="route-detail-desc">思想传播与学派形成的关键节点 · 点任一事件在地图上定位</div>
+    <div class="sect-evt-grid">${chips}</div>
+    ${overflow ? `<div class="evt-summary-more"><button class="evt-more-btn" id="sect-evt-more">${
+      sectEventShowAll ? "收起 ▴" : `展示更多（还有 ${events.length - LIMIT} 个）▾`}</button></div>` : ""}`;
+
+  box.querySelectorAll(".sect-evt-chip").forEach((c) => {
+    c.addEventListener("click", () => {
+      const ev = events.find((x) => x.id === c.dataset.eid);
+      if (!ev) return;
+      activeSectEventId = ev.id;
+      box.querySelectorAll(".sect-evt-chip").forEach((x) => x.classList.toggle("on", x === c));
+      showSectEventOnMap(ev);
+    });
+  });
+  const more = $("#sect-evt-more");
+  if (more) {
+    more.addEventListener("click", () => {
+      sectEventShowAll = !sectEventShowAll;
+      showSectEventsSummary();
+    });
+  }
+}
+
+/** 点事件胶囊：镜头飞到事件地点，并在左侧弹窗展示该事件 */
+function showSectEventOnMap(ev) {
+  if (!map) return;
+  const lat = Number(ev.lat), lng = Number(ev.lng);
+  if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    map.flyTo([lat, lng], Math.max(map.getZoom(), 7), { duration: 0.7 });
+  }
+  showSectEventPopup(ev);
+}
+
+/** 事件弹窗：标题 + 时间 + 地点 + 人物 + 正文；配图按约定路径取，缺图整块移除 */
+function showSectEventPopup(ev) {
+  const pop = document.getElementById("map-popup");
+  if (!pop) return;
+  const place = ev.place || {};
+  const where = place.name ? `${esc(place.name)}${place.modern ? `（今${esc(place.modern)}）` : ""}` : "";
+  const people = (ev.people || []).map(esc).join("、");
+  const img = `../../data/portraits/sect-events/${encodeURIComponent(ev.id)}.jpg`;
+  pop.classList.remove("hidden");
+  pop.innerHTML = `<button class="close" aria-label="关闭">✕</button>
+    <h4>${esc(ev.name)} <small>· ${esc(ev.date)}</small></h4>
+    <figure class="event-fig">
+      <img src="${img}" alt="${esc(ev.name)}"
+        onload="this.closest('.event-fig').classList.add('loaded')"
+        onerror="this.closest('.event-fig').remove()"/>
+    </figure>
+    ${where ? `<p class="evt-place">${where}</p>` : ""}
+    ${ev.summary ? `<p class="evt-summary">${esc(ev.summary)}</p>` : ""}
+    ${people ? `<p class="evt-people"><b>核心人物：</b>${people}</p>` : ""}
+    <p class="evt-body">${esc(ev.narrative)}</p>`;
+  const close = pop.querySelector(".close");
+  if (close) close.addEventListener("click", () => pop.classList.add("hidden"));
+}
+
+// 点事件卡外面任意位置即关闭（与帝王谱系舆图疆域同一交互习惯）。
+// 放行 .sect-evt-chip：点胶囊本身要开新卡，不能刚开就被这条监听关掉。
+if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+  document.addEventListener("click", (e) => {
+    const pop = document.getElementById("map-popup");
+    if (!pop || pop.classList.contains("hidden")) return;
+    const t = e.target;
+    if (!t || typeof t.closest !== "function") return;
+    if (pop.contains(t)) return;
+    if (t.closest(".sect-evt-chip")) return;
+    pop.classList.add("hidden");
+  });
 }
 
 // 山海经示意图热点：严格按原著方位——昆仑居中，南山经在南（下），西山经在西（左），北山经在北（上），海外东经在东（右）
@@ -1348,8 +1487,10 @@ function toggleRoute(ri) {
   }
 }
 
-/** 收起路线详情，隐藏所有路线线条 */
-function hideRouteDetail() {
+/** 收起路线详情，隐藏所有路线线条。
+ *  opts.keepPanel=true 时只复位地图上的路线图层与高亮，不清空 #route-detail
+ *  ——「思想大事」汇总要占用同一个面板，复位后紧接着写入事件胶囊。 */
+function hideRouteDetail(opts = {}) {
   activeRoute = null;
   const mapLeaf = document.getElementById("map-leaf");
   const schematicEl = document.getElementById("map-schematic");
@@ -1370,7 +1511,7 @@ function hideRouteDetail() {
   const oldDetail = document.querySelector(".sch-detail");
   if (oldDetail) oldDetail.remove();
   const box = $("#route-detail");
-  if (box) { box.classList.add("hidden"); box.innerHTML = ""; }
+  if (box && !opts.keepPanel) { box.classList.add("hidden"); box.innerHTML = ""; }
   routeLayerGroups.forEach((g) => {
     // 收起时同时复位 weight（高亮用 5），否则下次展开前折线仍是加粗态
     g.line.setStyle({ opacity: 0, weight: 3 });
@@ -1461,9 +1602,12 @@ document.querySelectorAll(".tab").forEach(t => {
         ensureLeaflet().then(() => {
           initMap();
           refreshMapWhenVisible();
-          // 诗词鉴赏/思想源流等真实 Leaflet 路线默认展开第一条路线（如苏轼贬谪路线），不弹卡片。
+          // 真实 Leaflet 路线默认展开第一条（如诗词鉴赏的苏轼贬谪路线），不弹卡片。
+          // 但思想源流五派有「思想大事」，默认视图应是事件汇总——
+          // 否则首条路线详情会把汇总面板覆盖掉，开关看着选中、内容却是路线。
           const firstRoute = (bookData.routes || [])[0];
-          if (firstRoute && !firstRoute.schematic) {
+          const hasSectEvents = (bookData.events || []).length > 0;
+          if (firstRoute && !firstRoute.schematic && !hasSectEvents) {
             setTimeout(() => {
               if (activeRoute !== 0) toggleRoute(0);
             }, 400);

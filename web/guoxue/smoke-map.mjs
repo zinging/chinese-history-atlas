@@ -105,7 +105,10 @@ for (const s of SECTS) {
       placeLayers: T.mapLayers.places.length,
       routePolylines: routes,
       routeEndMarkers: startEnd,
-      btnTexts: [...document.querySelectorAll('#map-route-btns .route-btn')].map(b => b.textContent),
+      // 只统计真正的路线胶囊：「思想大事」开关与「展示更多」不是路线
+      btnTexts: [...document.querySelectorAll('#map-route-btns .route-btn')]
+        .filter(b => !b.classList.contains('evt-toggle-btn') && !b.classList.contains('route-more-btn'))
+        .map(b => b.textContent),
       routePanelHidden: document.getElementById('map-route-btns').classList.contains('hidden'),
       detailHidden: document.getElementById('route-detail').classList.contains('hidden'),
       // 图层是否真在图上（total 覆盖面积大于 0 说明已渲染）
@@ -139,7 +142,7 @@ const routeInfo = await evalJs(`(async () => {
   await new Promise(r => setTimeout(r, 700));
   const T = window.__guoxueMapTest;
   const r0 = T.bookData.routes[0];
-  const btn = document.querySelector('#map-route-btns .route-btn');
+  const btn = document.querySelector('#map-route-btns .route-btn:not(.evt-toggle-btn):not(.route-more-btn)');
   btn.click();
   await new Promise(r => setTimeout(r, 250));
   const stops = [...document.querySelectorAll('#route-detail .route-detail-stops li')].map(li => li.textContent.trim());
