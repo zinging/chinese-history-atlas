@@ -242,6 +242,9 @@ async function loadAll() {
     const allInstitutions = [];
     const allQuiz = [];
     const allSources = [];
+    const allCases = [];
+    const allCaseCats = [];
+    const seenCat = new Set();
     const seenSrc = new Set();
     for (const dyn of dynOrder) {
       try {
@@ -262,11 +265,12 @@ async function loadAll() {
         // 「这个朝代还没有标记在地图上的事件」、人物关系与探案也缺内容。
         const p = (rel) => `../data/${dir}${rel}`;
         const maybe = (path) => loadJSON(path).catch(() => null);
-        const [evDoc, peoDoc, plaDoc, rouDoc, mevDoc, insDoc, quizDoc] = await Promise.all([
+        const [evDoc, peoDoc, plaDoc, rouDoc, mevDoc, insDoc, quizDoc, casDoc] = await Promise.all([
           maybe(p(lay.events)), maybe(p(lay.people)), maybe(p(lay.places)),
           maybe(p(lay.routes)), maybe(p(lay.mapEvents)),
           dyn === 'ming' ? maybe(p('institutions/institutions.json')) : null,
           maybe(p(dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json')),
+          maybe(p(lay.cases)),
         ]);
         (evDoc && evDoc.events || []).forEach(x => { x._dynasty = dyn; allEvents.push(x); });
         (peoDoc && peoDoc.people || []).forEach(x => { x._dynasty = dyn; allPeople.push(x); });
@@ -275,6 +279,14 @@ async function loadAll() {
         (mevDoc && mevDoc.events || []).forEach(x => { x._dynasty = dyn; allMapEvents.push(x); });
         (insDoc && insDoc.institutions || []).forEach(x => { x._dynasty = dyn; allInstitutions.push(x); });
         (quizDoc && quizDoc.quiz || []).forEach(x => { x._dynasty = dyn; allQuiz.push(x); });
+        // 悬案疑案：各朝都有自己的 cases.json 与分类，全部视图必须一起合并，
+        // 否则「全部」下只显示明朝那一套分类 4 项（其余六朝 8 项看不到）。
+        (casDoc && casDoc.cases || []).forEach(x => { x._dynasty = dyn; allCases.push(x); });
+        (casDoc && casDoc.categories || []).forEach((c) => {
+          if (!c || !c.id || seenCat.has(c.id)) return;
+          seenCat.add(c.id);
+          allCaseCats.push({ id: c.id, name: c.name, _dynasty: dyn });
+        });
       } catch(e) { /* 跳过加载失败的朝代 */ }
     }
     // 史料出处全朝代共用一份，按 id 去重
@@ -288,16 +300,20 @@ async function loadAll() {
 
     DATA = {
       emperors: allEmperors, people: allPeople, events: allEvents,
-      places: allPlaces, routes: allRoutes, cases: [], caseCategories: [],
+      places: allPlaces, routes: allRoutes,
+      cases: allCases, caseCategories: allCaseCats,
       institutions: allInstitutions, sourcesDoc: { sources: allSources },
       quiz: allQuiz, mapEvents: allMapEvents,
     };
-    // 加载通用案件库（明史案件卡库）
-    try {
-      const casesDoc = await loadJSON('../data/cases/cases.json?v=v1');
-      DATA.cases = casesDoc.cases || [];
-      DATA.caseCategories = casesDoc.categories || [];
-    } catch(e) { /* 案件库加载失败不阻塞 */ }
+    // 兜底：若逐朝循环没拿到任何案件（例如某个朝代目录整批 404），
+    // 再单独读一次通用案件库，保证「悬案疑案」不全空。
+    if (!DATA.cases.length) {
+      try {
+        const casesDoc = await loadJSON('../data/cases/cases.json?v=v1');
+        DATA.cases = casesDoc.cases || [];
+        DATA.caseCategories = casesDoc.categories || [];
+      } catch(e) { /* 案件库加载失败不阻塞 */ }
+    }
     DATA_CACHE['all'] = DATA;
     // 更新「全部」按钮的帝数
     const allBtn = document.querySelector('.dynasty-btn[data-d="all"] .dyn-sub');

@@ -683,12 +683,23 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .viewpoints p { margin: 4px 0; }
 
 /* ---- 案件卡 ---- */
+/* 分类条：单行不折行，放不下时横向滚动（与国学四板块 .case-tabs 同一套做法）。
+   宽度用 fit-content + max-width:100%：分类少时整条居中（原来就是居中的观感），
+   分类多时（「全部」视图七朝共 12 项）撑满一行并出现横向滚动条。
+   不用 justify-content:center 直接配 overflow——那样溢出后左端会被裁掉、滚不到。 */
 .case-tabs {
-  display: flex; gap: 10px; flex-wrap: wrap;
-  justify-content: center;
-  margin: 8px 0 20px; padding-bottom: 4px;
+  display: flex; gap: 10px; flex-wrap: nowrap;
+  justify-content: flex-start;
+  width: fit-content; max-width: 100%;
+  margin: 8px auto 20px; padding-bottom: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin; scrollbar-color: #b99a55 #f0e6d2;
 }
+.case-tabs::-webkit-scrollbar { height: 6px; }
+.case-tabs::-webkit-scrollbar-thumb { background: #b99a55; border-radius: 3px; }
+.case-tabs::-webkit-scrollbar-track { background: #f0e6d2; }
 .case-tab {
+  flex: 0 0 auto; white-space: nowrap;
   position: relative;
   border: 2.5px solid #b99a55;
   background: linear-gradient(180deg, #fbf3df 0%, #f3e6c8 100%);
