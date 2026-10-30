@@ -50,7 +50,7 @@ const SECT_CACHE = {};
  * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
-const DATA_VER = "v127";
+const DATA_VER = "v128";
 
 // Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
 // 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
@@ -1649,6 +1649,10 @@ function syncRouteButtons() {
     b.classList.toggle("on", ri === activeRoute);
     b.textContent = `${routes[ri].name}（${(routes[ri].points || []).length} ${routes[ri].unit || "站"}）`;
   });
+  // 单选：路线胶囊与「思想大事」开关互斥。选中某条路线时，开关必须让出选中态；
+  // 反过来由开关自己的 click 处理器把路线的 .on 清掉（见 evtBtn 绑定）。
+  const toggle = box.querySelector(".evt-toggle-btn");
+  if (toggle && activeRoute !== null && activeRoute !== undefined) toggle.classList.remove("on");
 }
 
 // 切换 tab
