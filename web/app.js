@@ -246,57 +246,80 @@ async function loadAll() {
     const allCaseCats = [];
     const seenCat = new Set();
     const seenSrc = new Set();
-    for (const dyn of dynOrder) {
-      try {
-        const dir = DYNASTY_DIRS[dyn] || '';
-        const lay = DYNASTY_LAYOUT[dyn] || DYNASTY_LAYOUT.ming;
-        const r = await fetch(`../data/${dir}emperors/index.json?v=v1`);
-        if (!r.ok) continue;
-        const idx = await r.json();
-        if (!idx.emperors || !Array.isArray(idx.emperors)) continue;
-        // 逐皇帝加载详情
-        const emps = await Promise.all(idx.emperors.map(e =>
-          loadJSON(`../data/${dir}emperors/${e.file}`).catch(() => null)
-        ));
-        emps.filter(Boolean).forEach(emp => { emp._dynasty = dyn; allEmperors.push(emp); });
+    // 七个朝代并发加载。原先是 for + await 串行：每个朝代都要先等 emperors/index.json
+    // 回来才发下一批，7 个朝代排成 7 个往返。改成 Promise.all 后请求数量完全不变，
+    // 但只需要等 1 个往返；结果再按 dynOrder 顺序拼回，
+    // 保证「全部」下的帝王/事件/悬案列表顺序与串行时逐字一致。
+    const [perDyn, srcDoc] = await Promise.all([
+      Promise.all(dynOrder.map(async (dyn) => {
+        const bucket = {
+          dyn, emperors: [], events: [], people: [], places: [], routes: [],
+          mapEvents: [], institutions: [], quiz: [], cases: [], cats: [],
+        };
+        try {
+          const dir = DYNASTY_DIRS[dyn] || '';
+          const lay = DYNASTY_LAYOUT[dyn] || DYNASTY_LAYOUT.ming;
+          const r = await fetch(`../data/${dir}emperors/index.json?v=v1`);
+          if (!r.ok) return bucket;
+          const idx = await r.json();
+          if (!idx.emperors || !Array.isArray(idx.emperors)) return bucket;
+          // 逐皇帝加载详情
+          const emps = await Promise.all(idx.emperors.map(e =>
+            loadJSON(`../data/${dir}emperors/${e.file}`).catch(() => null)
+          ));
+          emps.filter(Boolean).forEach(emp => { emp._dynasty = dyn; bucket.emperors.push(emp); });
 
-        // 其余分区同样要合并：此前只合了 emperors，把 events/mapEvents/cases/people/
-        // quiz/sourcesDoc 全留空，而「全部」是默认视图，导致首屏「该朝事件」显示
-        // 「这个朝代还没有标记在地图上的事件」、人物关系与探案也缺内容。
-        const p = (rel) => `../data/${dir}${rel}`;
-        const maybe = (path) => loadJSON(path).catch(() => null);
-        const [evDoc, peoDoc, plaDoc, rouDoc, mevDoc, insDoc, quizDoc, casDoc] = await Promise.all([
-          maybe(p(lay.events)), maybe(p(lay.people)), maybe(p(lay.places)),
-          maybe(p(lay.routes)), maybe(p(lay.mapEvents)),
-          dyn === 'ming' ? maybe(p('institutions/institutions.json')) : null,
-          maybe(p(dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json')),
-          maybe(p(lay.cases)),
-        ]);
-        (evDoc && evDoc.events || []).forEach(x => { x._dynasty = dyn; allEvents.push(x); });
-        (peoDoc && peoDoc.people || []).forEach(x => { x._dynasty = dyn; allPeople.push(x); });
-        (plaDoc && plaDoc.places || []).forEach(x => { x._dynasty = dyn; allPlaces.push(x); });
-        (rouDoc && rouDoc.routes || []).forEach(x => { x._dynasty = dyn; allRoutes.push(x); });
-        (mevDoc && mevDoc.events || []).forEach(x => { x._dynasty = dyn; allMapEvents.push(x); });
-        (insDoc && insDoc.institutions || []).forEach(x => { x._dynasty = dyn; allInstitutions.push(x); });
-        (quizDoc && quizDoc.quiz || []).forEach(x => { x._dynasty = dyn; allQuiz.push(x); });
-        // 悬案疑案：各朝都有自己的 cases.json 与分类，全部视图必须一起合并，
-        // 否则「全部」下只显示明朝那一套分类 4 项（其余六朝 8 项看不到）。
-        (casDoc && casDoc.cases || []).forEach(x => { x._dynasty = dyn; allCases.push(x); });
-        (casDoc && casDoc.categories || []).forEach((c) => {
-          if (!c || !c.id || seenCat.has(c.id)) return;
-          seenCat.add(c.id);
-          allCaseCats.push({ id: c.id, name: c.name, _dynasty: dyn });
-        });
-      } catch(e) { /* 跳过加载失败的朝代 */ }
-    }
-    // 史料出处全朝代共用一份，按 id 去重
-    try {
-      const src = await loadJSON('../data/sources/sources.json');
-      for (const s of (src && src.sources) || []) {
-        const key = s.id || s.title || JSON.stringify(s);
-        if (!seenSrc.has(key)) { seenSrc.add(key); allSources.push(s); }
+          // 其余分区同样要合并：此前只合了 emperors，把 events/mapEvents/cases/people/
+          // quiz/sourcesDoc 全留空，而「全部」是默认视图，导致首屏「该朝事件」显示
+          // 「这个朝代还没有标记在地图上的事件」、人物关系与探案也缺内容。
+          const p = (rel) => `../data/${dir}${rel}`;
+          const maybe = (path) => loadJSON(path).catch(() => null);
+          const [evDoc, peoDoc, plaDoc, rouDoc, mevDoc, insDoc, quizDoc, casDoc] = await Promise.all([
+            maybe(p(lay.events)), maybe(p(lay.people)), maybe(p(lay.places)),
+            maybe(p(lay.routes)), maybe(p(lay.mapEvents)),
+            dyn === 'ming' ? maybe(p('institutions/institutions.json')) : null,
+            maybe(p(dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json')),
+            maybe(p(lay.cases)),
+          ]);
+          (evDoc && evDoc.events || []).forEach(x => { x._dynasty = dyn; bucket.events.push(x); });
+          (peoDoc && peoDoc.people || []).forEach(x => { x._dynasty = dyn; bucket.people.push(x); });
+          (plaDoc && plaDoc.places || []).forEach(x => { x._dynasty = dyn; bucket.places.push(x); });
+          (rouDoc && rouDoc.routes || []).forEach(x => { x._dynasty = dyn; bucket.routes.push(x); });
+          (mevDoc && mevDoc.events || []).forEach(x => { x._dynasty = dyn; bucket.mapEvents.push(x); });
+          (insDoc && insDoc.institutions || []).forEach(x => { x._dynasty = dyn; bucket.institutions.push(x); });
+          (quizDoc && quizDoc.quiz || []).forEach(x => { x._dynasty = dyn; bucket.quiz.push(x); });
+          // 悬案疑案：各朝都有自己的 cases.json 与分类，全部视图必须一起合并，
+          // 否则「全部」下只显示明朝那一套分类 4 项（其余六朝 8 项看不到）。
+          (casDoc && casDoc.cases || []).forEach(x => { x._dynasty = dyn; bucket.cases.push(x); });
+          (casDoc && casDoc.categories || []).forEach((c) => {
+            if (c && c.id) bucket.cats.push({ id: c.id, name: c.name, _dynasty: dyn });
+          });
+        } catch(e) { /* 跳过加载失败的朝代 */ }
+        return bucket;
+      })),
+      // 史料出处全朝代共用一份，与朝代循环并发取
+      loadJSON('../data/sources/sources.json').catch(() => null),
+    ]);
+    for (const b of perDyn) {
+      allEmperors.push(...b.emperors);
+      allEvents.push(...b.events);
+      allPeople.push(...b.people);
+      allPlaces.push(...b.places);
+      allRoutes.push(...b.routes);
+      allMapEvents.push(...b.mapEvents);
+      allInstitutions.push(...b.institutions);
+      allQuiz.push(...b.quiz);
+      allCases.push(...b.cases);
+      // 分类按「先到先得」去重，与串行时同一套顺序（朝代顺序决定归属）
+      for (const c of b.cats) {
+        if (!seenCat.has(c.id)) { seenCat.add(c.id); allCaseCats.push(c); }
       }
-    } catch(e) { /* 史料加载失败不阻塞 */ }
+    }
+    // 史料出处按 id 去重
+    for (const s of (srcDoc && srcDoc.sources) || []) {
+      const key = s.id || s.title || JSON.stringify(s);
+      if (!seenSrc.has(key)) { seenSrc.add(key); allSources.push(s); }
+    }
 
     DATA = {
       emperors: allEmperors, people: allPeople, events: allEvents,

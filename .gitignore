@@ -13,11 +13,13 @@ web/.check-*
 web/.diag-*
 web/.verify-*
 
-# 数据迁移一次性备份（不纳入版本库）
-data/gewu/.index.full.bak.json
+# 数据迁移一次性备份（不纳入版本库）。
+# 五派的 index.json 曾由单体拆成「清单 + 分片」，拆分脚本会把单体备份成
+# .index.full.bak.json。迁移早已执行，备份已清除；万一重跑脚本再生成，也不再入库。
+data/*/.index.full.bak.json
 
 # 思想大事配图的原始大图暂存区：出图模型直接往这里放（单张约 800KB、上千像素），
-# 跑 web/tools/make-sect-event-thumbs.mjs 缩到 800px 后写进 sect-events/，
+# 跑 web/tools/make-sect-thumbs.mjs 缩到 800px 后写进 sect-events/，
 # 只有缩图进版本库；原始大图留在本地，处理完可自行删除。
 data/portraits/.sect-raw/
 

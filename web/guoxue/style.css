@@ -183,7 +183,6 @@ body[data-sect="myth"] {
   transition: all .15s;
 }
 .support-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(201,169,106,.35); }
-.support-icon { font-size: 16px; color: #d4a017; }
 .support-pop {
   position: fixed; top: 58px; right: 16px; z-index: 999;
   width: 320px; background: #2b2620; color: #f0e4cc;
@@ -196,45 +195,15 @@ body[data-sect="myth"] {
   from { opacity: 0; transform: translateY(-8px) scale(.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-.support-pop-head {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 17px; margin-bottom: 10px;
-}
-.support-pop-close {
-  margin-left: auto; background: none; border: none;
-  color: #b0a48a; font-size: 14px; cursor: pointer; padding: 4px;
-  font-family: inherit;
-}
 .support-pop-close:hover { color: #fff; }
-.support-pop-text { margin: 0 0 16px; font-size: 14px; line-height: 1.7; color: #d8ccb2; }
-.support-pop-gh {
-  display: block; text-align: center; text-decoration: none;
-  border: 1.5px solid #c9a96a; border-radius: 999px;
-  color: #f0d98a; font-size: 15px; font-weight: 700;
-  padding: 11px 0; transition: all .15s;
-}
 .support-pop-gh:hover { background: rgba(201,169,106,.18); border-color: #e8c86a; color: #ffe9a8; }
 
 /* ===== 页面通用 ===== */
 .page { padding: 10px 0 0; }
-.page-title { font-size: 24px; margin: 18px 0 2px; text-align: center; }
-.page-sub { color: var(--muted); margin: 2px 0 18px; font-size: 15px; text-align: center; }
 
 .footer {
   margin-top: 32px; text-align: center;
   color: var(--muted); font-size: 13px;
-}
-
-/* ---- 朝代筛选条（诗文用） ---- */
-.era-filter {
-  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-  margin: 8px 0 18px;
-}
-.era-btn {
-  border: 2px solid var(--border); background: var(--card);
-  color: var(--ink); font-size: 14px; font-weight: 600;
-  padding: 7px 16px; border-radius: 999px; cursor: pointer;
-  font-family: inherit; transition: all .15s;
 }
 .era-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.08); }
 .era-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
@@ -514,11 +483,6 @@ body[data-sect="myth"] {
 .case-summary {
   margin: 8px 0 12px; padding: 10px 14px;
   background: #fbf3e0; border-radius: 10px; font-size: 15px; line-height: 1.7;
-}
-.case-name-origin {
-  margin: 8px 0 12px; padding: 10px 14px;
-  background: #fbf3e0; border-left: 4px solid var(--gold);
-  border-radius: 10px; font-size: 14px; color: var(--muted); line-height: 1.7;
 }
 .case-section {
   margin-top: 12px;
@@ -898,10 +862,6 @@ body[data-sect="myth"] {
 
 /* ---- 探问问典：复刻史论工坊 .qq / .qq-opt ---- */
 .quiz-list { display: flex; flex-direction: column; gap: 16px; }
-.quiz-card {
-  border: 2px solid var(--border); border-radius: var(--radius);
-  padding: 14px 16px; background: #fffdf7;
-}
 .quiz-card .q { font-size: 16px; font-weight: 700; color: #4a3a1c; margin-bottom: 10px; line-height: 1.6; }
 .quiz-card .opts { display: flex; flex-direction: column; gap: 8px; }
 .quiz-card .opt {
@@ -999,7 +959,6 @@ body[data-sect="myth"] {
   transition: transform .15s ease, box-shadow .15s ease;
 }
 .artifact-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(139,90,43,.15); }
-.artifact-cat { font-size: 12px; letter-spacing: .5px; }
 .artifact-name { font-size: 17px; font-weight: 700; color: #5a3a1a; }
 .artifact-from { font-size: 12px; color: var(--muted); }
 .artifact-note { font-size: 14px; color: #4d4234; line-height: 1.7; }
@@ -1059,7 +1018,6 @@ body[data-sect="myth"] {
   border-bottom: 1px dashed #d9c8a0;
 }
 .artifact-group-book { font-size: 17px; font-weight: 800; color: #5a3a1a; }
-.artifact-group-meta { font-size: 13px; color: var(--muted); }
 .artifact-group-count {
   margin-left: auto;
   font-size: 12px;
