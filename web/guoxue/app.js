@@ -1097,9 +1097,28 @@ function sectEventLabel() {
   return currentSect === "all" ? "思想大事" : "该派事件";
 }
 
+/** 把事件的 date 字符串折成一个可比较的年份数（公元前为负）。
+ *  支持三种写法：前522 / 522 / 前6世纪（取该世纪起点，公元前 6 世纪 = 前600）。
+ *  认不出的返回 0，排序时落到中段，不至于把顺序弄乱。 */
+function sectEventYear(e) {
+  const d = String((e && e.date) || "").trim();
+  let m = d.match(/^前?(\d+)世纪$/);
+  if (m) {
+    const n = Number(m[1]);
+    return d.startsWith("前") ? -n * 100 : (n - 1) * 100;
+  }
+  m = d.match(/^前(\d+)$/);
+  if (m) return -Number(m[1]);
+  m = d.match(/^(\d+)$/);
+  if (m) return Number(m[1]);
+  return 0;
+}
+
 /** 事件汇总：把「思想大事」的胶囊列进 #route-detail（与路线详情共用同一面板） */
 function showSectEventsSummary() {
-  const events = bookData.events || [];
+  // 按时间排序：合并各派后若按流派顺序拼接，公元前后的条目会交错得很乱
+  // （前6世纪、前5世纪这种世纪写法排在 819 年之后）。slice() 避免改动 bookData 本身。
+  const events = (bookData.events || []).slice().sort((a, b) => sectEventYear(a) - sectEventYear(b));
   const box = $("#route-detail");
   if (!box) return;
   if (!events.length) { hideRouteDetail(); return; }

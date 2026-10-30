@@ -843,8 +843,9 @@ body[data-sect="myth"] {
 
 /* 「思想大事」汇总：标题条 + 事件胶囊网格。
    胶囊与舆图疆域同款：椭圆（border-radius 999px）+ 单行不折行，
-   年份用主色加粗，地点跟在后面用弱化的小字。 */
-.sect-evt-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+   年份用主色加粗，地点跟在后面用弱化的小字。
+   间距比舆图疆域（8px）放宽：这里事件条数更多、内容更长，8px 会挤成一片。 */
+.sect-evt-grid { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 6px; }
 .sect-evt-chip {
   display: inline-flex; align-items: baseline; gap: 5px;
   border: 2px solid var(--border); background: #fffdf7; border-radius: 999px;
