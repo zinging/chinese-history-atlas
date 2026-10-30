@@ -32,7 +32,7 @@ const DATA = path.join(ROOT, 'data');
 
 const LOCAL_BASE = (process.env.CHAT_BASE_URL || 'http://127.0.0.1:5173/web/').replace(/\/?$/, '/');
 
-const SERVER_VERSION = '1.4.0';
+const SERVER_VERSION = '1.5.0';
 
 // 连接诊断日志：客户端每拉起一次 STDIO 进程都会记录，用于排查连接器是否真正启动
 const LOG_FILE = path.join(ROOT, '.sessions', 'mcp-connector.log');
@@ -412,6 +412,15 @@ const MODULE_LABEL = {
   emperors: '帝王谱系', thought: '思想源流', shiwen: '诗词鉴赏',
   gewu: '格物致知', myth: '神话异志',
 };
+/**
+ * MCP 的模块名 → 主壳（web/index.html）侧栏的模块 id。
+ * 两者不是一套命名：主壳按 iframe 入口取名（guoxue/shici/gewu/myth），
+ * MCP 按内容取名（thought/shiwen/gewu/myth）。深链必须用主壳的 id，
+ * 否则 applyDeepLink 找不到 .mega-btn[data-mega=...]，iframe 不会被装载，
+ * 链接会停在一个空白页——此前思想源流的所有深链都踩了这个坑。
+ */
+const SHELL_MODULE = { thought: 'guoxue', shiwen: 'shici', gewu: 'gewu', myth: 'myth' };
+const shellModule = (m) => SHELL_MODULE[m] || m;
 
 const gxCache = {};
 /** 加载一个国学板块（思想按 sect 分别加载）的完整数据 */
@@ -443,6 +452,9 @@ function loadGuoxue(module, sect) {
     cases: section('cases'),
     places: section('places'),
     routes: section('routes'),
+    // 思想源流的「思想大事」：思想传播与学派形成的关键事件（含原文译文与意义）。
+    // 只有五宗有，其他板块 section 返回空数组，不影响既有结构。
+    events: section('events'),
     discourses: section('discourses'),
     quiz: section('quiz'),
     artifacts: section('artifacts'),
@@ -458,7 +470,7 @@ function loadGuoxue(module, sect) {
  */
 function gxDeepLink(module, sect, query) {
   const q = module === 'thought' ? `sect=${sect}&` : '';
-  return deepLink('index.html?module=' + module + '&' + q + query);
+  return deepLink('index.html?module=' + shellModule(module) + '&' + q + query);
 }
 
 function bookSummary(module, sect, b) {
@@ -515,12 +527,15 @@ function tListModules() {
     ['thought', Object.keys(THOUGHT_SECTS)],
     ['shiwen', ['shiwen']], ['gewu', ['gewu']], ['myth', ['myth']],
   ]) {
-    const c = { books: 0, cases: 0, discourses: 0, artifacts: 0, routes: 0 };
+    const c = { books: 0, cases: 0, discourses: 0, artifacts: 0, routes: 0, events: 0, places: 0, routePoints: 0 };
     for (const s of sects) {
       const b = loadGuoxue(m, s);
       c.books += b.books.length; c.cases += b.cases.length;
       c.discourses += b.discourses.length; c.artifacts += b.artifacts.length;
       c.routes += b.routes.length;
+      c.events += (b.events || []).length;
+      c.places += (b.places || []).length;
+      for (const r of b.routes || []) c.routePoints += (r.points || []).length;
     }
     counts[m] = c;
   }
@@ -528,14 +543,14 @@ function tListModules() {
     modules: [
       { id: 'emperors', name: MODULE_LABEL.emperors, desc: '隋至清七朝 77 位皇帝生平时间线、重大事件、悬案疑案、史论选择题、舆图疆域',
         ...deepLink('index.html'), counts: counts.emperors },
-      { id: 'thought', name: MODULE_LABEL.thought, desc: '儒释道/诸子/理学心学五宗经典、公案、问典与圣贤行迹路线',
-        sects: THOUGHT_SECTS, ...deepLink('index.html?module=thought'), counts: counts.thought },
+      { id: 'thought', name: MODULE_LABEL.thought, desc: `儒释道/诸子/理学心学五宗：${counts.thought.books} 部典籍、${counts.thought.cases} 件公案、${counts.thought.discourses} 道问典、${counts.thought.routes} 条圣贤行迹路线（${counts.thought.routePoints} 个途经点）、${counts.thought.events} 件思想大事与 ${counts.thought.places} 处古今地名`,
+        sects: THOUGHT_SECTS, ...deepLink('index.html?module=' + shellModule('thought')), counts: counts.thought },
       { id: 'shiwen', name: MODULE_LABEL.shiwen, desc: '22 位诗人、71 篇名篇精读、95 条金句、13 条诗路与品诗问典',
-        ...deepLink('index.html?module=shiwen'), counts: counts.shiwen },
+        ...deepLink('index.html?module=' + shellModule('shiwen')), counts: counts.shiwen },
       { id: 'gewu', name: MODULE_LABEL.gewu, desc: '17 部科技典籍、59 件器物图谱、工艺公案与格物问典',
-        ...deepLink('index.html?module=gewu'), counts: counts.gewu },
+        ...deepLink('index.html?module=' + shellModule('gewu')), counts: counts.gewu },
       { id: 'myth', name: MODULE_LABEL.myth, desc: '9 部志怪典籍、113 只神兽、五条古舆图路线（山海经/西游/封神/聊斋/太平广记）',
-        ...deepLink('index.html?module=myth'), counts: counts.myth },
+        ...deepLink('index.html?module=' + shellModule('myth')), counts: counts.myth },
     ],
     note: '所有结果均为站点内数据；涉及《三国演义》《西游记》等演义文本时内容会注明出处。图片字段为缩略图+原图，url 可直接打开对应网页。',
   };
@@ -670,8 +685,9 @@ function tGetBook({ module, sect, id, name }) {
         if (c.afterword) guideBlocks.push({ label: cname + '·点评', text: c.afterword, role: '点评' });
       });
       const sectQ = module === 'thought' ? `sect=${p.sect}&` : '';
-      // 相对主壳的查询串（带 module），与 gxDeepLink 一致，保证打开后保留左侧栏
-      const rel = `index.html?module=${module}&` + sectQ + `tab=books&book=${enc(b.id)}`;
+      // 相对主壳的查询串（带 module），与 gxDeepLink 一致，保证打开后保留左侧栏。
+      // module 必须换成主壳的 id（thought→guoxue 等），否则 iframe 不会被装载。
+      const rel = `index.html?module=${shellModule(module)}&` + sectQ + `tab=books&book=${enc(b.id)}`;
       return {
         ...rest,
         ...gxDeepLink(module, p.sect, `tab=books&book=${enc(b.id)}`),
@@ -901,17 +917,51 @@ function tGetRoute({ module, sect, route, event }) {
   // 思想/诗词：真实 Leaflet 路线
   if (module === 'thought') {
     const sects = sect ? [sect] : Object.keys(THOUGHT_SECTS);
+    // 单件思想大事：正文 + 原文译文 + 意义与影响，深链直接在地图上打开该事件卡片
+    if (event) {
+      const key = norm(event);
+      for (const s of sects) {
+        const b = loadGuoxue('thought', s);
+        const evs = b.events || [];
+        const ev = evs.find((x) => norm(x.id) === key || norm(x.name) === key)
+          || evs.find((x) => norm(x.name).includes(key));
+        if (ev) {
+          return {
+            sect: s, sectName: THOUGHT_SECTS[s],
+            ...pick(ev, ['id', 'name', 'date', 'place', 'lat', 'lng', 'people', 'summary', 'narrative']),
+            quotes: ev.quotes || [],
+            significance: ev.significance || [],
+            ...gxDeepLink('thought', s, `tab=map&evt=${enc(ev.id)}`),
+          };
+        }
+      }
+      return { matched: false, query: event, hint: '未找到该思想大事；可先调用 get_route(module=thought) 查看各宗路线，或先 search 该事件名。' };
+    }
     const out = [];
     for (const s of sects) {
       const b = loadGuoxue('thought', s);
       b.routes.forEach((r, i) => out.push({ sect: s, sectName: THOUGHT_SECTS[s], index: i, ...r,
         ...gxDeepLink('thought', s, `tab=map&route=${i}`) }));
     }
+    // 单条路线：按序号或名称命中，只返回那一条。
+    // 此前该分支完全忽略 route 参数，问「王阳明的行迹」会把理学四条路线全给出去。
+    if (route !== undefined && route !== null) {
+      const idx = Number(route);
+      const one = out.find((r) => r.index === idx || norm(r.name).includes(norm(route)));
+      if (one) return one;
+      return { matched: false, query: route, hint: '未找到该行迹路线；可先调用 get_route(module=thought) 查看清单。' };
+    }
     return { count: out.length, routes: out };
   }
   const b = loadGuoxue('shiwen', 'shiwen');
   const routes = b.routes.map((r, i) => ({ index: i, ...r,
     ...gxDeepLink('shiwen', 'shiwen', `tab=map&route=${i}`) }));
+  if (route !== undefined && route !== null) {
+    const idx = Number(route);
+    const one = routes.find((r) => r.index === idx || norm(r.name).includes(norm(route)));
+    if (one) return one;
+    return { matched: false, query: route, hint: '未找到该诗路；可先调用 get_route(module=shiwen) 查看清单。' };
+  }
   return { count: routes.length, routes };
 }
 
@@ -1099,14 +1149,22 @@ function buildSearchDocs() {
           : gxDeepLink(m, s, `tab=map&route=${idx}`).url;
         add(m, '路线', r.name, JSON.stringify(r.points || []),
           (r.points || []).map((p) => p.name).join(' → '), u);
-        // 每个舆图热点/行迹地点也单独建索引，搜"兰若寺"可直达热点卡片
+        // 每个舆图热点/行迹地点也单独建索引，搜"兰若寺"可直达热点卡片。
+        // 思想/诗词的途经点把「该地发生了什么」写在 event 里（不是 note），
+        // 这里一并取，否则摘要为空、结果里看不出这条为什么命中。
         for (const p of r.points || []) {
           const pu = m === 'myth'
             ? gxDeepLink('myth', 'myth', `tab=map&route=${idx}&hotspot=${enc(p.name)}`).url
             : u;
-          add(m, '热点', p.name, JSON.stringify(p), p.note || p.text || p.story || '', pu);
+          add(m, '热点', p.name, JSON.stringify(p), p.note || p.event || p.text || p.story || '', pu);
         }
       });
+      // 思想大事：思想传播与学派形成的关键事件（正文 + 原文译文 + 意义与影响），
+      // 深链把地图切到该事件并弹出卡片。
+      for (const e of b.events || []) {
+        add(m, '思想大事', e.name, JSON.stringify(e), e.summary,
+          gxDeepLink(m, s, `tab=map&evt=${enc(e.id)}`).url);
+      }
       for (const dd of b.discourses || []) {
         add(m, '问典', dd.title, JSON.stringify(dd), dd.quest, gxDeepLink(m, s, 'tab=quiz').url);
       }
@@ -1359,13 +1417,13 @@ const TOOLS = [
       name: { type: 'string', description: '如“九尾狐”“商代后母戊鼎”' },
     } },
     run: (a) => tGetArtifact(a) },
-  { name: 'get_route', description: '获取路线舆图：神话板块返回五条古舆图路线（山海经22/西游17/封神14/聊斋8/太平8，含每个热点的坐标、原著原文+译文、配图与深链）；诗词/思想返回真实地理路线；帝王返回各朝舆图事件。讲解单个帝王舆图事件时传 event（事件 id 或名称），返回该事件的完整正文与逐句 guide（歌词跟随）。',
+  { name: 'get_route', description: '获取路线舆图：神话板块返回五条古舆图路线（山海经22/西游17/封神14/聊斋8/太平8，含每个热点的坐标、原著原文+译文、配图与深链）；诗词/思想返回真实地理路线（每个途经点带「该地当年发生了什么」，思想板块另有 38 件思想大事）；帝王返回各朝舆图事件。传 route 只取单条路线；传 event 取单个事件详情——帝王的地图事件返回完整正文与逐句 guide（歌词跟随），思想板块的思想大事返回正文、原文译文与意义与影响。',
     inputSchema: { type: 'object', properties: {
       module: { type: 'string', enum: ['emperors', 'thought', 'shiwen', 'myth'] },
       sect: { type: 'string', enum: Object.keys(THOUGHT_SECTS) },
       route: { description: '路线序号（0 起）或名称；不传则只返回路线清单',
         oneOf: [{ type: 'number' }, { type: 'string' }] },
-      event: { type: 'string', description: '仅帝王板块：单个地图事件的 id 或名称（如 ming-event-jingnan / 靖难之役）。传入后返回该事件详情与逐句 guide，用于讲解员逐句高亮。' },
+      event: { type: 'string', description: '单个事件的 id 或名称。帝王板块传地图事件（如 ming-event-jingnan / 靖难之役），返回详情与逐句 guide；思想板块传思想大事（如 lixue-ehu / 鹅湖之会），返回正文、原文译文、意义与影响。' },
     } },
     run: (a) => tGetRoute(a) },
   { name: 'get_discourses', description: '获取“问典”侦探式思辨题（思想/诗词/格物/神话），含议题、线索、开放观点与创作题。',
@@ -1681,6 +1739,27 @@ async function selftest() {
   const loose = await call({ jsonrpc: '2.0', id: 10, method: 'tools/call', params: { name: 'search', arguments: { q: '苏东坡', limit: 5 } } });
   const lData = JSON.parse(loose.result.content.at(-1).text);
   assert(lData.items.some((x) => x.title === '苏轼'), 'search 宽松回退「苏东坡」命中苏轼');
+  // ---- 思想源流的「思想大事」（这批内容晚于 MCP，最容易漏） ----
+  const evtSearch = await call({ jsonrpc: '2.0', id: 20, method: 'tools/call', params: { name: 'search', arguments: { q: '鹅湖之会', limit: 8 } } });
+  const esData = JSON.parse(evtSearch.result.content.at(-1).text);
+  assert(esData.items.some((x) => x.type === '思想大事'), 'search 命中「思想大事」条目');
+  const oneEvt = await call({ jsonrpc: '2.0', id: 21, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'thought', event: '鹅湖之会' } } });
+  const oeData = JSON.parse(oneEvt.result.content.at(-1).text);
+  assert(oeData.name === '鹅湖之会' && oeData.place && oeData.place.name === '鹅湖寺'
+    && (oeData.quotes || []).length >= 1 && (oeData.significance || []).length === 4
+    && /evt=lixue-ehu/.test(oeData.url || ''),
+    'get_route(thought, event) 返回思想大事的正文/原文译文/四条意义与 evt 深链');
+  const oneRt = await call({ jsonrpc: '2.0', id: 22, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'thought', sect: 'lixue', route: '王阳明' } } });
+  const orData = JSON.parse(oneRt.result.content.at(-1).text);
+  assert(/王阳明/.test(orData.name || '') && (orData.points || []).length === 5 && !!orData.url,
+    'get_route(thought, route=<名称>) 只返回命中的那一条路线');
+  // 主壳模块 id 与 MCP 模块名不是同一套：深链必须用主壳的 id，否则 iframe 不装载
+  const modList = JSON.parse((await call({ jsonrpc: '2.0', id: 23, method: 'tools/call', params: { name: 'list_modules', arguments: {} } })).result.content.at(-1).text);
+  const allLinks = modList.modules.flatMap((m) => [m.url, m.online_url]).filter(Boolean);
+  assert(allLinks.length > 0 && allLinks.every((u) => !/module=(thought|shiwen)\b/.test(u)),
+    '所有板块深链都用主壳模块 id（thought→guoxue、shiwen→shici），不会落到空 iframe');
+  assert(/module=guoxue/.test(modList.modules.find((m) => m.id === 'thought').url || ''),
+    '思想源流入口链接指向 module=guoxue');
   console.log('\n全部自测通过。');
 }
 

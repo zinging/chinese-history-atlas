@@ -1862,6 +1862,24 @@ async function applyDeepLink() {
       }
     }
   }
+  // 8. 舆图：思想大事（evt=<事件 id>）——切到地图后直接标出地点并弹出该事件卡片。
+  // MCP 返回的思想大事深链就带这个参数，链接必须真的落到那一条事件上。
+  const evtId = params.get("evt");
+  if (tab === "map" && evtId) {
+    const ready = await waitFor(() => (bookData.events || []).length > 0
+      && document.querySelectorAll("#map-route-btns .route-btn").length > 0);
+    if (ready) {
+      const evs = bookData.events || [];
+      const ev = evs.find((x) => x.id === evtId) || evs.find((x) => String(x.name) === evtId);
+      if (ev) {
+        activeSectEventId = ev.id;
+        document.querySelectorAll(".sect-evt-chip").forEach((c) => {
+          c.classList.toggle("on", c.dataset.eid === ev.id);
+        });
+        showSectEventOnMap(ev);
+      }
+    }
+  }
 }
 
 // 启动

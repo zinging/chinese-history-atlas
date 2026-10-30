@@ -107,15 +107,21 @@ node web/tools/install-dsh.mjs --port 8080  # 换端口
 |---|---|
 | session_start | 开场自动探活、由 MCP 自启动本地服务，返回首页地址与打开指引（零命令行） |
 | list_modules | 五大模块总览与数据规模 |
-| search | 全站全文检索（预构建单字/双字倒排索引，毫秒级；含皇帝、悬案、地图事件、典籍、公案、器物、神兽、舆图热点、路线、问典） |
+| search | 全站全文检索（预构建单字/双字倒排索引，毫秒级；含皇帝、悬案、地图事件、典籍、公案、器物、神兽、舆图热点、路线、思想大事、问典） |
 | list_emperors / get_emperor | 皇帝列表与详情 |
 | list_cases / get_case | 八段式悬案列表与详情 |
 | list_books / get_book | 典籍/诗人列表与详情（含名篇精读、金句） |
 | list_creatures | 神话神兽图鉴 |
 | list_artifacts / get_artifact | 器物/神兽图鉴（含缩略图+原图） |
-| get_route | 帝王舆图路线事件、神话五路线热点、诗路行迹 |
+| get_route | 帝王舆图路线与事件、神话五路线热点、诗路与圣贤行迹（每个途经点带「该地发生了什么」）、思想源流的 38 件思想大事。传 `route` 只取单条路线（序号或名称），传 `event` 取单个事件详情：帝王给正文+逐句 guide，思想给正文+原文译文+意义与影响 |
 | get_discourses | 思想流派问答 |
 | get_quiz | 各板块选择题/思辨题 |
+
+> **深链的模块 id 与 MCP 的模块名不是同一套**（v1.5.0 修正）：主壳侧栏按 iframe 入口取名，
+> 所以 `模块名 → module id` 是 thought→`guoxue`、shiwen→`shici`、gewu→`gewu`、myth→`myth`。
+> 服务端已统一换算，直接使用返回的 `url` 即可；**手拼链接时不要再写 `module=thought`**，
+> 否则主壳找不到对应侧栏按钮、iframe 不装载，链接会落在一个空白页（v1.4.0 及更早的
+> 思想源流深链全部受此影响）。
 
 ## 五、返回字段约定（v1.1.0 起）
 
