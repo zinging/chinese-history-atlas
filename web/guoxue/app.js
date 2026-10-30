@@ -50,7 +50,7 @@ const SECT_CACHE = {};
  * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
-const DATA_VER = "v128";
+const DATA_VER = "v129";
 
 // Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
 // 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
@@ -143,7 +143,16 @@ async function loadSect(sect) {
     const allRoutes = [];
     const allEvents = [];
     const seenCat = new Set();
-    const seenPlace = new Set();
+    const seenPlace = new Map();
+    // 地名的去重键：取「·」后的最后一段当站点名（去掉「邹城 ·」「登封·」这类行政前缀），
+    // 再配上两位小数的坐标（约 1km）。同站点名 + 同坐标才算重复：
+    // 只按全名比会漏掉「邹城 · 孟庙 / 邹城·孟庙」这种空格写法差异，
+    // 只按坐标比又会把「洛阳·周王城 / 洛阳·二程故里」这类同城不同古迹误并。
+    const placeKey = (p) => {
+      const site = String(p.name || '').split(/[·・]/).pop().replace(/\s+/g, '');
+      const lat = Number(p.lat), lng = Number(p.lng);
+      return `${site}@${Number.isFinite(lat) ? lat.toFixed(2) : '?'},${Number.isFinite(lng) ? lng.toFixed(2) : '?'}`;
+    };
     for (const s of sects) {
       try {
         const meta = SECT_META[s];
@@ -165,11 +174,19 @@ async function loadSect(sect) {
             if (!seenCat.has(c.id)) { seenCat.add(c.id); allCats.push(c); }
           }
           // 古今地名与路线：此前「全部」下一律留空，导致智慧舆图在默认视图里既没点也没线。
-          // 地名按名字去重（洛阳、长安这类会被多个流派同时提到），并打上流派标记。
+          // 地名按 placeKey 去重（同站点名 + 同坐标），重复时保留注释更全的那一份，
+          // 免得「洛阳 · 周王城」这种被两派同时写到的地点丢掉另一派的说法。
           (Array.isArray(d.places) ? d.places : []).forEach((p) => {
-            if (!p || !p.name || seenPlace.has(p.name)) return;
-            seenPlace.add(p.name);
-            allPlaces.push({ ...p, _sect: s, _sectName: meta.name });
+            if (!p || !p.name) return;
+            const key = placeKey(p);
+            const hit = seenPlace.get(key);
+            if (hit) {
+              if (String(p.note || '').length > String(hit.note || '').length) hit.note = p.note;
+              return;
+            }
+            const rec = { ...p, _sect: s, _sectName: meta.name };
+            seenPlace.set(key, rec);
+            allPlaces.push(rec);
           });
           (Array.isArray(d.routes) ? d.routes : []).forEach((r) => {
             if (!r || !r.name) return;
@@ -1431,10 +1448,10 @@ function toggleRoute(ri) {
   if (!r) return;
   if (activeRoute === ri) { hideRouteDetail(); return; }
   activeRoute = ri;
-  // 切到路线视图：撤掉「思想大事」留下的事件标记，并把被隐去的地名恢复回来，
-  // 否则从事件视图切到路线后，地图上会一片空白（地名全都还藏着）。
+  // 切到路线视图：撤掉「思想大事」留下的事件标记与选中记录。
+  // 地名不用在这里恢复——路线视图本来就只显示当前路线的站点，
+  // 后面「有路线展开时隐藏全局故里地名点」那一段会统一把它们设为透明。
   clearSectEventMarker();
-  showAllPlaces();
   activeSectEventId = null;
 
   // 示意图路线（如山海经想象世界）：切换为古式世界示意图

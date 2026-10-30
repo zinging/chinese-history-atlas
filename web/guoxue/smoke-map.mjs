@@ -234,6 +234,57 @@ ok(dom.mapH >= 500, `地图高度 ${dom.mapH}px（≥500）`);
 ok(dom.legendInsideMap === true, '图例浮在地图内部右上角');
 ok(dom.railLeft >= dom.contentRight - 1, `右侧胶囊不占正文（正文右缘 ${dom.contentRight}，胶囊左缘 ${dom.railLeft}）`);
 
+// 「思想大事」事件层：开关默认选中、点事件在地图落标记并把其余地名隐去、
+// 点回开关恢复、选路线时开关让出选中态。此前这一段完全没有自动化覆盖。
+console.log('\n=== 思想大事事件层 ===');
+const evtLayer = await evalJs(`(async () => {
+  const wait = (ms) => new Promise(r => setTimeout(r, ms));
+  const visPlaces = () => [...document.querySelectorAll('.map-place-tip')]
+    .filter(t => parseFloat(getComputedStyle(t).opacity) > 0.5).length;
+  document.querySelector('.sect-btn[data-s=rujia]').click();
+  await wait(1000);
+  const box = document.getElementById('map-route-btns');
+  const toggle = box.querySelector('.evt-toggle-btn');
+  const chips = [...document.querySelectorAll('.sect-evt-chip')];
+  const before = {
+    hasToggle: !!toggle,
+    toggleOn: toggle ? toggle.classList.contains('on') : null,
+    chips: chips.length,
+    places: visPlaces(),
+  };
+  if (chips[0]) chips[0].click();
+  await wait(1000);
+  const afterPick = {
+    marker: document.querySelectorAll('.map-event-inner').length,
+    markerName: ((document.querySelector('.map-event-inner .map-event-name') || {}).textContent || '').trim(),
+    places: visPlaces(),
+    popupOpen: !document.getElementById('map-popup').classList.contains('hidden'),
+    quotes: document.querySelectorAll('#map-popup .evt-quote').length,
+    significance: document.querySelectorAll('#map-popup .evt-significance li').length,
+  };
+  if (toggle) toggle.click();
+  await wait(900);
+  const afterReset = { marker: document.querySelectorAll('.map-event-inner').length, places: visPlaces() };
+  const rb = [...box.querySelectorAll('.route-btn')].find(b => b.dataset.ri !== undefined);
+  if (rb) rb.click();
+  await wait(1000);
+  const afterRoute = { toggleOn: toggle ? toggle.classList.contains('on') : null };
+  return { before, afterPick, afterReset, afterRoute };
+})()`);
+ok(evtLayer.before.hasToggle && evtLayer.before.toggleOn === true,
+  `「思想大事」开关存在且默认选中（${evtLayer.before.chips} 个事件胶囊）`);
+ok(evtLayer.before.chips > 0, `事件胶囊已渲染（${evtLayer.before.chips} 个）`);
+ok(evtLayer.afterPick.marker === 1 && !!evtLayer.afterPick.markerName,
+  `点事件胶囊后地图标出地点「${evtLayer.afterPick.markerName}」`);
+ok(evtLayer.afterPick.places === 0 && evtLayer.before.places > 0,
+  `其余地名标签已隐去（${evtLayer.before.places} → ${evtLayer.afterPick.places}）`);
+ok(evtLayer.afterPick.popupOpen === true
+  && evtLayer.afterPick.quotes >= 1 && evtLayer.afterPick.significance === 4,
+  `事件卡片弹出，含原文 ${evtLayer.afterPick.quotes} 段、意义 ${evtLayer.afterPick.significance} 条`);
+ok(evtLayer.afterReset.marker === 0 && evtLayer.afterReset.places > 0,
+  `点回开关后标记撤除、地名恢复（${evtLayer.afterReset.places} 个）`);
+ok(evtLayer.afterRoute.toggleOn === false, '选中路线时「思想大事」让出选中态');
+
 ws.close(); chrome.kill(); server.kill();
 console.log(`\n${fail === 0 ? '全部通过' : '存在失败'}：${pass} 通过，${fail} 失败`);
 process.exit(fail ? 1 : 0);

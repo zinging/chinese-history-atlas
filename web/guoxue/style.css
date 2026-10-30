@@ -850,7 +850,7 @@ body[data-sect="myth"] {
   display: inline-flex; align-items: baseline; gap: 5px;
   border: 2px solid var(--border); background: #fffdf7; border-radius: 999px;
   padding: 5px 13px; font-size: 13.5px; font-family: inherit; color: var(--ink);
-  cursor: var(--cur-pointer); line-height: 1.5; white-space: nowrap; transition: all .12s;
+  cursor: pointer; line-height: 1.5; white-space: nowrap; transition: all .12s;
 }
 .sect-evt-chip b { color: var(--primary); font-weight: 700; }
 .sect-evt-chip i { font-style: normal; font-size: 12px; color: var(--muted); }
@@ -880,7 +880,7 @@ body[data-sect="myth"] {
   border: 2px solid #b99a55; background: var(--card);
   border-radius: 999px; padding: 6px 18px;
   font-size: 13.5px; font-weight: 700; font-family: inherit; color: var(--primary);
-  cursor: var(--cur-pointer); transition: all .12s;
+  cursor: pointer; transition: all .12s;
 }
 .evt-more-btn:hover { border-color: #8a1c1c; background: #fdf3e8; }
 

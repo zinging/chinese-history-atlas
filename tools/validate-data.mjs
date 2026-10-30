@@ -192,8 +192,117 @@ function validateGewu(m) {
   }
 }
 
+/**
+ * 校验思想源流五派的「智慧舆图」数据：places / routes / events 与其配图。
+ *
+ * 为什么单独校验：这些字段此前完全没有校验覆盖，`validate-data` 只查书籍与格物，
+ * 所以「38 件事件齐不齐、图有没有缺、途经点有没有写说明」全靠人肉看页面。
+ * 新增一件事件、忘记配图或漏写 significance，这条校验会直接拦下。
+ */
+function validateSectEvents() {
+  const SECTS = ["rujia", "daojia", "foxue", "zhuzi", "lixue"];
+  const IMG_DIR = "data/portraits/sect-events";
+  const allIds = [];
+  let nEvents = 0, nRoutes = 0, nPoints = 0, nPlaces = 0;
+
+  for (const s of SECTS) {
+    const j = readJson(`data/${s}/index.json`);
+    if (!j) continue;
+
+    // ---- 地名 ----
+    const places = Array.isArray(j.places) ? j.places : [];
+    nPlaces += places.length;
+    const seenKey = new Map();
+    for (const p of places) {
+      if (!p || !p.name) { err(`[${s}] 地名缺少 name`); continue; }
+      if (typeof p.lat !== "number" || typeof p.lng !== "number") {
+        err(`[${s}] 地名「${p.name}」缺少数字坐标 lat/lng`);
+      } else if (p.lat < -90 || p.lat > 90 || p.lng < -180 || p.lng > 180) {
+        err(`[${s}] 地名「${p.name}」坐标越界：${p.lat},${p.lng}`);
+      }
+      // 同站点名 + 同坐标视为同一地点，重复会在图上叠两枚标签
+      const site = String(p.name).split(/[·・]/).pop().replace(/\s+/g, "");
+      const key = `${site}@${Number(p.lat).toFixed(2)},${Number(p.lng).toFixed(2)}`;
+      if (seenKey.has(key)) {
+        err(`[${s}] 地名「${p.name}」与「${seenKey.get(key)}」是同一站点同一坐标，图上会叠两枚标签`);
+      } else {
+        seenKey.set(key, p.name);
+      }
+    }
+
+    // ---- 路线 ----
+    const routes = Array.isArray(j.routes) ? j.routes : [];
+    nRoutes += routes.length;
+    const routeNames = new Set();
+    for (const r of routes) {
+      if (!r || !r.name) { err(`[${s}] 路线缺少 name`); continue; }
+      if (routeNames.has(r.name)) err(`[${s}] 路线名重复：${r.name}`);
+      routeNames.add(r.name);
+      const pts = Array.isArray(r.points) ? r.points : [];
+      if (pts.length < 2) err(`[${s}] 路线「${r.name}」途经点少于 2 个`);
+      for (const p of pts) {
+        nPoints++;
+        if (!p || !p.name) { err(`[${s}] 路线「${r.name}」有途经点缺少 name`); continue; }
+        if (typeof p.lat !== "number" || typeof p.lng !== "number") {
+          err(`[${s}] 路线「${r.name}」途经点「${p.name}」缺少数字坐标`);
+        }
+        if (!p.event || String(p.event).trim().length < 10) {
+          err(`[${s}] 路线「${r.name}」途经点「${p.name}」缺少 event（该地发生了什么）`);
+        }
+      }
+    }
+
+    // ---- 思想大事 ----
+    const events = Array.isArray(j.events) ? j.events : [];
+    nEvents += events.length;
+    for (const e of events) {
+      if (!e || !e.id) { err(`[${s}] 事件缺少 id`); continue; }
+      for (const k of ["name", "date", "summary", "narrative"]) {
+        if (!e[k]) err(`[${s}] 事件「${e.id}」缺少 ${k}`);
+      }
+      if (!e.place || !e.place.name) err(`[${s}] 事件「${e.id}」缺少 place.name`);
+      if (typeof e.lat !== "number" || typeof e.lng !== "number") {
+        err(`[${s}] 事件「${e.id}」缺少数字坐标 lat/lng`);
+      }
+      if (!Array.isArray(e.people) || !e.people.length) warn(`[${s}] 事件「${e.id}」没有 people`);
+      const quotes = Array.isArray(e.quotes) ? e.quotes : [];
+      if (!quotes.length) err(`[${s}] 事件「${e.id}」缺少 quotes（原文与译文）`);
+      for (const q of quotes) {
+        if (!q || !q.original) err(`[${s}] 事件「${e.id}」有 quote 缺原文`);
+        if (q && !q.translation) warn(`[${s}] 事件「${e.id}」有 quote 缺译文`);
+      }
+      const sig = Array.isArray(e.significance) ? e.significance : [];
+      if (sig.length !== 4) err(`[${s}] 事件「${e.id}」significance 应为 4 条，实际 ${sig.length}`);
+      allIds.push(e.id);
+    }
+  }
+
+  // ---- 事件 id 唯一 ----
+  const dupIds = allIds.filter((id, i) => allIds.indexOf(id) !== i);
+  if (dupIds.length) err(`事件 id 重复：${[...new Set(dupIds)].join("、")}`);
+
+  // ---- 配图：每个事件都要有图，且不能有多余的图 ----
+  const abs = path.join(ROOT, IMG_DIR);
+  const files = fs.existsSync(abs)
+    ? fs.readdirSync(abs).filter((f) => /\.jpe?g$/i.test(f)).map((f) => f.replace(/\.jpe?g$/i, ""))
+    : [];
+  const fileSet = new Set(files);
+  const idSet = new Set(allIds);
+  for (const id of allIds) {
+    if (!fileSet.has(id)) err(`事件「${id}」缺少配图：${IMG_DIR}/${id}.jpg`);
+  }
+  for (const f of files) {
+    if (!idSet.has(f)) err(`${IMG_DIR}/${f}.jpg 没有对应的事件 id`);
+  }
+
+  if (!errors.length) {
+    ok(`思想源流：${nEvents} 件事件（配图 ${files.length} 张一一对应）、${nRoutes} 条路线、${nPoints} 个途经点、${nPlaces} 处地名`);
+  }
+}
+
 console.log("数据完整性校验开始…\n");
 validateSectManifests();
+validateSectEvents();
 
 if (warns.length) {
   console.log(`\n⚠️  警告 ${warns.length} 项（建议修复，不阻断）：`);
