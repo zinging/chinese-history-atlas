@@ -819,18 +819,39 @@ body[data-sect="myth"] {
 .map-popup .event-fig.loaded { display: block; }
 .map-popup .event-fig img { display: block; width: 100%; height: auto; }
 
-/* 「思想大事」汇总：标题条 + 事件胶囊网格 */
+/* 「思想大事」汇总：标题条 + 事件胶囊网格。
+   胶囊与舆图疆域同款：椭圆（border-radius 999px）+ 单行不折行，
+   年份用主色加粗，地点跟在后面用弱化的小字。 */
 .sect-evt-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .sect-evt-chip {
-  border: 2px solid var(--border); background: #fffdf7; border-radius: 8px;
-  padding: 6px 10px; font-size: 13.5px; font-family: inherit; color: var(--ink);
-  cursor: var(--cur-pointer); text-align: left; line-height: 1.4; transition: all .12s;
+  display: inline-flex; align-items: baseline; gap: 5px;
+  border: 2px solid var(--border); background: #fffdf7; border-radius: 999px;
+  padding: 5px 13px; font-size: 13.5px; font-family: inherit; color: var(--ink);
+  cursor: var(--cur-pointer); line-height: 1.5; white-space: nowrap; transition: all .12s;
 }
-.sect-evt-chip b { color: var(--primary); font-weight: 700; margin-right: 2px; }
-.sect-evt-chip i { display: block; font-style: normal; font-size: 12px; color: var(--muted); }
+.sect-evt-chip b { color: var(--primary); font-weight: 700; }
+.sect-evt-chip i { font-style: normal; font-size: 12px; color: var(--muted); }
 .sect-evt-chip:hover { border-color: #b99a55; background: #fdf3e8; }
 .sect-evt-chip.on { border-color: var(--primary); background: #fdf0ec; }
-.sect-evt-chip.on b { color: var(--primary); }
+
+/* 事件地点标记：与帝王谱系舆图疆域同款——⚑ 红圆点 + 古地名 +（今地名） */
+.map-event-inner {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1.5px solid #c0392b;
+  border-radius: 999px;
+  padding: 1px 8px 1px 2px;
+  font-size: 12px; font-weight: 700; color: #3a2e1f;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+}
+.map-event-icon {
+  width: 14px; height: 14px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #c0392b; color: #fff; font-size: 10px; flex: 0 0 auto;
+}
+.map-event-name { font-weight: 700; }
+.map-event-modern { font-size: 9px; color: #8a7a5c; font-weight: 400; }
 .evt-summary-more { margin-top: 10px; text-align: center; }
 .evt-more-btn {
   border: 2px solid #b99a55; background: var(--card);

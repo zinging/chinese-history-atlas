@@ -78,7 +78,8 @@ function ensureLeaflet() {
 
 let map = null;
 // 图层句柄：按类型分组，切换流派时只清这些，不动底图
-const mapLayers = { places: [], routes: [], routeLabels: [] };
+// events 存放「思想大事」点选后落在地图上的那一枚古地名标记（同时只保留一枚）
+const mapLayers = { places: [], routes: [], routeLabels: [], events: [] };
 // 路线分组：每条路线一个 { line, marks[] }，默认隐藏，点按钮才显示
 let routeLayerGroups = [];
 // 路线动画定时器（切换流派/收起路线时统一清理）
@@ -1138,11 +1139,28 @@ function showSectEventsSummary() {
   }
 }
 
-/** 点事件胶囊：镜头飞到事件地点，并在左侧弹窗展示该事件 */
+/** 点事件胶囊：在地图上标出该事件的古地名，镜头飞过去，并在左侧弹窗展示事件。
+ *  标记与帝王谱系舆图疆域同款：⚑ 圆点 + 古地名 +（今地名）；
+ *  同时只保留一枚，点下一个事件时先撤掉上一枚。 */
 function showSectEventOnMap(ev) {
   if (!map) return;
+  const place = ev.place || {};
   const lat = Number(ev.lat), lng = Number(ev.lng);
+  // 先撤掉上一次的事件标记
+  (mapLayers.events || []).forEach((m) => { if (m && map) map.removeLayer(m); });
+  mapLayers.events = [];
   if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    const icon = L.divIcon({
+      className: "map-event",
+      html: `<div class="map-event-inner">`
+        + `<span class="map-event-icon">⚑</span>`
+        + `<span class="map-event-name">${esc(place.name || ev.name)}</span>`
+        + `<span class="map-event-modern">${place.modern ? `（今${esc(place.modern)}）` : ""}</span>`
+        + `</div>`,
+      iconSize: null,
+    });
+    const marker = L.marker([lat, lng], { icon, zIndexOffset: 1000 }).addTo(map);
+    mapLayers.events.push(marker);
     map.flyTo([lat, lng], Math.max(map.getZoom(), 7), { duration: 0.7 });
   }
   showSectEventPopup(ev);
@@ -1349,6 +1367,9 @@ function toggleRoute(ri) {
   if (!r) return;
   if (activeRoute === ri) { hideRouteDetail(); return; }
   activeRoute = ri;
+  // 切到路线视图：撤掉「思想大事」留下的那枚事件标记，避免两种视图的标注混在一起
+  (mapLayers.events || []).forEach((m) => { if (m && map) map.removeLayer(m); });
+  mapLayers.events = [];
 
   // 示意图路线（如山海经想象世界）：切换为古式世界示意图
   const schematic = !!r.schematic;
