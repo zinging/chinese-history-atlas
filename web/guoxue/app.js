@@ -997,6 +997,9 @@ function renderMapData() {
   renderRouteButtons(routes);
   // 默认展示「思想大事」汇总（与舆图疆域默认展开「该朝事件」一致）；
   // 没有事件的流派（诗词鉴赏）仍按原样收起面板。
+  // 每次重渲染都回到「未选中任何事件」：切流派后旧的事件标记与隐藏的地名都要复位。
+  activeSectEventId = null;
+  clearSectEventMarker();
   if ((bookData.events || []).length) {
     sectEventShowAll = false;
     showSectEventsSummary();
@@ -1073,6 +1076,9 @@ function renderRouteButtons(routes) {
     evtBtn.addEventListener("click", () => {
       box.querySelectorAll(".route-btn").forEach((b) => b.classList.remove("on"));
       evtBtn.classList.add("on");
+      // 回到汇总视图 = 不再选中任何事件：撤掉地图上的事件标记，地名全部恢复
+      activeSectEventId = null;
+      clearSectEventMarker();
       showSectEventsSummary();
     });
     box.insertBefore(evtBtn, box.firstChild);
@@ -1099,7 +1105,8 @@ function showSectEventsSummary() {
   if (!events.length) { hideRouteDetail(); return; }
   // 先复位路线图层与高亮，但保留面板（马上要往里写事件胶囊）
   hideRouteDetail({ keepPanel: true });
-  activeSectEventId = null;
+  // 注意：这里不能把 activeSectEventId 清空——「展示更多」会重渲染本面板，
+  // 清掉会让已选中的事件与地图上的标记脱节。清空只发生在点开关或切流派时。
 
   const LIMIT = 12;
   const overflow = events.length > LIMIT;
@@ -1137,6 +1144,32 @@ function showSectEventsSummary() {
       showSectEventsSummary();
     });
   }
+  // 面板与地图保持一致：选了事件就只留那一枚地点名，否则恢复全部地名
+  if (activeSectEventId) hideAllPlaces(); else showAllPlaces();
+}
+
+/** 隐藏所有地名圆点与常显地名标签：点选某个事件后，地图上只留该事件的地点名 */
+function hideAllPlaces() {
+  mapLayers.places.forEach((p) => {
+    p.setStyle({ opacity: 0, fillOpacity: 0 });
+    const tip = p.getTooltip && p.getTooltip();
+    if (tip) tip.setOpacity(0);
+  });
+}
+
+/** 恢复所有地名圆点与常显地名标签 */
+function showAllPlaces() {
+  mapLayers.places.forEach((p) => {
+    p.setStyle({ opacity: 1, fillOpacity: 0.95 });
+    const tip = p.getTooltip && p.getTooltip();
+    if (tip) tip.setOpacity(1);
+  });
+}
+
+/** 撤掉「思想大事」落在地图上的事件标记 */
+function clearSectEventMarker() {
+  (mapLayers.events || []).forEach((m) => { if (m && map) map.removeLayer(m); });
+  mapLayers.events = [];
 }
 
 /** 点事件胶囊：在地图上标出该事件的古地名，镜头飞过去，并在左侧弹窗展示事件。
@@ -1146,9 +1179,10 @@ function showSectEventOnMap(ev) {
   if (!map) return;
   const place = ev.place || {};
   const lat = Number(ev.lat), lng = Number(ev.lng);
-  // 先撤掉上一次的事件标记
-  (mapLayers.events || []).forEach((m) => { if (m && map) map.removeLayer(m); });
-  mapLayers.events = [];
+  // 先撤掉上一次的事件标记，并把其余地名点与地名标签全部隐去——
+  // 点选一个事件后，地图上只应留下这一个地点的名字。
+  clearSectEventMarker();
+  hideAllPlaces();
   if (Number.isFinite(lat) && Number.isFinite(lng)) {
     const icon = L.divIcon({
       className: "map-event",
@@ -1174,6 +1208,15 @@ function showSectEventPopup(ev) {
   const where = place.name ? `${esc(place.name)}${place.modern ? `（今${esc(place.modern)}）` : ""}` : "";
   const people = (ev.people || []).map(esc).join("、");
   const img = `../../data/portraits/sect-events/${encodeURIComponent(ev.id)}.jpg`;
+  const quotes = (ev.quotes || [])
+    .map((q) => `<blockquote class="evt-quote">
+        <p class="evt-quote-original">${esc(q.original)}</p>
+        ${q.translation ? `<p class="evt-quote-translation">${esc(q.translation)}</p>` : ""}
+      </blockquote>`)
+    .join("");
+  const significance = (ev.significance || [])
+    .map((s) => `<li>${esc(s)}</li>`)
+    .join("");
   pop.classList.remove("hidden");
   pop.innerHTML = `<button class="close" aria-label="关闭">✕</button>
     <h4>${esc(ev.name)} <small>· ${esc(ev.date)}</small></h4>
@@ -1185,7 +1228,9 @@ function showSectEventPopup(ev) {
     ${where ? `<p class="evt-place">${where}</p>` : ""}
     ${ev.summary ? `<p class="evt-summary">${esc(ev.summary)}</p>` : ""}
     ${people ? `<p class="evt-people"><b>核心人物：</b>${people}</p>` : ""}
-    <p class="evt-body">${esc(ev.narrative)}</p>`;
+    <p class="evt-body">${esc(ev.narrative)}</p>
+    ${quotes ? `<div class="evt-quotes"><h5>原文与译文</h5>${quotes}</div>` : ""}
+    ${significance ? `<div class="evt-significance"><h5>意义与影响</h5><ul>${significance}</ul></div>` : ""}`;
   const close = pop.querySelector(".close");
   if (close) close.addEventListener("click", () => pop.classList.add("hidden"));
 }
@@ -1367,9 +1412,11 @@ function toggleRoute(ri) {
   if (!r) return;
   if (activeRoute === ri) { hideRouteDetail(); return; }
   activeRoute = ri;
-  // 切到路线视图：撤掉「思想大事」留下的那枚事件标记，避免两种视图的标注混在一起
-  (mapLayers.events || []).forEach((m) => { if (m && map) map.removeLayer(m); });
-  mapLayers.events = [];
+  // 切到路线视图：撤掉「思想大事」留下的事件标记，并把被隐去的地名恢复回来，
+  // 否则从事件视图切到路线后，地图上会一片空白（地名全都还藏着）。
+  clearSectEventMarker();
+  showAllPlaces();
+  activeSectEventId = null;
 
   // 示意图路线（如山海经想象世界）：切换为古式世界示意图
   const schematic = !!r.schematic;

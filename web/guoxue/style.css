@@ -818,6 +818,28 @@ body[data-sect="myth"] {
 }
 .map-popup .event-fig.loaded { display: block; }
 .map-popup .event-fig img { display: block; width: 100%; height: auto; }
+/* 原文与译文：文言原文用主色、左竖线引文样式；白话译文弱化、加“译”字前缀。 */
+.map-popup .evt-quotes, .map-popup .evt-significance { margin-top: 10px; }
+.map-popup .evt-quotes h5, .map-popup .evt-significance h5 {
+  margin: 0 0 6px; font-size: 13px; letter-spacing: 1px; color: var(--primary);
+}
+.map-popup .evt-quote {
+  margin: 0 0 8px; padding: 6px 10px; border-left: 3px solid var(--primary);
+  background: rgba(168, 53, 42, .05); border-radius: 0 6px 6px 0;
+}
+.map-popup .evt-quote-original {
+  margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #7a2c22; line-height: 1.6;
+}
+.map-popup .evt-quote-translation {
+  margin: 0; font-size: 13px; color: var(--muted); line-height: 1.6;
+}
+.map-popup .evt-quote-translation::before { content: "译 · "; font-weight: 600; color: #247bc1; }
+/* 意义与影响：紧凑圆点列表，控制在卡片内不溢出。 */
+.map-popup .evt-significance ul { margin: 0; padding-left: 18px; }
+.map-popup .evt-significance li {
+  margin: 0 0 5px; font-size: 13px; color: #5c5140; line-height: 1.6;
+}
+.map-popup .evt-significance li::marker { color: var(--primary); }
 
 /* 「思想大事」汇总：标题条 + 事件胶囊网格。
    胶囊与舆图疆域同款：椭圆（border-radius 999px）+ 单行不折行，

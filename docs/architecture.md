@@ -75,7 +75,7 @@
 | 神话异志 | 9 部经典 · 113 只神兽 · 5 条古舆图路线 |
 | 共用 | 29 处古今地名 · 20 条史料出处 |
 
-图片共 943 张（含缩略图）：
+图片共 981 张（含缩略图）：
 
 | 目录 | 张数 | 体积 | 内容 |
 |---|---|---|---|
@@ -86,11 +86,11 @@
 | `data/portraits/myth-map-thumb/` | 69 | 7.4MB | 上者的缩略图 |
 | `data/portraits/people/` | 163 | 2.6MB | 关系图人物 |
 | `data/portraits/`（根） | 152 | 2.1MB | 皇帝与典籍作者 |
-| `data/portraits/sect-events/` | 0 | 0 | 思想源流「思想大事」事件卡配图，待出图，清单见该目录 README |
+| `data/portraits/sect-events/` | 38 | 3.8MB | 思想源流「思想大事」事件卡配图（文件名即事件 id，800×600 单份） |
 
-缩略图由 `web/tools/make-artifact-thumbs.mjs`、`make-mythmap-thumbs.mjs`、`make-event-thumbs.mjs` 生成，格物图鉴与神话舆图卡片用缩略图、点开取原图；事件配图例外，只有 680px 一份、不做点击放大。680 这个数的依据是实测：事件卡最宽 380px、图渲染宽 275–327px，680 宽在 2x 高分屏下占 0.81–0.96 的可用量，再大就是用不上的像素（量法见 `.sessions/gh-measure-fig.mjs`）。事件配图按约定路径 `event-gongbi-thumb/<eventId>.jpg` 直接取，不依赖数据字段；缺图时前端整块移除，不留破图。
+缩略图由 `web/tools/make-artifact-thumbs.mjs`、`make-mythmap-thumbs.mjs`、`make-event-thumbs.mjs`、`make-sect-thumbs.mjs` 生成，格物图鉴与神话舆图卡片用缩略图、点开取原图；事件配图例外，只有一份、不做点击放大。680 这个数的依据是实测：事件卡最宽 380px、图渲染宽 275–327px，680 宽在 2x 高分屏下占 0.81–0.96 的可用量，再大就是用不上的像素（量法见 `.sessions/gh-measure-fig.mjs`）。事件配图按约定路径 `event-gongbi-thumb/<eventId>.jpg` 直接取，不依赖数据字段；缺图时前端整块移除，不留破图。
 
-思想大事的配图同理：约定路径 `data/portraits/sect-events/<事件 id>.jpg`（800×600），文件不在就整块图区自动移除，所以可以先上内容后补图。待出图的 38 个文件名与画面主题见 `data/portraits/sect-events/README.md`。
+思想大事的配图同理：约定路径 `data/portraits/sect-events/<事件 id>.jpg`（800×600），文件不在就整块图区自动移除，所以可以先上内容后补图。出图模型产出的原始大图（约 2364×1773、单张约 800KB）放在 `data/portraits/.sect-raw/`——该目录已 gitignore，是临时暂存区；跑 `web/tools/make-sect-thumbs.mjs` 缩到 800px 后写进 `sect-events/`，只有缩图进版本库。38 张现已齐全。
 
 ## 地图
 

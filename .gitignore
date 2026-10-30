@@ -16,6 +16,11 @@ web/.verify-*
 # 数据迁移一次性备份（不纳入版本库）
 data/gewu/.index.full.bak.json
 
+# 思想大事配图的原始大图暂存区：出图模型直接往这里放（单张约 800KB、上千像素），
+# 跑 web/tools/make-sect-event-thumbs.mjs 缩到 800px 后写进 sect-events/，
+# 只有缩图进版本库；原始大图留在本地，处理完可自行删除。
+data/portraits/.sect-raw/
+
 # 调试期截图与一次性抓取脚本：留在本地参考，不进版本库
 # （曾经堆了 50+ 张、约 30MB，会干扰 git add -A）
 /_*.png
