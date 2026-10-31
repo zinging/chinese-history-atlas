@@ -674,7 +674,6 @@ function tGetBook({ module, sect, id, name }) {
     const b = p.books.find((x) => norm(x.id) === target || norm(x.name) === target)
       || p.books.find((x) => norm(x.name).includes(target));
     if (b) {
-      const { src: _src, ...rest } = b;
       // 锚点表：按章节顺序，每章 背景→原文→译文→点评（顺序与前端 .chapter 内一致）
       const guideBlocks = [];
       (b.chapters || []).forEach((c, ci) => {
@@ -688,8 +687,13 @@ function tGetBook({ module, sect, id, name }) {
       // 相对主壳的查询串（带 module），与 gxDeepLink 一致，保证打开后保留左侧栏。
       // module 必须换成主壳的 id（thought→guoxue 等），否则 iframe 不会被装载。
       const rel = `index.html?module=${shellModule(module)}&` + sectQ + `tab=books&book=${enc(b.id)}`;
+      // portrait 在数据里是裸文件名（如 tiangongkaiwu.jpg），必须包装成 {url, online_url}
+      // 否则 AI 拿到的是字符串、不是可访问的链接——表现为"之前能返回图片，现在不会"。
+      const { src: _src, portrait: _rawPortrait, ...rest } = b;
+      const portrait = _rawPortrait ? portraitHref('data/portraits/' + _rawPortrait) : null;
       return {
         ...rest,
+        portrait,
         ...gxDeepLink(module, p.sect, `tab=books&book=${enc(b.id)}`),
         ...(guideBlocks.length ? { guide: guidePack(rel, guideBlocks, 'book') } : {}),
       };
@@ -1728,6 +1732,20 @@ async function selftest() {
     && /核心思想|主要内容/.test(bData.guide.lens || '')
     && /时代/.test(bData.guide.lens || ''),
     '典籍 guide 带 kind=book 与「核心思想/主要内容 + 时代意义」视角');
+  // 典籍详情必须给可访问的图片对象，不能是数据里的裸文件名——
+  // 否则 AI 拿到 "tiangongkaiwu.jpg" 这种字符串没法显示图片（曾因此丢失配图）。
+  const tg = JSON.parse((await call({ jsonrpc: '2.0', id: 30, method: 'tools/call', params: { name: 'get_book', arguments: { module: 'gewu', name: '天工开物' } } })).result.content.at(-1).text);
+  assert(tg.portrait && typeof tg.portrait === 'object' && /^https?:\/\//.test(tg.portrait.url || '') && /\.jpg$/.test(tg.portrait.url || ''),
+    'get_book 返回的画像为可访问的 {url} 对象（不是裸文件名）');
+  // 所有列表类接口的图片字段都必须是对象，避免个别分支漏包装
+  const listChecks = [
+    JSON.parse((await call({ jsonrpc: '2.0', id: 31, method: 'tools/call', params: { name: 'list_books', arguments: { module: 'shiwen' } } })).result.content.at(-1).text),
+    JSON.parse((await call({ jsonrpc: '2.0', id: 32, method: 'tools/call', params: { name: 'list_emperors', arguments: { dynasty: 'tang' } } })).result.content.at(-1).text),
+    JSON.parse((await call({ jsonrpc: '2.0', id: 33, method: 'tools/call', params: { name: 'list_creatures', arguments: {} } })).result.content.at(-1).text),
+  ];
+  const nakedImg = listChecks.flatMap((d) => d.items || d.emperors || [])
+    .flatMap((it) => ['portrait', 'image'].filter((k) => typeof it[k] === 'string' && it[k]));
+  assert(nakedImg.length === 0, `各列表接口的图片字段均为对象，无裸字符串（异常 ${nakedImg.length} 处）`);
   const sch = await call({ jsonrpc: '2.0', id: 8, method: 'tools/call', params: { name: 'search', arguments: { q: '空印案', limit: 5 } } });
   const sData = JSON.parse(sch.result.content.at(-1).text);
   assert(sData.items.some((x) => x.title === '空印案'), 'search 空印案命中');

@@ -3346,7 +3346,10 @@ async function applyDeepLink() {
     const frame = document.getElementById(moduleId + '-frame');
     if (frame) {
       const entry = (frame.getAttribute('src') || '').split('?')[0];
-      if (entry) frame.src = entry + (forward.toString() ? '?' + forward.toString() : '');
+      // hash 也要带给 iframe：逐句导读的锚点是 #s=N，而 hash 不属于 searchParams，
+      // 只转发查询串会让 MCP 给的「第 8 句」「第 20 句」这类链接全部落到同一页的第 0 句。
+      const hash = /^#s=\d+$/.test(location.hash) ? location.hash : '';
+      if (entry) frame.src = entry + (forward.toString() ? '?' + forward.toString() : '') + hash;
     }
     return;   // 子站自己处理后续定位；主站不再走 page/emperor 分支
   }

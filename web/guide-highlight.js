@@ -210,18 +210,43 @@
     }
 
     // ---------- 采集当前正在显示的内容的语料块（返回 null 表示内容尚未渲染） ----------
-    // 只看「哪块真的显示着」（:not(.hidden) / 真实存在），不依赖 URL 参数——
+    // 只看「哪块真的显示着」，不依赖 URL 参数——
     // 普通浏览没有 page/event/emperor 这些参数，且切换朝代/皇帝只是改 class，不改地址。
+    //
+    // 判断「真的显示着」不能只看元素自己有没有 .hidden：帝王面板 #mega-history 整块隐藏时，
+    // 里面的 #emperor-detail 自身仍不带 .hidden（它上次展开后就没收），
+    // 于是切到别的板块后，导览仍会采集那套不可见的隋朝帝纪——表现为「念的都是隋朝」。
+    // 因此统一用 isVisible() 向上查祖先，任一层 display:none / hidden 类都算不可见。
+    function isVisible(el) {
+      if (!el) return false;
+      var node = el;
+      while (node && node.nodeType === 1) {
+        if (node.classList && node.classList.contains("hidden")) return false;
+        var st = window.getComputedStyle(node);
+        if (st.display === "none" || st.visibility === "hidden") return false;
+        node = node.parentElement;
+      }
+      return true;
+    }
+    /** 取第一个「存在且真的可见」的容器 */
+    function firstVisible(sel) {
+      var list = document.querySelectorAll(sel);
+      for (var i = 0; i < list.length; i++) {
+        if (isVisible(list[i])) return list[i];
+      }
+      return null;
+    }
+
     function collectBlocks() {
       var isGuoxue = /\/guoxue\//.test(location.pathname);
       if (!isGuoxue) {
         // 1) 地图事件弹窗（最具体，优先）
-        var pop = document.querySelector("#map-popup:not(.hidden)");
+        var pop = firstVisible("#map-popup");
         if (pop) {
           var blocks = [];
           var story = pop.querySelector("p:not([style])");
           if (story && story.textContent.trim()) blocks.push({ k: "pure", el: story });
-          var rd = document.querySelector("#route-detail:not(.hidden)");
+          var rd = firstVisible("#route-detail");
           var stopLis = rd ? rd.querySelectorAll(".route-detail-stops li") : [];
           if (stopLis && stopLis.length) {
             var desc = rd.querySelector(".route-detail-desc");
@@ -236,7 +261,7 @@
           return blocks.length ? blocks : null;
         }
         // 2) 皇帝档案（时间线页选中皇帝后显示）
-        var detail = document.querySelector("#emperor-detail:not(.hidden)");
+        var detail = firstVisible("#emperor-detail");
         if (detail) {
           var list = [];
           var intro = detail.querySelector(".intro");
@@ -247,7 +272,7 @@
           if (list.length) return list;
         }
         // 3) 路线详情卡（地图页）
-        var rd2 = document.querySelector("#route-detail:not(.hidden)");
+        var rd2 = firstVisible("#route-detail");
         if (rd2) {
           var rlist = [];
           var rdesc = rd2.querySelector(".route-detail-desc");
@@ -262,7 +287,7 @@
       }
 
       // 国学四板块（iframe 内）
-      var card = document.querySelector(".sch-detail");
+      var card = firstVisible(".sch-detail");
       if (card && card.textContent.trim()) {
         var src = card.querySelector(".sch-detail-src");
         var descP = card.querySelector("p:not(.sch-detail-src)");
@@ -271,7 +296,10 @@
         if (descP && descP.textContent.trim()) g.push({ k: "hot", el: descP });
         if (g.length) return g;
       }
-      var bookRoot = document.querySelector("#book-detail .entry-panel[data-panel='chapters']");
+      // 典籍正文：#book-detail 收起时（切了页签/换了书）里面的章节仍在 DOM，
+      // 不判可见就会继续念上一本书——与帝王面板同一个坑。
+      var bookDetail = firstVisible("#book-detail");
+      var bookRoot = bookDetail && bookDetail.querySelector(".entry-panel[data-panel='chapters']");
       if (bookRoot) {
         var groups = [];
         Array.prototype.forEach.call(bookRoot.querySelectorAll(".chapter"), function (ch) {
