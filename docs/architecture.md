@@ -69,7 +69,7 @@
 | 板块 | 规模 |
 |---|---|
 | 帝王谱系 | 7 朝 77 帝 · 562 条生平时间线 · 117 件大事 · 141 个舆图事件 · 114 位人物 · 36 件悬案 · 77 道史论题 · 36 条路线 |
-| 思想源流 | 5 流派 27 部经典 · 15 件公案 · 13 道问典 · 24 条行迹路线（82 个途经点）· 51 处古今地名（「全部」合并同址后图上 49 个点）· 38 件思想大事 |
+| 思想源流 | 5 流派 27 部经典 · 15 件公案 · 13 道问典 · 24 条行迹路线（82 个途经点）· 51 处古今地名（「全部」合并同址后图上 49 个点）· 38 件百家纪事 |
 | 诗词鉴赏 | 22 位诗人 · 13 场公案 · 22 道问典 · 13 条诗路 |
 | 格物致知 | 17 部典籍 · 59 件器物 · 12 件公案 · 14 道问典 |
 | 神话异志 | 9 部经典 · 113 只神兽 · 5 条古舆图路线 |
@@ -86,11 +86,11 @@
 | `data/portraits/myth-map-thumb/` | 69 | 7.4MB | 上者的缩略图 |
 | `data/portraits/people/` | 163 | 2.6MB | 关系图人物 |
 | `data/portraits/`（根） | 152 | 2.1MB | 皇帝与典籍作者 |
-| `data/portraits/sect-events/` | 38 | 3.8MB | 思想源流「思想大事」事件卡配图（文件名即事件 id，800×600 单份） |
+| `data/portraits/sect-events/` | 38 | 3.8MB | 思想源流「百家纪事」事件卡配图（文件名即事件 id，800×600 单份） |
 
 缩略图由 `web/tools/make-artifact-thumbs.mjs`、`make-mythmap-thumbs.mjs`、`make-event-thumbs.mjs`、`make-sect-thumbs.mjs` 生成，格物图鉴与神话舆图卡片用缩略图、点开取原图；事件配图例外，只有一份、不做点击放大。680 这个数的依据是实测：事件卡最宽 380px、图渲染宽 275–327px，680 宽在 2x 高分屏下占 0.81–0.96 的可用量，再大就是用不上的像素（量法见 `.sessions/gh-measure-fig.mjs`）。事件配图按约定路径 `event-gongbi-thumb/<eventId>.jpg` 直接取，不依赖数据字段；缺图时前端整块移除，不留破图。
 
-思想大事的配图同理：约定路径 `data/portraits/sect-events/<事件 id>.jpg`（800×600），文件不在就整块图区自动移除，所以可以先上内容后补图。出图模型产出的原始大图（约 2364×1773、单张约 800KB）放在 `data/portraits/.sect-raw/`——该目录已 gitignore，是临时暂存区；跑 `web/tools/make-sect-thumbs.mjs` 缩到 800px 后写进 `sect-events/`，只有缩图进版本库。38 张现已齐全。
+百家纪事的配图同理：约定路径 `data/portraits/sect-events/<事件 id>.jpg`（800×600），文件不在就整块图区自动移除，所以可以先上内容后补图。出图模型产出的原始大图（约 2364×1773、单张约 800KB）放在 `data/portraits/.sect-raw/`——该目录已 gitignore，是临时暂存区；跑 `web/tools/make-sect-thumbs.mjs` 缩到 800px 后写进 `sect-events/`，只有缩图进版本库。38 张现已齐全。
 
 ## 地图
 

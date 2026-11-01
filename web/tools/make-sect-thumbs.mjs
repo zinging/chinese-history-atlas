@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 思想大事配图瘦身：把出图模型给的原始大图（data/portraits/.sect-raw/）缩到 800px 宽，
+ * 百家纪事配图瘦身：把出图模型给的原始大图（data/portraits/.sect-raw/）缩到 800px 宽，
  * 输出到 data/portraits/sect-events/<事件 id>.jpg —— 站点只引这一份。
  *
  * 为什么需要它：出图给的是 2364×1773、单张约 800KB，38 张就近 30MB；
@@ -129,7 +129,7 @@ files.forEach((name, i) => {
 
 rmSync(TMP_DIR, { recursive: true, force: true });
 rmSync(LIST, { force: true });
-console.log(`思想大事配图：生成 ${made} 张 ${WIDTH}px（q${QUALITY}），原尺寸复制 ${copied} 张，失败 ${fail} 张`);
+console.log(`百家纪事配图：生成 ${made} 张 ${WIDTH}px（q${QUALITY}），原尺寸复制 ${copied} 张，失败 ${fail} 张`);
 console.log(`  目录 ${OUT_DIR}`);
 console.log(`  体积 ${(before / 1048576).toFixed(2)}MB → ${(after / 1048576).toFixed(2)}MB`);
 if (dryRun) console.log('（DRY RUN 未写盘，去掉 --dry-run 正式生成）');

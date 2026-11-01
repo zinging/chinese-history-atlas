@@ -745,8 +745,15 @@ body[data-sect="myth"] {
 }
 .route-detail-name { font-size: 18px; font-weight: 800; color: #8a4b1f; }
 .route-detail-year { font-size: 13px; color: var(--muted); }
+/* 路线导语：这条路线在思想史上的位置。与站点其他提要段同一观感——
+   浅底、左金色细条，和下面的途经点列表拉开层次。 */
+.route-detail-lede {
+  margin: 0 0 12px; padding: 8px 12px;
+  background: #fbf6e8; border-left: 3px solid #d9b56b; border-radius: 3px;
+  font-size: 13.5px; line-height: 1.72; color: #5c5140;
+}
 .route-detail-stops { margin: 0; padding-left: 22px; font-size: 14px; color: #5c5140; }
-.route-detail-stops li { margin-bottom: 10px; }
+.route-detail-stops li { margin-bottom: 14px; }
 .route-detail-stops b { color: var(--ink); }
 .stop-head { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
 .stop-year {
@@ -754,6 +761,26 @@ body[data-sect="myth"] {
   background: rgba(168,53,42,.1); padding: 1px 8px; border-radius: 3px;
 }
 .stop-event { font-size: 13px; line-height: 1.6; color: #6b5d48; padding-left: 2px; }
+/* 途经点原句：与事件弹窗的 .evt-quote 同款分层——原文用墨色楷意，
+   译文用蓝色「译 ·」前缀，出处右对齐小字。三者不能被读成一坨正文。 */
+.stop-quote {
+  margin: 6px 0 0; padding: 7px 10px;
+  background: #fdf8ee; border-left: 3px solid #d9b56b; border-radius: 3px;
+}
+.stop-quote-original { font-size: 13.5px; line-height: 1.66; color: #4a3a1c; font-weight: 600; }
+.stop-quote-translation {
+  margin-top: 4px; font-size: 13px; line-height: 1.66; color: #5c5140;
+}
+.stop-quote-translation::before { content: "译 · "; font-weight: 600; color: #247bc1; }
+.stop-quote-source {
+  margin-top: 3px; font-size: 11.5px; color: #8a7a5c; text-align: right;
+}
+/* 历史意义：与「事发经过」区分开，避免读者把评述当成史实。 */
+.stop-meaning {
+  margin-top: 6px; padding-left: 9px; border-left: 2px solid rgba(168,53,42,.25);
+  font-size: 13px; line-height: 1.7; color: #4d4234;
+}
+.stop-meaning::before { content: "意义 · "; font-weight: 700; color: var(--primary); }
 /* 事件弹窗：与帝王谱系舆图疆域同一位置与尺寸——贴地图左上角，宽 min(380px,46%)，
    内容超长时卡片内部滚动，不遮挡地图右下角的图例。 */
 .map-popup {
@@ -805,7 +832,7 @@ body[data-sect="myth"] {
 }
 .map-popup .evt-significance li::marker { color: var(--primary); }
 
-/* 「思想大事」汇总：标题条 + 事件胶囊网格。
+/* 「百家纪事」汇总：标题条 + 事件胶囊网格。
    胶囊与舆图疆域同款：椭圆（border-radius 999px）+ 单行不折行，
    年份用主色加粗，地点跟在后面用弱化的小字。
    间距比舆图疆域（8px）放宽：这里事件条数更多、内容更长，8px 会挤成一片。 */
@@ -848,7 +875,7 @@ body[data-sect="myth"] {
 }
 .evt-more-btn:hover { border-color: #8a1c1c; background: #fdf3e8; }
 
-/* 「思想大事 / 该派事件」开关：矩形 + 列表图标，与圆角路线胶囊区分；
+/* 「百家纪事 / 本派纪事」开关：矩形 + 列表图标，与圆角路线胶囊区分；
    常态白底，选中态填主色（与顶部板块页签同色）。 */
 .route-btn.evt-toggle-btn {
   display: inline-flex; align-items: center; gap: 7px;

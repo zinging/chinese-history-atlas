@@ -105,7 +105,7 @@ for (const s of SECTS) {
       placeLayers: T.mapLayers.places.length,
       routePolylines: routes,
       routeEndMarkers: startEnd,
-      // 只统计真正的路线胶囊：「思想大事」开关与「展示更多」不是路线
+      // 只统计真正的路线胶囊：「百家纪事」开关与「展示更多」不是路线
       btnTexts: [...document.querySelectorAll('#map-route-btns .route-btn')]
         .filter(b => !b.classList.contains('evt-toggle-btn') && !b.classList.contains('route-more-btn'))
         .map(b => b.textContent),
@@ -153,6 +153,19 @@ const routeInfo = await evalJs(`(async () => {
   });
   const dataNames = (r0.points || []).map(p => String(p.name || '').trim());
   const orderedNames = stopNames.length === dataNames.length && stopNames.every((n, i) => n === dataNames[i]);
+  // 内容层：路线导语 + 途经点原句/译文/意义都要真的渲染。这些字段由
+  // enrich-sect-routes.mjs 注入，缺了不会报错、只会让页面退回成行程表，
+  // 所以显式核数，避免「看着正常、其实内容没了」。
+  const lede = ((document.querySelector('#route-detail .route-detail-lede') || {}).textContent || '').trim();
+  const quotePairs = [...document.querySelectorAll('#route-detail .stop-quote')].map(q => {
+    const o = ((q.querySelector('.stop-quote-original') || {}).textContent || '').trim();
+    const t = ((q.querySelector('.stop-quote-translation') || {}).textContent || '').trim();
+    return { hasOriginal: o.length > 0, hasTranslation: t.length > 0 };
+  });
+  const meanings = [...document.querySelectorAll('#route-detail .stop-meaning')]
+    .map(m => (m.textContent || '').trim().length);
+  const dataQuotes = (r0.points || []).filter(p => p.quote && p.quote.original).length;
+  const dataMeanings = (r0.points || []).filter(p => p.meaning).length;
   const activeOn = btn.classList.contains('on');
   const styled = T.mapLayers.routes.filter(l => l instanceof L.Polyline && l.options.weight === 5).length;
   // 再点一次收起
@@ -162,6 +175,7 @@ const routeInfo = await evalJs(`(async () => {
     name: r0.name, points: (r0.points||[]).length,
     stopCount: stops.length, stops, activeOn, highlightedLines: styled,
     orderedNames, stopNames, dataNames,
+    ledeLen: lede.length, quotePairs, meanings, dataQuotes, dataMeanings,
     afterToggleHidden: document.getElementById('route-detail').classList.contains('hidden'),
     afterToggleOn: btn.classList.contains('on'),
     weightBack: T.mapLayers.routes.filter(l => l instanceof L.Polyline).every(l => l.options.weight === 3),
@@ -172,6 +186,13 @@ ok(routeInfo.stopCount === routeInfo.points, `路线「${routeInfo.name}」详�
 // 因此校验 DOM 顺序与数据站点名逐一对应——序号由浏览器按 DOM 顺序渲染，顺序对即编号对。
 ok(routeInfo.orderedNames === true,
   `途经点按数据顺序编号（${routeInfo.stops.length} 项逐一对应 routes[0].points）`);
+ok(routeInfo.ledeLen > 40, `路线导语已渲染（${routeInfo.ledeLen} 字）`);
+ok(routeInfo.quotePairs.length === routeInfo.dataQuotes
+  && routeInfo.quotePairs.every(q => q.hasOriginal && q.hasTranslation),
+  `原句 ${routeInfo.quotePairs.length} 处（= 数据 ${routeInfo.dataQuotes}），原文与译文均非空`);
+ok(routeInfo.meanings.length === routeInfo.dataMeanings
+  && routeInfo.meanings.every(n => n > 20),
+  `历史意义 ${routeInfo.meanings.length} 条（= 数据 ${routeInfo.dataMeanings}），均非空`);
 ok(routeInfo.activeOn === true, '展开时按钮呈选中态');
 ok(routeInfo.highlightedLines === 1, '当前路线折线高亮（weight=5）');
 ok(routeInfo.afterToggleHidden === true, '再点一次收起详情');
@@ -234,9 +255,9 @@ ok(dom.mapH >= 500, `地图高度 ${dom.mapH}px（≥500）`);
 ok(dom.legendInsideMap === true, '图例浮在地图内部右上角');
 ok(dom.railLeft >= dom.contentRight - 1, `右侧胶囊不占正文（正文右缘 ${dom.contentRight}，胶囊左缘 ${dom.railLeft}）`);
 
-// 「思想大事」事件层：开关默认选中、点事件在地图落标记并把其余地名隐去、
+// 「百家纪事」事件层：开关默认选中、点事件在地图落标记并把其余地名隐去、
 // 点回开关恢复、选路线时开关让出选中态。此前这一段完全没有自动化覆盖。
-console.log('\n=== 思想大事事件层 ===');
+console.log('\n=== 百家纪事事件层 ===');
 const evtLayer = await evalJs(`(async () => {
   const wait = (ms) => new Promise(r => setTimeout(r, ms));
   const visPlaces = () => [...document.querySelectorAll('.map-place-tip')]
@@ -272,7 +293,7 @@ const evtLayer = await evalJs(`(async () => {
   return { before, afterPick, afterReset, afterRoute };
 })()`);
 ok(evtLayer.before.hasToggle && evtLayer.before.toggleOn === true,
-  `「思想大事」开关存在且默认选中（${evtLayer.before.chips} 个事件胶囊）`);
+  `「百家纪事」开关存在且默认选中（${evtLayer.before.chips} 个事件胶囊）`);
 ok(evtLayer.before.chips > 0, `事件胶囊已渲染（${evtLayer.before.chips} 个）`);
 ok(evtLayer.afterPick.marker === 1 && !!evtLayer.afterPick.markerName,
   `点事件胶囊后地图标出地点「${evtLayer.afterPick.markerName}」`);
@@ -283,7 +304,7 @@ ok(evtLayer.afterPick.popupOpen === true
   `事件卡片弹出，含原文 ${evtLayer.afterPick.quotes} 段、意义 ${evtLayer.afterPick.significance} 条`);
 ok(evtLayer.afterReset.marker === 0 && evtLayer.afterReset.places > 0,
   `点回开关后标记撤除、地名恢复（${evtLayer.afterReset.places} 个）`);
-ok(evtLayer.afterRoute.toggleOn === false, '选中路线时「思想大事」让出选中态');
+ok(evtLayer.afterRoute.toggleOn === false, '选中路线时「百家纪事」让出选中态');
 
 ws.close(); chrome.kill(); server.kill();
 console.log(`\n${fail === 0 ? '全部通过' : '存在失败'}：${pass} 通过，${fail} 失败`);

@@ -78,7 +78,7 @@ function ensureLeaflet() {
 
 let map = null;
 // 图层句柄：按类型分组，切换流派时只清这些，不动底图
-// events 存放「思想大事」点选后落在地图上的那一枚古地名标记（同时只保留一枚）
+// events 存放「百家纪事」点选后落在地图上的那一枚古地名标记（同时只保留一枚）
 const mapLayers = { places: [], routes: [], routeLabels: [], events: [] };
 // 路线分组：每条路线一个 { line, marks[] }，默认隐藏，点按钮才显示
 let routeLayerGroups = [];
@@ -1012,7 +1012,7 @@ function renderMapData() {
   });
 
   renderRouteButtons(routes);
-  // 默认展示「思想大事」汇总（与舆图疆域默认展开「该朝事件」一致）；
+  // 默认展示「百家纪事」汇总（与舆图疆域默认展开「该朝事件」一致）；
   // 没有事件的流派（诗词鉴赏）仍按原样收起面板。
   // 每次重渲染都回到「未选中任何事件」：切流派后旧的事件标记与隐藏的地名都要复位。
   activeSectEventId = null;
@@ -1077,7 +1077,7 @@ function renderRouteButtons(routes) {
     });
     box.appendChild(more);
   }
-  // 「思想大事 / 该派事件」开关：与帝王谱系舆图疆域的「该朝事件」同款，放在最前面。
+  // 「百家纪事 / 本派纪事」开关：与帝王谱系舆图疆域的「该朝事件」同款，放在最前面。
   // 没有事件的流派（如诗词鉴赏）不出现这个开关。
   if ((bookData.events || []).length) {
     const evtBtn = document.createElement("button");
@@ -1103,15 +1103,15 @@ function renderRouteButtons(routes) {
   box.classList.toggle("hidden", routes.length === 0 && !(bookData.events || []).length);
 }
 
-// ---------- 思想大事（对应舆图疆域的「该朝事件」） ----------
+// ---------- 百家纪事（对应舆图疆域的「该朝事件」） ----------
 const SECT_ACCENT = "#a8352a";   // 与站点主色一致，用作汇总面板标题的左侧色条
 let sectEventShowAll = false;
 let activeSectEventId = null;
 
-/** 开关文案：单派看本派事件，全部看各派合起来的思想史大事。
+/** 开关文案：单派看本派纪事，全部看各派合起来的百家纪事。
  *  用 currentSect 而不是 initialSect——切换流派后 initialSect 仍是首屏那个。 */
 function sectEventLabel() {
-  return currentSect === "all" ? "思想大事" : "该派事件";
+  return currentSect === "all" ? "百家纪事" : "本派纪事";
 }
 
 /** 把事件的 date 字符串折成一个可比较的年份数（公元前为负）。
@@ -1131,7 +1131,7 @@ function sectEventYear(e) {
   return 0;
 }
 
-/** 事件汇总：把「思想大事」的胶囊列进 #route-detail（与路线详情共用同一面板） */
+/** 事件汇总：把「百家纪事」的胶囊列进 #route-detail（与路线详情共用同一面板） */
 function showSectEventsSummary() {
   // 按时间排序：合并各派后若按流派顺序拼接，公元前后的条目会交错得很乱
   // （前6世纪、前5世纪这种世纪写法排在 819 年之后）。slice() 避免改动 bookData 本身。
@@ -1159,7 +1159,6 @@ function showSectEventsSummary() {
       <span class="route-detail-name">${sectEventLabel()}</span>
       <span class="route-detail-year">共 ${events.length} 件${overflow && !sectEventShowAll ? ` · 显示前 ${LIMIT}` : ""}</span>
     </div>
-    <div class="route-detail-desc">思想传播与学派形成的关键节点 · 点任一事件在地图上定位</div>
     <div class="sect-evt-grid">${chips}</div>
     ${overflow ? `<div class="evt-summary-more"><button class="evt-more-btn" id="sect-evt-more">${
       sectEventShowAll ? "收起 ▴" : `展示更多（还有 ${events.length - LIMIT} 个）▾`}</button></div>` : ""}`;
@@ -1202,7 +1201,7 @@ function showAllPlaces() {
   });
 }
 
-/** 撤掉「思想大事」落在地图上的事件标记 */
+/** 撤掉「百家纪事」落在地图上的事件标记 */
 function clearSectEventMarker() {
   (mapLayers.events || []).forEach((m) => { if (m && map) map.removeLayer(m); });
   mapLayers.events = [];
@@ -1448,7 +1447,7 @@ function toggleRoute(ri) {
   if (!r) return;
   if (activeRoute === ri) { hideRouteDetail(); return; }
   activeRoute = ri;
-  // 切到路线视图：撤掉「思想大事」留下的事件标记与选中记录。
+  // 切到路线视图：撤掉「百家纪事」留下的事件标记与选中记录。
   // 地名不用在这里恢复——路线视图本来就只显示当前路线的站点，
   // 后面「有路线展开时隐藏全局故里地名点」那一段会统一把它们设为透明。
   clearSectEventMarker();
@@ -1573,10 +1572,17 @@ function toggleRoute(ri) {
       <span class="route-detail-name">${esc(r.name)}</span>
       <span class="route-detail-year">${(r.points || []).length} ${r.unit || "站"}</span>
     </div>
+    ${r.desc ? `<div class="route-detail-lede">${esc(r.desc)}</div>` : ""}
     <ol class="route-detail-stops">
       ${(r.points || []).map((p, i) => `<li data-station="${i}"${(p.lat != null && p.lng != null) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ""}>
         <div class="stop-head"><b>${esc(p.name || "")}</b>${p.year ? `<span class="stop-year">${esc(p.year)}</span>` : ""}</div>
         ${p.event ? `<div class="stop-event">${esc(p.event)}</div>` : ""}
+        ${p.quote && p.quote.original ? `<div class="stop-quote">
+          <div class="stop-quote-original">${esc(p.quote.original)}</div>
+          <div class="stop-quote-translation">${esc(p.quote.translation)}</div>
+          ${p.quote.source ? `<div class="stop-quote-source">—— ${esc(p.quote.source)}</div>` : ""}
+        </div>` : ""}
+        ${p.meaning ? `<div class="stop-meaning">${esc(p.meaning)}</div>` : ""}
       </li>`).join("")}
     </ol>`;
   syncRouteButtons();
@@ -1593,7 +1599,7 @@ function toggleRoute(ri) {
 
 /** 收起路线详情，隐藏所有路线线条。
  *  opts.keepPanel=true 时只复位地图上的路线图层与高亮，不清空 #route-detail
- *  ——「思想大事」汇总要占用同一个面板，复位后紧接着写入事件胶囊。 */
+ *  ——「百家纪事」汇总要占用同一个面板，复位后紧接着写入事件胶囊。 */
 function hideRouteDetail(opts = {}) {
   activeRoute = null;
   const mapLeaf = document.getElementById("map-leaf");
@@ -1666,7 +1672,7 @@ function syncRouteButtons() {
     b.classList.toggle("on", ri === activeRoute);
     b.textContent = `${routes[ri].name}（${(routes[ri].points || []).length} ${routes[ri].unit || "站"}）`;
   });
-  // 单选：路线胶囊与「思想大事」开关互斥。选中某条路线时，开关必须让出选中态；
+  // 单选：路线胶囊与「百家纪事」开关互斥。选中某条路线时，开关必须让出选中态；
   // 反过来由开关自己的 click 处理器把路线的 .on 清掉（见 evtBtn 绑定）。
   const toggle = box.querySelector(".evt-toggle-btn");
   if (toggle && activeRoute !== null && activeRoute !== undefined) toggle.classList.remove("on");
@@ -1711,7 +1717,7 @@ document.querySelectorAll(".tab").forEach(t => {
           initMap();
           refreshMapWhenVisible();
           // 真实 Leaflet 路线默认展开第一条（如诗词鉴赏的苏轼贬谪路线），不弹卡片。
-          // 但思想源流五派有「思想大事」，默认视图应是事件汇总——
+          // 但思想源流五派有「百家纪事」，默认视图应是事件汇总——
           // 否则首条路线详情会把汇总面板覆盖掉，开关看着选中、内容却是路线。
           const firstRoute = (bookData.routes || [])[0];
           const hasSectEvents = (bookData.events || []).length > 0;
@@ -1862,8 +1868,8 @@ async function applyDeepLink() {
       }
     }
   }
-  // 8. 舆图：思想大事（evt=<事件 id>）——切到地图后直接标出地点并弹出该事件卡片。
-  // MCP 返回的思想大事深链就带这个参数，链接必须真的落到那一条事件上。
+  // 8. 舆图：百家纪事（evt=<事件 id>）——切到地图后直接标出地点并弹出该事件卡片。
+  // MCP 返回的百家纪事深链就带这个参数，链接必须真的落到那一条事件上。
   const evtId = params.get("evt");
   if (tab === "map" && evtId) {
     const ready = await waitFor(() => (bookData.events || []).length > 0

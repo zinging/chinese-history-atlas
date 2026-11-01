@@ -1,4 +1,4 @@
-# data/portraits/sect-events · 思想大事配图
+# data/portraits/sect-events · 百家纪事配图
 
 思想源流「智慧舆图」事件卡的配图目录。**文件名必须与事件的 `id` 完全一致**，
 扩展名为 `.jpg`。前端按

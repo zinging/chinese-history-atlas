@@ -203,7 +203,7 @@ function validateSectEvents() {
   const SECTS = ["rujia", "daojia", "foxue", "zhuzi", "lixue"];
   const IMG_DIR = "data/portraits/sect-events";
   const allIds = [];
-  let nEvents = 0, nRoutes = 0, nPoints = 0, nPlaces = 0;
+  let nEvents = 0, nRoutes = 0, nPoints = 0, nPlaces = 0, nQuotes = 0;
 
   for (const s of SECTS) {
     const j = readJson(`data/${s}/index.json`);
@@ -249,10 +249,24 @@ function validateSectEvents() {
         if (!p.event || String(p.event).trim().length < 10) {
           err(`[${s}] 路线「${r.name}」途经点「${p.name}」缺少 event（该地发生了什么）`);
         }
+        // 内容扩展：导语在路线层，原句/意义在途经点层。缺了页面会退化成行程表，
+        // 所以缺字段直接拦下，而不是让它静默降级。
+        if (!r.desc || String(r.desc).trim().length < 40) {
+          err(`[${s}] 路线「${r.name}」缺少 desc（路线导语），过短或为空`);
+        }
+        if (p.quote) {
+          for (const k of ["original", "translation", "source"]) {
+            if (!p.quote[k]) err(`[${s}]「${p.name}」quote 缺少 ${k}`);
+          }
+        }
+        if (!p.meaning || String(p.meaning).trim().length < 20) {
+          err(`[${s}] 路线「${r.name}」途经点「${p.name}」缺少 meaning（历史意义）`);
+        }
+        if (p.quote && p.quote.original) nQuotes++;
       }
     }
 
-    // ---- 思想大事 ----
+    // ---- 百家纪事 ----
     const events = Array.isArray(j.events) ? j.events : [];
     nEvents += events.length;
     for (const e of events) {
@@ -296,7 +310,7 @@ function validateSectEvents() {
   }
 
   if (!errors.length) {
-    ok(`思想源流：${nEvents} 件事件（配图 ${files.length} 张一一对应）、${nRoutes} 条路线、${nPoints} 个途经点、${nPlaces} 处地名`);
+    ok(`思想源流：${nEvents} 件纪事（配图 ${files.length} 张一一对应）、${nRoutes} 条路线、${nPoints} 个途经点（原句 ${nQuotes} 处）、${nPlaces} 处地名`);
   }
 }
 
