@@ -32,7 +32,7 @@ const DATA = path.join(ROOT, 'data');
 
 const LOCAL_BASE = (process.env.CHAT_BASE_URL || 'http://127.0.0.1:5173/web/').replace(/\/?$/, '/');
 
-const SERVER_VERSION = '1.5.0';
+const SERVER_VERSION = '1.6.0';
 
 // 连接诊断日志：客户端每拉起一次 STDIO 进程都会记录，用于排查连接器是否真正启动
 const LOG_FILE = path.join(ROOT, '.sessions', 'mcp-connector.log');
@@ -127,6 +127,67 @@ const pick = (obj, keys) => {
   for (const k of keys) if (obj[k] !== undefined) o[k] = obj[k];
   return o;
 };
+
+/**
+ * 把本地图片读成 MCP 协议的 image 内容块（{type:'image', data:base64, mimeType}）。
+ *
+ * 为什么需要它：工具此前只返回 {type:'text', text:JSON} ——图片只是 JSON 里的一个 URL 字符串，
+ * 客户端不会去取它，所以讲解永远是纯文字。MCP 协议本身支持 image 块，
+ * DSH 的 SDK 会把它转成 {type:'image', source:{type:'base64',...}} 直接渲染成图。
+ *
+ * 只接受 jpeg/png/gif/webp（客户端支持的 MIME 集合）；超过 maxBytes 就不发：
+ * 大图 base64 后会显著撑大工具返回、拖慢整轮对话，宁可退回纯文字 + URL。
+ */
+const IMG_MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp' };
+function imageBlock(absPath, { maxBytes = 400 * 1024 } = {}) {
+  try {
+    if (!absPath || !exists(absPath)) return null;
+    const ext = path.extname(absPath).toLowerCase();
+    const mimeType = IMG_MIME[ext];
+    if (!mimeType) return null;
+    const st = fs.statSync(absPath);
+    if (!st.isFile() || st.size === 0 || st.size > maxBytes) {
+      if (st && st.isFile() && st.size > maxBytes) dlog('图片跳过（' + st.size + 'B > ' + maxBytes + '）：' + absPath);
+      return null;
+    }
+    return { type: 'image', data: fs.readFileSync(absPath).toString('base64'), mimeType };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 从工具返回的「单对象」里找出可读的图片，转成 image 内容块。
+ * 覆盖三种来源：
+ *   - portrait：皇帝/诗人画像（{url} 或 {url, online_url}）
+ *   - image.thumb：器物/神兽的缩略图
+ *   - image：帝王舆图事件、思想大事的工笔彩绘图（{url} 单对象）
+ * 路径格式有三种：http://127.0.0.1:5173/web/../data/... 或 ../../data/... 或 data/...
+ * 统一折成 <DATA>/portraits/... 再交给 imageBlock 读。
+ */
+function resolveDataPath(url) {
+  if (!url || typeof url !== 'string') return null;
+  const m = url.match(/\/data\/(.+)$/);
+  if (!m) return null;
+  return path.join(DATA, m[1]);
+}
+
+function collectImageBlocks(data) {
+  const out = [];
+  const candidates = [];
+  if (data.portrait && data.portrait.url) candidates.push(data.portrait.url);
+  if (data.image && typeof data.image === 'object') {
+    if (data.image.thumb && data.image.thumb.url) candidates.push(data.image.thumb.url);
+    else if (data.image.url) candidates.push(data.image.url);
+  }
+  for (const url of candidates) {
+    const abs = resolveDataPath(url);
+    if (!abs) continue;
+    const blk = imageBlock(abs);
+    if (blk) out.push(blk);
+  }
+  return out;
+}
 
 /** 深链：只返回本地（127.0.0.1）完整 URL。
  *  全部讲解能力基于本地版本，不与 GitHub Pages 线上镜像做任何关联——
@@ -935,6 +996,11 @@ function tGetRoute({ module, sect, route, event }) {
             ...pick(ev, ['id', 'name', 'date', 'place', 'lat', 'lng', 'people', 'summary', 'narrative']),
             quotes: ev.quotes || [],
             significance: ev.significance || [],
+            // 思想大事的配图：约定路径 data/portraits/sect-events/<事件 id>.jpg。
+            // 存在才给（未出图的事件不带该字段），与前端「缺图整块移除」的约定一致。
+            image: exists(path.join(DATA, 'portraits', 'sect-events', `${ev.id}.jpg`))
+              ? portraitHref(`data/portraits/sect-events/${ev.id}.jpg`)
+              : null,
             ...gxDeepLink('thought', s, `tab=map&evt=${enc(ev.id)}`),
           };
         }
@@ -1510,6 +1576,7 @@ const RESULT_REMINDER = [
   '2. 若结果最前面带 open_url（单对象）：它是唯一应先发给用户的链接，先让用户在右侧打开页面、定位到对应条目，再对照页面讲解；讲解类对象的 open_url 打开即逐句金色高亮。列表类结果则把其中 url 作为可点击深链。页面负责呈现，你负责指路。',
   '3. 不许编造具体史实（人名、年份、地名、事件细节）——这些必须来自返回字段。但解释、因果分析、评价、类比是你的判断空间，不算越界。',
   '4. 若结果含 guide 字段：先看 guide.kind 与 guide.lens——lens 告诉你这类对象该想什么（事件想动机与转折，典籍想思想与时代意义，等等）。链接挂在真正值得去页面看一眼的地方，由你判断几处，但不要重复同一处。用户要「讲一下」时再展开导读；只想知道在哪时，给链接加一句说明即可。讲地图事件先用 get_route(module=emperors,event=...) 取完整 guide。',
+  '5. 单对象结果（皇帝/典籍/器物/事件）会附带图片内容块——直接把它显示在讲解中，不需要你额外取图或拼接 URL。列表类结果不附图（量太大），只在需要时用 get_emperor/get_book/get_artifact 取单条详情获得配图。',
 ].join('\n');
 
 // 模型跳过开场流程时的附加提醒
@@ -1587,6 +1654,12 @@ async function handle(msg) {
       if (!sessionStarted) blocks.push({ type: 'text', text: NOT_STARTED_REMINDER });
       blocks.push({ type: 'text', text: RESULT_REMINDER });
       blocks.push({ type: 'text', text: JSON.stringify(data, null, 2) });
+      // 附图：单对象结果若带可读图片（皇帝/诗人画像、器物/神兽图、事件工笔图），
+      // 额外追加 image 内容块，客户端就能把讲解渲染成图文并茂，而不是只给一个 URL。
+      // 只在「单对象」上发——列表类结果是几十张图，全发会撑爆返回体。
+      if (data && typeof data === 'object' && !Array.isArray(data) && !Array.isArray(data.items)) {
+        for (const blk of collectImageBlocks(data)) blocks.push(blk);
+      }
       return rpcResult(id, { content: blocks });
     } catch (e) {
       return rpcResult(id, -32000, String(e && e.message || e));
@@ -1644,15 +1717,24 @@ async function selftest() {
     if (!cond) { console.error('❌ 自测失败：' + label); process.exit(1); }
     console.log('✅ ' + label);
   };
+  // 结果里「最后一块 text」才是 JSON 正文：单对象结果会在末尾追加 image 块，
+  // 所以不能盲取 at(-1)。统一按「最后一个 text 块」解析。
+  const lastText = (res) => {
+    const blocks = (res && res.result && res.result.content) || [];
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      if (blocks[i] && blocks[i].type === 'text') return blocks[i].text;
+    }
+    return 'undefined';
+  };
   const init = await call({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} });
   assert(init.result.protocolVersion === '2024-11-05', 'initialize 握手');
   const list = await call({ jsonrpc: '2.0', id: 2, method: 'tools/list' });
   assert(list.result.tools.length === TOOLS.length, 'tools/list 返回 ' + TOOLS.length + ' 个工具');
   const mods = await call({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'list_modules', arguments: {} } });
-  const modData = JSON.parse(mods.result.content.at(-1).text);
+  const modData = JSON.parse(mods.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(modData.modules.length === 5, 'list_modules 返回 5 个板块');
   const emp = await call({ jsonrpc: '2.0', id: 4, method: 'tools/call', params: { name: 'get_emperor', arguments: { name: '朱元璋' } } });
-  const empData = JSON.parse(emp.result.content.at(-1).text);
+  const empData = JSON.parse(emp.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(empData.name === '朱元璋' && empData.portrait.url.includes('taizu.jpg'), 'get_emperor 朱元璋');
   assert(!!empData.open_url && /&autoplay=1$/.test(empData.open_url), '单对象结果置顶 open_url（讲解类=autoplay）');
   assert(!!empData.guide && empData.guide.anchor_count === empData.guide.anchors.length
@@ -1669,22 +1751,22 @@ async function selftest() {
   assert(empData.guide.kind === 'person' && /时代困局|关键抉择/.test(empData.guide.lens || ''),
     '人物 guide 带 kind=person 与类型视角 lens');
   const route = await call({ jsonrpc: '2.0', id: 5, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'myth', route: 1 } } });
-  const routeData = JSON.parse(route.result.content.at(-1).text);
+  const routeData = JSON.parse(route.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(routeData.point_count === 17 && routeData.points[0].image && routeData.points[0].url,
     '神话西游路线 17 热点，含图片与深链');
   const shj = await call({ jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'myth', route: 0 } } });
-  const shjData = JSON.parse(shj.result.content.at(-1).text);
+  const shjData = JSON.parse(shj.result.content.filter((b) => b.type === 'text').at(-1).text);
   const guidedPts = shjData.points.filter((p) => p.guide);
   assert(shjData.point_count === 22 && guidedPts.length >= 1
     && guidedPts.every((p) => p.guide.anchor_count === p.guide.anchors.length && /&guide=1$/.test(p.guide.guide_url)
       && p.main_text && p.guide.anchors.some((a) => a.role === '原文') && p.guide.anchors.some((a) => a.role === '译文')),
     '山海经 22 热点且含原文/译文锚点');
   const empRoute = await call({ jsonrpc: '2.0', id: 10, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'emperors' } } });
-  const mingMap = JSON.parse(empRoute.result.content.at(-1).text).ming.mapEvents;
+  const mingMap = JSON.parse(empRoute.result.content.filter((b) => b.type === 'text').at(-1).text).ming.mapEvents;
   assert(mingMap.length > 0 && mingMap.every((e) => e.guide_url && /&guide=1$/.test(e.guide_url) && Number.isInteger(e.guide_count)),
     '明地图事件全部带 guide_url/guide_count');
   const ev1 = await call({ jsonrpc: '2.0', id: 11, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'emperors', event: 'ming-event-jingnan' } } });
-  const ev1Data = JSON.parse(ev1.result.content.at(-1).text);
+  const ev1Data = JSON.parse(ev1.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(ev1Data.narrative && ev1Data.guide && ev1Data.guide.anchor_count === ev1Data.guide.anchors.length
     && /&guide=1$/.test(ev1Data.guide.guide_url) && ev1Data.guide.anchor_count > 2,
     '单事件详情含完整 narrative 锚点表（靖难之役）');
@@ -1712,16 +1794,16 @@ async function selftest() {
   // 郑和起锚关联的是特殊海外图层 zhenghe-west：前端只做动画、不渲染路线详情，
   // 服务端 guide 必须只含事件正文，与前端包裹的 #s 行数一致，不能追加路线块。
   const zh = await call({ jsonrpc: '2.0', id: 12, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'emperors', event: 'ming-event-zhenghe-qihang' } } });
-  const zhData = JSON.parse(zh.result.content.at(-1).text);
+  const zhData = JSON.parse(zh.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(zhData.route === null
     && zhData.guide.anchor_count === splitSentences(zhData.narrative).length
     && !zhData.guide.anchors.some((a) => /路线/.test(a.scene)),
     '郑和起锚事件不追加特殊航线块，锚点数与前端一致');
   const creature = await call({ jsonrpc: '2.0', id: 6, method: 'tools/call', params: { name: 'get_artifact', arguments: { module: 'myth', name: '九尾狐' } } });
-  const cData = JSON.parse(creature.result.content.at(-1).text);
+  const cData = JSON.parse(creature.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(cData.image.thumb && cData.image.full, '九尾狐缩略图+原图');
   const book = await call({ jsonrpc: '2.0', id: 7, method: 'tools/call', params: { name: 'get_book', arguments: { module: 'shiwen', name: '李白' } } });
-  const bData = JSON.parse(book.result.content.at(-1).text);
+  const bData = JSON.parse(book.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(Array.isArray(bData.chapters), 'get_book 李白含名篇精读');
   assert(!!bData.guide && bData.guide.anchor_count === bData.guide.anchors.length
     && /&guide=1$/.test(bData.guide.guide_url) && bData.guide.anchors.length > 0
@@ -1734,45 +1816,58 @@ async function selftest() {
     '典籍 guide 带 kind=book 与「核心思想/主要内容 + 时代意义」视角');
   // 典籍详情必须给可访问的图片对象，不能是数据里的裸文件名——
   // 否则 AI 拿到 "tiangongkaiwu.jpg" 这种字符串没法显示图片（曾因此丢失配图）。
-  const tg = JSON.parse((await call({ jsonrpc: '2.0', id: 30, method: 'tools/call', params: { name: 'get_book', arguments: { module: 'gewu', name: '天工开物' } } })).result.content.at(-1).text);
+  const tg = JSON.parse((await call({ jsonrpc: '2.0', id: 30, method: 'tools/call', params: { name: 'get_book', arguments: { module: 'gewu', name: '天工开物' } } })).result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(tg.portrait && typeof tg.portrait === 'object' && /^https?:\/\//.test(tg.portrait.url || '') && /\.jpg$/.test(tg.portrait.url || ''),
     'get_book 返回的画像为可访问的 {url} 对象（不是裸文件名）');
   // 所有列表类接口的图片字段都必须是对象，避免个别分支漏包装
   const listChecks = [
-    JSON.parse((await call({ jsonrpc: '2.0', id: 31, method: 'tools/call', params: { name: 'list_books', arguments: { module: 'shiwen' } } })).result.content.at(-1).text),
-    JSON.parse((await call({ jsonrpc: '2.0', id: 32, method: 'tools/call', params: { name: 'list_emperors', arguments: { dynasty: 'tang' } } })).result.content.at(-1).text),
-    JSON.parse((await call({ jsonrpc: '2.0', id: 33, method: 'tools/call', params: { name: 'list_creatures', arguments: {} } })).result.content.at(-1).text),
+    JSON.parse((await call({ jsonrpc: '2.0', id: 31, method: 'tools/call', params: { name: 'list_books', arguments: { module: 'shiwen' } } })).result.content.filter((b) => b.type === 'text').at(-1).text),
+    JSON.parse((await call({ jsonrpc: '2.0', id: 32, method: 'tools/call', params: { name: 'list_emperors', arguments: { dynasty: 'tang' } } })).result.content.filter((b) => b.type === 'text').at(-1).text),
+    JSON.parse((await call({ jsonrpc: '2.0', id: 33, method: 'tools/call', params: { name: 'list_creatures', arguments: {} } })).result.content.filter((b) => b.type === 'text').at(-1).text),
   ];
   const nakedImg = listChecks.flatMap((d) => d.items || d.emperors || [])
     .flatMap((it) => ['portrait', 'image'].filter((k) => typeof it[k] === 'string' && it[k]));
   assert(nakedImg.length === 0, `各列表接口的图片字段均为对象，无裸字符串（异常 ${nakedImg.length} 处）`);
+  // 图片内容块：单对象结果要真的带上 image 块（客户端才能渲染成图文），列表类不带。
+  // 这是「图文并茂」的唯一通道——只给 URL 字符串客户端不会去取图。
+  const imgOf = (res) => ((res && res.result && res.result.content) || []).filter((b) => b.type === 'image');
+  const empImg = imgOf(emp);
+  assert(empImg.length === 1 && empImg[0].mimeType === 'image/jpeg'
+    && typeof empImg[0].data === 'string' && empImg[0].data.length > 1000,
+    'get_emperor 附带 1 个 image 内容块（base64 jpeg）');
+  const artImg = imgOf(await call({ jsonrpc: '2.0', id: 40, method: 'tools/call', params: { name: 'get_artifact', arguments: { module: 'myth', name: '九尾狐' } } }));
+  assert(artImg.length === 1 && /^image\//.test(artImg[0].mimeType), 'get_artifact 附带 image 内容块');
+  const bookImg = imgOf(await call({ jsonrpc: '2.0', id: 41, method: 'tools/call', params: { name: 'get_book', arguments: { module: 'gewu', name: '天工开物' } } }));
+  assert(bookImg.length === 1, 'get_book 附带 image 内容块');
+  const listImg = imgOf(await call({ jsonrpc: '2.0', id: 42, method: 'tools/call', params: { name: 'list_creatures', arguments: {} } }));
+  assert(listImg.length === 0, '列表类结果不附图（避免几十张图撑爆返回体）');
   const sch = await call({ jsonrpc: '2.0', id: 8, method: 'tools/call', params: { name: 'search', arguments: { q: '空印案', limit: 5 } } });
-  const sData = JSON.parse(sch.result.content.at(-1).text);
+  const sData = JSON.parse(sch.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(sData.items.some((x) => x.title === '空印案'), 'search 空印案命中');
   // 别称别名：搜「李太白」应命中李白（别名映射）
   const alias = await call({ jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name: 'search', arguments: { q: '李太白', limit: 5 } } });
-  const aData = JSON.parse(alias.result.content.at(-1).text);
+  const aData = JSON.parse(alias.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(aData.items.some((x) => x.title === '李白'), 'search 别称「李太白」命中李白');
   // 宽松回退：非相邻字 / 口语化问法（严格 AND 为空）也能召回，如「苏东坡」应命中苏轼
   const loose = await call({ jsonrpc: '2.0', id: 10, method: 'tools/call', params: { name: 'search', arguments: { q: '苏东坡', limit: 5 } } });
-  const lData = JSON.parse(loose.result.content.at(-1).text);
+  const lData = JSON.parse(loose.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(lData.items.some((x) => x.title === '苏轼'), 'search 宽松回退「苏东坡」命中苏轼');
   // ---- 思想源流的「思想大事」（这批内容晚于 MCP，最容易漏） ----
   const evtSearch = await call({ jsonrpc: '2.0', id: 20, method: 'tools/call', params: { name: 'search', arguments: { q: '鹅湖之会', limit: 8 } } });
-  const esData = JSON.parse(evtSearch.result.content.at(-1).text);
+  const esData = JSON.parse(evtSearch.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(esData.items.some((x) => x.type === '思想大事'), 'search 命中「思想大事」条目');
   const oneEvt = await call({ jsonrpc: '2.0', id: 21, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'thought', event: '鹅湖之会' } } });
-  const oeData = JSON.parse(oneEvt.result.content.at(-1).text);
+  const oeData = JSON.parse(oneEvt.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(oeData.name === '鹅湖之会' && oeData.place && oeData.place.name === '鹅湖寺'
     && (oeData.quotes || []).length >= 1 && (oeData.significance || []).length === 4
     && /evt=lixue-ehu/.test(oeData.url || ''),
     'get_route(thought, event) 返回思想大事的正文/原文译文/四条意义与 evt 深链');
   const oneRt = await call({ jsonrpc: '2.0', id: 22, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'thought', sect: 'lixue', route: '王阳明' } } });
-  const orData = JSON.parse(oneRt.result.content.at(-1).text);
+  const orData = JSON.parse(oneRt.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(/王阳明/.test(orData.name || '') && (orData.points || []).length === 5 && !!orData.url,
     'get_route(thought, route=<名称>) 只返回命中的那一条路线');
   // 主壳模块 id 与 MCP 模块名不是同一套：深链必须用主壳的 id，否则 iframe 不装载
-  const modList = JSON.parse((await call({ jsonrpc: '2.0', id: 23, method: 'tools/call', params: { name: 'list_modules', arguments: {} } })).result.content.at(-1).text);
+  const modList = JSON.parse((await call({ jsonrpc: '2.0', id: 23, method: 'tools/call', params: { name: 'list_modules', arguments: {} } })).result.content.filter((b) => b.type === 'text').at(-1).text);
   const allLinks = modList.modules.flatMap((m) => [m.url, m.online_url]).filter(Boolean);
   assert(allLinks.length > 0 && allLinks.every((u) => !/module=(thought|shiwen)\b/.test(u)),
     '所有板块深链都用主壳模块 id（thought→guoxue、shiwen→shici），不会落到空 iframe');

@@ -185,7 +185,7 @@ node .sessions/mcp-coldstart-audit.mjs
 ## 八、边界说明
 
 - 插件只读：不写任何外部文件，实时读取 `data/` 目录。
-- 图片只给缩略图 URL（对话内引用）与原图 URL（点开看大图），不输出 base64。
+- 图片字段同时给缩略图 URL 与原图 URL（点开看大图）；此外**单对象结果会额外附带 MCP image 内容块**（base64 jpeg），客户端可直接把讲解渲染成图文并茂，无需另行取图。列表类结果不附图（几十张会撑爆返回体，需要时用详情接口取单条）。单张超过 400KB 的图不发内容块，只留 URL。
 - 涉及演义文本（《三国演义》《西游记》《封神演义》《聊斋志异》等）内容会标注出处，不与正史混淆。
 - 右下角「AI 老师配置」（llm-config.json，OpenAI 兼容）是网页内的问答能力，与本 MCP 插件互补，保留不删。
 - 扣子（coze.cn）仅支持 Streamable HTTP/SSE 类型的 MCP；当前 Server 为 STDIO，扣子侧边栏接入需后续增加 HTTP transport。
