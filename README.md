@@ -185,20 +185,41 @@
 
 ---
 
-## 🚀 快速开始
+## 🚀 三种使用方式，按需要选一个
+
+### 方式一：只想看网页，不装任何东西
+
+直接打开在线演示：[https://zinging.github.io/chinese-history-atlas/web/](https://zinging.github.io/chinese-history-atlas/web/)
+
+不需要 Node、不需要 clone、不需要配置。国内访问如果慢，用 Gitee 镜像 clone 到本地（见方式二）。
+
+### 方式二：本地跑完整站点（推荐开发者）
 
 环境要求：**Node.js 18+**（自带 `fetch`，无需 `npm install`）。
 
 ```bash
-git clone git@gitee.com:chen_ye_code/chinese-history-atlas.git
+# 国内推荐 Gitee（快）；GitHub 镜像：https://github.com/zinging/chinese-history-atlas.git
+git clone --depth 1 https://gitee.com/chen_ye_code/chinese-history-atlas.git
 cd chinese-history-atlas
 node web/serve.mjs
-# 然后浏览器打开 http://127.0.0.1:5173/web/
+# 浏览器打开 http://127.0.0.1:5173/web/
 ```
 
-- 端口被占用：运行 `node web/serve.mjs 8080` 即可换端口。
-- 请用本地服务器打开，**不要直接双击 HTML**：前端通过 `fetch` 读取 `data/*.json`，`file://` 方式会被浏览器 CORS 拦截，导致页面空白。
-- **接入 AI 老师（可选）**：在探案问史页底部打开「AI 老师配置」，填入 OpenAI 兼容接口、Key 与模型（点 ⬇ 可自动拉取模型列表）。配置仅存于本机 `web/llm-config.json`（已 gitignore）；仓库附带带注释的 `web/llm-config.json.template`，复制改名即可。
+`--depth 1` 只取最新一次提交，下载约 150MB（站点图片占 141.5MB）。完整站点、断网可用、图片全部本地读取。
+
+- 端口被占用：`node web/serve.mjs 8080` 换端口。
+- 请用本地服务器打开，**不要直接双击 HTML**：前端通过 `fetch` 读取 `data/*.json`，`file://` 会被 CORS 拦截导致页面空白。
+- **接入 AI 老师（可选）**：探案问史页底部打开「AI 老师配置」，填入 OpenAI 兼容接口、Key 与模型。配置仅存于本机 `web/llm-config.json`（已 gitignore）。
+
+### 方式三：只用 AI 讲解员（在 DSH 里装插件）
+
+如果你的目标只是「让 AI 讲解历史」，不需要自己看网页，可以只装 MCP 插件：
+
+- 插件包 `@chinese-history/atlas` 自带检索数据（8.8MB JSON）与常用配图（21.5MB），装好即可问答
+- 首次提问时插件会引导你 `git clone` 一次完整站点到 `~/chinese-history-atlas`（与 DSH 的任何目录约定无关，就是主目录下一个普通文件夹）
+- clone 完成后，AI 会自动拉起本地网页服务，讲「靖难之役」既能出文字也能出配图
+
+三条线互不干扰：网页不需要插件，插件在站点就绪前也能做文字检索。
 
 ---
 

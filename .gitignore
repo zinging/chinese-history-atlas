@@ -35,3 +35,9 @@ data/portraits/.sect-raw/
 .DS_Store
 Thumbs.db
 *.log
+
+# 插件包的生成产物：server.mjs 和 data/ 是从 web/tools/ 和 data/ 拷贝的副本，
+# 由 web/tools/pack-plugin.mjs 生成；源文件改动后重跑该脚本即可同步。
+# 不入库是为了避免维护两份重复内容（30.4MB）；npm publish 时由脚本重新生成。
+plugin-atlas/server.mjs
+plugin-atlas/data/

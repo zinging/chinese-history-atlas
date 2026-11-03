@@ -14,7 +14,8 @@
     "mcp:install": "powershell -ExecutionPolicy Bypass -File web/tools/install-mcp.ps1",
     "mcp:install:dsh": "node web/tools/install-dsh.mjs",
     "mcp:check:dsh": "node web/tools/install-dsh.mjs --check",
-    "mcp:uninstall:dsh": "node web/tools/install-dsh.mjs --uninstall"
+    "mcp:uninstall:dsh": "node web/tools/install-dsh.mjs --uninstall",
+    "pack:plugin": "node web/tools/pack-plugin.mjs"
   },
   "engines": {
     "node": ">=18"

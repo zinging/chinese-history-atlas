@@ -22,20 +22,72 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import crypto from 'node:crypto';
+import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import readline from 'node:readline';
 
 const __filename = fileURLToPath(import.meta.url);
-const ROOT = path.resolve(path.dirname(__filename), '..', '..');
-const DATA = path.join(ROOT, 'data');
+// 兼容两种安装形态：
+//   1) 仓库内：本文件在 <repo>/web/tools/ 下，往上两层到 <repo>。
+//   2) 插件包内：本文件在 <pkg>/ 下，包根就是当前目录。
+const __dir = path.dirname(__filename);
+const PKG_ROOT = (() => {
+  // 仓库内：web/tools/ 的上层有 web/serve.mjs
+  const repoRoot = path.resolve(__dir, '..', '..');
+  if (fs.existsSync(path.join(repoRoot, 'web', 'serve.mjs'))) return repoRoot;
+  // 插件包内：server.mjs 直接在包根下
+  return __dir;
+})();
+
+/**
+ * 站点目录（网页服务所在的那份完整项目）。
+ *
+ * 两种安装形态要都能工作：
+ *   1) 本仓库内直接跑：本文件在 <repo>/web/tools/ 下，站点根就是 <repo>。
+ *   2) 作为 DSH 插件从市场安装：本文件被打进 node_modules/<pkg>/，那里没有 web/ 与图片，
+ *      真正的站点在用户主目录下的独立文件夹里，用 git clone 得到。
+ *
+ * 站点位置与 DSH 的任何配置无关——它只是「用户主目录下的一个普通项目文件夹」，
+ * 所以不读 DSH_HOME / stateRoot / profiles 等任何 DSH 约定。
+ * 可用 CHAT_SITE_DIR 显式指定；否则按「本仓库 → 用户主目录下的标准位置」依次探测。
+ */
+const SITE_DIR_NAME = 'chinese-history-atlas';
+const HOME_SITE = path.join(os.homedir(), SITE_DIR_NAME);
+
+function looksLikeSite(dir) {
+  try {
+    return fs.existsSync(path.join(dir, 'web', 'serve.mjs'))
+      && fs.existsSync(path.join(dir, 'data'));
+  } catch { return false; }
+}
+
+const ROOT = (() => {
+  const explicit = process.env.CHAT_SITE_DIR;
+  if (explicit && looksLikeSite(explicit)) return explicit;
+  // 仓库内运行：本文件位于 <repo>/web/tools/
+  if (looksLikeSite(PKG_ROOT)) return PKG_ROOT;
+  // 插件安装运行：站点在用户主目录下的独立文件夹
+  if (looksLikeSite(HOME_SITE)) return HOME_SITE;
+  return null;
+})();
+
+/**
+ * 数据目录：
+ *   - 站点存在 → 用站点的 data/（与网页完全一致，含全部图片）。
+ *   - 站点不存在（插件刚装、还没 clone）→ 退回包内自带的数据副本，
+ *     文字检索与深链仍可用，只是本地图片暂时取不到。
+ * 这样「文字讲解」永远可用，「图文并茂」在站点就绪后自动具备。
+ */
+const DATA = ROOT ? path.join(ROOT, 'data') : path.join(PKG_ROOT, 'data');
 
 const LOCAL_BASE = (process.env.CHAT_BASE_URL || 'http://127.0.0.1:5173/web/').replace(/\/?$/, '/');
 
 const SERVER_VERSION = '1.6.0';
 
 // 连接诊断日志：客户端每拉起一次 STDIO 进程都会记录，用于排查连接器是否真正启动
-const LOG_FILE = path.join(ROOT, '.sessions', 'mcp-connector.log');
+// ROOT 为 null 时（站点未安装）日志写到临时目录，避免在包目录里创建文件
+const LOG_FILE = ROOT ? path.join(ROOT, '.sessions', 'mcp-connector.log') : path.join(os.tmpdir(), 'atlas-mcp.log');
 function dlog(msg) {
   try { fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`, 'utf8'); } catch { /* 忽略 */ }
 }
@@ -66,6 +118,15 @@ let mcpSpawnedServer = false;
  *   start_failed   拉起后仍不通，附最后一段错误输出
  */
 async function ensureLocalServer() {
+  // 站点目录不存在（插件刚装、还没 clone）→ 直接给确定性结论，不让模型去猜或反复重试
+  if (!ROOT) {
+    return {
+      state: 'site_missing',
+      detail: '本机还没有站点文件（插件自带的是检索用数据副本，不含网页与图片）。',
+      fix: `在用户主目录下执行一次 git clone 即可（只需一次）：\n  git clone --depth 1 https://gitee.com/chen_ye_code/chinese-history-atlas.git "${HOME_SITE}"\n完成后再次调用 session_start 会自动拉起网页服务。国内推荐 Gitee；GitHub 镜像：https://github.com/zinging/chinese-history-atlas.git`,
+      site_dir: HOME_SITE,
+    };
+  }
   const first = await probeSite();
   if (first.up && first.own) return { state: 'running' };
   if (first.up && !first.own) {
@@ -157,19 +218,24 @@ function imageBlock(absPath, { maxBytes = 400 * 1024 } = {}) {
 }
 
 /**
- * 从工具返回的「单对象」里找出可读的图片，转成 image 内容块。
- * 覆盖三种来源：
- *   - portrait：皇帝/诗人画像（{url} 或 {url, online_url}）
- *   - image.thumb：器物/神兽的缩略图
- *   - image：帝王舆图事件、百家纪事的工笔彩绘图（{url} 单对象）
- * 路径格式有三种：http://127.0.0.1:5173/web/../data/... 或 ../../data/... 或 data/...
- * 统一折成 <DATA>/portraits/... 再交给 imageBlock 读。
+ * 把图片 URL 折成本地绝对路径。两个候选位置依次尝试：
+ *   1) 站点目录的 data/（完整安装：图片最全）
+ *   2) 包内自带的 data/（插件刚装、站点还没 clone 时的兜底缩略图）
+ * 都读不到就返回 null —— 调用方会跳过该图，讲解退化为纯文字（不会破图）。
  */
 function resolveDataPath(url) {
   if (!url || typeof url !== 'string') return null;
   const m = url.match(/\/data\/(.+)$/);
   if (!m) return null;
-  return path.join(DATA, m[1]);
+  const rel = m[1];
+  const candidates = [];
+  if (ROOT) candidates.push(path.join(ROOT, 'data', rel));
+  const bundled = path.join(PKG_ROOT, 'data', rel);
+  if (!ROOT || bundled !== candidates[0]) candidates.push(bundled);
+  for (const p of candidates) {
+    if (exists(p)) return p;
+  }
+  return candidates[0] || null;
 }
 
 function collectImageBlocks(data) {
@@ -1354,10 +1420,11 @@ function tSearch({ q, module, limit }) {
  */
 async function tSessionStart() {
   const status = await ensureLocalServer();
+  // ROOT 可能为 null（站点还没 clone）：此时不能用 path.join(ROOT, ...)。
   const base = {
     site_name: '中华历史图谱',
-    project_root: ROOT,
-    server_script: path.join(ROOT, 'web', 'serve.mjs'),
+    project_root: ROOT || null,
+    server_script: ROOT ? path.join(ROOT, 'web', 'serve.mjs') : null,
     local_base_url: LOCAL_BASE,
   };
 
@@ -1396,6 +1463,26 @@ async function tSessionStart() {
         '把结论如实告诉用户：端口被其它程序占用，站点未能启动。',
         '给出上面 fix 字段里的换端口办法，等用户处理后再调用一次 session_start 复检。',
         '不要自己尝试查端口、查进程或改系统配置。',
+      ].join('\n'),
+    };
+  }
+
+  // 站点未安装：给出一句可直接执行的 clone 命令，并说明此时文字检索仍可用
+  if (status.state === 'site_missing') {
+    return {
+      ...base,
+      ready: false,
+      status: 'site_missing',
+      status_note: status.detail,
+      site_dir: status.site_dir,
+      fix: status.fix,
+      // 文字检索已可用（包内自带数据副本），只有本地网页与图片还没有
+      search_available: true,
+      next_action: [
+        '把结论如实告诉用户：插件已就绪、文字检索可用，但本机还没有网页与图片文件。',
+        '把 fix 字段里的 git clone 命令原样给用户，请其在终端执行一次（约 150MB，国内走 Gitee）。',
+        '用户执行完后再调用一次 session_start，会自动拉起网页服务并返回可点击地址。',
+        '期间可以先回答用户的历史问题——search / get_emperor / get_route 等检索工具此刻就能用。',
       ].join('\n'),
     };
   }
