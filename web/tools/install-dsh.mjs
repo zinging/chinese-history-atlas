@@ -37,7 +37,7 @@ const SERVER = path.join(ROOT, 'web', 'tools', 'history-mcp-server.mjs');
 const ENTRY_ID = 'chinese-history-atlas';
 const SERVER_NAME = 'atlas';
 // bundle 包名：DSH 插件页按这个身份列出（标题来自 bundle 的 locale meta）
-const BUNDLE_NAME = '@chinese-history/atlas';
+const BUNDLE_NAME = '@chenye123/chinese-history-atlas';
 
 // ---------- 参数 ----------
 const argv = process.argv.slice(2);
