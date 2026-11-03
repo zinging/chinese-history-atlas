@@ -34,6 +34,46 @@
 
 ---
 
+## 🚀 安装
+
+### 只想看看，不装任何东西
+
+直接打开在线演示：[https://zinging.github.io/chinese-history-atlas/web/](https://zinging.github.io/chinese-history-atlas/web/)
+
+不需要 Node、不需要 clone、不需要配置。
+
+### 完整站点 + AI 讲解员（推荐）
+
+网页与讲解是**一体**的：AI 一边检索站内数据给出深链与配图，一边辅助你在右侧浏览器读懂画面——你看到的每个细节它都能接着讲。
+
+**DSH 用户**（插件市场一键装）
+
+在插件市场搜索 `@chinese-history/atlas` 安装。装好后直接提问即可，例如「讲一下靖难之役」。插件会自动完成剩下的所有事：
+
+- 检索站内数据作答（插件自带数据，装好即用）
+- 首次使用自动从 Gitee 拉取完整站点（约 150MB，约 2 分钟，无需你执行任何命令）
+- 自动在后台拉起本地网页服务，把可点击链接给你
+- 讲解时自动配图，讲到谁就出谁的画像
+
+**其他 MCP 客户端**（豆包 / Cursor / Claude Desktop 等）
+
+先在本地起站点，再手动接入 MCP：
+
+```bash
+# 国内推荐 Gitee（快）；GitHub 镜像：https://github.com/zinging/chinese-history-atlas.git
+git clone --depth 1 https://gitee.com/chen_ye_code/chinese-history-atlas.git
+cd chinese-history-atlas
+node web/serve.mjs          # 浏览器打开 http://127.0.0.1:5173/web/
+```
+
+然后项目根目录执行 `npm run mcp:install`（Windows；macOS/Linux 用 `bash web/tools/install-mcp.sh`），路径自动解析、配置 JSON 自动复制到剪贴板。Cursor / Zed 打开项目时直接识别根目录自带的 `.mcp.json`。
+
+> 环境要求 **Node.js 18+**（自带 `fetch`，无需 `npm install`）。`--depth 1` 只取最新提交，下载约 150MB（图片占 141.5MB）；断网可用，图片全部本地读取。
+> 端口被占用：`node web/serve.mjs 8080`。
+> 请用本地服务器打开，**不要直接双击 HTML**：前端通过 `fetch` 读 `data/*.json`，`file://` 会被 CORS 拦截导致页面空白。
+
+---
+
 ## 🗺️ 五大板块
 
 ### 🏮 一、帝王谱系 · 七朝权力的现场
@@ -185,58 +225,15 @@
 
 ---
 
-## 🚀 两种使用方式，按需要选一个
+## 🤖 AI 讲解员怎么工作
 
-### 方式一：只想看网页，不装任何东西
+项目内置一个**零依赖 MCP Server**（`web/tools/history-mcp-server.mjs`，15 个只读工具）。它只检索站内数据、不联网，把「页面呈现」与「讲解」绑在一起——给出深链让右侧浏览器打开对应位置，同时把配图直接推进对话。
 
-直接打开在线演示：[https://zinging.github.io/chinese-history-atlas/web/](https://zinging.github.io/chinese-history-atlas/web/)
-
-不需要 Node、不需要 clone、不需要配置。国内访问如果慢，用 Gitee 镜像 clone 到本地（见方式二）。
-
-### 方式二：本地站点 + AI 讲解员（推荐）
-
-在本地跑起完整站点，再接入 AI 讲解员——AI 辅助你浏览和读懂网页内容，既看到画面又听到讲解。
-
-**第一步：拉取站点**
-
-环境要求：**Node.js 18+**（自带 `fetch`，无需 `npm install`）。
-
-```bash
-# 国内推荐 Gitee（快）；GitHub 镜像：https://github.com/zinging/chinese-history-atlas.git
-git clone --depth 1 https://gitee.com/chen_ye_code/chinese-history-atlas.git
-cd chinese-history-atlas
-node web/serve.mjs
-# 浏览器打开 http://127.0.0.1:5173/web/
-```
-
-`--depth 1` 只取最新一次提交，下载约 150MB（站点图片占 141.5MB）。完整站点、断网可用、图片全部本地读取。
-
-- 端口被占用：`node web/serve.mjs 8080` 换端口。
-- 请用本地服务器打开，**不要直接双击 HTML**：前端通过 `fetch` 读取 `data/*.json`，`file://` 会被 CORS 拦截导致页面空白。
-
-**第二步：接入 AI 讲解员（二选一）**
-
-两种接入方式，效果完全一样——AI 检索站内数据、给出深链与配图、辅助你理解网页内容：
-
-| 接入方式 | 适合谁 | 怎么装 |
-|---|---|---|
-| **DSH 插件市场**（推荐） | 用 DSH / Harness 的用户 | 在插件市场搜 `@chinese-history/atlas` 一键安装。插件包自带检索数据与常用配图（30.4MB），装好就能问答；首次提问时引导你完成上面的 git clone（如已 clone 则自动识别），之后 AI 自动拉起网页服务 |
-| **手动配置 MCP** | 用豆包 / Cursor / Claude Desktop 的用户 | 项目根目录执行 `npm run mcp:install`（Windows；macOS/Linux 用 `bash web/tools/install-mcp.sh`），路径自动解析、配置 JSON 自动复制到剪贴板；Cursor / Zed 打开项目时直接识别根目录自带的 `.mcp.json` |
-
-> 如果你是 DSH 用户、还没 clone 仓库：插件装好后直接提问即可。AI 会先回答文字（检索数据已在包里），再给你一条 clone 命令拉取完整站点（约 150MB，从 Gitee）。拉取完成后 AI 自动拉起网页服务，讲解就变成图文并茂。站点目录与 DSH 的任何配置无关，就是 `~/chinese-history-atlas` 一个普通文件夹。
-
----
-
-## 🤖 AI 讲解员（MCP 连接器，开箱即用）
-
-项目内置一个**零依赖 MCP Server**（`web/tools/history-mcp-server.mjs`，15 个只读工具）。接入豆包 / Hermes / Cursor / Claude Desktop 等任意 MCP 客户端后，AI 就是这座展厅的讲解员：**只检索站内数据、不联网**，回答时自动给出深链与配图——右侧浏览器直接打开对应页面，讲解图文并茂。
-
-- **一键生成配置**：项目根目录执行 `npm run mcp:install`（Windows；macOS/Linux 用 `bash web/tools/install-mcp.sh`），路径自动解析、配置 JSON 自动复制到剪贴板；Cursor / Zed 打开项目时直接识别根目录自带的 `.mcp.json`（相对路径）。
-- **新会话零命令行开场**：MCP 自己探活、未运行时自己在后台拉起网站（脱离 MCP 独立存活，约 0.8 秒就绪），AI 直接打开 `http://127.0.0.1:5173/web/` 即待命——不搜硬盘、不拼路径、无需手动点任何脚本。
-- **图文并茂**：单对象结果（皇帝 / 典籍 / 器物 / 事件）自动附带 base64 图片内容块，客户端直接渲染成图——讲到谁就出谁的画像，不用你手动点链接。列表类结果不附图（几十张会撑爆返回体），需要时用详情接口取单条获得配图。
-- **毫秒级检索**：内置单字/双字倒排索引（897 篇文档），首次建索引约 230ms，之后每次检索 1–2ms；「土木堡之变」「兰若寺」「高老庄」「昆仑之丘」「鹅湖之会」等直达对应地图事件或舆图热点。
-- **双地址**：每条结果同时带本地 `url`（可直接导航）与 GitHub Pages `online_url`（可分享）。
-- 完整配置说明见 [`docs/AI集成-本地MCP配置.md`](docs/AI集成-本地MCP配置.md)；自检 `npm run mcp:selftest`。
+- **自动拉起服务**：MCP 自己探活，未运行就在后台启动站点（脱离 MCP 独立存活，约 0.8 秒就绪），AI 直接给出可点击地址——不搜硬盘、不拼路径
+- **自动拉取站点**：新用户首次提问，MCP 自己从 Gitee 拉取完整项目到主目录（约 150MB，约 2 分钟），无需用户执行任何命令；拉取完自动启动服务
+- **图文并茂**：单对象结果（皇帝 / 典籍 / 器物 / 事件）自动附带 base64 图片内容块，讲到谁就出谁的画像；列表类结果不附图（几十张会撑爆返回体），需要时用详情接口取单条
+- **毫秒级检索**：内置单字/双字倒排索引（897 篇文档），首次建索引约 230ms，之后每次检索 1–2ms；「土木堡之变」「兰若寺」「高老庄」「昆仑之丘」「鹅湖之会」等直达对应地图事件或舆图热点
+- 完整配置说明见 [`docs/AI集成-本地MCP配置.md`](docs/AI集成-本地MCP配置.md)；自检 `npm run mcp:selftest`
 
 ---
 

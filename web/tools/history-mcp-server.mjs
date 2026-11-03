@@ -62,7 +62,9 @@ function looksLikeSite(dir) {
   } catch { return false; }
 }
 
-const ROOT = (() => {
+// 站点目录：启动时探测。可为 null（插件刚装、尚未拉取）——
+// 首次 session_start 会自动 clone 到 HOME_SITE，之后由 setSiteRoot() 赋值。
+let ROOT = (() => {
   const explicit = process.env.CHAT_SITE_DIR;
   if (explicit && looksLikeSite(explicit)) return explicit;
   // 仓库内运行：本文件位于 <repo>/web/tools/
@@ -72,6 +74,14 @@ const ROOT = (() => {
   return null;
 })();
 
+/** 自动拉取成功后把新站点目录接上（DATA 也随之切换）。 */
+function setSiteRoot(dir) {
+  if (!looksLikeSite(dir)) return false;
+  ROOT = dir;
+  DATA = path.join(dir, 'data');
+  return true;
+}
+
 /**
  * 数据目录：
  *   - 站点存在 → 用站点的 data/（与网页完全一致，含全部图片）。
@@ -79,7 +89,7 @@ const ROOT = (() => {
  *     文字检索与深链仍可用，只是本地图片暂时取不到。
  * 这样「文字讲解」永远可用，「图文并茂」在站点就绪后自动具备。
  */
-const DATA = ROOT ? path.join(ROOT, 'data') : path.join(PKG_ROOT, 'data');
+let DATA = ROOT ? path.join(ROOT, 'data') : path.join(PKG_ROOT, 'data');
 
 const LOCAL_BASE = (process.env.CHAT_BASE_URL || 'http://127.0.0.1:5173/web/').replace(/\/?$/, '/');
 
@@ -110,34 +120,59 @@ async function probeSite(timeoutMs = 1500) {
 // 同一 STDIO 进程内只尝试拉起一次，避免重复 spawn
 let mcpSpawnedServer = false;
 
-/**
- * 确保本地服务可用。返回结构化结论，模型只读结论、不跑命令：
- *   running        已在运行且确认为本站
- *   started_by_mcp 原本未运行，已由本工具后台拉起并探活通过
- *   port_taken     端口被其它程序占用（会给出占用方线索与换端口办法）
- *   start_failed   拉起后仍不通，附最后一段错误输出
+/** 自动从 Gitee 拉取完整站点到 HOME_SITE（用户主目录下的普通项目文件夹）。
+ *  幂等：目录已存在则视为成功。失败返回 { ok:false, reason }。
+ *
+ *  超时取 300 秒：Gitee 上 --depth 1 实测约 97 秒（1344 个文件、约 150MB），
+ *  留足余量。而且 git 写完最后一条 "Updating files" 后仍可能被 kill，
+ *  所以判定成功看「文件是否齐全」而不是退出码——退出码 null + 文件齐 = 成功。
  */
-async function ensureLocalServer() {
-  // 站点目录不存在（插件刚装、还没 clone）→ 直接给确定性结论，不让模型去猜或反复重试
-  if (!ROOT) {
-    return {
-      state: 'site_missing',
-      detail: '本机还没有站点文件（插件自带的是检索用数据副本，不含网页与图片）。',
-      fix: `在用户主目录下执行一次 git clone 即可（只需一次）：\n  git clone --depth 1 https://gitee.com/chen_ye_code/chinese-history-atlas.git "${HOME_SITE}"\n完成后再次调用 session_start 会自动拉起网页服务。国内推荐 Gitee；GitHub 镜像：https://github.com/zinging/chinese-history-atlas.git`,
-      site_dir: HOME_SITE,
+function cloneSite() {
+  return new Promise((resolve) => {
+    const hasSite = () => fs.existsSync(path.join(HOME_SITE, 'web', 'serve.mjs'))
+      && fs.existsSync(path.join(HOME_SITE, 'data'));
+    if (hasSite()) return resolve({ ok: true });
+    if (fs.existsSync(HOME_SITE)) {
+      try {
+        const bak = HOME_SITE + '.bak-' + Date.now();
+        fs.renameSync(HOME_SITE, bak);
+        dlog('站点目录不完整，备份为 ' + bak + ' 后重拉');
+      } catch (e) { dlog('备份失败: ' + e.message); }
+    }
+    fs.mkdirSync(path.dirname(HOME_SITE), { recursive: true });
+    const child = spawn('git', ['clone', '--depth', '1',
+      'https://gitee.com/chen_ye_code/chinese-history-atlas.git', HOME_SITE],
+      { stdio: ['ignore', 'ignore', 'pipe'] });
+    let err = '';
+    child.stderr.on('data', (c) => { err += String(c); if (err.length > 8000) err = err.slice(-8000); });
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      dlog('git clone 超时，终止进程；随后按文件是否齐全判定');
+      try { child.kill(); } catch {}
+    }, 300000);
+    const finish = (reason) => {
+      clearTimeout(timer);
+      // 给文件系统一点时间落盘再判定
+      setTimeout(() => {
+        if (hasSite()) return resolve({ ok: true });
+        resolve({ ok: false, reason: reason + '：' + err.slice(-300) });
+      }, 2000);
     };
-  }
-  const first = await probeSite();
-  if (first.up && first.own) return { state: 'running' };
-  if (first.up && !first.own) {
-    return {
-      state: 'port_taken',
-      detail: '端口有服务在响应，但响应头没有本站标记，很可能不是本项目的服务。',
-      fix: `换一个端口后重新连接：设置环境变量 CHAT_BASE_URL=http://127.0.0.1:<端口>/web/ 再拉起本 MCP Server；或先停掉占用该端口的程序。`,
-    };
-  }
+    child.on('error', (e) => { clearTimeout(timer); resolve({ ok: false, reason: '无法执行 git: ' + e.message }); });
+    child.on('close', (code, signal) => {
+      const why = timedOut ? 'git clone 超时(' + signal + ')' : 'git clone 退出码 ' + code;
+      finish(why);
+    });
+  });
+}
 
-  const servePath = path.join(ROOT, 'web', 'serve.mjs');
+/**
+ * 用指定的站点目录确保本地服务可用（自动拉取后复用）。
+ * 注意：siteDir 可能不是模块级 ROOT，所以这里不用 ROOT，显式传参。
+ */
+async function ensureLocalServerWith(siteDir) {
+  const servePath = path.join(siteDir, 'web', 'serve.mjs');
   let port = '';
   try { const u = new URL(LOCAL_BASE); if (u.port && u.port !== '5173') port = u.port; } catch { /* 默认端口 */ }
   const args = port ? [servePath, port] : [servePath];
@@ -145,9 +180,7 @@ async function ensureLocalServer() {
   if (!mcpSpawnedServer) {
     mcpSpawnedServer = true;
     try {
-      // 用 pipe 捕获 stderr：端口占用时 serve.mjs 会以 exit code 2 退出并打印原因，
-      // 这样 MCP 能把「端口被占」这个确定性结论直接告诉模型，而不是让它自己排查。
-      const child = spawn(process.execPath, args, { cwd: ROOT, detached: true, stdio: ['ignore', 'ignore', 'pipe'] });
+      const child = spawn(process.execPath, args, { cwd: siteDir, detached: true, stdio: ['ignore', 'ignore', 'pipe'] });
       let err = '';
       child.stderr.on('data', (c) => { err += String(c); if (err.length > 2000) err = err.slice(-2000); });
       child.on('error', (e) => dlog('自启动站点失败: ' + e.message));
@@ -177,6 +210,42 @@ async function ensureLocalServer() {
     detail: '已尝试拉起本地服务，但连续探活仍失败。',
     fix: '手动执行一条命令确认：node ' + args.join(' '),
   };
+}
+
+/**
+ * 确保本地服务可用。返回结构化结论，模型只读结论、不跑命令：
+ *   running        已在运行且确认为本站
+ *   started_by_mcp 原本未运行，已由本工具后台拉起并探活通过
+ *   port_taken     端口被其它程序占用（会给出占用方线索与换端口办法）
+ *   start_failed   拉起后仍不通，附最后一段错误输出
+ */
+async function ensureLocalServer() {
+  // 站点目录不存在（插件刚装、还没 clone）→ 自动拉取，不打扰用户
+  if (!ROOT) {
+    const cloned = await cloneSite();
+    if (cloned.ok) {
+      // 拉取成功：把新站点目录接上（ROOT/DATA 切换），再复用 ensureLocalServerWith
+      setSiteRoot(HOME_SITE);
+      const r2 = await ensureLocalServerWith(HOME_SITE);
+      return { ...r2, auto_cloned: true };
+    }
+    return {
+      state: 'site_missing',
+      detail: '自动拉取站点失败：' + cloned.reason,
+      fix: '重试一次即可（会再次尝试自动拉取）；若持续失败，手动执行：\n  git clone --depth 1 https://gitee.com/chen_ye_code/chinese-history-atlas.git "' + HOME_SITE + '"',
+      site_dir: HOME_SITE,
+    };
+  }
+  const first = await probeSite();
+  if (first.up && first.own) return { state: 'running' };
+  if (first.up && !first.own) {
+    return {
+      state: 'port_taken',
+      detail: '端口有服务在响应，但响应头没有本站标记，很可能不是本项目的服务。',
+      fix: `换一个端口后重新连接：设置环境变量 CHAT_BASE_URL=http://127.0.0.1:<端口>/web/ 再拉起本 MCP Server；或先停掉占用该端口的程序。`,
+    };
+  }
+  return await ensureLocalServerWith(ROOT);
 }
 
 // ---------- 基础工具 ----------
@@ -1433,15 +1502,24 @@ async function tSessionStart() {
       ...base,
       ready: true,
       status: status.state,
-      status_note: status.state === 'started_by_mcp'
-        ? '本地服务原本未运行，已由本工具在后台自动启动，探活通过。'
-        : '本地服务已在运行，探活通过。',
+      status_note: status.auto_cloned
+        ? '站点原本未安装，已由本工具自动从 Gitee 拉取完整项目并启动，探活通过。'
+        : (status.state === 'started_by_mcp'
+          ? '本地服务原本未运行，已由本工具在后台自动启动，探活通过。'
+          : '本地服务已在运行，探活通过。'),
       home_url: LOCAL_BASE,
-      next_action: [
-        '站点已就绪。请把下面这个地址作为可点击链接回复用户（用户点击即可在右侧浏览器打开）：',
-        LOCAL_BASE,
-        '然后说一句「站点已就绪，可以开始提问」，静默等待提问。不要执行任何命令。',
-      ].join('\n'),
+      next_action: status.auto_cloned
+        ? [
+          '站点已就绪。首次使用已自动完成拉取，无需你执行任何命令。',
+          '请把下面这个地址作为可点击链接回复用户（用户点击即可在右侧浏览器打开）：',
+          LOCAL_BASE,
+          '然后说一句「站点已就绪，可以开始提问」，静默等待提问。',
+        ].join('\n')
+        : [
+          '站点已就绪。请把下面这个地址作为可点击链接回复用户（用户点击即可在右侧浏览器打开）：',
+          LOCAL_BASE,
+          '然后说一句「站点已就绪，可以开始提问」，静默等待提问。不要执行任何命令。',
+        ].join('\n'),
       rules: [
         '本工具已完成探活与启动，你不需要执行任何命令行。',
         '不要搜索硬盘、查找项目目录、查 hosts / DNS、查端口占用、查进程——路径与网址都在本返回里。',
@@ -1467,7 +1545,7 @@ async function tSessionStart() {
     };
   }
 
-  // 站点未安装：给出一句可直接执行的 clone 命令，并说明此时文字检索仍可用
+  // 站点自动拉取失败（网络/磁盘/git 缺失）：说明情况并给一条重试或手动命令
   if (status.state === 'site_missing') {
     return {
       ...base,
@@ -1479,9 +1557,8 @@ async function tSessionStart() {
       // 文字检索已可用（包内自带数据副本），只有本地网页与图片还没有
       search_available: true,
       next_action: [
-        '把结论如实告诉用户：插件已就绪、文字检索可用，但本机还没有网页与图片文件。',
-        '把 fix 字段里的 git clone 命令原样给用户，请其在终端执行一次（约 150MB，国内走 Gitee）。',
-        '用户执行完后再调用一次 session_start，会自动拉起网页服务并返回可点击地址。',
+        '把结论如实告诉用户：插件已就绪、文字检索可用，但完整站点的自动拉取没有成功。',
+        '再调用一次 session_start 重试自动拉取；若仍失败，把 fix 字段里的手动命令给用户。',
         '期间可以先回答用户的历史问题——search / get_emperor / get_route 等检索工具此刻就能用。',
       ].join('\n'),
     };

@@ -1,6 +1,6 @@
 ---
 name: chinese-history-atlas
-description: 中华历史图谱讲解员。用户问中国历史、思想、诗词、器物、神话时自动激活。先确保本地站点就绪（未安装则引导用户从 Gitee 拉取），再调用 MCP 工具检索站内权威数据、给出深链与配图。适用于帝王谱系、儒释道思想、古典诗词、古代科技、神话异志等话题。
+description: 中华历史图谱讲解员。用户问中国历史、思想、诗词、器物、神话时自动激活。首次提问时 MCP 自动拉取站点、自动拉起本地服务，再调用 MCP 工具检索站内权威数据、给出深链与配图。适用于帝王谱系、儒释道思想、古典诗词、古代科技、神话异志等话题。
 ---
 
 # 中华历史图谱讲解员
@@ -17,14 +17,10 @@ description: 中华历史图谱讲解员。用户问中国历史、思想、诗�
 - 把返回的 `home_url` 作为可点击链接发给用户
 - 说一句「站点已就绪，可以开始提问」，然后等待
 
-### `site_missing`（本机还没有站点文件）
-- 这是新用户第一次使用时的正常状态：插件自带了检索用数据，文字问答已经可用
-- 把返回的 `fix` 字段里的 git clone 命令原样给用户，请其在终端执行一次：
-  ```
-  git clone --depth 1 https://gitee.com/chen_ye_code/chinese-history-atlas.git ~/chinese-history-atlas
-  ```
-- 国内推荐 Gitee；GitHub 镜像：`https://github.com/zinging/chinese-history-atlas.git`
-- 下载约 150MB，只需一次。完成后再次调用 `session_start` 会自动拉起网页服务
+### `site_missing`（自动拉取失败）
+- 这是新用户第一次使用时的状态：插件自带了检索用数据，文字问答已经可用
+- 再调用一次 `session_start` 重试自动拉取；若仍失败，把返回的 `fix` 字段里的手动命令给用户
+- 自动拉取约 150MB（国内走 Gitee），只需一次，之后每次都会自动识别并拉起服务
 
 ### `port_taken` 或 `start_failed`（端口冲突或启动失败）
 - 把返回的 `fix` 字段原样给用户，等用户处理后再次调用 `session_start` 复检
