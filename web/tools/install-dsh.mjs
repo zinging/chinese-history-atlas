@@ -35,7 +35,6 @@ const ROOT = path.resolve(path.dirname(__filename), '..', '..');
 const SERVER = path.join(ROOT, 'web', 'tools', 'history-mcp-server.mjs');
 
 const ENTRY_ID = 'chinese-history-atlas';
-const SERVER_NAME = 'atlas';
 // bundle 包名：DSH 插件页按这个身份列出（标题来自 bundle 的 locale meta）
 const BUNDLE_NAME = '@chenye123/chinese-history-atlas';
 
@@ -132,28 +131,6 @@ function findEntryRange(text) {
   return { start, end, block: text.slice(start, end), childIndent, parentIndent };
 }
 
-function buildEntryBlock(indent) {
-  const pad = ' '.repeat(indent);
-  // 路径统一用正斜杠：YAML 双引号内反斜杠是转义符，Windows 路径必须转成 /
-  const server = SERVER.replace(/\\/g, '/');
-  const root = ROOT.replace(/\\/g, '/');
-  return [
-    `${pad}- insert:`,
-    `${pad}    - id: ${ENTRY_ID}`,
-    `${pad}      name: '@deepseek-ai/dsh-mcp-client'`,
-    `${pad}      config:`,
-    `${pad}        serverName: ${SERVER_NAME}`,
-    `${pad}        transport: stdio`,
-    `${pad}        command: node`,
-    `${pad}        args:`,
-    `${pad}          - '${server}'`,
-    `${pad}        env:`,
-    `${pad}          CHAT_BASE_URL: 'http://127.0.0.1:${PORT}/web/'`,
-    `${pad}        cwd: '${root}'`,
-    '',
-  ].join('\n');
-}
-
 // ---------- 主流程 ----------
 const home = dshHome();
 if (!fs.existsSync(home)) fail(`找不到 DSH 配置目录：${home}\n  可用环境变量 DSH_HOME 指定。`);
@@ -170,171 +147,6 @@ if (!profile) {
 }
 if (!profiles.includes(profile)) {
   fail(`profile "${profile}" 不存在。可用：${profiles.join(', ')}`);
-}
-
-/**
- * 维护 bundle 形态（推荐路径）。
- *
- * DSH 的插件列表读的是 profile 的 dependencies + dsh.profile.bundles，
- * 所以要让连接器以「Chinese History Atlas」出现在插件页并可控启用/停用，
- * 必须同时做三件事：写 bundle 自己的 patch、加进 bundles 列表、建 node_modules 链接。
- * 单独往 cordis.patch.yml 插条目只会让它作为匿名行存在，插件页看不到。
- *
- * 作用域：patch 采用「id 定向 override preset-standard + 追加 MCP 行」的形态，
- * 让 15 个工具只在标准模式出现，不污染 minimal / ptc / lean-eng。
- * 官方标准预设的内容由脚本从 dsh-web-app 逐字复制，避免手抄漏行。
- *
- * ⚠️ 必须是 override 而不是顶层 insert：dsh-web-app 的 presets/standard.patch.yml
- * 已经 insert 过 preset-standard，再 insert 一份就是 duplicate loader entry id，
- * Desktop 启动会在 profile 组合阶段直接失败并进恢复模式。
- */
-function writeBundlePatch() {
-  const bundleDir = path.join(ROOT, 'plugin-atlas');
-  const patchPath = path.join(bundleDir, 'cordis.patch.yml');
-  if (!fs.existsSync(bundleDir)) return null;
-
-  const server = SERVER.replace(/\\/g, '/');
-  const root = ROOT.replace(/\\/g, '/');
-
-  // override 形态下 preset-standard 的 config.plugins 列表项缩进是 6：
-  //   config:            (0)
-  //     plugins:         (4)
-  //       - id: persona  (6)
-  const MCP = [
-    '      # ── 追加：中华历史图谱 MCP 连接器（只在此预设内注册） ──',
-    `      - id: ${ENTRY_ID}`,
-    `        name: '@deepseek-ai/dsh-mcp-client'`,
-    '        config:',
-    `          serverName: ${SERVER_NAME}`,
-    '          transport: stdio',
-    '          command: node',
-    '          args:',
-    `            - '${server}'`,
-    '          env:',
-    `            CHAT_BASE_URL: 'http://127.0.0.1:${PORT}/web/'`,
-    `          cwd: '${root}'`,
-    '',
-  ].join('\n');
-
-  const HEADER = [
-    '# 中华历史图谱 · DSH 连接器（bundle）',
-    '#',
-    '# 本文件由 node web/tools/install-dsh.mjs 生成：按当前仓库位置写入绝对路径。',
-    '# 换机器或移动目录后重跑一次安装即可，不要手改这里的路径。',
-    '#',
-    '# ── 作用域：只在「标准模式」出现 ──────────────────────────────────────',
-    '# 只写顶层 - insert: 的话，MCP 工具注册在根作用域，standard / minimal /',
-    '# ptc / lean-eng 四个预设的工具清单里都会出现 mcp__atlas__* 那 15 个工具。',
-    '#',
-    '# 形态：id 定向 override（- id: preset-standard），不是顶层 - insert:。',
-    '#   applyEntryPatches 对无 id 的 insert 是往顶层 push 新行；',
-    '#   dsh-web-app/presets/standard.patch.yml 已经 insert 过同一行，',
-    '#   再 insert 一份就是 duplicate loader entry id，启动直接失败。',
-    '#   override 按 id 命中已有行并整段替换它的 config，',
-    '#   所以 standard 原有插件必须全部重述——漏一个就等于删掉那个工具。',
-    '#   列表由本脚本从官方 dsh-web-app/presets/standard.patch.yml 逐字复制，',
-    '#   仅末尾追加 MCP 一行。',
-    '# ⚠️ 升级 DSH 后若官方 standard 预设有变动，重跑安装即可重新同步。',
-    '',
-  ].join('\n');
-
-  // 取官方 standard 预设作为基底；找不到时退回单条顶层 insert（全模式可用），
-  // 保证至少能用，并明确提示作用域会变宽。
-  //
-  // 官方块是「- insert: + 两个空格缩进的 preset-standard 子项」。要写成 override，
-  // 必须先丢掉首行 "- insert:"，再把剩余行去掉 2 空格缩进提升到顶层。
-  // 原样拼上 "- insert:" 会让同一 id 出现两行，profile 组合直接失败。
-  const official = findOfficialStandard();
-  let body;
-  if (official) {
-    const rows = official.block.split('\n');
-    if (rows[0].trim() !== '- insert:') {
-      throw new Error('官方 standard.patch.yml 形态已变：首行不是 - insert:，拒绝生成');
-    }
-    // 子项缩进由官方文件决定（当前是 4 空格），按实际值动态剥离，
-    // 不能硬编码 2——否则根序列项会残留前导空格。
-    const firstChild = rows.slice(1).find((line) => line.trim() !== '');
-    const indent = firstChild ? (firstChild.match(/^[ \t]*/) || [''])[0].length : 0;
-    if (indent === 0) {
-      throw new Error('官方 standard.patch.yml 形态已变：insert 子项没有缩进，拒绝生成');
-    }
-    const shifted = rows
-      .slice(1)
-      .map((line) => (line.startsWith(' '.repeat(indent)) ? line.slice(indent) : line))
-      .join('\n')
-      .replace(/\s+$/, '\n');
-    body = HEADER + shifted + MCP;
-  } else {
-    body = [
-      '# 中华历史图谱 · DSH 连接器（bundle）',
-      '#',
-      '# ⚠️ 未找到官方 standard.patch.yml，退回顶层注册：工具会在所有模式出现。',
-      '',
-      '- insert:',
-      `    - id: ${ENTRY_ID}`,
-      `      name: '@deepseek-ai/dsh-mcp-client'`,
-      '      config:',
-      `        serverName: ${SERVER_NAME}`,
-      '        transport: stdio',
-      '        command: node',
-      '        args:',
-      `          - '${server}'`,
-      '        env:',
-      `          CHAT_BASE_URL: 'http://127.0.0.1:${PORT}/web/'`,
-      `        cwd: '${root}'`,
-      '',
-    ].join('\n');
-  }
-
-  fs.writeFileSync(patchPath, body, 'utf8');
-  return { bundleDir, patchPath, scoped: Boolean(official), officialFrom: official ? official.from : null };
-}
-
-/** 在常见的 DSH 安装位置里找官方标准预设文件。 */
-function findOfficialStandard() {
-  const fsx = fs;
-  const candidates = [];
-
-  // 1. 显式环境变量（最可靠，跨机器/自定义安装）
-  if (process.env.DSH_APP_DIR) {
-    candidates.push(path.join(process.env.DSH_APP_DIR, 'node_modules'));
-  }
-
-  // 2. 桌面端常见位置：DSH_HOME 无法推出安装目录，改从常见安装前缀猜
-  const localApp = process.env.LOCALAPPDATA;
-  if (localApp) {
-    candidates.push(path.join(localApp, 'Programs', 'DSH Desktop Beta', 'resources', 'app', 'node_modules'));
-    candidates.push(path.join(localApp, 'Programs', 'DSH Desktop', 'resources', 'app', 'node_modules'));
-  }
-  candidates.push('D:/localsoft/DSHDesktop/DSH Desktop Beta/resources/app/node_modules');
-
-  // 3. 当前仓库向上找（若 DSH 源码与站点同处一个工作区）
-  let dir = path.dirname(fileURLToPath(import.meta.url));
-  for (let i = 0; i < 5; i++) {
-    candidates.push(path.join(dir, 'node_modules'));
-    const up = path.dirname(dir);
-    if (up === dir) break;
-    dir = up;
-  }
-
-  // 4. 已在 profile 的 node_modules 里（若 DSH 把 web-app 装进了 profile）
-  if (typeof dshHome === 'function') {
-    try {
-      const h = dshHome();
-      candidates.push(path.join(h, 'profiles', 'node_modules'));
-      candidates.push(path.join(h, 'node_modules'));
-    } catch { /* 忽略 */ }
-  }
-
-  for (const base of candidates) {
-    const p = path.join(base, '@deepseek-ai', 'dsh-web-app', 'presets', 'standard.patch.yml');
-    if (fsx.existsSync(p)) {
-      const src = fsx.readFileSync(p, 'utf8');
-      const at = src.indexOf('- insert:');
-      if (at >= 0) return { block: src.slice(at).replace(/\s+$/, '\n'), from: p };
-    }
-  }
-  return null;
 }
 
 function ensureProfileBundle() {
@@ -357,11 +169,19 @@ function ensureProfileBundle() {
   return { ok: true, pkgPath };
 }
 
-/** 建 node_modules 下的作用域目录链接，让 DSH 能 resolve 到 bundle。 */
+/** node_modules 下这个 bundle 的链接路径（作用域与包名从 BUNDLE_NAME 解析）。 */
+function bundleLinkPath() {
+  const m = /^@([^/]+)\/(.+)$/.exec(BUNDLE_NAME);
+  if (!m) return null;
+  return path.join(home, 'profiles', profile, 'node_modules', '@' + m[1], m[2]);
+}
+
+/** 建 node_modules 下的作用域目录链接，让 DSH 能 resolve 到 bundle。
+ *  作用域与包名从 BUNDLE_NAME 解析，不能硬编码——改包名后写死会建出错误路径。 */
 function ensureLink() {
-  const nm = path.join(home, 'profiles', profile, 'node_modules');
-  const scope = path.join(nm, '@chinese-history');
-  const link = path.join(scope, 'atlas');
+  const link = bundleLinkPath();
+  if (!link) return { ok: false, reason: 'BUNDLE_NAME 不是 scope 形式：' + BUNDLE_NAME };
+  const scope = path.dirname(link);
   const target = path.join(ROOT, 'plugin-atlas');
   try {
     fs.mkdirSync(scope, { recursive: true });
@@ -435,9 +255,12 @@ if (UNINSTALL) {
     fs.writeFileSync(configPath, original.slice(0, range.start) + original.slice(range.end), 'utf8');
     removed = true;
   }
-  // 移除 node_modules 链接
-  const link = path.join(home, 'profiles', profile, 'node_modules', '@chinese-history', 'atlas');
-  try { if (fs.existsSync(link)) { fs.rmSync(link, { recursive: true, force: true }); removed = true; } } catch { /* 忽略 */ }
+  // 移除 node_modules 链接（作用域与包名同样从 BUNDLE_NAME 解析）
+  const lm = /^@([^/]+)\/(.+)$/.exec(BUNDLE_NAME);
+  if (lm) {
+    const link = path.join(home, 'profiles', profile, 'node_modules', '@' + lm[1], lm[2]);
+    try { if (fs.existsSync(link)) { fs.rmSync(link, { recursive: true, force: true }); removed = true; } } catch { /* 忽略 */ }
+  }
 
   if (removed) {
     ok('已移除连接器：profile bundles / dependencies / 旧条目 / node_modules 链接');
@@ -449,13 +272,38 @@ if (UNINSTALL) {
 }
 
 // ---------- 安装 ----------
-// bundle 形态：写 bundle 自己的 patch + 登记 profile + 建链接。
-// 不再往 profile 的 cordis.patch.yml 插条目——那样插件页看不到它。
-const bundle = writeBundlePatch();
-if (!bundle) fail('未找到 plugin-atlas 目录，无法按 bundle 形态安装');
+// bundle 形态：bundle 自带 portable 的 cordis.patch.yml（路径由 !!js ctx.baseUrl 在加载时算出），
+// 所以这里不再重新生成它——重新生成会写入本机绝对路径，破坏可移植性、
+// 也让 npm 发布出去的那份在任何机器上都失效。这里只做三件事：
+// 校验 bundle patch 存在、登记 profile bundles、建 node_modules 链接。
+const bundlePatchPath = path.join(ROOT, 'plugin-atlas', 'cordis.patch.yml');
+if (!fs.existsSync(bundlePatchPath)) {
+  fail('未找到 plugin-atlas/cordis.patch.yml，无法按 bundle 形态安装');
+}
+const bundlePatchText = fs.readFileSync(bundlePatchPath, 'utf8');
+if (!bundlePatchText.includes('ctx.baseUrl')) {
+  fail('plugin-atlas/cordis.patch.yml 不是可移植形态（未使用 ctx.baseUrl 推导路径）。\n'
+    + '    这会导致发布到 npm 后在别的机器上失效。请先恢复该文件再安装。');
+}
+
+// --port 写进 patch 的 CHAT_BASE_URL。端口不是机器相关的信息，
+// 改它不破坏可移植性；若不改，--port 就只是改一句提示语、名不副实。
+let portChanged = false;
+if (PORT !== '5173') {
+  const before = bundlePatchText;
+  const after = before.replace(
+    /(CHAT_BASE_URL:\s*')http:\/\/127\.0\.0\.1:\d+(\/web\/')/,
+    `$1http://127.0.0.1:${PORT}$2`,
+  );
+  if (after === before) {
+    fail(`无法在 ${path.relative(ROOT, bundlePatchPath)} 里改写端口（未匹配到 CHAT_BASE_URL）。`);
+  }
+  fs.writeFileSync(bundlePatchPath, after, 'utf8');
+  portChanged = true;
+}
 
 console.log('');
-info(`已写入 bundle patch：${path.relative(ROOT, bundle.patchPath)}`);
+info(`bundle patch：${path.relative(ROOT, bundlePatchPath)}（可移植${portChanged ? `，端口已改为 ${PORT}` : '，未改写'}）`);
 
 const pkgBackup = path.join(home, 'profiles', profile, 'package.json') + '.bak-before-atlas-' + stamp();
 const pkgPath = path.join(home, 'profiles', profile, 'package.json');
@@ -466,15 +314,16 @@ if (!reg.ok) fail('登记 profile bundles 失败：' + reg.reason);
 ok(`已登记 bundles：${BUNDLE_NAME}`);
 
 const link = ensureLink();
-if (!link.ok) console.log('⚠️  node_modules 链接创建失败：' + link.reason + '\n   可手动执行：mklink /J ' + path.join(home, 'profiles', profile, 'node_modules', '@chinese-history', 'atlas') + ' ' + path.join(ROOT, 'plugin-atlas'));
+if (!link.ok) console.log('⚠️  node_modules 链接创建失败：' + link.reason + '\n   可手动执行：mklink /J ' + bundleLinkPath() + ' ' + path.join(ROOT, 'plugin-atlas'));
 else ok('已创建 node_modules 链接');
 
 // 复核
 const st = profileBundleState();
+const linkedPatch = bundleLinkPath() ? path.join(bundleLinkPath(), 'cordis.patch.yml') : '';
 const checks = [
   [st.present, `profile bundles 含 ${BUNDLE_NAME}`],
   [Boolean(st.dep), 'profile dependencies 已登记'],
-  [fs.existsSync(path.join(home, 'profiles', profile, 'node_modules', '@chinese-history', 'atlas', 'cordis.patch.yml')), 'node_modules 链接可达'],
+  [Boolean(linkedPatch) && fs.existsSync(linkedPatch), 'node_modules 链接可达'],
   [fs.existsSync(SERVER), 'MCP Server 文件存在'],
 ];
 console.log('');

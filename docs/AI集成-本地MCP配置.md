@@ -73,22 +73,36 @@ AI 进入会话后自动执行一次：
 
 > 关于「每个人项目路径不同」：路径由 MCP 进程按自身文件位置自动解析（`project_root`），跨机器、跨工作目录均不依赖任何硬编码。
 
-## 三之二、DSH（DeepSeek Harness）接入
+## 三之二、DSH（DeepSeekRuntime）接入
 
-DSH 的 MCP 配置写在 profile 的 `cordis.patch.yml` 里，不走 `.mcp.json`。安装器直接写入该文件，无需手工粘贴：
+DSH 有两种接入方式，效果相同——都让 15 个工具以 `mcp__atlas__*` 出现：
+
+### 方式 A：插件市场安装（发布后可用）
+
+包名 `@chenye123/chinese-history-atlas`。装好后重启 DSH，「插件」页会出现「中华历史图谱 / Chinese History Atlas」，保持开启即可。
+
+插件包自带检索数据（8.8MB JSON）与常用配图（21.5MB），装好即可问答。首次提问时 `session_start` 会自动从 Gitee 拉取完整站点到主目录（约 150MB，约 2 分钟），随后自己拉起本地网页服务——用户不需要执行任何命令。
+
+### 方式 B：本地仓库安装（开发用）
+
+DSH 的插件列表读的是 profile 的 `dsh.profile.bundles` 与 `dependencies`，所以本仓库用 **bundle 形态**注册，而不是往 `cordis.patch.yml` 插条目（旧形态在插件页看不见）：
 
 ```bash
-node web/tools/install-dsh.mjs              # 安装（幂等：已存在则更新路径）
+node web/tools/install-dsh.mjs              # 安装（幂等）
 node web/tools/install-dsh.mjs --check      # 只检查，不写入
-node web/tools/install-dsh.mjs --uninstall  # 移除本项目的条目
-node web/tools/install-dsh.mjs --port 8080  # 换端口
+node web/tools/install-dsh.mjs --uninstall  # 移除
+node web/tools/install-dsh.mjs --port 8080  # 换端口（写入 bundle patch 的 CHAT_BASE_URL）
 ```
 
-写入位置 `$DSH_HOME/profiles/<profile>/cordis.patch.yml`（默认 profile 为 `desktop`，默认端口 5173）。安装器会：
+它做三件事，都在 `$DSH_HOME/profiles/<profile>/`（默认 profile 为 `desktop`）：
 
-- 写前自动备份为 `cordis.patch.yml.bak-before-atlas-<时间戳>`；
-- 只增删本项目 `id: chinese-history-atlas` 那一条，不碰其它配置；
-- 写入后复核「条目恰好一份、transport/serverName/路径正确、文件未被截断」，任一不通过立即从备份还原并报错。
+- 校验 `plugin-atlas/cordis.patch.yml` 是可移植形态（用 `!!js ctx.baseUrl` 推导路径）；
+- 把 `@chenye123/chinese-history-atlas` 登记进 `package.json` 的 `dsh.profile.bundles` 与 `dependencies`（`link:` 指向本仓库的 `plugin-atlas/`）；
+- 在 `node_modules/` 下建 junction 指向 `plugin-atlas/`。
+
+改前自动备份 `package.json`；复核不通过会还原。
+
+**bundle patch 不会被安装器改写**：它用 `ctx.baseUrl` 在加载时算出 `server.mjs` 的绝对路径，所以同一份文件在任何机器、任何目录都成立。安装器只在 `--port` 非 5173 时改其中的 `CHAT_BASE_URL`。
 
 装完重启 DSH，新建会话即可。工具以 `mcp__atlas__session_start` 这样的名字出现。
 
@@ -201,10 +215,10 @@ node .sessions/mcp-coldstart-audit.mjs
 > 语音策略（v1.4.0 修订）：**默认不做任何 TTS**，页面是纯静态网页。朗读改为用户在侧栏「导览设置」里自愿开启的可选项——开启后用浏览器原生 `speechSynthesis`（零依赖、离线可用）逐句朗读，以语音念完为该句推进信号；也可只开「文本推进」不出声。两个开关都关闭时，不建控制条、不排计时、不动 DOM，回到原始静态状态。
 > 网页只负责「看」——时间线、古地图、动态 SVG 路线、事件弹窗、图鉴。两者用**深链**同步。
 
-> **实施状态（v1.3.0）：本章是设计文档，尚未全部落地。**
-> 已实现：AI 讲解员「锚点表」机制——MCP 的 `guide.anchors`（每项含 scene/role/text/sources/url）供 AI 自行组织导读与在关键处挂链接；`web/guide-highlight.js` 负责按 `#s=N` 定位高亮，**不做自动播放**（页面呈现为主，节奏由读者与 AI 讲解控制）。
-> 未实现：`web/tools/bootstrap.mjs`、仓库根 `AGENTS.md`、`npm run setup` 脚本、`session_start` 增强、MCP prompt 模板（见 9.4 / 9.5 / 9.6.5）。
-> 下面 9.4、9.5、9.6.5 属规划内容，请勿当作现有行为。
+> **实施状态（MCP v1.6.0 修订）**
+> 已实现：AI 讲解员「锚点表」机制（`guide.anchors` 每项含 scene/role/text/sources/url），`web/guide-highlight.js` 按 `#s=N` 定位高亮；`session_start` 增强——自动探活、站点缺失时自动从 Gitee 拉取到 `~/chinese-history-atlas` 并拉起网页服务；单对象结果附带 image 内容块（图文并茂）。
+> **已作废**：`web/tools/bootstrap.mjs`、`npm run setup`、仓库根 `AGENTS.md`——「新用户一句话装好」这个缺口已由插件包的自动拉取承担，不必再写 bootstrap 脚本。9.4 整节仅作历史设计参考，不要照它实现。
+> 仍属规划：MCP prompt 模板（见 9.6.5）。
 
 ## 9.1 目标用户旅程（验收口径）
 
