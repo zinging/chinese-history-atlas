@@ -95,6 +95,14 @@ const readBody = (req) => new Promise((resolve, reject) => {
   req.on('error', reject);
 });
 
+// 仅允许 http/https 的绝对地址，拦截 file:/gopher:/dict: 等危险协议（SSRF 防护）
+const isHttpUrl = (u) => {
+  try {
+    const { protocol } = new URL(u);
+    return protocol === 'http:' || protocol === 'https:';
+  } catch { return false; }
+};
+
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://x');
