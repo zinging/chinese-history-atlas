@@ -73,7 +73,7 @@ AI 进入会话后自动执行一次：
 
 > 关于「每个人项目路径不同」：路径由 MCP 进程按自身文件位置自动解析（`project_root`），跨机器、跨工作目录均不依赖任何硬编码。
 
-## 三之二、DSH（DeepSeekRuntime）接入
+## 三之二、DSH（DeepSeek Harness）接入
 
 DSH 有两种接入方式，效果相同——都让 15 个工具以 `mcp__atlas__*` 出现：
 
