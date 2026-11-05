@@ -960,7 +960,7 @@ function renderRelGraph(e) {
   if (!people.length) return '';
   // 左右布局：皇帝在左，人物在右竖排，描述文字给足宽度
   const W = 960;
-  const rowH = 110;
+  const rowH = 124;
   const H = Math.max(320, people.length * rowH + 60);
   const cx = 110, cy = H / 2;
   const px = 440;
@@ -974,15 +974,15 @@ function renderRelGraph(e) {
   const relLabels = nodes.map((nd) => {
     const mx = (cx + 60 + nd.x - 42) / 2, my = (cy + nd.y) / 2;
     const rel = nd.p.relation || nd.p.role || '';
-    // 根据文字长度动态计算圆角框宽度（13px 字号，中文字约 15px，紧包 padding）
-    const w = Math.max(56, rel.length * 15 + 14);
-    return `<rect x="${mx - w/2}" y="${my-13}" width="${w}" height="24" rx="12" fill="#fff7e0" stroke="#c9a96a" />
-      <text x="${mx}" y="${my+5}" text-anchor="middle" font-size="13" fill="#8a6d3b" font-weight="700">${rel}</text>`;
+    // 根据文字长度动态计算圆角框宽度（14px 字号，中文字约 16px，紧包 padding）
+    const w = Math.max(60, rel.length * 16 + 16);
+    return `<rect x="${mx - w/2}" y="${my-14}" width="${w}" height="26" rx="13" fill="#fff7e0" stroke="#c9a96a" />
+      <text x="${mx}" y="${my+5}" text-anchor="middle" font-size="14" fill="#8a6d3b" font-weight="700">${rel}</text>`;
   }).join('');
   // 描述文字按宽度自动换行（SVG text 不会自动折行，手动拆 tspan）
   const wrapNote = (text) => {
     if (!text) return '';
-    const maxPerLine = 38; // 12px 字号下 SVG 宽度 960，节点 x=440，可用宽度约 470px
+    const maxPerLine = 32; // 14px 字号下，x=50 起可用宽度约 470px，每行约 32 个汉字
     const lines = [];
     let s = text;
     while (s.length > maxPerLine) {
@@ -996,7 +996,7 @@ function renderRelGraph(e) {
     }
     if (s) lines.push(s);
     return lines.map((ln, i) =>
-      `<text x="50" y="${14 + i * 14}" font-size="12" fill="#8a7a5c">${ln}</text>`
+      `<text x="50" y="${16 + i * 17}" font-size="14" fill="#6f6353">${ln}</text>`
     ).join('');
   };
   const dots = nodes.map((nd) => {
@@ -1008,7 +1008,7 @@ function renderRelGraph(e) {
     return `<g transform="translate(${nd.x},${nd.y})">
       <circle r="38" fill="#fff" stroke="#c9a96a" stroke-width="2.5" />
       ${img}
-      <text x="50" y="-6" text-anchor="start" font-size="15" font-weight="700" fill="#3a2e1f">${nd.p.name}<tspan font-size="12" font-weight="400" fill="#888">${title}</tspan></text>
+      <text x="50" y="-6" text-anchor="start" font-size="17" font-weight="700" fill="#3a2e1f">${nd.p.name}<tspan font-size="14" font-weight="400" fill="#6f6353">${title}</tspan></text>
       ${wrapNote(nd.p.note || '')}
     </g>`;
   }).join('');
