@@ -1029,6 +1029,29 @@ function renderRelGraph(e) {
   </div>`;
 }
 
+// ---------- 时间线 ★ 判据 ----------
+// 以前是「标题含关键词就打星」，于是「即位」「登基」「驾崩」全都有星（77 帝几乎人人三条），
+// 而「忽兰忽失温之战」这种真正的硬仗因为标题没命中关键词反而没有星 —— 星标记名不副实。
+// 现在的判据分三层，数据可以覆盖：
+//   1. 条目写了 highlight: true / false → 直接听数据的；
+//   2. 出生 → 不打（每位皇帝都有，没有信息量）；
+//   3. 变局类词（之变/靖难/案/亲征/迁都/之战/之治/下西洋/条约…）→ 打；
+//      例行节点（即位/登基/驾崩/逝世）→ 只有描述写足 100 字才打，
+//      因为「太宗去世后即位，是为宋真宗」这种一句话不配自称核心。
+const TL_EVENT_RE = /玄武门|靖难|陈桥|黄袍|土木堡|夺门|之变|案|亲征|被俘|禅位|亡国|迁都|篡位|起兵|统一|灭[国梁陈齐周宋元]|之战|之役|大捷|下西洋|远航|之治|中兴|变法|新政|起义|兵变|政变|和议|条约|称帝|建周|营建|开大运河|废太子|割燕云|三征|改土归流|之盟/;
+const TL_ROUTINE_RE = /即位|登基|驾崩|逝世/;
+const TL_BIRTH_RE = /^出生/;
+const TL_ROUTINE_MIN_LEN = 100;
+
+function isCoreEvent(t) {
+  if (t.highlight === true) return true;
+  if (t.highlight === false) return false;
+  const title = t.title || "";
+  if (TL_BIRTH_RE.test(title)) return false;
+  if (TL_EVENT_RE.test(title)) return true;
+  return TL_ROUTINE_RE.test(title) && (t.description || "").length >= TL_ROUTINE_MIN_LEN;
+}
+
 function showEmperor(e) {
   stopGuideIfAny();                 // 换皇帝即停：朗读/推进不得跨人物继续
   const d = $('#emperor-detail');
@@ -1058,7 +1081,7 @@ function showEmperor(e) {
     <div class="detail-panel entry-block">
       <h4>生平时间线</h4>
       <ul class="timeline">${timeline.map((t) => {
-        const isHighlight = /玄武门|靖难|陈桥|黄袍|土木堡|夺门|之变|案|亲征|被俘|禅位|亡国|迁都|驾崩|逝世|篡位|起兵|登基|即位|统一|灭[国梁陈齐周宋元]/i.test(t.title || "");
+        const isHighlight = isCoreEvent(t);
         const year = t.date || "";
         const yearHtml = /^\d{3,4}\s*[-—–]\s*\d{3,4}$/.test(year)
           ? year.replace(/\s*[-—–]\s*/, '<br>-')
