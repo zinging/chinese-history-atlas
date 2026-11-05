@@ -36,17 +36,17 @@
 
 ## 🚀 安装
 
-### 只想看看，不装任何东西
+### 一、只想看看，不装任何东西
 
 直接打开在线演示：[https://zinging.github.io/chinese-history-atlas/web/](https://zinging.github.io/chinese-history-atlas/web/)
 
 不需要 Node、不需要 clone、不需要配置。
 
-### 完整站点 + AI 讲解员（推荐）
+### 二、完整站点 + AI 讲解员（推荐）
 
 网页与讲解是**一体**的：AI 一边检索站内数据给出深链与配图，一边辅助你在右侧浏览器读懂画面——你看到的每个细节它都能接着讲。
 
-**DSH 用户**（插件市场一键装）
+#### 1. DSH（DeepSeekRuntime）用户：插件市场一键装
 
 在插件市场搜索 `@chenye123/chinese-history-atlas` 安装。装好后直接提问即可，例如「讲一下靖难之役」。插件会自动完成剩下的所有事：
 
@@ -55,7 +55,7 @@
 - 自动在后台拉起本地网页服务，把可点击链接给你
 - 讲解时自动配图，讲到谁就出谁的画像
 
-**其他 MCP 客户端**（豆包 / Cursor / Claude Desktop 等）
+#### 2. 其他 MCP 客户端（豆包 / Cursor / Claude Desktop 等）
 
 先在本地起站点，再手动接入 MCP：
 
@@ -71,6 +71,12 @@ node web/serve.mjs          # 浏览器打开 http://127.0.0.1:5173/web/
 > 环境要求 **Node.js 18+**（自带 `fetch`，无需 `npm install`）。`--depth 1` 只取最新提交，下载约 150MB（图片占 141.5MB）；断网可用，图片全部本地读取。
 > 端口被占用：`node web/serve.mjs 8080`。
 > 请用本地服务器打开，**不要直接双击 HTML**：前端通过 `fetch` 读 `data/*.json`，`file://` 会被 CORS 拦截导致页面空白。
+
+### 懒得自己动手？让 AI 帮你装
+
+把下面这句话原样发给你的 AI 客户端——DSH、豆包、Cursor、Claude Desktop 都行，它会自己读 README 把细节走完：
+
+> 帮我安装中华历史图谱：先读 github.com/zinging/chinese-history-atlas 的 README「安装」一节，按说明装好，再告诉我怎么开始用。
 
 ---
 
