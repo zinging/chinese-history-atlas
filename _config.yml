@@ -1,0 +1,23 @@
+# GitHub Pages（分支部署）会先跑一遍 Jekyll，再把构建产物推到 Pages 服务。
+# 这一步有约 10 分钟的内部超时，产物越大越容易撞上。
+#
+# 本站真正要发布的只有 web/（页面代码）和 data/（数据与图片）。
+# 下面这些目录属于开发期资源，与线上站点无关，排除后产物从 219MB 降到约 144MB：
+#   docs/            封面与演示动图（其中 GIF 就占 56MB），只在 README 里引用，
+#                    由仓库页面自行渲染，不需要出现在 Pages 上
+#   plugin-atlas/    DSH 插件包（从 npm 安装或用本地 link）
+#   plugin-final/    教学编排层原型
+#   tools/ scripts/  数据校验与维护脚本
+#   web/tools/       MCP Server 与各类生成脚本，本地运行，不由 Pages 提供
+#   data/search-index.json  MCP 的倒排索引，由 Server 在本地按需生成
+exclude:
+  - docs
+  - plugin-atlas
+  - plugin-final
+  - tools
+  - scripts
+  - web/tools
+  - data/search-index.json
+  - .sessions
+  - node_modules
+  - .tools
