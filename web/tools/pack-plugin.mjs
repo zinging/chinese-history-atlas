@@ -34,6 +34,86 @@ function rmRecursive(p) {
   fs.rmSync(p, { recursive: true, force: true });
 }
 
+// 0. 索引一致性闸门
+//    为什么需要：plugin-atlas/data/ 是生成产物（已 gitignore），靠手动跑本脚本同步。
+//    一旦改了数据却忘了重跑，插件会带着过期索引发布——用户搜到的正文与站点不符，
+//    而这种不一致不会报错，只会表现为「插件讲的和你看到的对不上」。
+//    用法：node web/tools/pack-plugin.mjs --check   （CI / 发布前校验，不写任何文件）
+const CHECK_ONLY = process.argv.includes('--check');
+
+function readIndexMeta(p) {
+  try {
+    const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+    return { sig: j.sig || '', docs: (j.docs || []).length, version: j.version || '' };
+  } catch {
+    return null;
+  }
+}
+
+const IDX_SRC = path.join(ROOT, 'data', 'search-index.json');
+const IDX_PKG = path.join(PKG, 'data', 'search-index.json');
+
+function reportIndexMismatch(exitWhenDiffer) {
+  const a = readIndexMeta(IDX_SRC);
+  const b = readIndexMeta(IDX_PKG);
+  if (!a || !b) {
+    console.error('索引缺失，无法校验（源或插件内 search-index.json 读不到）');
+    if (exitWhenDiffer) process.exit(1);
+    return false;
+  }
+  const same = a.sig === b.sig && a.docs === b.docs;
+  console.log(`  源索引   sig=${a.sig} docs=${a.docs} v${a.version}`);
+  console.log(`  插件索引 sig=${b.sig} docs=${b.docs} v${b.version}`);
+  if (!same) {
+    console.error('\n不一致：plugin-atlas/data 已过期，请先运行 npm run pack:plugin 再发布。');
+    if (exitWhenDiffer) process.exit(1);
+    return false;
+  }
+  return true;
+}
+
+// 版本一致性闸门
+//    同一个版本号原本出现在四个地方（根 package.json / 插件 package.json /
+//    SERVER_VERSION / 索引 version），实际漂成了 1.3.0 / 1.1.0 / 1.6.0 / 1.6.0，
+//    对外又有 README 写 1.6.0、docs 写 1.3.0。
+//    口径定为：**这四处必须是同一个数字**，改一处就要四处一起改——版本号是用户
+//    判断「我装的是不是最新」的唯一依据，一个数字对不上就会引发整轮排查。
+function reportVersionConsistency(exitWhenDiffer) {
+  const readVer = (p) => {
+    try { return JSON.parse(fs.readFileSync(p, 'utf8')).version || ''; } catch { return ''; }
+  };
+  let srvVer = '';
+  try {
+    const src = fs.readFileSync(path.join(ROOT, 'web', 'tools', 'history-mcp-server.mjs'), 'utf8');
+    const m = src.match(/SERVER_VERSION\s*=\s*'([^']+)'/);
+    if (m) srvVer = m[1];
+  } catch { /* 读不到就留空，交给下面报错 */ }
+  const items = [
+    ['根 package.json', readVer(path.join(ROOT, 'package.json'))],
+    ['插件 package.json', readVer(path.join(PKG, 'package.json'))],
+    ['SERVER_VERSION', srvVer],
+    ['索引 version', readVer(IDX_SRC)],
+  ];
+  console.log('  版本口径：');
+  for (const [k, v] of items) console.log(`    ${k.padEnd(20)} = ${v || '(空)'}`);
+  const base = items[0][1];
+  const bad = items.filter(([, v]) => v !== base);
+  if (!base || bad.length) {
+    console.error('\n版本不一致：应为同一个值，当前不一致的有 ' + (bad.map(([k, v]) => `${k}=${v || '(空)'}`).join('、')));
+    if (exitWhenDiffer) process.exit(1);
+    return false;
+  }
+  return true;
+}
+
+if (CHECK_ONLY) {
+  console.log('[--check] 仅校验，不写文件');
+  reportIndexMismatch(true);
+  reportVersionConsistency(true);
+  console.log('\n一致：插件数据与站点同源，版本号四处同值。');
+  process.exit(0);
+}
+
 // 1. server.mjs
 const serverSrc = path.join(ROOT, 'web', 'tools', 'history-mcp-server.mjs');
 const serverDst = path.join(PKG, 'server.mjs');
@@ -68,7 +148,7 @@ const jsonCount = jsonFiles.length;
 const jsonBytes = jsonFiles.reduce((s, p) => s + fs.statSync(p).size, 0);
 console.log(`data/ JSON: ${jsonCount} 个，${(jsonBytes / 1048576).toFixed(1)} MB`);
 
-// 3. 图片：MCP 的 image 内容块只读这 4 个目录
+// 3. 图片：MCP 的 image 内容块只读这 5 个目录
 const imgBase = path.join(dataSrc, 'portraits');
 const imgDst = path.join(dataDst, 'portraits');
 fs.mkdirSync(imgDst, { recursive: true });
@@ -77,6 +157,7 @@ const imgDirs = [
   { src: path.join(imgBase, 'artifacts-thumb'), dst: path.join(imgDst, 'artifacts-thumb') },
   { src: path.join(imgBase, 'event-gongbi-thumb'), dst: path.join(imgDst, 'event-gongbi-thumb') },
   { src: path.join(imgBase, 'sect-events'), dst: path.join(imgDst, 'sect-events') },
+  { src: path.join(imgBase, 'poet-events'), dst: path.join(imgDst, 'poet-events') },
 ];
 let imgCount = 0, imgBytes = 0;
 for (const { src, dst, filter } of imgDirs) {
@@ -103,4 +184,17 @@ const allFiles = [];
 let total = 0;
 for (const p of allFiles) total += fs.statSync(p).size;
 console.log(`plugin-atlas/ 总计: ${(total / 1048576).toFixed(1)} MB`);
+
+// 5. 拷后自检：确认插件内索引与源同源（拷贝成功即应一致）
+console.log('\n索引一致性：');
+if (!reportIndexMismatch(false)) {
+  console.error('打包后索引仍不一致，请检查 data/ 是否完整。');
+  process.exit(1);
+}
+console.log('\n版本一致性：');
+if (!reportVersionConsistency(false)) {
+  console.error('版本号四处不一致，请对齐后再发布。');
+  process.exit(1);
+}
+
 console.log('\n完成。npm publish 或本地调试时直接使用 plugin-atlas/ 目录。');

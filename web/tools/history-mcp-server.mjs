@@ -119,6 +119,10 @@ async function probeSite(timeoutMs = 1500) {
 
 // 同一 STDIO 进程内只尝试拉起一次，避免重复 spawn
 let mcpSpawnedServer = false;
+// 后台 clone 状态：拉取要 1–2 分钟。若在 session_start 里同步等待，整条请求链会被堵住
+// （runStdio 的 chain 是串行的），客户端多半先超时断连——而这恰好是新用户的第一个动作。
+let cloneInFlight = false;
+let lastCloneError = '';
 
 /** 自动从 Gitee 拉取完整站点到 HOME_SITE（用户主目录下的普通项目文件夹）。
  *  幂等：目录已存在则视为成功。失败返回 { ok:false, reason }。
@@ -159,7 +163,15 @@ function cloneSite() {
         resolve({ ok: false, reason: reason + '：' + err.slice(-300) });
       }, 2000);
     };
-    child.on('error', (e) => { clearTimeout(timer); resolve({ ok: false, reason: '无法执行 git: ' + e.message }); });
+  child.on('error', (e) => {
+    clearTimeout(timer);
+    resolve({
+      ok: false,
+      reason: e && e.code === 'ENOENT'
+        ? '本机没有 git（PATH 中找不到 git 命令）。先安装 git 并确认 `git --version` 可用，再重试。'
+        : '无法执行 git: ' + (e && e.message || e),
+    });
+  });
     child.on('close', (code, signal) => {
       const why = timedOut ? 'git clone 超时(' + signal + ')' : 'git clone 退出码 ' + code;
       finish(why);
@@ -216,25 +228,50 @@ async function ensureLocalServerWith(siteDir) {
  * 确保本地服务可用。返回结构化结论，模型只读结论、不跑命令：
  *   running        已在运行且确认为本站
  *   started_by_mcp 原本未运行，已由本工具后台拉起并探活通过
+ *   cloning        站点未安装，已在后台开始拉取（立即返回，不阻塞请求链）
+ *   site_missing   上一次自动拉取失败（常见：没装 git / 网络不通），文字检索仍可用
  *   port_taken     端口被其它程序占用（会给出占用方线索与换端口办法）
  *   start_failed   拉起后仍不通，附最后一段错误输出
  */
 async function ensureLocalServer() {
-  // 站点目录不存在（插件刚装、还没 clone）→ 自动拉取，不打扰用户
+  // 站点目录不存在（插件刚装、还没 clone）
   if (!ROOT) {
-    const cloned = await cloneSite();
-    if (cloned.ok) {
-      // 拉取成功：把新站点目录接上（ROOT/DATA 切换），再复用 ensureLocalServerWith
+    const siteReady = () => fs.existsSync(path.join(HOME_SITE, 'web', 'serve.mjs'))
+      && fs.existsSync(path.join(HOME_SITE, 'data'));
+    // 1) 上一次的后台拉取（或用户手动 clone）已完成 → 接上目录并拉起服务
+    if (siteReady()) {
       setSiteRoot(HOME_SITE);
       const r2 = await ensureLocalServerWith(HOME_SITE);
       return { ...r2, auto_cloned: true };
     }
-    return {
-      state: 'site_missing',
-      detail: '自动拉取站点失败：' + cloned.reason,
-      fix: '重试一次即可（会再次尝试自动拉取）；若持续失败，手动执行：\n  git clone --depth 1 https://gitee.com/chen_ye_code/chinese-history-atlas.git "' + HOME_SITE + '"',
-      site_dir: HOME_SITE,
-    };
+    // 2) 正在后台拉取 → 直接返回，不重复起进程
+    if (cloneInFlight) {
+      return { state: 'cloning', detail: '站点正在后台拉取中（约 150MB，一次性，完成后自动可用）。' };
+    }
+    // 3) 上一次失败过：交出原因，本次不自动重试（否则同一个失败会无限循环）
+    if (lastCloneError) {
+      const why = lastCloneError;
+      lastCloneError = '';   // 清空，让下一次调用可以重试
+      return {
+        state: 'site_missing',
+        detail: '自动拉取站点失败：' + why,
+        fix: '修好上面的问题后，再调用一次 session_start 会重新尝试自动拉取；也可以手动执行：\n  git clone --depth 1 https://gitee.com/chen_ye_code/chinese-history-atlas.git "' + HOME_SITE + '"',
+        site_dir: HOME_SITE,
+      };
+    }
+    // 4) 首次：后台开始拉取并立即返回。
+    //    不 await 是刻意的：拉取约 1–2 分钟，同步等待会把整条 STDIO 请求链堵死。
+    cloneInFlight = true;
+    cloneSite().then((r) => {
+      cloneInFlight = false;
+      if (r.ok) { setSiteRoot(HOME_SITE); dlog('后台拉取完成，站点目录已切换: ' + HOME_SITE); }
+      else { lastCloneError = r.reason; dlog('后台拉取失败: ' + r.reason); }
+    }).catch((e) => {
+      cloneInFlight = false;
+      lastCloneError = String(e && e.message || e);
+      dlog('后台拉取异常: ' + lastCloneError);
+    });
+    return { state: 'cloning', detail: '已开始在后台从 Gitee 拉取站点（约 150MB，一次性）。' };
   }
   const first = await probeSite();
   if (first.up && first.own) return { state: 'running' };
@@ -741,7 +778,7 @@ function tListModules() {
         ...deepLink('index.html'), counts: counts.emperors },
       { id: 'thought', name: MODULE_LABEL.thought, desc: `儒释道/诸子/理学心学五宗：${counts.thought.books} 部典籍、${counts.thought.cases} 件公案、${counts.thought.discourses} 道问典、${counts.thought.routes} 条圣贤行迹路线（${counts.thought.routePoints} 个途经点）、${counts.thought.events} 件百家纪事与 ${counts.thought.places} 处古今地名`,
         sects: THOUGHT_SECTS, ...deepLink('index.html?module=' + shellModule('thought')), counts: counts.thought },
-      { id: 'shiwen', name: MODULE_LABEL.shiwen, desc: '22 位诗人、71 篇名篇精读、95 条金句、13 条诗路与品诗问典',
+      { id: 'shiwen', name: MODULE_LABEL.shiwen, desc: `22 位诗人、71 篇名篇精读、95 条金句、${counts.shiwen.routes} 条诗路、${counts.shiwen.events} 件生平事件与品诗问典`,
         ...deepLink('index.html?module=' + shellModule('shiwen')), counts: counts.shiwen },
       { id: 'gewu', name: MODULE_LABEL.gewu, desc: '17 部科技典籍、59 件器物图谱、工艺公案与格物问典',
         ...deepLink('index.html?module=' + shellModule('gewu')), counts: counts.gewu },
@@ -1159,6 +1196,28 @@ function tGetRoute({ module, sect, route, event }) {
     return { count: out.length, routes: out };
   }
   const b = loadGuoxue('shiwen', 'shiwen');
+  // 单件生平事件：正文 + 原文译文 + 意义与影响，配图走 poet-events 目录，
+  // 与前端诗词事件弹窗字段一致；深链直接在地图上打开该事件卡片。
+  if (event) {
+    const key = norm(event);
+    const evs = b.events || [];
+    const ev = evs.find((x) => norm(x.id) === key || norm(x.name) === key)
+      || evs.find((x) => norm(x.name).includes(key));
+    if (ev) {
+      return {
+        ...pick(ev, ['id', 'name', 'date', 'place', 'lat', 'lng', 'people', 'summary', 'narrative']),
+        quotes: ev.quotes || [],
+        significance: ev.significance || [],
+        // 生平事件配图：约定路径 data/portraits/poet-events/<事件 id>.jpg。
+        // 存在才给（未出图的事件不带该字段），与前端「缺图整块移除」约定一致。
+        image: exists(path.join(DATA, 'portraits', 'poet-events', `${ev.id}.jpg`))
+          ? portraitHref(`data/portraits/poet-events/${ev.id}.jpg`)
+          : null,
+        ...gxDeepLink('shiwen', 'shiwen', `tab=map&evt=${enc(ev.id)}`),
+      };
+    }
+    return { matched: false, query: event, hint: '未找到该诗人生平事件；可先调用 get_route(module=shiwen) 查看诗路与生平事件清单，或先 search 事件名。' };
+  }
   const routes = b.routes.map((r, i) => ({ index: i, ...r,
     ...gxDeepLink('shiwen', 'shiwen', `tab=map&route=${i}`) }));
   if (route !== undefined && route !== null) {
@@ -1167,7 +1226,12 @@ function tGetRoute({ module, sect, route, event }) {
     if (one) return one;
     return { matched: false, query: route, hint: '未找到该诗路；可先调用 get_route(module=shiwen) 查看清单。' };
   }
-  return { count: routes.length, routes };
+  // 生平事件摘要清单：列表不附图（量太大），单条详情再用 get_route(module=shiwen, event=...) 取配图。
+  const events = (b.events || []).map((ev) => ({
+    ...pick(ev, ['id', 'name', 'date', 'place', 'people', 'summary']),
+    ...gxDeepLink('shiwen', 'shiwen', `tab=map&evt=${enc(ev.id)}`),
+  }));
+  return { count: routes.length, routes, events, event_count: events.length };
 }
 
 function tGetDiscourses({ module, sect }) {
@@ -1204,6 +1268,7 @@ function tGetQuiz({ dynasty }) {
 // ---------- 全文检索（进程内预构建文档表 + 单字/双字倒排索引，只建一次） ----------
 const TYPE_BOOST = {
   '地图事件': 6, '皇帝': 5, '悬案': 4, '典籍': 4, '公案': 4, '热点': 4,
+  '百家纪事': 5, '生平事件': 5,
   '神兽': 3, '器物': 3, '问典': 3, '路线': 2,
 };
 
@@ -1364,10 +1429,11 @@ function buildSearchDocs() {
           add(m, '热点', p.name, JSON.stringify(p), p.note || p.event || p.text || p.story || '', pu);
         }
       });
-      // 百家纪事：思想传播与学派形成的关键事件（正文 + 原文译文 + 意义与影响），
+      // 生平事件：思想源流称「百家纪事」，诗词鉴赏称「生平事件」（正文+原文译文+意义），
       // 深链把地图切到该事件并弹出卡片。
       for (const e of b.events || []) {
-        add(m, '百家纪事', e.name, JSON.stringify(e), e.summary,
+        const evtType = m === 'shiwen' ? '生平事件' : '百家纪事';
+        add(m, evtType, e.name, JSON.stringify(e), e.summary,
           gxDeepLink(m, s, `tab=map&evt=${enc(e.id)}`).url);
       }
       for (const dd of b.discourses || []) {
@@ -1508,24 +1574,43 @@ async function tSessionStart() {
           ? '本地服务原本未运行，已由本工具在后台自动启动，探活通过。'
           : '本地服务已在运行，探活通过。'),
       home_url: LOCAL_BASE,
+      suggested_questions: SUGGESTED_QUESTIONS,
       next_action: status.auto_cloned
         ? [
           '站点已就绪。首次使用已自动完成拉取，无需你执行任何命令。',
-          '请把下面这个地址作为可点击链接回复用户（用户点击即可在右侧浏览器打开）：',
+          '请把下面这个地址作为可点击链接回复用户（链接在哪个浏览器打开都一样）：',
           LOCAL_BASE,
           '然后说一句「站点已就绪，可以开始提问」，静默等待提问。',
         ].join('\n')
         : [
-          '站点已就绪。请把下面这个地址作为可点击链接回复用户（用户点击即可在右侧浏览器打开）：',
+          '站点已就绪。请把下面这个地址作为可点击链接回复用户（链接在哪个浏览器打开都一样）：',
           LOCAL_BASE,
           '然后说一句「站点已就绪，可以开始提问」，静默等待提问。不要执行任何命令。',
         ].join('\n'),
       rules: [
         '本工具已完成探活与启动，你不需要执行任何命令行。',
         '不要搜索硬盘、查找项目目录、查 hosts / DNS、查端口占用、查进程——路径与网址都在本返回里。',
-        '禁止运行 服务管理.bat：它以前台窗口方式启动服务，并会另开系统浏览器，破坏右侧浏览器内的统一体验。',
+        '禁止运行 服务管理.bat：它以前台窗口方式启动服务，并会另开系统浏览器，破坏统一入口体验。',
         '你只需把 home_url 作为可点击链接发给用户，不要自己尝试打开浏览器。',
       ],
+    };
+  }
+
+  // 站点正在后台拉取：立即返回，并明确告诉模型「现在就能开始问答」
+  if (status.state === 'cloning') {
+    return {
+      ...base,
+      ready: false,
+      status: 'cloning',
+      status_note: status.detail,
+      search_available: true,
+      home_url: LOCAL_BASE,
+      suggested_questions: SUGGESTED_QUESTIONS,
+      next_action: [
+        '如实告诉用户：正在准备完整站点（约 150MB，一次性，1–2 分钟），不影响现在开始提问。',
+        '不要等它，也不要自己执行任何命令：此刻 search / get_emperor / get_book / get_route 已经可用（插件自带数据副本），可以直接回答用户的问题。',
+        '用户下一次提问前后再调一次 session_start 复检；ready=true 之后再把 home_url 发给用户。',
+      ].join('\n'),
     };
   }
 
@@ -1651,13 +1736,13 @@ const TOOLS = [
       name: { type: 'string', description: '如“九尾狐”“商代后母戊鼎”' },
     } },
     run: (a) => tGetArtifact(a) },
-  { name: 'get_route', description: '获取路线舆图：神话板块返回五条古舆图路线（山海经22/西游17/封神14/聊斋8/太平8，含每个热点的坐标、原著原文+译文、配图与深链）；诗词/思想返回真实地理路线（每个途经点带「该地当年发生了什么」，思想板块另有 38 件百家纪事）；帝王返回各朝舆图事件。传 route 只取单条路线；传 event 取单个事件详情——帝王的地图事件返回完整正文与逐句 guide（歌词跟随），思想板块的百家纪事返回正文、原文译文与意义与影响。',
+  { name: 'get_route', description: '获取路线舆图：神话板块返回五条古舆图路线（山海经22/西游17/封神14/聊斋8/太平8，含每个热点的坐标、原著原文+译文、配图与深链）；诗词/思想返回真实地理路线（每个途经点带「该地当年发生了什么」，思想板块另有 38 件百家纪事，诗词板块另有 44 件诗人生平事件）；帝王返回各朝舆图事件。传 route 只取单条路线；传 event 取单个事件详情——帝王的地图事件返回完整正文与逐句 guide（歌词跟随），思想百家纪事与诗词生平事件返回正文、原文译文与意义与影响。',
     inputSchema: { type: 'object', properties: {
       module: { type: 'string', enum: ['emperors', 'thought', 'shiwen', 'myth'] },
       sect: { type: 'string', enum: Object.keys(THOUGHT_SECTS) },
       route: { description: '路线序号（0 起）或名称；不传则只返回路线清单',
         oneOf: [{ type: 'number' }, { type: 'string' }] },
-      event: { type: 'string', description: '单个事件的 id 或名称。帝王板块传地图事件（如 ming-event-jingnan / 靖难之役），返回详情与逐句 guide；思想板块传百家纪事（如 lixue-ehu / 鹅湖之会），返回正文、原文译文、意义与影响。' },
+      event: { type: 'string', description: '单个事件的 id 或名称。帝王板块传地图事件（如 ming-event-jingnan / 靖难之役），返回详情与逐句 guide；思想板块传百家纪事（如 lixue-ehu / 鹅湖之会），诗词板块传生平事件（如 shiwen-dufu-changan / 陷长安作《春望》），返回正文、原文译文、意义与影响。' },
     } },
     run: (a) => tGetRoute(a) },
   { name: 'get_discourses', description: '获取“问典”侦探式思辨题（思想/诗词/格物/神话），含议题、线索、开放观点与创作题。',
@@ -1677,7 +1762,7 @@ const TOOLS = [
 const OPENING_PROMPT = [
   '你已连接「中华历史图谱」连接器，请严格按以下顺序执行，不要跳过：',
   '1. 立即调用 session_start 工具。它会自己探活、必要时自己在后台拉起本地站点，并把结论返回给你。你不需要、也不允许为此执行任何命令行。',
-  '2. 若返回 ready=true：把返回的 home_url 作为可点击链接发给用户（用户点击即可在右侧浏览器打开），并说一句「站点已就绪，可以开始提问」，然后静默等待。',
+  '2. 若返回 ready=true：把返回的 home_url 作为可点击链接发给用户（链接在哪个浏览器打开都一样），说一句「站点已就绪，可以开始提问」，并从 suggested_questions 里挑 2–3 条列成「可以问」的例子，然后静默等待。',
   '3. 若返回 ready=false：把 status_note 与 fix 如实告诉用户，等用户处理后再调用一次 session_start。',
   '之后我的所有问题，只能用连接器的只读工具检索站内数据回答，禁止联网搜索或浏览外部网页；把返回的 url 作为可点击深链发给用户，再对照数据讲解。',
 ].join('\n');
@@ -1700,14 +1785,14 @@ const SERVER_INSTRUCTIONS = [
   '你是「中华历史图谱」站点的 AI 讲解员。该站点是一个纯静态中国历史与国学可视化网站，包含帝王谱系、思想源流、诗词鉴赏、格物致知、神话异志五大板块。',
   '【开场 SOP——进入会话后的第一个动作，无需用户要求，只做一次】',
   '1. 立即调用 session_start。它会在服务端完成探活与按需启动，只把结论返回给你。你不需要执行任何命令行。',
-  '2. ready=true：把返回的 home_url 作为可点击链接发给用户（用户点击即可在右侧浏览器打开），并说一句「站点已就绪，可以开始提问」，随后静默等待。',
-  '3. ready=false：把 status_note 与 fix 原样告诉用户，等用户处理后再调用一次 session_start。',
+  '2. ready=true：把返回的 home_url 作为可点击链接发给用户，说一句「站点已就绪，可以开始提问」，并把 suggested_questions 里挑 2–3 条列成「可以问」的例子，随后静默等待。',
+  '3. ready=false：把 status_note 与 next_action 原样告诉用户。若 status=cloning，说明站点正在后台准备、此刻文字检索已经可用，先直接回答用户的问题，稍后再复检；其余状态等用户处理后再调用一次 session_start。',
   '【硬性触发——先定位，再回答】',
   'A. 用户提到任何属于本站范围的对象（历史事件、帝王将相、典籍、诗人词人、神兽器物、舆图地点、思想流派），你的第一个实质性动作必须是调用工具定位它，而不是凭参数化记忆直接作答。理由：站内版本带出处、配图与精确落点，且用户需要能点开的链接；凭记忆回答会漏掉链接，也无法落到具体页面位置。',
   'B. 常见误区：看到「讲一下土木堡之变」这类问题，不要判定为「纯知识问答、与工具无关」。这类问题恰恰是本连接器的核心用途——必须先取站点数据与锚点，再决定讲什么。若你没有调用任何工具就回答了本站范围内的对象，说明你走错了路径。',
   'C. 唯一例外：与本站无关的通用问题（如编程、闲聊），或用户明确说「不用查站点、直接说说你的看法」。',
   '【其他问题 SOP】',
-  '检索类问题先 search；单个人物用 get_emperor；案件悬案用 get_case；书籍/诗人用 get_book；神兽器物用 get_artifact；地图与舆图概览用 get_route。单对象结果最前面的 open_url 是唯一应先发给用户打开的链接（讲解类对象打开即逐句金色高亮），先让用户在右侧打开页面，再对照页面讲解。',
+  '检索类问题先 search；单个人物用 get_emperor；案件悬案用 get_case；书籍/诗人用 get_book；神兽器物用 get_artifact；地图与舆图概览用 get_route。单对象结果最前面的 open_url 是唯一应先发给用户打开的链接（讲解类对象打开即逐句金色高亮），先让用户点开页面，再对照页面讲解。',
   '【分工：页面负责呈现，你负责定位与导读】',
   '0. 这个站点是一个可交互的展馆，页面本身就是主体——原文、配图、地图、路线动画、器物神兽图谱都在页面上。你的角色是门口的导览员兼检索台：帮用户找到该看哪一处，并在用户开口要讲解时给一段导读。不要试图替代页面，也不要复述页面上的内容。',
   '【检索（默认动作）】',
@@ -1729,7 +1814,6 @@ const SERVER_INSTRUCTIONS = [
   'B. 禁止联网搜索或浏览外部网页来检索、补充本站相关事实；禁止引用维基百科、百科、新闻网页。站内确实没有的具体条目，如实说明收录范围即可。',
   'C. 禁止自行编写 HTML、地图或任何替代站点页面的产物。',
   'D. 只打开工具返回的 127.0.0.1 地址，不要打开外部网站。图片字段 thumb 用于对话内展示，full 是原图链接；不要输出 base64。',
-  'E. 只打开工具返回的 127.0.0.1 本地地址。',
   '【其他】涉及演义小说（《三国演义》《西游记》《封神演义》《聊斋志异》等）保留数据中的出处标注，不与正史混淆；默认使用简体中文。',
 ].join('\n');
 
@@ -1737,11 +1821,19 @@ const SERVER_INSTRUCTIONS = [
 const RESULT_REMINDER = [
   '【下一步操作指引】',
   '1. 以上 JSON 是「中华历史图谱」站内人工整理的权威内容，是本题的事实来源。禁止联网搜索、浏览网页、搜索本地文件或执行命令行排查。',
-  '2. 若结果最前面带 open_url（单对象）：它是唯一应先发给用户的链接，先让用户在右侧打开页面、定位到对应条目，再对照页面讲解；讲解类对象的 open_url 打开即逐句金色高亮。列表类结果则把其中 url 作为可点击深链。页面负责呈现，你负责指路。',
+  '2. 若结果最前面带 open_url（单对象）：它是唯一应先发给用户的链接，先让用户点开页面、定位到对应条目，再对照页面讲解；讲解类对象的 open_url 打开即逐句金色高亮。列表类结果则把其中 url 作为可点击深链。页面负责呈现，你负责指路。',
   '3. 不许编造具体史实（人名、年份、地名、事件细节）——这些必须来自返回字段。但解释、因果分析、评价、类比是你的判断空间，不算越界。',
   '4. 若结果含 guide 字段：先看 guide.kind 与 guide.lens——lens 告诉你这类对象该想什么（事件想动机与转折，典籍想思想与时代意义，等等）。链接挂在真正值得去页面看一眼的地方，由你判断几处，但不要重复同一处。用户要「讲一下」时再展开导读；只想知道在哪时，给链接加一句说明即可。讲地图事件先用 get_route(module=emperors,event=...) 取完整 guide。',
   '5. 单对象结果（皇帝/典籍/器物/事件）会附带图片内容块——直接把它显示在讲解中，不需要你额外取图或拼接 URL。列表类结果不附图（量太大），只在需要时用 get_emperor/get_book/get_artifact 取单条详情获得配图。',
 ].join('\n');
+
+// 首次引导：新用户装完最常见的问题是「所以我现在能问什么」。
+// 给三条具体、能立刻验证效果的例子，比空泛的「可以随便问」有效。
+const SUGGESTED_QUESTIONS = [
+  '讲一下靖难之役（有 5 站路线和逐站解说）',
+  '百家纪事里「鹅湖之会」争的是什么',
+  '孔子周游列国走过哪几站',
+];
 
 // 模型跳过开场流程时的附加提醒
 const NOT_STARTED_REMINDER = '【提醒：你还没有执行开场流程】请先调用 session_start（它会自己探活并在需要时启动本地服务，你不需要执行任何命令），把返回的 home_url 作为可点击链接发给用户，再处理本问题。';
@@ -1808,15 +1900,15 @@ async function handle(msg) {
       let data = await tool.run((params && params.arguments) || {});
       if (name === 'session_start') sessionStarted = true;
       // 单对象结果（皇帝/事件/典籍/器物）：把「唯一应先打开的链接」置顶。
-      // 讲解类对象用 autoplay 链接（打开即逐句高亮），让模型的第一个动作就是让用户在右侧打开页面，
+      // 讲解类对象用 autoplay 链接（打开即逐句高亮），让模型的第一个动作就是让用户点开页面，
       // 而不是凭记忆作答或去翻文件；列表类结果（items/数组）不置顶。
       if (data && typeof data === 'object' && !Array.isArray(data) && !data.open_url) {
         const first = (data.guide && data.guide.autoplay_url) || data.url || null;
         if (first) data = { open_url: first, ...data };
       }
       const blocks = [];
-      if (!sessionStarted) blocks.push({ type: 'text', text: NOT_STARTED_REMINDER });
-      blocks.push({ type: 'text', text: RESULT_REMINDER });
+      // 未开场时只发开场提醒：两条一起发等于同一件事说两遍，白占 token
+      blocks.push({ type: 'text', text: sessionStarted ? RESULT_REMINDER : NOT_STARTED_REMINDER });
       blocks.push({ type: 'text', text: JSON.stringify(data, null, 2) });
       // 附图：单对象结果若带可读图片（皇帝/诗人画像、器物/神兽图、事件工笔图），
       // 额外追加 image 内容块，客户端就能把讲解渲染成图文并茂，而不是只给一个 URL。
@@ -1826,7 +1918,7 @@ async function handle(msg) {
       }
       return rpcResult(id, { content: blocks });
     } catch (e) {
-      return rpcResult(id, -32000, String(e && e.message || e));
+      return rpcError(id, -32000, String(e && e.message || e));
     }
   }
   if (id === undefined) {
@@ -2030,6 +2122,20 @@ async function selftest() {
   const orData = JSON.parse(oneRt.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(/王阳明/.test(orData.name || '') && (orData.points || []).length === 5 && !!orData.url,
     'get_route(thought, route=<名称>) 只返回命中的那一条路线');
+  // ---- 诗词鉴赏的「生平事件」 ----
+  const swEvtSearch = await call({ jsonrpc: '2.0', id: 24, method: 'tools/call', params: { name: 'search', arguments: { q: '春望', limit: 8 } } });
+  const swsData = JSON.parse(swEvtSearch.result.content.filter((b) => b.type === 'text').at(-1).text);
+  assert(swsData.items.some((x) => x.type === '生平事件'), 'search 命中诗词「生平事件」条目');
+  const swEvt = await call({ jsonrpc: '2.0', id: 25, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'shiwen', event: 'shiwen-dufu-changan' } } });
+  const swData = JSON.parse(swEvt.result.content.filter((b) => b.type === 'text').at(-1).text);
+  assert(swData.name === '陷长安作《春望》' && swData.place && swData.place.name === '长安'
+    && (swData.quotes || []).length >= 1 && (swData.significance || []).length >= 1
+    && /evt=shiwen-dufu-changan/.test(swData.url || '') && !!swData.image,
+    'get_route(shiwen, event) 返回生平事件正文/原文译文/意义/配图与 evt 深链');
+  const swList = await call({ jsonrpc: '2.0', id: 26, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'shiwen' } } });
+  const swlData = JSON.parse(swList.result.content.filter((b) => b.type === 'text').at(-1).text);
+  assert(swlData.event_count === 44 && (swlData.events || []).length === 44,
+    'get_route(shiwen) 清单含 44 件生平事件');
   // 主壳模块 id 与 MCP 模块名不是同一套：深链必须用主壳的 id，否则 iframe 不装载
   const modList = JSON.parse((await call({ jsonrpc: '2.0', id: 23, method: 'tools/call', params: { name: 'list_modules', arguments: {} } })).result.content.filter((b) => b.type === 'text').at(-1).text);
   const allLinks = modList.modules.flatMap((m) => [m.url, m.online_url]).filter(Boolean);

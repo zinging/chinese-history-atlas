@@ -1,6 +1,6 @@
 {
   "name": "chinese-history-atlas",
-  "version": "1.3.0",
+  "version": "1.6.0",
   "private": true,
   "description": "中华历史图谱：纯静态国学可视化站点 + 零依赖本地 MCP Server（AI 讲解员）",
   "type": "module",
@@ -15,7 +15,8 @@
     "mcp:install:dsh": "node web/tools/install-dsh.mjs",
     "mcp:check:dsh": "node web/tools/install-dsh.mjs --check",
     "mcp:uninstall:dsh": "node web/tools/install-dsh.mjs --uninstall",
-    "pack:plugin": "node web/tools/pack-plugin.mjs"
+    "pack:plugin": "node web/tools/pack-plugin.mjs",
+    "pack:plugin:check": "node web/tools/pack-plugin.mjs --check"
   },
   "engines": {
     "node": ">=18"

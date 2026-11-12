@@ -50,7 +50,7 @@ const SECT_CACHE = {};
  * 数据版本号：数据文件改动时统一递增，避免浏览器缓存旧分片。
  * 清单 index.json 与 books/*.json、artifacts/discourses/cases 分片共用同一个版本号。
  */
-const DATA_VER = "v129";
+const DATA_VER = "v130";
 
 // Leaflet 按需加载：默认页是典籍长廊，不需要 144KB 地图库；
 // 只有用户第一次切到「智慧舆图/诗路舆图」标签时才注入 leaflet.css + leaflet.js。
@@ -1111,6 +1111,7 @@ let activeSectEventId = null;
 /** 开关文案：单派看本派纪事，全部看各派合起来的百家纪事。
  *  用 currentSect 而不是 initialSect——切换流派后 initialSect 仍是首屏那个。 */
 function sectEventLabel() {
+  if (currentSect === "shiwen") return "诗人生平";
   return currentSect === "all" ? "百家纪事" : "本派纪事";
 }
 
@@ -1124,9 +1125,9 @@ function sectEventYear(e) {
     const n = Number(m[1]);
     return d.startsWith("前") ? -n * 100 : (n - 1) * 100;
   }
-  m = d.match(/^前(\d+)$/);
+  m = d.match(/^约?前(\d+)$/);
   if (m) return -Number(m[1]);
-  m = d.match(/^(\d+)$/);
+  m = d.match(/^约?(\d+)$/);
   if (m) return Number(m[1]);
   return 0;
 }
@@ -1242,7 +1243,9 @@ function showSectEventPopup(ev) {
   const place = ev.place || {};
   const where = place.name ? `${esc(place.name)}${place.modern ? `（今${esc(place.modern)}）` : ""}` : "";
   const people = (ev.people || []).map(esc).join("、");
-  const img = `../../data/portraits/sect-events/${encodeURIComponent(ev.id)}.jpg`;
+  // 配图目录：思想纪事走 sect-events，诗词生平事件走独立的 poet-events
+  const imgDir = currentSect === "shiwen" ? "poet-events" : "sect-events";
+  const img = `../../data/portraits/${imgDir}/${encodeURIComponent(ev.id)}.jpg`;
   const quotes = (ev.quotes || [])
     .map((q) => `<blockquote class="evt-quote">
         <p class="evt-quote-original">${esc(q.original)}</p>

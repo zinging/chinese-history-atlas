@@ -1,6 +1,6 @@
 {
   "name": "@chenye123/chinese-history-atlas",
-  "version": "1.1.0",
+  "version": "1.6.0",
   "type": "module",
   "description": "Chinese History Atlas · 中华历史图谱 AI 讲解员（MCP 连接器）",
   "icon": "./icon.svg",
