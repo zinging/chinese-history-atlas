@@ -75,17 +75,17 @@
 | 神话异志 | 9 部经典 · 113 只神兽 · 5 条古舆图路线 |
 | 共用 | 29 处古今地名 · 20 条史料出处 |
 
-图片共 981 张（含缩略图）：
+图片共 981 个文件：**原作图 740 张**（器物与神兽 172 + 舆图事件 141 + 古舆图 74 + 关系图人物 163 + 根目录 152 + 百家纪事 38）**+ 缩略图 241 张**（器物 172 + 舆图热点 69）。另有 38 张百家纪事原始大图留在 gitignore 的 `.sect-raw/`，不计入：
 
 | 目录 | 张数 | 体积 | 内容 |
 |---|---|---|---|
 | `data/portraits/artifacts/` | 172 | 75.6MB | 格物 59 件器物 + 神话 113 只神兽，共用同一目录 |
 | `data/portraits/artifacts-thumb/` | 172 | 5.5MB | 上者的缩略图 |
 | `data/portraits/event-gongbi-thumb/` | 141 | 10.1MB | 舆图事件详情卡配图（文件名即 map-events 的 eventId，680px 单份，无原图） |
-| `data/portraits/myth-map/` | 74 | 34.4MB | 古舆图底图 + 热点配图 |
+| `data/portraits/myth-map/` | 74 | 34.4MB | 古舆图底图（5 张）+ 热点配图（69 张） |
 | `data/portraits/myth-map-thumb/` | 69 | 7.4MB | 上者的缩略图 |
 | `data/portraits/people/` | 163 | 2.6MB | 关系图人物 |
-| `data/portraits/`（根） | 152 | 2.1MB | 皇帝与典籍作者 |
+| `data/portraits/`（根） | 152 | 2.1MB | 帝王、诗人、思想家与典籍相关画像 |
 | `data/portraits/sect-events/` | 38 | 3.8MB | 思想源流「百家纪事」事件卡配图（文件名即事件 id，800×600 单份） |
 
 缩略图由 `web/tools/make-artifact-thumbs.mjs`、`make-mythmap-thumbs.mjs`、`make-event-thumbs.mjs`、`make-sect-thumbs.mjs` 生成，格物图鉴与神话舆图卡片用缩略图、点开取原图；事件配图例外，只有一份、不做点击放大。680 这个数的依据是实测：事件卡最宽 380px、图渲染宽 275–327px，680 宽在 2x 高分屏下占 0.81–0.96 的可用量，再大就是用不上的像素（量法见 `.sessions/gh-measure-fig.mjs`）。事件配图按约定路径 `event-gongbi-thumb/<eventId>.jpg` 直接取，不依赖数据字段；缺图时前端整块移除，不留破图。

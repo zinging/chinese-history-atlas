@@ -1,6 +1,6 @@
 # MCP 客户端接入说明（本地 STDIO）
 
-本站内置一个零依赖的本地 MCP Server：`web/tools/history-mcp-server.mjs`（当前 v1.3.0，15 个只读工具）。
+本站内置一个零依赖的本地 MCP Server：`web/tools/history-mcp-server.mjs`（当前 v1.6.0，15 个只读工具）。
 豆包、DSH（DeepSeek Harness）、Cursor、Claude Desktop 等支持 STDIO MCP 的客户端都能接入。
 
 接入后，AI 助手可以直接检索站点的全部结构化数据（77 帝、76 案、典籍、器物、神兽、舆图热点、诗路、选择题等），
@@ -62,14 +62,16 @@ AI 进入会话后自动执行一次：
 
 模型**不执行任何命令行**。`session_start` 的返回里不含任何探活或启动命令——这是刻意的设计，把确定性步骤收进工具内部，避免模型自由发挥。
 
-三种状态：
+`session_start` 返回 `ready` + `status` 两个字段：**判断只看 `ready`**，`status` 只是原因标签。
 
-| status | 含义 | 模型该做什么 |
-|---|---|---|
-| `running` | 服务已在运行，且响应头确认是本站 | 给链接，待命 |
-| `started_by_mcp` | 原本未运行，本工具已后台拉起并通过探活 | 给链接，待命 |
-| `port_taken` | 端口被别的程序占用（响应头没有本站标记 `X-DSH-Atlas`） | 转述占用情况与换端口办法 |
-| `start_failed` | 拉起后仍不通 | 转述 `fix` 里那一条命令，让用户自己执行 |
+| status | ready | 含义 | 模型该做什么 |
+|---|---|---|---|
+| `running` | true | 服务已在运行，且响应头确认是本站 | 给链接，待命 |
+| `started_by_mcp` | true | 原本未运行，本工具已后台拉起并通过探活 | 给链接，待命 |
+| `cloning` | false | 站点未安装，已在**后台**开始 `git clone`（立即返回，不阻塞后续请求） | 说明正在准备，**此刻文字检索已可用**，可直接回答问题；稍后再调一次复检 |
+| `site_missing` | false | 上一次自动拉取失败（常见：没装 git / 网络不通）；`search_available=true` | 转述原因与手动命令；文字问答照常可用 |
+| `port_taken` | false | 端口被别的程序占用（响应头没有本站标记 `X-DSH-Atlas`） | 转述占用情况与换端口办法 |
+| `start_failed` | false | 拉起后仍不通 | 转述 `fix` 里那一条命令，让用户自己执行 |
 
 > 关于「每个人项目路径不同」：路径由 MCP 进程按自身文件位置自动解析（`project_root`），跨机器、跨工作目录均不依赖任何硬编码。
 
@@ -81,7 +83,9 @@ DSH 有两种接入方式，效果相同——都让 15 个工具以 `mcp__atlas
 
 包名 `@chenye123/chinese-history-atlas`。装好后重启 DSH，「插件」页会出现「中华历史图谱 / Chinese History Atlas」，保持开启即可。
 
-插件包自带检索数据（8.8MB JSON）与常用配图（21.5MB），装好即可问答。首次提问时 `session_start` 会自动从 Gitee 拉取完整站点到主目录（约 150MB，约 2 分钟），随后自己拉起本地网页服务——用户不需要执行任何命令。
+插件包自带检索数据（8.8MB JSON）与常用配图（21.5MB），装好即可问答。首次提问时 `session_start` 会在**后台**开始从 Gitee 拉取完整站点到主目录（约 150MB），**立即返回**并明确告知「此刻文字检索已可用」——安装过程不会卡住对话；拉取完成后自动拉起本地网页服务。用户不需要执行任何命令。
+
+> **前提与风险**：本插件走 DSH 的插件挂载层（`cordis.patch.yml`），跨版本不保证。`engines.dsh` 不会被安装流程校验，超窗的典型症状是「插件在、工具不在」而不是报错。实测环境：DSH Desktop Beta 2.0.22-beta.1 · 内核 0.2.2-rc.x。自检两条：新会话能看到 15 个 `mcp__atlas__*` 工具；启动日志没有 `ERR_PACKAGE_PATH_NOT_EXPORTED`。自动拉取还需要 `git` 在 PATH 中（缺失时降到「只有文字检索与包内缩略图」模式）。
 
 ### 方式 B：本地仓库安装（开发用）
 
@@ -110,10 +114,10 @@ node web/tools/install-dsh.mjs --port 8080  # 换端口（写入 bundle patch �
 
 当前 DSH 的右侧浏览器（`dsh-client-ui-sidebar-browser`）**不向模型注册任何工具**——它是用户侧呈现状态。所以模型无法自己把页面推到右侧窗口，本连接器的做法是：
 
-- 模型给出可点击的深链（`http://127.0.0.1:5173/web/index.html?page=...`），用户点一下即在右侧打开并定位；
+- 模型给出可点击的深链（`http://127.0.0.1:5173/web/index.html?page=...`），用户点一下即在右侧打开并定位；在系统默认浏览器打开效果相同，所以换到 Cursor / Claude Desktop 等没有分栏的客户端也成立；
 - 页面内的深链路由（`web/app.js` 与 `web/guoxue/app.js` 的 `applyDeepLink()`）负责切朝代、展开皇帝卡、弹出案件、定位地图事件。
 
-已验证的深链行为：皇帝深链会切到对应朝代并展开该帝详情；地图事件深链会定位地图、弹出事件卡并展开对应路线。 
+已验证的深链行为：皇帝深链会切到对应朝代并展开该帝详情；地图事件深链会定位地图、弹出事件卡并展开对应路线；帝王路线深链（`?page=map&dynasty=<朝>&route=<id>`）会画出整条路线并展开路线详情面板，被折叠进「展示更多」的路线也会自动展开。
 
 ## 四、工具清单（15 个，只读）
 
@@ -270,7 +274,7 @@ AI ：【结局与影响】四年战争如何改变明初政治格局；可引�
 | 事件深链 | `?page=map&dynasty=ming&event=...` 自动飞行、弹窗、**动态绘制关联路线**（`EVENT_ROUTE_MAP` + `showEventRoute`）、展开路线详情 | ✅ |
 | 悬案 / 典籍 / 神兽 / 舆图热点深链 | 各页面 `applyDeepLink()` 均已支持 | ✅ |
 | 路线数据 | `data/routes/routes.json`：10 条明朝路线，每站含 `name/modern/lat/lng/note` | ✅ |
-| MCP 取路线 | `get_route(module=emperors, route=<id/名称>)` 返回有序途经点 | ✅（v1.3.0） |
+| MCP 取路线 | `get_route(module=emperors, route=<id/名称>)` 返回有序途经点 | ✅（v1.6.0） |
 | 开场约束 | 握手 `instructions`、MCP prompts 模板、未开场工具拦截 | ✅ |
 
 ### 缺口（代码阶段需要补齐，本次仅设计）
@@ -279,9 +283,8 @@ AI ：【结局与影响】四年战争如何改变明初政治格局；可引�
    目前没有一个「不管什么客户端都能一把梭」的 bootstrap 脚本，也没有给普通 LLM 看的安装行动指南。
 2. **豆包桌面客户端连接器只能 GUI 注册**：`install-mcp.ps1` 只能生成 JSON 到剪贴板，
    最后一步「新建自定义连接器 → 选 STDIO → 粘贴 → 保存」必须人工在图形界面完成（LLM 可用 computer-use 代操作，但非默认）。
-3. **`route=` 深链前端不识别**：`get_route` 单条路线返回的 `?page=map&dynasty=ming&route=<id>` 目前会被前端忽略
-   （语音导览回退后 `applyDeepLink` 不再处理 route 参数），落到裸地图页。这是回退后遗留的断链，需补回**无 TTS 的静态版**：
-   识别 `route` 后自动展开路线详情面板（`showRouteDetail`）即可，不恢复 autoplay/muted。
+3. ~~**`route=` 深链前端不识别**~~ **已修复**：`web/app.js` 的 `renderMapControls()` 现在会读取 `route` 参数，直接触发对应路线胶囊的 `click()`（复用「复位视野 → 画整条路线 → 展开详情」的完整路径，不另写一份逻辑）；目标被折叠进「展示更多」时会先自动展开。同时 `switchPage('map')` 在带 `route` 时跳过 `showEventsSummary()`——事件汇总与路线详情共用 `#route-detail` 容器，否则会把刚渲染的路线详情覆盖掉。实测 `jingnan-south` / `zhenghe-west` 均正常展开。
+   仍**不做** autoplay / muted / TTS；逐站聚焦（`stop=N`）见下一条。
 4. **逐站聚焦能力（可选增强）**：阶段一整条路线会一次性画出，AI 逐站讲解时地图视角不跟随。
    可补一个**纯静态**的 `route=<id>&stop=N` 深链：地图居中到第 N 站、高亮该站标记，**不做 TTS、不做自动播放**。
 5. **讲解剧本未固化**：SERVER_INSTRUCTIONS 目前只规定「检索 → 给深链 → 讲解」，没有「人物 → 背景 → 事件 → 逐站 → 影响」的讲解顺序与分幕节奏。

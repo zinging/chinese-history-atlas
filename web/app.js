@@ -449,8 +449,10 @@ function switchPage(name) {
     ensureLeaflet().then(() => {
       loadBoundaries().then(() => {
         renderMap();
-        // 首次进入地图页：默认点开「该朝事件」（展开事件古地名汇总面板）
-        showEventsSummary();
+        // 首次进入地图页：默认点开「该朝事件」（展开事件古地名汇总面板）。
+        // 例外：带 route 深链时目标就是那条路线——事件汇总与路线详情共用
+        // #route-detail 这一个容器，调 showEventsSummary() 会把刚渲染好的路线详情整个覆盖掉。
+        if (!new URLSearchParams(location.search).get('route')) showEventsSummary();
         if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 60);
       });
     }).catch((e) => console.error(e));
@@ -1591,6 +1593,9 @@ function ensureLeaflet() {
 
 // Leaflet 实例缓存：切换朝代时复用（重设视图+图层），避免重建地图/瓦片
 let leafletMap = null;
+// 路线深链只应用一次：renderMap 会因切朝代/切年号重渲染，
+// 每次重渲染都触发一次胶囊 click 会把用户已调整好的视野反复复位。
+let appliedDeepRoute = '';
 let leafletLayers = {}; // { shape, wall, songBorder, rivers, mountains, provinces, neighbors, places, events, routes, zhenghe }
 
 /** 让传入的 [lng,lat] 点集对齐（若坐标是 [lat,lng] 顺序，则交换） */
@@ -2129,6 +2134,23 @@ function renderMapControls(data) {
         : `展示更多（还有 ${routeBtns.length - ROUTE_LIMIT} 个）▾`;
     });
     legend.appendChild(more);
+  }
+  // 路线深链：?page=map&dynasty=<朝>&route=<id>（MCP get_route 返回的帝王路线链接）。
+  // 直接触发对应胶囊的 click，复用「复位视野 → 画整条路线 → 展开详情面板」这一整套真实路径，
+  // 不在这里另写一份绘制/高亮逻辑——两份逻辑一旦分叉，深链与手动点击就会不一致。
+  // 只在 location.search 变化时应用一次，避免重渲染时反复复位视野。
+  const deepRouteId = new URLSearchParams(location.search).get('route');
+  if (deepRouteId && appliedDeepRoute !== location.search) {
+    appliedDeepRoute = location.search;
+    const targetBtn = routeBtns.find((b) => b.dataset.layer === deepRouteId);
+    if (targetBtn) {
+      // 目标可能被折叠进「展示更多」里（默认只露前 8 条）
+      if (targetBtn.classList.contains('hidden')) {
+        const moreBtn = legend.querySelector('.route-more-btn');
+        if (moreBtn) moreBtn.click();
+      }
+      targetBtn.click();
+    }
   }
   // 事件按钮（默认激活）：点击后在地图下方汇总事件涉及的古地名。
   // 文案跟随年号切换，与汇总面板标题保持一致（点年号后只汇总该年号的事件）。

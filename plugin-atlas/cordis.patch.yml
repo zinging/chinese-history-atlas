@@ -1,8 +1,16 @@
 # 中华历史图谱 · DSH 连接器（MCP bundle）
 #
-# 目标：往 preset-standard 的 delegation group 追加一条 MCP 连接器，
-# 让「标准模式」里出现 mcp__atlas__* 工具，同时不重述整个标准预设
+# 目标：在 profile 的插件层顶层插入一条 MCP 连接器，让 mcp__atlas__* 工具
+# 在任何预设下都出现，同时不重述任何预设内容
 # （重述会因官方升级而落后；漏一个插件就等于删掉那条工具）。
+#
+# 为什么用顶层 insert，而不是「往 delegation 组里 insert」：
+#   1) delegation 属于 standard 预设的内容。用户若激活 team-eng / lean-eng
+#      等其它预设，该组未必存在 → insert 静默失效（工具不出现、也不报错）。
+#      顶层 insert 落在 profile 的通用插件层，与激活哪个预设无关。
+#   2) 与 delegation 同组意味着本插件加载失败会连坐整个组
+#      （曾实测 ERR_PACKAGE_PATH_NOT_EXPORTED 导致整组挂载失败并触发安全模式）。
+#      独立插入可把失败隔离在本插件，不影响 subagent_implement / subagent_review。
 #
 # 路径不写死任何绝对值，全部在加载时算出：
 #   ctx.baseUrl = 「加载本 patch 的文件」的 URL，即 <pkg>/cordis.patch.yml。
@@ -14,8 +22,7 @@
 # 拿不到 require / node:path / fileURLToPath，只能用 ctx 属性与运行时全局，
 # 因此下面用 URL 构造 + pathname 解码做纯字符串运算
 # （Windows 的 pathname 会带前导 /，正则把它去掉以还原 C:/... ）。
-- id: delegation
-  insert:
+- insert:
     - id: chinese-history-atlas
       name: '@deepseek-ai/dsh-mcp-client'
       config:
