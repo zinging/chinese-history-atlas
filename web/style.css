@@ -1472,3 +1472,231 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   .mega-support .support-btn { height: 24px; font-size: 11.5px; }
   .mega-support + .mega-support { margin-top: 1px; }
 }
+
+/* ============================================================
+   移动端：≤ 760px（手机 + 窄平板竖屏）
+   设计约束：
+     - 桌面视口（≥ 1024）永不命中本断点，主站桌面样式零改动；
+     - 本块只做「覆盖」，不修改上方任何规则本身；
+     - 三条覆盖目标：拆掉左侧模块栏、右侧竖排胶囊、正文右沟槽 171px
+       —— 这三者是移动端「内容被挤成一坨」的全部来源（实测：
+       390 宽视口下正文列仅剩 ~99px，34 个文本节点里 18 个窄于 120px）。
+   断点选择：与国学四板块 web/guoxue/style.css 保持同值（两文件顶部注释
+   明确要求两处断点必须同步），760 覆盖 390–740 手机 + 竖屏 iPad mini 744。
+   ============================================================ */
+@media (max-width: 760px) {
+  /* 1) 侧栏抽屉化：默认推到视口外（-88%），点菜单按钮时 body.sidebar-open 滑入。
+        不改 .mega-sidebar 主定义，这里只覆盖宽度与位移——桌面回退零风险。 */
+  .mega-sidebar {
+    width: 88%; max-width: 340px;
+    transform: translateX(-100%);
+    transition: transform .28s ease, width .24s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,.18);
+  }
+  body.sidebar-open .mega-sidebar { transform: translateX(0); }
+  /* 侧栏内容本身允许纵向滚动：手机屏矮，四个底部入口 + 模块按钮放不下。 */
+  .mega-sidebar { overflow-y: auto; overflow-x: hidden; }
+
+  /* 2) 正文左让位归零：.mega-area 主定义的 margin-left: var(--sidebar-w) 不再生效。
+        顶部统一让出 58px 给 fixed 的汉堡按钮（inline 模块与 iframe 模块都适用），
+        iframe 高度相应减去这段，避免撑出视口。 */
+  .mega-area { margin-left: 0; min-height: 100vh; padding-top: 58px; }
+  body.sidebar-collapsed .mega-area { margin-left: 0; }
+  .guoxue-frame { height: calc(100vh - 58px); }
+
+  /* 3) 正文右沟槽解压：171px 是为桌面右竖排胶囊让的位，移动端右胶囊已改横排。 */
+  .module-inner {
+    padding-right: 16px;
+    padding-left: 16px;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* 4) 顶部模块条：把右竖排胶囊 .tabs 改成正文上方的横向条。
+        四个模块页签是主导航，必须一屏全见（实测滚动式时第 4 个「探案问史」
+        初始不可见，用户无从得知可滑）——这里用 flex:1 均分 module-inner 的可用宽：
+        390px 视口下每格 83px，放得下 4 个 14.5px 的字，无需滚动。
+        注意：不用负边距让 tabs 跨出 module-inner 的 padding——
+        那样行宽 = 视口 + 32，在 ≤360px 视口下会被右缘裁掉第 4 个页签（实测）。
+        现在 tabs 跟着 module-inner 走，行宽 = 视口 - 32，永远不会溢出。
+        320 视口下每格约 72px，仍能容下 4 字（14.5px × 4 = 58 + padding）。 */
+  .tabs {
+    position: static;          /* 撤掉 position:fixed top:50% */
+    transform: none;
+    width: 100%;               /* .topbar 是 flex-wrap 容器，不锁宽会被 4 个 tab 内容宽撑开（实测 320 视口下被撑到 360px） */
+    flex: 1 1 100%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 4px;
+    right: auto;
+    top: auto;
+    overflow: visible;
+    padding: 8px 16px 10px;
+    margin: 0 0 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .tabs .tab {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+    font-size: 13.5px;         /* 360 及以上：文字 54px + padding 8px ≤ 每格内宽 */
+    padding: 11px 2px 11px 8px;
+    letter-spacing: 0;
+    text-align: center;
+  }
+  /* 印章左竖线跟着缩：主定义 left:9px / height:26px，窄格内会让文字贴边 */
+  .tabs .tab::before { left: 3px; height: 22px; width: 2.5px; }
+  body.sidebar-collapsed .tabs { right: auto; }
+
+  /* 5) 顶部朝代切换条：8 个按钮等分时每格约 43px，而「隋 581-618」nowrap
+        必然压到相邻格上（实测两行文字互相重叠）。改为横向滚动，每格保留完整
+        朝代名 + 年号 + 帝数，整条可左右滑。 */
+  .dynasty-switch {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    justify-content: flex-start;
+  }
+  .dynasty-switch::-webkit-scrollbar { display: none; }
+  .dynasty-btn {
+    flex: 0 0 auto;
+    font-size: 13px;
+    padding: 7px 12px;
+    letter-spacing: 0;
+  }
+  .dynasty-btn[data-d="all"] { flex: 0 0 auto; }
+  .dynasty-btn .dyn-year { font-size: 11px; margin-left: 3px; }
+  .dynasty-btn .dyn-sub { font-size: 11px; height: 14px; line-height: 14px; }
+
+  /* 6) 侧栏弹层：主定义用 left:calc(侧栏宽+12px) 定位在侧栏右侧；
+        移动端侧栏抽屉化后该定位失效，改为铺满视口的底部卡片。 */
+  .support-pop,
+  #ai-sidebar-pop,
+  #modules-pop {
+    left: 8px; right: 8px;
+    width: auto;
+    bottom: 8px;
+    max-height: calc(100vh - 80px);
+    padding: 14px 16px 16px;
+  }
+  #ai-sidebar-pop { width: auto; bottom: 8px; max-height: calc(100vh - 80px); }
+  #modules-pop   { width: auto; bottom: 8px; max-height: calc(100vh - 80px); }
+  body.sidebar-collapsed .support-pop,
+  body.sidebar-collapsed #ai-sidebar-pop,
+  body.sidebar-collapsed #modules-pop { left: 8px; }
+
+  /* 7) 皇帝详情头：120px 头像 + 元数据 flex-nowrap 在 350px 正文内挤成竖条，
+        改上下排布（头像居中、元数据占满宽）。 */
+  .detail-head { flex-direction: column; gap: 14px; align-items: center; flex-wrap: nowrap; }
+  .detail-head .meta { flex: 1 1 100%; width: 100%; }
+  .detail-portrait { width: 96px; height: 96px; font-size: 38px; }
+  .detail-head .meta h3 { font-size: 22px; text-align: center; }
+  .detail-head .meta .intro { font-size: 15px; text-align: center; }
+
+  /* 8) 时间线卡片：主定义 flex:0 0 168px + 头像 84px，移动端缩一档，
+        保证一屏可见 2 张（滚动提示明显）。 */
+  .emp-card { flex: 0 0 148px; padding: 12px 10px; }
+  .emp-portrait { width: 72px; height: 72px; font-size: 30px; }
+  .emp-card .name { font-size: 16px; }
+  .emp-card .era { font-size: 13px; }
+  .emp-card .reign { font-size: 12px; }
+
+  /* 9) 十国甘特图：行标签 130px 占了正文 40%，移动端缩到 84px 并换行显示朝代名。 */
+  .gantt-label { width: 84px; font-size: 11.5px; padding-right: 6px; }
+  .gantt-label b { font-size: 12px; }
+  .gantt-axis { margin-left: 84px; }
+  .gantt-row { height: 38px; }
+  .gantt-king { font-size: 10px; }
+  .gantt-legend { gap: 10px; flex-wrap: wrap; font-size: 11px; }
+
+  /* 10) 地图页：Leaflet 容器降到 360px 留出下方事件胶囊可视空间；
+         事件汇总弹层改全宽（主定义 width:min(380px,46%) 在 350px 正文里只剩 161px）。 */
+  #map-leaf { height: 360px; }
+  .map-popup {
+    left: 6px; right: 6px; top: 6px;
+    width: auto;
+    max-height: calc(360px - 12px);
+    padding: 12px 14px;
+  }
+  .map-legend-float {
+    top: 6px; right: 6px;
+    padding: 5px 8px;
+    font-size: 11px;
+    max-width: calc(100% - 12px);
+  }
+  .legend-item { font-size: 11px; gap: 4px; }
+  .route-toggle { gap: 6px; }
+  .route-btn { padding: 6px 12px; font-size: 13px; }
+
+  /* 11) 关键人物 2×2 网格：760 以下强制单列（640 那条规则已经做了，这里再保险）。 */
+  .case-people { grid-template-columns: 1fr; }
+  .case-card { padding: 14px 14px; }
+  .case-section { padding: 10px 12px 12px; }
+
+  /* 12) AI 老师配置卡片：内边距略收，给输入框留空间。 */
+  .ai-config-row { gap: 8px; }
+  .ai-field { flex: 1 1 100%; }
+  .ai-field-model { flex: 1 1 100%; }
+  .detective-ask-card, .detective-ai-card { padding: 14px 14px; }
+  .ask-chip { padding: 6px 12px; font-size: 13px; }
+  .model-menu { font-size: 14px; }
+
+  /* 13) 页脚：主定义 word-break:break-word 已经处理换行；这里只微调字号。 */
+  .footer { font-size: 12px; line-height: 1.6; padding: 0 4px; }
+
+  /* 14) 侧栏展开时的遮罩：JS 在 body.sidebar-open 时插入 .sidebar-backdrop。 */
+  .sidebar-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.4);
+    z-index: 999;             /* 侧栏是 1000，遮罩在侧栏下、正文上 */
+    animation: backdrop-in .2s ease-out;
+  }
+  @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+
+  /* 15) 移动端菜单按钮：JS 在 body.is-mobile 时插入 .mobile-menu-btn。
+        固定吸顶在左上角，不透明米黄底 + 阴影，滚动时压在正文上仍有明确边界；
+        正文顶部让位已统一在 .mega-area 上处理（见第 2 条）。
+        抽屉打开时汉堡被侧栏（z-index:1000）盖住、点不到——
+        打开态直接隐藏它，关闭走遮罩点击或选模块（都会自动收抽屉）。 */
+  .mobile-menu-btn {
+    position: fixed; top: 10px; left: 10px; z-index: 900;
+    width: 44px; height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: #8a4b1f;
+    box-shadow: 0 2px 8px rgba(90,66,30,.2);
+    cursor: pointer;
+    font-size: 20px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-menu-btn:active { background: #f5e6c4; }
+  .mobile-menu-btn svg { width: 22px; height: 22px; display: block; }
+  body.sidebar-open .mobile-menu-btn { display: none; }
+
+  /* 16) 折叠侧栏按钮在移动端隐藏（用户改用菜单按钮开合）。 */
+  .mega-collapse-btn { display: none; }
+}
+
+/* 极窄视口（iPhone SE 一代 320、或 360 上 125% 缩放）：
+   四格均分后每格约 58px，13.5px 的四个字（54px）加 padding 仍溢出 8px。
+   这里再收一档字号与内边距，保证文字不贴边不出格。
+   仍不改成横向滚动——四个模块是主导航，藏起来比缩小更差。 */
+@media (max-width: 340px) {
+  .tabs .tab { font-size: 12.5px; padding: 11px 1px 11px 6px; }
+  .tabs .tab::before { left: 1px; height: 20px; }
+  .tabs-v .tab { font-size: 12px; padding: 11px 1px 11px 6px; }
+  .tabs-v .tab::before { left: 1px; height: 20px; }
+}
+
+/* 移动端专用：禁用自定义大箭头光标（触屏无意义，且占 ~2KB 资源）。 */
+@media (max-width: 760px) and (pointer: coarse) {
+  html, body, a, button, [role='button'], .tab, .timeline-arrow, .era-chip,
+  .place, .route-btn, .entry-chip, .case-card, .clickable, label, select,
+  .map-popup .close, .create-save, .ask-btn, .map-event, .map-route,
+  .portrait-card, .person-node { cursor: auto !important; }
+  input, textarea { cursor: text; }
+}

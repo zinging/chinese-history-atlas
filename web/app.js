@@ -3298,6 +3298,11 @@ async function askLLM(message, history = []) {
   pop.addEventListener('mouseenter', show);
   btn.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
   pop.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
+  // 触屏没有 hover：移动端补一条 click 切换（桌面端 click 不触发，不影响原行为）
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (pop.classList.contains('hidden')) show(); else hide();
+  });
   close.addEventListener('click', hide);
 })();
 
@@ -3541,6 +3546,89 @@ async function applyDeepLink() {
 })();
 
 /* ============================================================
+ * 移动端导航：≤760px 视口把侧栏改成抽屉。
+ * 桌面端（≥1024）永不触发——isMobile() 是纯宽度判断，与 UA 无关。
+ * 做四件事：
+ *   1) body.is-mobile 时在顶部插入汉堡按钮 .mobile-menu-btn；
+ *   2) 点按钮 → body.sidebar-open，CSS 把侧栏滑入并显示遮罩；
+ *   3) 选模块（activateModule）自动关闭抽屉；
+ *   4) 跨越断点（旋转/缩放窗口）时清理 mobile-only 状态。
+ * ============================================================ */
+(function initMobileNav() {
+  const MQ = '(max-width: 760px)';
+  const mql = (typeof window.matchMedia === 'function') ? window.matchMedia(MQ) : null;
+  // matchMedia 不可用的极端环境（冒烟测试的 mock DOM）：跳过移动端逻辑
+  if (!mql) return;
+
+  const isMobile = () => !!mql.matches;
+  const btn = document.createElement('button');
+  btn.className = 'mobile-menu-btn';
+  btn.id = 'mobile-menu-btn';
+  btn.setAttribute('aria-label', '打开导航');
+  btn.setAttribute('aria-expanded', 'false');
+  // 汉堡图标：与站点暖色系一致
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>';
+
+  let backdrop = null;
+  function ensureBackdrop() {
+    if (backdrop) return backdrop;
+    backdrop = document.createElement('div');
+    backdrop.className = 'sidebar-backdrop';
+    backdrop.addEventListener('click', closeSidebar);
+    return backdrop;
+  }
+  function openSidebar() {
+    document.body.classList.add('sidebar-open');
+    document.body.appendChild(ensureBackdrop());
+    btn.setAttribute('aria-expanded', 'true');
+    btn.setAttribute('aria-label', '关闭导航');
+  }
+  function closeSidebar() {
+    document.body.classList.remove('sidebar-open');
+    if (backdrop && backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', '打开导航');
+  }
+  function toggleSidebar() {
+    if (document.body.classList.contains('sidebar-open')) closeSidebar();
+    else openSidebar();
+  }
+
+  btn.addEventListener('click', toggleSidebar);
+
+  /** 进入移动端：装按钮；离开：清 mobile-only 状态 */
+  function applyMode() {
+    const mobile = isMobile();
+    document.body.classList.toggle('is-mobile', mobile);
+    if (mobile) {
+      // 桌面「卷收」态在移动端无意义且有害：抽屉会只剩 64px（--sidebar-w-collapsed），
+      // 连「AI 配置」弹层都被压成 45px。移动端一律按展开态呈现；
+      // localStorage 值原样保留，回到桌面时 initSidebarToggle 会重新应用它。
+      document.body.classList.remove('sidebar-collapsed');
+      if (!btn.parentNode) document.body.appendChild(btn);
+    } else {
+      if (btn.parentNode) btn.parentNode.removeChild(btn);
+      closeSidebar();
+      // 回到桌面：恢复用户此前保存的「卷收」偏好（移动端期间被临时清掉了）
+      let collapsed = false;
+      try { collapsed = localStorage.getItem('dsh-sidebar-collapsed') === '1'; } catch { /* 隐私模式 */ }
+      document.body.classList.toggle('sidebar-collapsed', collapsed);
+    }
+  }
+
+  // 初次进入即生效
+  applyMode();
+  // 监听断点跨越（旋转/分屏/窗口拖拽）
+  if (typeof mql.addEventListener === 'function') mql.addEventListener('change', applyMode);
+  else if (typeof mql.addListener === 'function') mql.addListener(applyMode);  // 老 Safari
+  // resize 兜底（极少数环境 matchMedia.change 不触发）
+  window.addEventListener('resize', applyMode);
+
+  // 暴露给 activateModule：选中模块后自动关闭抽屉
+  window.__atlasCloseMobileSidebar = closeSidebar;
+})();
+
+/* ============================================================
  * 模块运行时：从 web/modules.json 读取有哪些板块，生成侧栏按钮与面板。
  * 新增板块 = 加一条清单 + 放一份资源；停用 = enabled:false（或在界面里关掉）。
  *   - kind=inline：面板已写在 index.html 里（#mega-<id>），只负责显隐。
@@ -3635,6 +3723,10 @@ function activateModule(which) {
     setBodyData('module', which);
   }
   try { sessionStorage.setItem('dsh-active-module', which); } catch { /* 忽略 */ }
+  // 移动端：选完模块自动收起抽屉（桌面端该函数不存在，不产生任何效果）
+  if (typeof window.__atlasCloseMobileSidebar === 'function') {
+    try { window.__atlasCloseMobileSidebar(); } catch { /* 忽略 */ }
+  }
 }
 
 /** 依据清单渲染侧栏按钮，并为 iframe 模块补出懒加载面板 */

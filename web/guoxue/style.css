@@ -1189,3 +1189,129 @@ body[data-sect="myth"] {
   50% { content: "··"; }
   75% { content: "···"; }
 }
+
+/* ============================================================
+   移动端：≤ 760px（手机 + 窄平板竖屏）
+   与主站 web/style.css 末尾的 @media (max-width: 760px) 同值——
+   两处断点必须同步（本文件 #app 与主站 .module-inner 共用同一套宽度数学，
+   见 #app 上方注释），否则同样视口下两个模块正文宽度不同。
+   桌面视口（≥1024）永不命中，桌面样式零改动；本块只做覆盖。
+   前提：父页 index.html 在移动端已把侧栏抽屉化 + .mega-area 左让位归零，
+   iframe 宽度即视口宽，这里只需拆掉 #app 的右沟槽、横排 .tabs-v。
+   ============================================================ */
+@media (max-width: 760px) {
+  /* 1) 正文右沟槽解压：171px 是为右竖排胶囊让位的，胶囊已改横排。 */
+  #app {
+    padding-left: 12px;
+    padding-right: 12px;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* 2) 右竖排胶囊 .tabs-v 改为正文上方横向条（与主站 .tabs 同款做法：
+        四个页签均分一屏，必须全部可见——实测滚动式初始只能见到 3 个）。 */
+  .tabs-v {
+    position: static;
+    transform: none;
+    top: auto; right: auto;
+    width: 100%;               /* 锁宽防被 4 个 tab 内容宽撑开（同主站 .tabs） */
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow: visible;
+    margin: 0 0 12px;
+    padding: 8px 12px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  /* 四格均分 #app 可用宽（320 视口下每格约 70px）。
+     不用负边距跨出 #app padding：那样行宽 = 视口 + 24，
+     在 ≤360px 下会被右缘裁掉第 4 个页签。 */
+  .tabs-v .tab {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: nowrap;
+    font-size: 13px;           /* 320 视口下每格 68px：13px × 4 = 52 + padding 10，容得下 */
+    letter-spacing: 0;
+    padding: 11px 2px 11px 8px;
+    text-align: center;
+  }
+  .tabs-v .tab::before { left: 2px; height: 22px; width: 2.5px; }
+
+  /* 3) 顶部流派切换条：6 个按钮等分时每格仅约 65px，而第二行
+        「前551-前235 · 5部经典」约 100px 且 nowrap，实测会压到相邻格上。
+        改为横向滚动：每格保留完整文字，整条可左右滑（与下方针胶囊同一套交互）。 */
+  .sect-switch {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    justify-content: flex-start;
+  }
+  .sect-switch::-webkit-scrollbar { display: none; }
+  .sect-btn {
+    flex: 0 0 auto;
+    padding: 7px 12px;
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+  .sect-btn[data-s="all"] { flex: 0 0 auto; }
+  .sect-btn .sect-main { font-size: 13.5px; }
+  .sect-btn .sect-sub { font-size: 11px; height: 14px; line-height: 14px; }
+
+  /* 4) 典籍/人物详情头：120px 头像 + 元数据改上下排布（与主站 .detail-head 同款）。 */
+  .detail-head { flex-direction: column; gap: 14px; align-items: center; }
+  .detail-portrait { width: 96px; height: 96px; }
+  .detail-info { width: 100%; }
+  .detail-info h2 { font-size: 22px; text-align: center; }
+  .detail-icon { font-size: 38px; }
+  .book-detail { padding: 16px 14px; }
+  .book-detail p, .book-detail li { font-size: 15px; }
+
+  /* 5) 典籍卡片：190px 一张 → 150px，一屏可见 2 张。 */
+  .book-card { flex: 0 0 150px; padding: 12px 10px; }
+  .book-card .portrait { width: 72px; height: 72px; }
+  .book-card .person-name { font-size: 16px; }
+
+  /* 6) 地图与图例：Leaflet 降到 360px；图例浮层全宽铺开。 */
+  #map-leaf { height: 360px; }
+  .map-wrap { min-height: 360px; }
+  .map-legend-float {
+    top: 6px; right: 6px;
+    padding: 5px 8px;
+    font-size: 11px;
+    max-width: calc(100% - 12px);
+  }
+  .legend-item { font-size: 11px; gap: 4px; }
+
+  /* 7) 路线按钮与详情：内边距收紧。 */
+  .route-toggle { gap: 6px; }
+  .route-btn { padding: 6px 12px; font-size: 13px; }
+  .route-detail { padding: 12px 14px; }
+
+  /* 8) 关键人物单列（与主站同款保险）。 */
+  .case-people { grid-template-columns: 1fr; }
+  .case-card { padding: 14px 14px; }
+  .case-section { padding: 10px 12px 12px; }
+
+  /* 9) 右上角「支持」按钮：缩小，避免压住顶部横向滚动条。 */
+  .support-btn {
+    top: 8px; right: 8px;
+    font-size: 13px;
+    padding: 5px 12px;
+    z-index: 1100;
+  }
+  .support-pop {
+    top: 52px; right: 8px;
+    width: min(320px, calc(100vw - 16px));
+    padding: 14px 16px 16px;
+  }
+}
+
+/* 极窄视口（iPhone SE 一代 320、或 360 上 125% 缩放）：
+   与主站 web/style.css 同值的第二档，四格均分后每格约 65px，
+   再收一档字号保证文字不贴边。 */
+@media (max-width: 340px) {
+  .tabs-v .tab { font-size: 12px; padding: 11px 1px 11px 6px; }
+  .tabs-v .tab::before { left: 1px; height: 20px; }
+}
