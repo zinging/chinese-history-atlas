@@ -1023,7 +1023,7 @@ function renderRelGraph(e) {
       ${centerImg}
       <text x="0" y="92" text-anchor="middle" font-size="17" font-weight="800" fill="#8a4b1f">${e.name}</text>
     </g>`;
-  return `<div class="detail-panel">
+  return `<div class="detail-panel relation-panel">
     <h4 style="font-size:18px">${e.name}的人物关系</h4>
     <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:960px" role="img" aria-label="${e.name}人物关系图">
       ${lines}${relLabels}${center}${dots}

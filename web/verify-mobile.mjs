@@ -155,13 +155,18 @@ try {
       const a = await ev(GEO);
       await load(`${BASE}/web/index.html?page=timeline`, w, h, false);
       const b = await ev(GEO);
-      let diff = 0; const sample = [];
+      let diff = 0; const sample = []; let clsOnly = 0;
+      // 指纹形如 TAG|cls|left|top|w|h：几何比较时剥掉类名段。
+      // 只改类名（如给容器补一个移动端专用类）不改变任何盒模型，不应判红；
+      // 位置或尺寸任何一位变化仍会被 diff 抓到。
+      const geo = (s) => String(s).replace(/^([A-Z0-9-]+)\|[^|]*\|/, '$1|');
       if (Array.isArray(a) && Array.isArray(b)) {
         for (let i = 0; i < Math.max(a.length, b.length); i++) {
-          if (a[i] !== b[i]) { diff++; if (sample.length < 2) sample.push({ now: a[i], base: b[i] }); }
+          if (geo(a[i]) !== geo(b[i])) { diff++; if (sample.length < 2) sample.push({ now: a[i] ?? null, base: b[i] ?? null }); }
+          else if (a[i] !== b[i]) clsOnly++;
         }
       } else diff = -1;
-      check(`桌面 ${w}×${h}：与基线逐元素一致`, diff === 0, `元素 ${Array.isArray(a) ? a.length : '?'}，差异 ${diff}${sample.length ? ' ' + JSON.stringify(sample) : ''}`);
+      check(`桌面 ${w}×${h}：几何与基线逐元素一致`, diff === 0, `元素 ${Array.isArray(a) ? a.length : '?'}，几何差异 ${diff}${clsOnly ? `，仅类名差异 ${clsOnly}（不影响盒模型）` : ''}${sample.length ? ' ' + JSON.stringify(sample) : ''}`);
     }
   } else {
     console.log('（跳过桌面 A/B：未提供 --base，可用 --base <父提交的服务地址> 追加）');

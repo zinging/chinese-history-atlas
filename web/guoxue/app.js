@@ -1,5 +1,15 @@
 // 国学图谱 · app.js
 
+/** 页面被主壳（web/index.html）以 iframe 形式嵌入时打标记。
+ *  主壳的移动端布局把汉堡按钮悬浮在左上角、不再预留整条留白，
+ *  故 iframe 里的第一行（.sect-switch）需要左缩 54px 让开它；
+ *  直接独立打开本页（无汉堡按钮）时不缩，靠这条类名区分。 */
+if (typeof window !== 'undefined' && typeof document !== 'undefined' &&
+    typeof window.top !== 'undefined' && window.self !== window.top &&
+    document.documentElement) {
+  document.documentElement.classList.add('in-frame');
+}
+
 /** 内容切换（换书/换神话热点）时停止逐句朗读与自动推进。
  *  不停止的话，旧内容的播放会延续到新内容，表现为"换了内容还在念/还在动"。
  *  导览脚本未加载或未激活时 __guide 为空实现，调用无副作用。 */

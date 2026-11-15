@@ -1210,6 +1210,12 @@ body[data-sect="myth"] {
     margin-left: 0;
     margin-right: 0;
   }
+  /* 2) 被主壳（web/index.html）以 iframe 嵌入时（app.js 在顶层打 html.in-frame）：
+        主壳移动端不再给汉堡按钮预留整条留白，正文直接从 y=0 开始，
+        故这里撤掉 12px 上内边距，并把首行「书/分类切换条」左缩 54px 让开按钮。
+        独立打开本页（无汉堡按钮）时不触发，保持原有 12px 与满宽。 */
+  html.in-frame #app { padding-top: 0; }
+  html.in-frame .sect-switch { padding-left: 54px; }
 
   /* 2) 右竖排胶囊 .tabs-v 改为正文上方横向条（与主站 .tabs 同款做法：
         四个页签均分一屏，必须全部可见——实测滚动式初始只能见到 3 个）。 */
@@ -1309,6 +1315,56 @@ body[data-sect="myth"] {
     width: min(320px, calc(100vw - 16px));
     padding: 14px 16px 16px;
   }
+
+  /* 10) 舆图热点详情卡（点「神山异国」「取经起点」等胶囊弹出）：
+         原本定宽 400px + 右下角绝对定位，在 366px 宽的地图里左边溢出 54px，
+         被 .map-wrap 的 overflow:hidden 直接裁掉——文字从半句开始（实测 l=-40）。
+         移动端改成贴视口底部的浮层（地图只有 360px 高，卡片若仍被限制在地图盒内，
+         800px 的原图缩放后仍会占掉整卡高度、压住正文）：左右各留 8px、卡内滚动。
+         祖先链（#app/.map-wrap/.map-schematic）无 transform，fixed 不会被拽回地图盒。 */
+  .sch-detail {
+    position: fixed;
+    left: 8px; right: 8px; bottom: 8px;
+    width: auto;
+    max-height: 62vh;
+    padding: 12px 14px 14px;
+    z-index: 1200;
+    box-shadow: 0 -4px 24px rgba(60,40,10,.22);
+  }
+  .sch-detail img {
+    width: 100%;
+    max-height: 26vh;
+    object-fit: contain;
+    margin: 2px 0 10px;
+  }
+  .sch-detail h4 { font-size: 18px; margin-bottom: 6px; }
+  .sch-detail p { font-size: 14.5px; line-height: 1.8; }
+  .sch-detail .tr { font-size: 13.5px; }
+  .sch-detail .sch-detail-src { font-size: 12px !important; }
+  .sch-detail-close { top: 6px; right: 6px; width: 34px; height: 34px; font-size: 22px; }
+
+  /* 11) 地图事件弹层（点事件/站点胶囊弹出）：
+         原本 width: min(380px, 46%) → 366px 地图里只有 168px，正文每行不到 10 个字，
+         配图按 100% 宽还会把卡片顶满。与热点卡一致改成贴底浮层 + 卡内滚动 + 配图限高。 */
+  .map-popup {
+    position: fixed;
+    left: 8px; right: 8px; top: auto; bottom: 8px;
+    width: auto;
+    max-height: 62vh;
+    padding: 12px 14px 14px;
+    font-size: 15px;
+    z-index: 1200;
+    box-shadow: 0 -4px 24px rgba(60,40,10,.22);
+  }
+  .map-popup h4 { font-size: 18px; margin-right: 30px; }
+  .map-popup .event-fig img {
+    width: 100%;
+    height: auto;
+    max-height: 24vh;
+    object-fit: contain;
+  }
+  .map-popup .evt-body { font-size: 15px; line-height: 1.85; }
+  .map-popup .close { font-size: 22px; top: 8px; right: 12px; width: 34px; height: 34px; }
 }
 
 /* 极窄视口（iPhone SE 一代 320、或 360 上 125% 缩放）：

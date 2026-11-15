@@ -1509,27 +1509,33 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   .mega-sidebar { overflow-y: auto; overflow-x: hidden; }
 
   /* 2) 正文左让位归零：.mega-area 主定义的 margin-left: var(--sidebar-w) 不再生效。
-        顶部统一让出 58px 给 fixed 的汉堡按钮（inline 模块与 iframe 模块都适用），
-        iframe 高度相应减去这段，避免撑出视口。 */
-  .mega-area { margin-left: 0; min-height: 100vh; min-height: 100dvh; padding-top: 58px; }
+        顶部不再预留整条留白：汉堡按钮是 fixed 悬浮件，正文直接从 y=0 开始，
+        第一行左侧让出 54px 给它（见第 3 条 .module-inner 的首行内缩），
+        这样按钮右侧不留空带，切栏紧贴顶部。 */
+  .mega-area { margin-left: 0; min-height: 100vh; min-height: 100dvh; padding-top: 0; }
   body.sidebar-collapsed .mega-area { margin-left: 0; }
   /* 100vh 在移动浏览器上是「大视口」（含地址栏/工具栏遮挡区），而外层 .mega-area
      高度也正好是 100vh——文档没有任何滚动余量可分给被挡住的那一段，于是 iframe
      底部一截永久落在可视区外（页脚、最末一个按钮看不到，且无法通过滚动补救）。
-     dvh 跟随当前可视区，地址栏收起/展开都能自适应；不认识 dvh 的浏览器保留 vh。 */
+     dvh 跟随当前可视区，地址栏收起/展开都能自适应；不认识 dvh 的浏览器保留 vh。
+     上边距已归零，故这里不再减 58px。 */
   .guoxue-frame {
-    height: calc(100vh - 58px);
-    height: calc(100dvh - 58px);
+    height: 100vh;
+    height: 100dvh;
   }
 
-  /* 3) 正文右沟槽解压：171px 是为桌面右竖排胶囊让的位，移动端右胶囊已改横排。 */
+  /* 3) 正文右沟槽解压：171px 是为桌面右竖排胶囊让的位，移动端右胶囊已改横排。
+        顶部内边距归零 + 首行左侧内缩 54px：正文与汉堡按钮同高开始，
+        首行胶囊/朝代条从按钮右侧接上，既不压住按钮也不留一条空带。 */
   .module-inner {
+    padding-top: 0;
     padding-right: 16px;
     padding-left: 16px;
     max-width: 100%;
     margin-left: 0;
     margin-right: 0;
   }
+  .dynasty-switch { padding-left: 54px; }
 
   /* 4) 顶部模块条：把右竖排胶囊 .tabs 改成正文上方的横向条。
         四个模块页签是主导航，必须一屏全见（实测滚动式时第 4 个「探案问史」
@@ -1674,9 +1680,21 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   }
   @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 
+  /* 14) 人物关系图：SVG 用 viewBox 原尺寸 960 渲染、容器横向滑动。
+       该图是 960×N 的固定布局（左右两列节点 + 连线与注释），若按 width:100% 塞进
+       358px 正文列会等比缩到 0.32——实测名字 17px 只剩 5.5px，注释 14px 只剩 4.5px，
+       等于不可读。改为一比一渲染后横向滑动，字号回到桌面大小。 */
+  .relation-panel {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  .relation-panel > svg { width: 960px !important; max-width: none !important; height: auto; }
+
   /* 移动端菜单按钮：JS 在 body.is-mobile 时插入 .mobile-menu-btn。
         固定吸顶在左上角，不透明米黄底 + 阴影，滚动时压在正文上仍有明确边界；
-        正文顶部让位已统一在 .mega-area 上处理（见第 2 条）。
+        正文顶部已不留空带（见第 2、3 条），首行内容左缩 54px 让开它。
         抽屉打开时汉堡被侧栏（z-index:1000）盖住、点不到——
         打开态直接隐藏它，关闭走右侧的「关闭」按钮、遮罩点击或 Esc。 */
   .mobile-menu-btn {
