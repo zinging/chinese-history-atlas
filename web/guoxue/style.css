@@ -1217,36 +1217,70 @@ body[data-sect="myth"] {
   html.in-frame #app { padding-top: 0; }
   html.in-frame .sect-switch { padding-left: 54px; }
 
+  /* 3) 首行「书/分类切换条」与页签条左右拉满：
+        正文列留白 12px 是为了正文段落，两条切换栏没必要跟着缩（实测两条栏
+        都是 l=12 / r=378，390 屏白丢 24px，可滑出的按钮更少、页签也更窄）。
+        用负边距让它们铺满整个视口；首行仍左缩 54px 让开汉堡按钮（见第 2 条）。 */
+  .sect-switch {
+    margin-left: -12px;
+    margin-right: -12px;
+    width: calc(100% + 24px);
+    max-width: none;
+  }
+
   /* 2) 右竖排胶囊 .tabs-v 改为正文上方横向条（与主站 .tabs 同款做法：
         四个页签均分一屏，必须全部可见——实测滚动式初始只能见到 3 个）。 */
   .tabs-v {
     position: static;
     transform: none;
     top: auto; right: auto;
-    width: 100%;               /* 锁宽防被 4 个 tab 内容宽撑开（同主站 .tabs） */
+    /* 与首行切换条同样拉出血：铺满整个视口（见第 3 条），
+       四格页签因此各宽约 97px（390 视口），比原来 89px 更宽、更好点。 */
+    width: calc(100% + 24px);
+    max-width: none;
     flex-direction: row;
     flex-wrap: nowrap;
     gap: 4px;
     overflow: visible;
-    margin: 0 0 12px;
-    padding: 8px 12px 10px;
+    margin: 0 -12px 6px;
+    padding: 8px 0 10px;
     border-bottom: 1px solid var(--border);
     background: var(--bg);
   }
-  /* 四格均分 #app 可用宽（320 视口下每格约 70px）。
-     不用负边距跨出 #app padding：那样行宽 = 视口 + 24，
-     在 ≤360px 下会被右缘裁掉第 4 个页签。 */
+  /* 四格均分整条宽度（320 视口下每格约 78px）。 */
   .tabs-v .tab {
     flex: 1 1 0;
     min-width: 0;
     white-space: nowrap;
-    font-size: 13px;           /* 320 视口下每格 68px：13px × 4 = 52 + padding 10，容得下 */
+    font-size: 13px;           /* 320 视口下每格 78px：13px × 4 = 52 + padding 10，容得下 */
     letter-spacing: 0;
     /* 上下各 12px：行高 20 + 24 = 44px，满足触控目标下限 */
     padding: 12px 2px 12px 8px;
     text-align: center;
   }
   .tabs-v .tab::before { left: 2px; height: 22px; width: 2.5px; }
+
+  /* 页签条与首行卡片行之间的竖向空隙：页签条下边距 12 + .page 上内边距 10 +
+     .books-scroll 上内边距 8 = 30px（实测 tabs-v b=114、首张卡 t=144）。收紧到 16px。 */
+  .page { padding-top: 2px; }
+
+  /* 详情页三个入口胶囊（趣味冷知识 / 争议话题 / 史论工坊）：
+     桌面规格 15px + 18px 内边距，三枚约 323px，而详情卡可用宽只有 310px，
+     第三枚被挤到第二行。移动端强制单行 + 三等分，各自收一档字号与内边距。 */
+  .entry-chip-row {
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 12px 0 8px;
+  }
+  .entry-chip {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 9px 4px;
+    font-size: 13.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   /* 3) 顶部流派切换条：6 个按钮等分时每格仅约 65px，而第二行
         「前551-前235 · 5部经典」约 100px 且 nowrap，实测会压到相邻格上。

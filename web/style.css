@@ -1537,14 +1537,45 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   }
   .dynasty-switch { padding-left: 54px; }
 
+  /* 3.5) 两条顶部切换栏左右拉满：正文留白来自 .module-inner 的 16px + .topbar 的 6px，
+        合计左右各 22px（实测 dynasty-switch l=22 / r=368，390 屏白丢 44px）。
+        移动端把 .topbar 拉出血、两条栏铺满整个视口，只有首行仍左缩 54px 让开汉堡按钮；
+        正文（卡片/正文段落）保持原有 16px 留白，不受影响。 */
+  .topbar {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding: 4px 0 2px;
+  }
+
+  /* 3.6) 页签条与人物卡片行之间的竖向空隙：页签条下边距 12 + .topbar 下内边距 10 +
+        时间线容器上内边距 6 = 28px（实测 tabs b=130、首张卡 t=158）。收紧到 14px。 */
+  .timeline-wrap { padding-top: 4px; }
+
+  /* 3.7) 帝王详情三个入口胶囊（趣味冷知识 / 争议话题 / 史论工坊）：
+        桌面规格 15px 字号 + 18px 左右内边距，三枚实测 111+96+96 + 2×10 间距 = 323px，
+        而详情卡可用宽只有 310px —— 第三枚被挤到第二行（截图2）。
+        移动端强制单行 + 三等分 + 各自收一档字号/内边距：310px 下每枚约 98px，
+        五字标签 67.5px，余量充足；320px 视口也仍在同一行。 */
+  .entry-grid {
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .entry-chip {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 9px 4px;
+    font-size: 13.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   /* 4) 顶部模块条：把右竖排胶囊 .tabs 改成正文上方的横向条。
         四个模块页签是主导航，必须一屏全见（实测滚动式时第 4 个「探案问史」
-        初始不可见，用户无从得知可滑）——这里用 flex:1 均分 module-inner 的可用宽：
-        390px 视口下每格 83px，放得下 4 个 14.5px 的字，无需滚动。
-        注意：不用负边距让 tabs 跨出 module-inner 的 padding——
-        那样行宽 = 视口 + 32，在 ≤360px 视口下会被右缘裁掉第 4 个页签（实测）。
-        现在 tabs 跟着 module-inner 走，行宽 = 视口 - 32，永远不会溢出。
-        320 视口下每格约 72px，仍能容下 4 字（14.5px × 4 = 58 + padding）。 */
+        初始不可见，用户无从得知可滑）——这里用 flex:1 均分可用宽：390px 视口下每格约 90px。
+        行宽由 .topbar 拉出血后即为整个视口（见 3.5），左右只留 8px 内边距，
+        320 视口下每格 73px，仍能容下 4 个 12px 的字（48 + padding 10 = 58）。 */
   .tabs {
     position: static;          /* 撤掉 position:fixed top:50% */
     transform: none;
@@ -1556,8 +1587,8 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
     right: auto;
     top: auto;
     overflow: visible;
-    padding: 8px 16px 10px;
-    margin: 0 0 12px;
+    padding: 8px 8px 10px;
+    margin: 0 0 8px;
     border-bottom: 1px solid var(--border);
     background: var(--bg);
   }
