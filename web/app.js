@@ -3294,15 +3294,30 @@ async function askLLM(message, history = []) {
   let timer = null;
   const show = () => { clearTimeout(timer); pop.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); };
   const hide = () => { pop.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
-  btn.addEventListener('mouseenter', show);
-  pop.addEventListener('mouseenter', show);
-  btn.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
-  pop.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
-  // 触屏没有 hover：移动端补一条 click 切换（桌面端 click 不触发，不影响原行为）
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (pop.classList.contains('hidden')) show(); else hide();
-  });
+  // 悬停与点击必须分流，不能同时绑：真机 tap 的事件序列是 mouseenter → click，
+  // 两者共用一个开合状态会让弹层「刚打开又被 click 关掉」（DOM 序列实测：
+  // afterEnter=true → afterClick=false）。按输入能力二选一：
+  //   · 能 hover（鼠标/触控板）→ 沿用原悬停逻辑，桌面行为与改动前完全一致；
+  //   · 不能 hover（手机/平板）→ 只绑 click，并允许点弹层外关闭。
+  const hoverMQ = (typeof window.matchMedia === 'function') ? window.matchMedia('(hover: hover)') : null;
+  const hoverMode = hoverMQ ? hoverMQ.matches : true;
+  if (hoverMode) {
+    btn.addEventListener('mouseenter', show);
+    pop.addEventListener('mouseenter', show);
+    btn.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
+    pop.addEventListener('mouseleave', () => { timer = setTimeout(hide, 600); });
+  } else {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (pop.classList.contains('hidden')) show(); else hide();
+    });
+    if (typeof document.addEventListener === 'function') {
+      document.addEventListener('click', (e) => {
+        if (btn.contains(e.target) || pop.contains(e.target)) return;
+        hide();
+      });
+    }
+  }
   close.addEventListener('click', hide);
 })();
 
@@ -3555,12 +3570,16 @@ async function applyDeepLink() {
  *   4) 跨越断点（旋转/缩放窗口）时清理 mobile-only 状态。
  * ============================================================ */
 (function initMobileNav() {
-  const MQ = '(max-width: 760px)';
+  // 必须与 web/style.css 末尾移动端块的媒体查询逐字一致（窄视口 或 手机横屏）。
+  // 不一致的后果是死锁：CSS 已把侧栏推出视口，但这里判定不是移动端 → 不装汉堡按钮
+  // → 手机上再也打不开导航。
+  const MQ = '(max-width: 760px), (max-height: 500px) and (pointer: coarse) and (orientation: landscape)';
   const mql = (typeof window.matchMedia === 'function') ? window.matchMedia(MQ) : null;
   // matchMedia 不可用的极端环境（冒烟测试的 mock DOM）：跳过移动端逻辑
   if (!mql) return;
 
   const isMobile = () => !!mql.matches;
+  const sidebar = document.querySelector('.mega-sidebar');
   const btn = document.createElement('button');
   btn.className = 'mobile-menu-btn';
   btn.id = 'mobile-menu-btn';
@@ -3568,6 +3587,14 @@ async function applyDeepLink() {
   btn.setAttribute('aria-expanded', 'false');
   // 汉堡图标：与站点暖色系一致
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>';
+
+  // 抽屉的可见关闭入口：只有遮罩可点等于"没有可见的关闭方式"，触屏用户不知道能退出去。
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'drawer-close';
+  closeBtn.id = 'drawer-close';
+  closeBtn.type = 'button';
+  closeBtn.setAttribute('aria-label', '关闭导航');
+  closeBtn.textContent = '✕';
 
   let backdrop = null;
   function ensureBackdrop() {
@@ -3577,17 +3604,62 @@ async function applyDeepLink() {
     backdrop.addEventListener('click', closeSidebar);
     return backdrop;
   }
+  /* 抽屉关闭时把侧栏设为 inert：否则键盘 Tab 会跳进一个屏幕外的容器，
+     焦点看不见也带不回来（读屏同样会读到隐藏内容）。 */
+  function setSidebarInert(on) {
+    if (!sidebar) return;
+    if (on) {
+      sidebar.setAttribute('inert', '');
+      sidebar.setAttribute('aria-hidden', 'true');
+    } else {
+      sidebar.removeAttribute('inert');
+      sidebar.removeAttribute('aria-hidden');
+    }
+  }
+  /* 取容器里「真的可见」的控件：`.mega-collapse-btn` 在移动端是 display:none，
+     直接 focus() 会静默失败（焦点仍留在 body）。 */
+  function visibleFocusables(root) {
+    if (!root || typeof root.querySelectorAll !== 'function') return [];
+    const out = [];
+    for (const el of root.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])')) {
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) out.push(el);
+    }
+    return out;
+  }
+  function focusFirst(el) {
+    if (!el || typeof el.focus !== 'function') return;
+    try { el.focus({ preventScroll: true }); } catch { el.focus(); }
+  }
   function openSidebar() {
     document.body.classList.add('sidebar-open');
+    // 锁背景滚动：锁在 html 上，body 的 overflow 已被 overflow-x:hidden 打断传播
+    document.documentElement.classList.add('drawer-lock');
     document.body.appendChild(ensureBackdrop());
+    if (!closeBtn.parentNode) document.body.appendChild(closeBtn);
     btn.setAttribute('aria-expanded', 'true');
     btn.setAttribute('aria-label', '关闭导航');
+    setSidebarInert(false);
+    // 焦点进抽屉：汉堡按钮在打开态被 display:none 隐藏，不主动转移焦点会直接掉到
+    // body，键盘用户就再也找不到可关闭的控件（只能靠点遮罩）。
+    // 延后一拍落焦，避开「tap 结束时浏览器把焦点还给被点按钮」的默认行为；
+    // 若这一拍之内抽屉已被关掉，就不再落焦（否则焦点会掉进隐藏的抽屉里）。
+    setTimeout(() => {
+      if (!document.body.classList.contains('sidebar-open')) return;
+      const first = closeBtn.parentNode ? closeBtn : (visibleFocusables(sidebar)[0] || null);
+      focusFirst(first);
+    }, 0);
   }
-  function closeSidebar() {
+  function closeSidebar(restoreFocus) {
+    const wasOpen = document.body.classList.contains('sidebar-open');
     document.body.classList.remove('sidebar-open');
+    document.documentElement.classList.remove('drawer-lock');
     if (backdrop && backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+    if (closeBtn.parentNode) closeBtn.parentNode.removeChild(closeBtn);
     btn.setAttribute('aria-expanded', 'false');
     btn.setAttribute('aria-label', '打开导航');
+    setSidebarInert(isMobile());
+    if (wasOpen && isMobile() && restoreFocus !== false && btn.parentNode) focusFirst(btn);
   }
   function toggleSidebar() {
     if (document.body.classList.contains('sidebar-open')) closeSidebar();
@@ -3595,6 +3667,24 @@ async function applyDeepLink() {
   }
 
   btn.addEventListener('click', toggleSidebar);
+  closeBtn.addEventListener('click', () => closeSidebar());
+  // Esc 关闭抽屉 + Tab 不逃出抽屉：抽屉打开时背景已锁滚且被遮罩盖住，
+  // 允许 Tab 跑到遮罩后面的正文只会让焦点落到看不见的地方。
+  if (typeof document.addEventListener === 'function') {
+    document.addEventListener('keydown', (e) => {
+      if (!document.body.classList.contains('sidebar-open')) return;
+      if (e.key === 'Escape') { closeSidebar(); return; }
+      if (e.key !== 'Tab') return;
+      const list = [closeBtn].concat(visibleFocusables(sidebar));
+      if (!list.length) return;
+      const first = list[0], last = list[list.length - 1];
+      const active = document.activeElement;
+      const inside = list.indexOf(active) >= 0;
+      if (!inside) { e.preventDefault(); focusFirst(e.shiftKey ? last : first); return; }
+      if (e.shiftKey && active === first) { e.preventDefault(); focusFirst(last); }
+      else if (!e.shiftKey && active === last) { e.preventDefault(); focusFirst(first); }
+    });
+  }
 
   /** 进入移动端：装按钮；离开：清 mobile-only 状态 */
   function applyMode() {
@@ -3606,9 +3696,14 @@ async function applyDeepLink() {
       // localStorage 值原样保留，回到桌面时 initSidebarToggle 会重新应用它。
       document.body.classList.remove('sidebar-collapsed');
       if (!btn.parentNode) document.body.appendChild(btn);
+      // 抽屉默认是关的：关着就让侧栏 inert，Tab 不会跳进屏幕外
+      if (!document.body.classList.contains('sidebar-open')) setSidebarInert(true);
     } else {
       if (btn.parentNode) btn.parentNode.removeChild(btn);
+      if (closeBtn.parentNode) closeBtn.parentNode.removeChild(closeBtn);
       closeSidebar();
+      // 回到桌面：侧栏是主入口，必须可聚焦、可被读屏读到
+      setSidebarInert(false);
       // 回到桌面：恢复用户此前保存的「卷收」偏好（移动端期间被临时清掉了）
       let collapsed = false;
       try { collapsed = localStorage.getItem('dsh-sidebar-collapsed') === '1'; } catch { /* 隐私模式 */ }

@@ -1199,7 +1199,9 @@ body[data-sect="myth"] {
    前提：父页 index.html 在移动端已把侧栏抽屉化 + .mega-area 左让位归零，
    iframe 宽度即视口宽，这里只需拆掉 #app 的右沟槽、横排 .tabs-v。
    ============================================================ */
-@media (max-width: 760px) {
+/* 命中条件与主站 web/style.css 末尾移动端块逐字一致（窄视口 或 手机横屏），两处必须同步：
+   否则同一视口下父页已抽屉化、iframe 里还是桌面布局。见主站那块上方的坐标说明。 */
+@media (max-width: 760px), (max-height: 500px) and (pointer: coarse) and (orientation: landscape) {
   /* 1) 正文右沟槽解压：171px 是为右竖排胶囊让位的，胶囊已改横排。 */
   #app {
     padding-left: 12px;
@@ -1234,7 +1236,8 @@ body[data-sect="myth"] {
     white-space: nowrap;
     font-size: 13px;           /* 320 视口下每格 68px：13px × 4 = 52 + padding 10，容得下 */
     letter-spacing: 0;
-    padding: 11px 2px 11px 8px;
+    /* 上下各 12px：行高 20 + 24 = 44px，满足触控目标下限 */
+    padding: 12px 2px 12px 8px;
     text-align: center;
   }
   .tabs-v .tab::before { left: 2px; height: 22px; width: 2.5px; }
@@ -1312,6 +1315,6 @@ body[data-sect="myth"] {
    与主站 web/style.css 同值的第二档，四格均分后每格约 65px，
    再收一档字号保证文字不贴边。 */
 @media (max-width: 340px) {
-  .tabs-v .tab { font-size: 12px; padding: 11px 1px 11px 6px; }
+  .tabs-v .tab { font-size: 12px; padding: 13px 1px 13px 6px; }
   .tabs-v .tab::before { left: 1px; height: 20px; }
 }

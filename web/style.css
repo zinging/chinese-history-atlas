@@ -1484,7 +1484,14 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
    断点选择：与国学四板块 web/guoxue/style.css 保持同值（两文件顶部注释
    明确要求两处断点必须同步），760 覆盖 390–740 手机 + 竖屏 iPad mini 744。
    ============================================================ */
-@media (max-width: 760px) {
+/* 命中条件 = 「窄视口」或「手机横屏」：
+   手机横屏（如 844×390）宽度超过 760，纯宽度断点会退回桌面布局——实测该视口下
+   固定侧栏内容高 554px、可视高仅 390px，第 4 个模块与底部三个入口落到视口外点不到。
+   故补一条「矮 + 横屏 + 粗指针」：pointer: coarse 只匹配以触屏为主输入设备的终端，
+   带触屏的笔记本（主指针是触控板/鼠标）和桌面短窗口都不会命中，桌面零影响。
+   注意：app.js 的 initMobileNav 里 MQ 必须与本行逐字一致，否则会出现「CSS 抽屉化
+   但没有汉堡按钮」的死锁。 */
+@media (max-width: 760px), (max-height: 500px) and (pointer: coarse) and (orientation: landscape) {
   /* 1) 侧栏抽屉化：默认推到视口外（-88%），点菜单按钮时 body.sidebar-open 滑入。
         不改 .mega-sidebar 主定义，这里只覆盖宽度与位移——桌面回退零风险。 */
   .mega-sidebar {
@@ -1494,15 +1501,26 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
     box-shadow: 4px 0 24px rgba(0,0,0,.18);
   }
   body.sidebar-open .mega-sidebar { transform: translateX(0); }
+  /* 抽屉打开时锁住背景滚动：html,body 已锁 overflow-x，所以 body 的 overflow
+     不会再传播到视口，必须锁在 html 上（由 JS 加 .drawer-lock，见 initMobileNav）。 */
+  html.drawer-lock,
+  html.drawer-lock body { overflow: hidden; }
   /* 侧栏内容本身允许纵向滚动：手机屏矮，四个底部入口 + 模块按钮放不下。 */
   .mega-sidebar { overflow-y: auto; overflow-x: hidden; }
 
   /* 2) 正文左让位归零：.mega-area 主定义的 margin-left: var(--sidebar-w) 不再生效。
         顶部统一让出 58px 给 fixed 的汉堡按钮（inline 模块与 iframe 模块都适用），
         iframe 高度相应减去这段，避免撑出视口。 */
-  .mega-area { margin-left: 0; min-height: 100vh; padding-top: 58px; }
+  .mega-area { margin-left: 0; min-height: 100vh; min-height: 100dvh; padding-top: 58px; }
   body.sidebar-collapsed .mega-area { margin-left: 0; }
-  .guoxue-frame { height: calc(100vh - 58px); }
+  /* 100vh 在移动浏览器上是「大视口」（含地址栏/工具栏遮挡区），而外层 .mega-area
+     高度也正好是 100vh——文档没有任何滚动余量可分给被挡住的那一段，于是 iframe
+     底部一截永久落在可视区外（页脚、最末一个按钮看不到，且无法通过滚动补救）。
+     dvh 跟随当前可视区，地址栏收起/展开都能自适应；不认识 dvh 的浏览器保留 vh。 */
+  .guoxue-frame {
+    height: calc(100vh - 58px);
+    height: calc(100dvh - 58px);
+  }
 
   /* 3) 正文右沟槽解压：171px 是为桌面右竖排胶囊让的位，移动端右胶囊已改横排。 */
   .module-inner {
@@ -1542,7 +1560,8 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
     min-width: 0;
     white-space: nowrap;
     font-size: 13.5px;         /* 360 及以上：文字 54px + padding 8px ≤ 每格内宽 */
-    padding: 11px 2px 11px 8px;
+    /* 上下各 12px：行高 21 + 24 = 45px，满足 44px 触控目标（WCAG 2.5.5 AAA） */
+    padding: 12px 2px 12px 8px;
     letter-spacing: 0;
     text-align: center;
   }
@@ -1655,11 +1674,11 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   }
   @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 
-  /* 15) 移动端菜单按钮：JS 在 body.is-mobile 时插入 .mobile-menu-btn。
+  /* 移动端菜单按钮：JS 在 body.is-mobile 时插入 .mobile-menu-btn。
         固定吸顶在左上角，不透明米黄底 + 阴影，滚动时压在正文上仍有明确边界；
         正文顶部让位已统一在 .mega-area 上处理（见第 2 条）。
         抽屉打开时汉堡被侧栏（z-index:1000）盖住、点不到——
-        打开态直接隐藏它，关闭走遮罩点击或选模块（都会自动收抽屉）。 */
+        打开态直接隐藏它，关闭走右侧的「关闭」按钮、遮罩点击或 Esc。 */
   .mobile-menu-btn {
     position: fixed; top: 10px; left: 10px; z-index: 900;
     width: 44px; height: 44px;
@@ -1677,7 +1696,29 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   .mobile-menu-btn svg { width: 22px; height: 22px; display: block; }
   body.sidebar-open .mobile-menu-btn { display: none; }
 
-  /* 16) 折叠侧栏按钮在移动端隐藏（用户改用菜单按钮开合）。 */
+  /* 16) 抽屉的可见关闭入口：JS 在 body.is-mobile 时插入 .drawer-close。
+        遮罩只能"点空白"，屏幕上没有任何可关闭的控件时用户会不知道能退出去；
+        放在视口右上、z 高于侧栏，且不随抽屉内部滚动（横屏时抽屉内容要滚动）。
+        宽度 44px 落在右侧遮罩带（>360 视口）上，不会压住抽屉里的模块按钮。 */
+  .drawer-close {
+    position: fixed; top: 8px; right: 6px; z-index: 1001;
+    width: 44px; height: 44px; display: none;
+    align-items: center; justify-content: center;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    background: var(--bg); color: #8a4b1f; font-size: 18px; line-height: 1;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 2px 8px rgba(90,66,30,.2);
+  }
+  .drawer-close:active { background: #f5e6c4; }
+  body.sidebar-open .drawer-close { display: inline-flex; }
+
+  /* 17) 尊重"减少动态效果"：抽屉滑入/遮罩淡入/页签过渡一律取消，其余不变。 */
+  @media (prefers-reduced-motion: reduce) {
+    .mega-sidebar, .sidebar-backdrop { transition: none; }
+    .tabs .tab, .mobile-menu-btn, .drawer-close { transition: none; }
+  }
+
+  /* 18) 折叠侧栏按钮在移动端隐藏（用户改用菜单按钮开合）。 */
   .mega-collapse-btn { display: none; }
 }
 
@@ -1686,9 +1727,9 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
    这里再收一档字号与内边距，保证文字不贴边不出格。
    仍不改成横向滚动——四个模块是主导航，藏起来比缩小更差。 */
 @media (max-width: 340px) {
-  .tabs .tab { font-size: 12.5px; padding: 11px 1px 11px 6px; }
+  .tabs .tab { font-size: 12.5px; padding: 12px 1px 12px 4px; }
   .tabs .tab::before { left: 1px; height: 20px; }
-  .tabs-v .tab { font-size: 12px; padding: 11px 1px 11px 6px; }
+  .tabs-v .tab { font-size: 12px; padding: 13px 1px 13px 6px; }
   .tabs-v .tab::before { left: 1px; height: 20px; }
 }
 
