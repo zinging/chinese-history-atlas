@@ -1844,7 +1844,8 @@ function showRouteMarker(m) {
  * 原先把七次合成一条「含远洋」的折线，看不出这是第几次；这里改成
  * 按航次重画：每次只画本航次的地点顺序，并在详情卡里给七个航次胶囊。
  * ============================================================ */
-let zhVoyageIndex = -1;   // -1 = 七次总览（合并后的原航线）
+/** 当前选中的航次下标；-1 = 「七次叠影」态（不画单条航线，只叠七条看范围） */
+let zhVoyageIndex = -1;
 let zhRouteData = null;   // 当前郑和路线对象（含 voyages）
 
 /** 清掉当前郑和航线图层（折线 + 途经点圆点），下次按新航次重建 */
@@ -1857,17 +1858,15 @@ function clearZhengheLayers() {
   if (leafletMap && leafletMap.options && leafletMap.options.minZoom < 3) leafletMap.options.minZoom = 3;
 }
 
-/** 当前应绘制的航点：选中某次航次就取该航次，否则取七次合并总览 */
+/** 选中某次航次时返回该次航点；叠影态返回 null（此时不画单条路线） */
 function currentZhenghePoints() {
-  if (!zhRouteData) return null;
-  const v = zhVoyageIndex >= 0 && zhRouteData.voyages ? zhRouteData.voyages[zhVoyageIndex] : null;
-  return (v ? v.points : zhRouteData.points) || null;
+  if (!zhRouteData || !zhRouteData.voyages) return null;
+  if (zhVoyageIndex < 0 || zhVoyageIndex >= zhRouteData.voyages.length) return null;
+  return zhRouteData.voyages[zhVoyageIndex].points || null;
 }
 
-/** 画出某一组郑和航点：隐藏国内路线/事件点/城市点，重画一条虚线航线 + 全部途经点，并播放动画 */
-function drawZhengheRoute(points) {
-  if (!leafletMap || !points || points.length < 2) return;
-  clearRouteAnimations();
+/** 郑和的图要独占底图：先收掉国内路线、事件点和城市点，再把旧郑和图层清干净 */
+function prepareZhengheStage() {
   (leafletLayers.routes || []).forEach((l) => {
     l.line.setStyle({ opacity: 0, fillOpacity: 0 });
     l.wps.forEach((w) => w.setStyle({ opacity: 0, fillOpacity: 0 }));
@@ -1877,6 +1876,30 @@ function drawZhengheRoute(points) {
   (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
   (leafletLayers.events || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
   clearZhengheLayers();
+}
+
+/** 把视野框到一组经纬范围。
+ *  Leaflet 自带 fitBounds 在 zoomSnap=1 时会把「差一点装下」的航线向上取整，
+ *  手机窄屏会出现两端被裁掉（第四次西端波斯湾落在屏幕外），所以这里按投影自己算整数级：
+ *  zoom0 世界宽 256px，逐级减半；取能装下经纬跨度的最大整数级，再夹到 [2,4]。 */
+function fitZhengheView(bounds) {
+  if (!leafletMap || !bounds || !bounds.isValid()) return;
+  const pad = 30;
+  const size = leafletMap.getSize();
+  const bs = leafletMap.project(bounds.getSouthEast(), 0).subtract(leafletMap.project(bounds.getNorthWest(), 0));
+  const fitZoom = Math.max(2, Math.min(4,
+    Math.floor(Math.log2(Math.min((size.x - pad * 2) / bs.x, (size.y - pad * 2) / bs.y)))));
+  // 远洋航线在手机上得退到 zoom 2，而地图 minZoom 是 3：按需放开下限（直接改
+  // options.minZoom，避开 setMinZoom 自带的缩放动画），清图层时还原。
+  if (leafletMap.options && fitZoom < leafletMap.options.minZoom) leafletMap.options.minZoom = fitZoom;
+  leafletMap.setView(bounds.getCenter(), fitZoom, { animate: false });
+}
+
+/** 单次航次：一条虚线航线 + 全部途经点 + 描线动画 */
+function drawZhengheRoute(points) {
+  if (!leafletMap || !points || points.length < 2) return;
+  clearRouteAnimations();
+  prepareZhengheStage();
   const color = (zhRouteData && zhRouteData.color) || '#247bc1';
   const line = L.polyline(points.map((p) => [p.lat, p.lng]), {
     color, weight: 3, opacity: 1, dashArray: '8 5', lineCap: 'round', lineJoin: 'round',
@@ -1888,27 +1911,35 @@ function drawZhengheRoute(points) {
     return dot;
   });
   leafletLayers.zhenghe = [line].concat(marks);
-  // 每次航次跨度不同（第一次到印度，第七次到东非），直接把视野框到这条航线，
-  // 否则「明朝默认视野」只看得到中国—马六甲，非洲那段在屏幕外。
-  // 手机窄屏要装下「波斯湾—东非」那一档得退到 zoom 2，而地图 minZoom 是 3：
-  // 这里按需把下限临时放开，清图层时再还原，避免把整页地图的缩放习惯改掉。
-  // 视野：Leaflet 自带 fitBounds 在 zoomSnap=1 时会把「差一点装下」的航线向上取整，
-  // 手机窄屏会出现两端被裁掉（第四次西端波斯湾落在屏幕外）。这里自己按投影算一次整数缩放：
-  // zoom0 世界宽 256px，逐级减半；取能装下经纬跨度的最大整数级，再夹到 [2,4]。
-  const b = line.getBounds();
-  const pad = 30;
-  const size = leafletMap.getSize();
-  const bs = leafletMap.project(b.getSouthEast(), 0).subtract(leafletMap.project(b.getNorthWest(), 0));
-  const fitZoom = Math.max(2, Math.min(4,
-    Math.floor(Math.log2(Math.min((size.x - pad * 2) / bs.x, (size.y - pad * 2) / bs.y)))));
-  // 远洋航线在手机上得退到 zoom 2，而地图 minZoom 是 3：按需放开下限（同样直接改
-  // options.minZoom，避开 setMinZoom 自带的缩放动画），清图层时还原。
-  if (leafletMap.options && fitZoom < leafletMap.options.minZoom) leafletMap.options.minZoom = fitZoom;
-  // 用不带过渡的 setView：zoom 从 4 直接跨到 2 时，Leaflet 的缩放动画一旦被
-  // 滚屏/尺寸变化打断就会停在中间级别（实测手机端停在 3、航线两端被裁），
-  // 而路线自身的描线动画随后就开始，瞬移观感并没有损失。
-  leafletMap.setView(b.getCenter(), fitZoom, { animate: false });
+  fitZhengheView(line.getBounds());
   animateRoute({ line, wps: marks, sMark: null, eMark: null }, 1800);
+}
+
+/** 七次叠影：七条同色航线按航次由淡到浓叠画，不画站点、不排先后。
+ *  一张图上「越走越远」一眼可见，但顺序解释权只留给各航次胶囊——
+ *  七次合起来不是一条连续航线，任何一条「合并折线」都会画出历史上不存在的航段。 */
+function drawZhengheShadow() {
+  if (!leafletMap || !zhRouteData || !zhRouteData.voyages) return;
+  clearRouteAnimations();
+  prepareZhengheStage();
+  const color = zhRouteData.color || '#247bc1';
+  const list = zhRouteData.voyages;
+  const lines = [];
+  const bounds = L.latLngBounds([]);
+  list.forEach((v, i) => {
+    if (!v.points || v.points.length < 2) return;
+    const opacity = Math.round((0.18 + (i / Math.max(1, list.length - 1)) * 0.5) * 100) / 100;
+    // 叠影用细实线（不用虚线）：七条虚线交叉会变成一堆断续小段，读起来更乱；
+    // 实线叠加后共同的「南京—马六甲—古里」主干会自然加粗，西端分岔才看得出来。
+    const line = L.polyline(v.points.map((p) => [p.lat, p.lng]), {
+      color, weight: 1.6, opacity, lineJoin: 'round',
+    }).addTo(leafletMap);
+    line.bindTooltip(`${v.name}（${v.years}）· ${v.points.length} 站`, { sticky: true });
+    bounds.extend(line.getBounds());
+    lines.push(line);
+  });
+  leafletLayers.zhenghe = lines;
+  fitZhengheView(bounds);
 }
 
 function renderMap() {
@@ -2131,12 +2162,12 @@ function renderMapControls(data) {
     legend.appendChild(btn);
     routeBtns.push(btn);
   });
-  // 郑和航线：不再预画一条「七次合并」的折线，改由航次胶囊按需重画（见 drawZhengheRoute）。
-  // 按钮只负责：选中态 → 复位视野 → 画当前航次（默认七次总览）→ 展开详情卡（内含七个航次胶囊）。
+  // 郑和航线：不再预画任何「合并折线」，主胶囊只负责 选中态 → 画七次叠影 → 展开详情卡；
+  // 具体某一次由卡里的航次胶囊决定（见 drawZhengheRoute / drawZhengheShadow）。
   if (data.zhenghe && inEra(data.zhenghe)) {
     const zh = data.zhenghe;
     zhRouteData = zh;
-    zhVoyageIndex = -1;   // 重渲染后回到总览，避免沿用一个已失效的下标
+    zhVoyageIndex = -1;   // 重渲染后回到叠影，避免沿用一个已失效的下标
     const btn = el('button', 'route-btn');
     btn.textContent = '郑和航线 ▶（含远洋）';
     btn.dataset.layer = 'zhenghe-west';
@@ -2145,8 +2176,8 @@ function renderMapControls(data) {
       legend.querySelectorAll('.route-btn').forEach((b) => { b.style.background = ''; b.classList.remove('on'); });
       btn.style.background = zh.color;
       btn.classList.add('on');
-      zhVoyageIndex = -1;           // 点主胶囊＝回到七次总览
-      drawZhengheRoute(currentZhenghePoints());   // 内部 fitBounds 已负责收/放视野
+      zhVoyageIndex = -1;           // 点主胶囊＝回到七次叠影（也是从某次退回整体的入口）
+      drawZhengheShadow();
       showRouteDetail(zh);
     });
     legend.appendChild(btn);
@@ -2176,25 +2207,27 @@ function renderMapControls(data) {
   // 直接触发对应胶囊的 click，复用「复位视野 → 画整条路线 → 展开详情面板」这一整套真实路径，
   // 不在这里另写一份绘制/高亮逻辑——两份逻辑一旦分叉，深链与手动点击就会不一致。
   // 只在 location.search 变化时应用一次，避免重渲染时反复复位视野。
+  // 必须在末尾 showEvents() 之后调用：默认「该朝事件」视图会清掉郑和图层，
+  // 早一步画好的航线会被它抹掉（卡片在、图上空着）。
   const deepRouteId = new URLSearchParams(location.search).get('route');
-  if (deepRouteId && appliedDeepRoute !== location.search) {
+  const applyDeepRoute = () => {
+    if (!deepRouteId || appliedDeepRoute === location.search) return;
     appliedDeepRoute = location.search;
     const targetBtn = routeBtns.find((b) => b.dataset.layer === deepRouteId);
-    if (targetBtn) {
-      // 目标可能被折叠进「展示更多」里（默认只露前 8 条）
-      if (targetBtn.classList.contains('hidden')) {
-        const moreBtn = legend.querySelector('.route-more-btn');
-        if (moreBtn) moreBtn.click();
-      }
-      targetBtn.click();
-      // 郑和航线的航次深链：?route=zhenghe-west&voyage=4 → 直接展开第四次
-      const vParam = Number(new URLSearchParams(location.search).get('voyage'));
-      if (deepRouteId === 'zhenghe-west' && vParam >= 1) {
-        const chip = legend.ownerDocument.querySelector(`.zh-voyage-chip[data-v="${vParam - 1}"]`);
-        if (chip) chip.click();
-      }
+    if (!targetBtn) return;
+    // 目标可能被折叠进「展示更多」里（默认只露前 8 条）
+    if (targetBtn.classList.contains('hidden')) {
+      const moreBtn = legend.querySelector('.route-more-btn');
+      if (moreBtn) moreBtn.click();
     }
-  }
+    targetBtn.click();
+    // 郑和航线的航次深链：?route=zhenghe-west&voyage=4 → 直接展开第四次
+    const vParam = Number(new URLSearchParams(location.search).get('voyage'));
+    if (deepRouteId === 'zhenghe-west' && vParam >= 1) {
+      const chip = document.querySelector(`.zh-voyage-chip[data-v="${vParam - 1}"]`);
+      if (chip) chip.click();
+    }
+  };
   // 事件按钮（默认激活）：点击后在地图下方汇总事件涉及的古地名。
   // 文案跟随年号切换，与汇总面板标题保持一致（点年号后只汇总该年号的事件）。
   // 外观与路线胶囊刻意区分：矩形 + 列表图标（路线胶囊是圆角胶囊 + ▶）。
@@ -2220,6 +2253,8 @@ function renderMapControls(data) {
   legend.insertBefore(evtBtn, legend.firstChild);
   // 初始状态：显示城市点 + 事件点（默认"该朝事件"视图）
   showEvents();
+  // 深链要在默认视图之后应用，否则航线刚画好就被 showEvents() 清掉
+  applyDeepRoute();
 }
 
 /** 该朝事件汇总：列出地图事件涉及的古地名（点击跳地图并弹窗说明）。
@@ -2361,11 +2396,11 @@ const EVENT_ROUTE_MAP = {
 function showEventRoute(ev) {
   const routeId = EVENT_ROUTE_MAP[ev.eventId];
   if (!routeId) return;
-  // 郑和航线是特殊层（按当前航次单独重画），走 drawZhengheRoute
+  // 郑和航线是特殊层（按当前航次单独重画）：选了某次就画该次，没选就画七次叠影
   if (routeId === 'zhenghe-west') {
     if (!zhRouteData) zhRouteData = (DATA.routes || []).find((r) => r.id === 'zhenghe-west') || null;
     const pts = currentZhenghePoints();
-    if (pts) drawZhengheRoute(pts);
+    if (pts) drawZhengheRoute(pts); else drawZhengheShadow();
     return;
   }
   // 普通路线：找 data.routes 里的索引
@@ -2446,26 +2481,37 @@ function showSingleEvent(ev, opts = {}) {
 }
 
 /** 路线详情：点击路线按钮后，在地图下方展示背景说明与途经点。
- *  郑和航线带 voyages（七次航次）时，额外在标题上方给一排航次胶囊：
- *  点某一次就只显示该次的路线与地点顺序，地图同步按该航次重画。 */
+ *  郑和航线只给七枚航次胶囊（不再有「总览」）：未选航次时是「七次叠影」，
+ *  只讲范围与规模、不排先后；点某一次才给该次的路线与逐站说明。 */
 function showRouteDetail(r) {
   const box = $('#route-detail');
   if (!box) return;
   const voyages = r.voyages || null;
   const pickIdx = (voyages && zhVoyageIndex >= 0 && zhVoyageIndex < voyages.length) ? zhVoyageIndex : -1;
   const v = pickIdx >= 0 ? voyages[pickIdx] : null;
-  const pts = ((v ? v.points : r.points) || []);
-  const headName = v ? `郑和${v.name}` : r.name;
-  const headYear = v ? v.years : (r.year || '');
+  const pts = (v ? v.points : []) || [];
+  const headName = v ? `郑和${v.name}` : (voyages ? '郑和七次航线 · 叠影' : r.name);
+  const headYear = v ? v.years : (voyages
+    ? `${voyages[0].years.split('—')[0]}—${voyages[voyages.length - 1].years.split('—')[1] || ''}`
+    : (r.year || ''));
   const stops = pts.map((p) =>
     `${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}`).join(' → ');
   const CN = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
   const chips = voyages ? `
     <div class="zh-voyage-bar" role="tablist" aria-label="郑和下西洋七次航次">
-      <button class="zh-voyage-chip${pickIdx < 0 ? ' on' : ''}" data-v="-1" role="tab" aria-selected="${pickIdx < 0}">七次总览</button>
       ${voyages.map((x, i) => `<button class="zh-voyage-chip${pickIdx === i ? ' on' : ''}" data-v="${i}" role="tab" aria-selected="${pickIdx === i}"
         title="${x.name}（${x.years}）· ${x.points.length} 站">第${CN[x.no - 1] || (i + 1)}次</button>`).join('')}
     </div>` : '';
+  // 叠影态只给一句规模统计 + 一条使用提示：七次从不是一条连续航线，
+  // 所以这里刻意不排站序，顺序交给各航次。
+  const totalStops = voyages ? voyages.reduce((s, x) => s + x.points.length, 0) : 0;
+  const portCount = voyages ? new Set(voyages.flatMap((x) => x.points.map((p) => p.name))).size : 0;
+  const body = v ? `
+    <div class="route-detail-path"><b>路线：</b>${stops}</div>
+    <ol class="route-detail-stops">${pts.map((p, i) => `
+      <li data-station="${i}"${(p.lat && p.lng) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ''}><b>${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}</b><span class="rs-dash"> —— </span><span class="rs-note">${p.note || ''}</span></li>`).join('')}
+    </ol>` : `
+    <div class="route-detail-path"><b>统计：</b>七次共 ${totalStops} 站、${portCount} 个港口；图上七条线由淡到浓依次是第一至第七次，越走越远一眼可见。<b>顺序：</b>七次各有各的来回，并不存在一条连续航线，请点上方的「第X次」看该次的路线与地点顺序。</div>`;
   box.classList.remove('hidden');
   box.innerHTML = `
     ${chips}
@@ -2474,10 +2520,7 @@ function showRouteDetail(r) {
       <span class="route-detail-year">${headYear}</span>
     </div>
     <div class="route-detail-desc">${(v ? v.desc : r.desc) || ''}</div>
-    <div class="route-detail-path"><b>路线：</b>${stops}</div>
-    <ol class="route-detail-stops">${pts.map((p, i) => `
-      <li data-station="${i}"${(p.lat && p.lng) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ''}><b>${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}</b><span class="rs-dash"> —— </span><span class="rs-note">${p.note || ''}</span></li>`).join('')}
-    </ol>`;
+    ${body}`;
   // 航次胶囊：切到某一次 → 地图重画该次航线 → 详情卡按该次重绘
   box.querySelectorAll('.zh-voyage-chip').forEach((chip) => {
     chip.addEventListener('click', () => {
