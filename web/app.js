@@ -1839,6 +1839,78 @@ function showRouteMarker(m) {
   if (m.openTooltip) m.openTooltip();
 }
 
+/* ============================================================
+ * 郑和下西洋：七次航次（data/routes.json 里 zhenghe-west.voyages）
+ * 原先把七次合成一条「含远洋」的折线，看不出这是第几次；这里改成
+ * 按航次重画：每次只画本航次的地点顺序，并在详情卡里给七个航次胶囊。
+ * ============================================================ */
+let zhVoyageIndex = -1;   // -1 = 七次总览（合并后的原航线）
+let zhRouteData = null;   // 当前郑和路线对象（含 voyages）
+
+/** 清掉当前郑和航线图层（折线 + 途经点圆点），下次按新航次重建 */
+function clearZhengheLayers() {
+  (leafletLayers.zhenghe || []).forEach((x) => { if (x && leafletMap) leafletMap.removeLayer(x); });
+  leafletLayers.zhenghe = [];
+  // 还原地图缩放下限：直接改 options.minZoom，不走 Leaflet 的 setMinZoom——
+  // setMinZoom 内部会 setZoom(_limitZoom(当前zoom)) 并起一段缩放动画，
+  // 若此时正在按新航次 setView，那段动画会在稍后结束时把视野改回旧级别。
+  if (leafletMap && leafletMap.options && leafletMap.options.minZoom < 3) leafletMap.options.minZoom = 3;
+}
+
+/** 当前应绘制的航点：选中某次航次就取该航次，否则取七次合并总览 */
+function currentZhenghePoints() {
+  if (!zhRouteData) return null;
+  const v = zhVoyageIndex >= 0 && zhRouteData.voyages ? zhRouteData.voyages[zhVoyageIndex] : null;
+  return (v ? v.points : zhRouteData.points) || null;
+}
+
+/** 画出某一组郑和航点：隐藏国内路线/事件点/城市点，重画一条虚线航线 + 全部途经点，并播放动画 */
+function drawZhengheRoute(points) {
+  if (!leafletMap || !points || points.length < 2) return;
+  clearRouteAnimations();
+  (leafletLayers.routes || []).forEach((l) => {
+    l.line.setStyle({ opacity: 0, fillOpacity: 0 });
+    l.wps.forEach((w) => w.setStyle({ opacity: 0, fillOpacity: 0 }));
+    hideRouteMarker(l.sMark);
+    hideRouteMarker(l.eMark);
+  });
+  (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
+  (leafletLayers.events || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
+  clearZhengheLayers();
+  const color = (zhRouteData && zhRouteData.color) || '#247bc1';
+  const line = L.polyline(points.map((p) => [p.lat, p.lng]), {
+    color, weight: 3, opacity: 1, dashArray: '8 5', lineCap: 'round', lineJoin: 'round',
+  }).addTo(leafletMap);
+  const marks = points.map((p) => {
+    const dot = L.circleMarker([p.lat, p.lng], { radius: 4, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1, opacity: 1 });
+    dot.bindTooltip(`${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}：${p.note || ''}`, { direction: 'top' });
+    dot.addTo(leafletMap);
+    return dot;
+  });
+  leafletLayers.zhenghe = [line].concat(marks);
+  // 每次航次跨度不同（第一次到印度，第七次到东非），直接把视野框到这条航线，
+  // 否则「明朝默认视野」只看得到中国—马六甲，非洲那段在屏幕外。
+  // 手机窄屏要装下「波斯湾—东非」那一档得退到 zoom 2，而地图 minZoom 是 3：
+  // 这里按需把下限临时放开，清图层时再还原，避免把整页地图的缩放习惯改掉。
+  // 视野：Leaflet 自带 fitBounds 在 zoomSnap=1 时会把「差一点装下」的航线向上取整，
+  // 手机窄屏会出现两端被裁掉（第四次西端波斯湾落在屏幕外）。这里自己按投影算一次整数缩放：
+  // zoom0 世界宽 256px，逐级减半；取能装下经纬跨度的最大整数级，再夹到 [2,4]。
+  const b = line.getBounds();
+  const pad = 30;
+  const size = leafletMap.getSize();
+  const bs = leafletMap.project(b.getSouthEast(), 0).subtract(leafletMap.project(b.getNorthWest(), 0));
+  const fitZoom = Math.max(2, Math.min(4,
+    Math.floor(Math.log2(Math.min((size.x - pad * 2) / bs.x, (size.y - pad * 2) / bs.y)))));
+  // 远洋航线在手机上得退到 zoom 2，而地图 minZoom 是 3：按需放开下限（同样直接改
+  // options.minZoom，避开 setMinZoom 自带的缩放动画），清图层时还原。
+  if (leafletMap.options && fitZoom < leafletMap.options.minZoom) leafletMap.options.minZoom = fitZoom;
+  // 用不带过渡的 setView：zoom 从 4 直接跨到 2 时，Leaflet 的缩放动画一旦被
+  // 滚屏/尺寸变化打断就会停在中间级别（实测手机端停在 3、航线两端被裁），
+  // 而路线自身的描线动画随后就开始，瞬移观感并没有损失。
+  leafletMap.setView(b.getCenter(), fitZoom, { animate: false });
+  animateRoute({ line, wps: marks, sMark: null, eMark: null }, 1800);
+}
+
 function renderMap() {
   const container = $('#map-leaf');
   if (!container) return;
@@ -2002,9 +2074,7 @@ function renderMapControls(data) {
       hideRouteMarker(l.sMark);
       hideRouteMarker(l.eMark);
     });
-    (leafletLayers.zhenghe || []).forEach((x) => {
-      if (x.setStyle) x.setStyle({ opacity: 0, fillOpacity: 0 });
-    });
+    clearZhengheLayers();
     // 完全移除城市点和事件点图层（divIcon setOpacity 不可靠，直接 removeLayer）
     (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
     (leafletLayers.events || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
@@ -2023,7 +2093,7 @@ function renderMapControls(data) {
       hideRouteMarker(l.sMark);
       hideRouteMarker(l.eMark);
     });
-    (leafletLayers.zhenghe || []).forEach((x) => { if (x.setStyle) x.setStyle({ opacity: 0, fillOpacity: 0 }); });
+    clearZhengheLayers();
     // 重新加回城市点 + 事件地名点
     (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) m.addTo(leafletMap); });
     (leafletLayers.events || []).forEach((m) => {
@@ -2038,23 +2108,6 @@ function renderMapControls(data) {
         }
       }
     });
-  };
-  const showRouteZhenghe = () => {
-    clearRouteAnimations();
-    // 隐藏国内路线、事件点、城市点
-    (leafletLayers.routes || []).forEach((l) => {
-      l.line.setStyle({ opacity: 0, fillOpacity: 0 });
-      l.wps.forEach((w) => w.setStyle({ opacity: 0, fillOpacity: 0 }));
-      hideRouteMarker(l.sMark);
-      hideRouteMarker(l.eMark);
-    });
-    (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
-    (leafletLayers.events || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
-    // 显示郑和航线
-    (leafletLayers.zhenghe || []).forEach((x) => { if (x.setStyle) x.setStyle({ opacity: 1 }); });
-    const domesticLine = (leafletLayers.zhenghe || [])[0];
-    const overseasLine = (leafletLayers.zhenghe || [])[1];
-    [domesticLine, overseasLine].forEach((l) => l && animateRoute({ line: l, wps: [], sMark: null, eMark: null }, 1800));
   };
   // 路线胶囊默认只露出前 8 个，其余折进「展示更多」——「全部」朝代下七朝合计三十余条，
   // 全平铺会把地图挤出视口。郑和航线也算一条，按整体顺序一起折叠。
@@ -2078,26 +2131,12 @@ function renderMapControls(data) {
     legend.appendChild(btn);
     routeBtns.push(btn);
   });
-  // 郑和航线：拆成国内段 + 远洋段两条 polyline（替代旧插页），点击后高亮
+  // 郑和航线：不再预画一条「七次合并」的折线，改由航次胶囊按需重画（见 drawZhengheRoute）。
+  // 按钮只负责：选中态 → 复位视野 → 画当前航次（默认七次总览）→ 展开详情卡（内含七个航次胶囊）。
   if (data.zhenghe && inEra(data.zhenghe)) {
     const zh = data.zhenghe;
-    const domestic = (zh.points || []).filter((p) => p.lat >= 20 && p.lng >= 110);
-    const overseas = (zh.points || []).filter((p) => !(p.lat >= 20 && p.lng >= 110));
-    const mk = (pts) => L.polyline(pts.map((p) => [p.lat, p.lng]), {
-      color: zh.color, weight: 3, opacity: 0, dashArray: '8 5', lineCap: 'round', lineJoin: 'round',
-    });
-    const domesticLine = domestic.length >= 2 ? mk(domestic) : null;
-    const overseasLine = overseas.length >= 2 ? mk(overseas) : null;
-    if (domesticLine) domesticLine.addTo(leafletMap);
-    if (overseasLine) overseasLine.addTo(leafletMap);
-    leafletLayers.zhenghe = [domesticLine, overseasLine].filter(Boolean);
-    // 途经点
-    (zh.points || []).forEach((p) => {
-      const dot = L.circleMarker([p.lat, p.lng], { radius: 4, color: '#fff', weight: 2, fillColor: zh.color, fillOpacity: 1, opacity: 0 });
-      dot.bindTooltip(`${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}：${p.note || ''}`, { direction: 'top' });
-      dot.addTo(leafletMap);
-      leafletLayers.zhenghe.push(dot);
-    });
+    zhRouteData = zh;
+    zhVoyageIndex = -1;   // 重渲染后回到总览，避免沿用一个已失效的下标
     const btn = el('button', 'route-btn');
     btn.textContent = '郑和航线 ▶（含远洋）';
     btn.dataset.layer = 'zhenghe-west';
@@ -2106,11 +2145,9 @@ function renderMapControls(data) {
       legend.querySelectorAll('.route-btn').forEach((b) => { b.style.background = ''; b.classList.remove('on'); });
       btn.style.background = zh.color;
       btn.classList.add('on');
-      resetMapView();
-      showRouteZhenghe();
+      zhVoyageIndex = -1;           // 点主胶囊＝回到七次总览
+      drawZhengheRoute(currentZhenghePoints());   // 内部 fitBounds 已负责收/放视野
       showRouteDetail(zh);
-      const box = $('#route-detail');
-      if (box) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
     legend.appendChild(btn);
     routeBtns.push(btn);
@@ -2150,6 +2187,12 @@ function renderMapControls(data) {
         if (moreBtn) moreBtn.click();
       }
       targetBtn.click();
+      // 郑和航线的航次深链：?route=zhenghe-west&voyage=4 → 直接展开第四次
+      const vParam = Number(new URLSearchParams(location.search).get('voyage'));
+      if (deepRouteId === 'zhenghe-west' && vParam >= 1) {
+        const chip = legend.ownerDocument.querySelector(`.zh-voyage-chip[data-v="${vParam - 1}"]`);
+        if (chip) chip.click();
+      }
     }
   }
   // 事件按钮（默认激活）：点击后在地图下方汇总事件涉及的古地名。
@@ -2318,11 +2361,11 @@ const EVENT_ROUTE_MAP = {
 function showEventRoute(ev) {
   const routeId = EVENT_ROUTE_MAP[ev.eventId];
   if (!routeId) return;
-  // 郑和航线是特殊层（zhenghe），单独处理
+  // 郑和航线是特殊层（按当前航次单独重画），走 drawZhengheRoute
   if (routeId === 'zhenghe-west') {
-    (leafletLayers.zhenghe || []).forEach((x) => { if (x.setStyle) x.setStyle({ opacity: 1 }); });
-    const lines = leafletLayers.zhenghe || [];
-    [lines[0], lines[1]].forEach((l) => l && animateRoute({ line: l, wps: [], sMark: null, eMark: null }, 1800));
+    if (!zhRouteData) zhRouteData = (DATA.routes || []).find((r) => r.id === 'zhenghe-west') || null;
+    const pts = currentZhenghePoints();
+    if (pts) drawZhengheRoute(pts);
     return;
   }
   // 普通路线：找 data.routes 里的索引
@@ -2356,7 +2399,7 @@ function showSingleEvent(ev, opts = {}) {
     hideRouteMarker(l.sMark);
     hideRouteMarker(l.eMark);
   });
-  (leafletLayers.zhenghe || []).forEach((x) => { if (x.setStyle) x.setStyle({ opacity: 0, fillOpacity: 0 }); });
+  clearZhengheLayers();
   // 移除所有事件点（再按需加回目标）
   (leafletLayers.events || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
   // 找到目标事件所在聚合标记（按 _evtIds 匹配）
@@ -2402,23 +2445,53 @@ function showSingleEvent(ev, opts = {}) {
   });
 }
 
-/** 路线详情：点击路线按钮后，在地图下方展示背景说明与途经点 */
+/** 路线详情：点击路线按钮后，在地图下方展示背景说明与途经点。
+ *  郑和航线带 voyages（七次航次）时，额外在标题上方给一排航次胶囊：
+ *  点某一次就只显示该次的路线与地点顺序，地图同步按该航次重画。 */
 function showRouteDetail(r) {
   const box = $('#route-detail');
   if (!box) return;
-  const stops = (r.points || []).map((p) =>
+  const voyages = r.voyages || null;
+  const pickIdx = (voyages && zhVoyageIndex >= 0 && zhVoyageIndex < voyages.length) ? zhVoyageIndex : -1;
+  const v = pickIdx >= 0 ? voyages[pickIdx] : null;
+  const pts = ((v ? v.points : r.points) || []);
+  const headName = v ? `郑和${v.name}` : r.name;
+  const headYear = v ? v.years : (r.year || '');
+  const stops = pts.map((p) =>
     `${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}`).join(' → ');
+  const CN = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  const chips = voyages ? `
+    <div class="zh-voyage-bar" role="tablist" aria-label="郑和下西洋七次航次">
+      <button class="zh-voyage-chip${pickIdx < 0 ? ' on' : ''}" data-v="-1" role="tab" aria-selected="${pickIdx < 0}">七次总览</button>
+      ${voyages.map((x, i) => `<button class="zh-voyage-chip${pickIdx === i ? ' on' : ''}" data-v="${i}" role="tab" aria-selected="${pickIdx === i}"
+        title="${x.name}（${x.years}）· ${x.points.length} 站">第${CN[x.no - 1] || (i + 1)}次</button>`).join('')}
+    </div>` : '';
   box.classList.remove('hidden');
   box.innerHTML = `
+    ${chips}
     <div class="route-detail-head" style="border-color:${r.color || '#c0392b'}">
-      <span class="route-detail-name">${r.name}</span>
-      <span class="route-detail-year">${r.year || ''}</span>
+      <span class="route-detail-name">${headName}</span>
+      <span class="route-detail-year">${headYear}</span>
     </div>
-    <div class="route-detail-desc">${r.desc || ''}</div>
+    <div class="route-detail-desc">${(v ? v.desc : r.desc) || ''}</div>
     <div class="route-detail-path"><b>路线：</b>${stops}</div>
-    <ol class="route-detail-stops">${(r.points || []).map((p, i) => `
+    <ol class="route-detail-stops">${pts.map((p, i) => `
       <li data-station="${i}"${(p.lat && p.lng) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ''}><b>${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}</b><span class="rs-dash"> —— </span><span class="rs-note">${p.note || ''}</span></li>`).join('')}
     </ol>`;
+  // 航次胶囊：切到某一次 → 地图重画该次航线 → 详情卡按该次重绘
+  box.querySelectorAll('.zh-voyage-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      zhVoyageIndex = Number(chip.dataset.v);
+      if (leafletMap) drawZhengheRoute(currentZhenghePoints());
+      showRouteDetail(r);
+      // 手机端上下堆叠（地图在上、详情卡在下），点了胶囊要能立刻看到航线重画，
+      // 所以把地图滚回视野；桌面端图卡同屏，只要保住详情卡的最近位置即可。
+      if (window.matchMedia('(max-width: 760px)').matches) {
+        const mapEl = $('#map-leaf');
+        if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
   box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 

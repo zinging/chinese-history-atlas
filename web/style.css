@@ -1066,6 +1066,23 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
   color: #fff;
 }
 
+/* 郑和七次下西洋：航次胶囊（点某一次只看那一次的航线与地点顺序）。
+   放进路线详情卡顶部，视觉上从属于「郑和航线」这条蓝色路线，
+   所以用同色系的细边小胶囊，比主路线胶囊小一号、不抢主按钮。 */
+.zh-voyage-bar {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin: 0 0 10px;
+}
+.zh-voyage-chip {
+  border: 1.5px solid #a8c9e8; background: #fff; color: #245c8b;
+  padding: 5px 11px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  line-height: 1.25; cursor: pointer; white-space: nowrap;
+}
+.zh-voyage-chip:hover { border-color: #247bc1; background: #f2f8fd; }
+.zh-voyage-chip.on {
+  background: #247bc1; border-color: #247bc1; color: #fff;
+}
+
 /* ---- 历史侦探 ---- */
 .detective-week, .detective-clues, .detective-create {
   background: var(--card); border: 2px solid var(--border);
@@ -1690,6 +1707,25 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   .legend-item { font-size: 11px; gap: 4px; }
   .route-toggle { gap: 6px; }
   .route-btn { padding: 6px 12px; font-size: 13px; }
+
+  /* 郑和航次胶囊（移动端）：七个横排成一行，左右可滑——竖排换行会把地图和详情
+     一起往下推走；单个胶囊按触控目标放宽到 34px 高。 */
+  .zh-voyage-bar {
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    gap: 5px; margin-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .zh-voyage-bar::-webkit-scrollbar { display: none; }
+  .zh-voyage-chip {
+    flex: 0 0 auto;
+    padding: 8px 11px; font-size: 12.5px;
+  }
+  /* 详情卡 scrollIntoView 时给左上角悬浮的汉堡按钮留出位置，
+     不然第一枚航次胶囊会被它压住；地图同样留出，别让 + / − 被盖。 */
+  .route-detail { scroll-margin-top: 64px; }
+  #map-leaf { scroll-margin-top: 44px; }
 
   /* 11) 关键人物 2×2 网格：760 以下强制单列（640 那条规则已经做了，这里再保险）。 */
   .case-people { grid-template-columns: 1fr; }
