@@ -1491,6 +1491,11 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
    带触屏的笔记本（主指针是触控板/鼠标）和桌面短窗口都不会命中，桌面零影响。
    注意：app.js 的 initMobileNav 里 MQ 必须与本行逐字一致，否则会出现「CSS 抽屉化
    但没有汉堡按钮」的死锁。 */
+
+/* 移动端顶部提示条（「建议用电脑打开…」，可关闭）：默认 display:none，
+   桌面端从不参与布局；真正的显示规则在文件末尾的竖屏媒体查询里。 */
+.tip-bar { display: none; }
+
 @media (max-width: 760px), (max-height: 500px) and (pointer: coarse) and (orientation: landscape) {
   /* 1) 侧栏抽屉化：默认推到视口外（-88%），点菜单按钮时 body.sidebar-open 滑入。
         不改 .mega-sidebar 主定义，这里只覆盖宽度与位移——桌面回退零风险。 */
@@ -1769,6 +1774,46 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
 
   /* 18) 折叠侧栏按钮在移动端隐藏（用户改用菜单按钮开合）。 */
   .mega-collapse-btn { display: none; }
+}
+
+/* 移动端顶部提示条：只在「竖屏手机 / 窄窗口」出现。
+   横屏手机（844×390）垂直空间本就紧张，不占这一条；桌面（>760 且非手机横屏）
+   一行都不命中，因此对桌面展示零影响。
+   高度 34px：提示条自己占满顶部，汉堡按钮整体下移到 44px 起（仍悬浮在首行左上角），
+   正文与 iframe 的可用高度同步减去这一条，避免多出一屏无效滚动。 */
+@media (max-width: 760px) and (orientation: portrait) {
+  .tip-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 4px 0 12px;
+    background: #eaf1fb;
+    border-bottom: 1px solid #d2dff2;
+    color: #4a5a72;
+    font-size: 12.5px;
+    line-height: 1;
+  }
+  #tip-bar[hidden] { display: none; }
+  .tip-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tip-close {
+    flex: 0 0 auto;
+    width: 32px; height: 32px;
+    border: none; background: none;
+    color: #7b8aa3;
+    font-size: 17px; line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body.tip-open .mega-area { min-height: calc(100dvh - 34px); }
+  body.tip-open .guoxue-frame { height: calc(100dvh - 34px); }
+  body.tip-open .mobile-menu-btn { top: 44px; }
 }
 
 /* 极窄视口（iPhone SE 一代 320、或 360 上 125% 缩放）：

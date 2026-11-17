@@ -3561,6 +3561,33 @@ async function applyDeepLink() {
 })();
 
 /* ============================================================
+ * 移动端顶部提示条：小屏竖屏时显示「建议用电脑打开…」，可关闭并记住选择。
+ * 媒体查询与 style.css 里 .tip-bar 的显示条件逐字一致（≤760px 且竖屏）；
+ * 桌面端这里直接 return，不碰 body 类名，桌面布局零影响。
+ * ============================================================ */
+(function initTipBar() {
+  const bar = document.getElementById('tip-bar');
+  if (!bar) return;
+  const MQ = '(max-width: 760px) and (orientation: portrait)';
+  const mql = (typeof window.matchMedia === 'function') ? window.matchMedia(MQ) : null;
+  if (!mql || !mql.matches) return;      // 桌面 / 手机横屏：不显示，也不加 body 状态
+  const KEY = 'dsh.tip.desktopDismissed';
+  let dismissed = false;
+  try { dismissed = localStorage.getItem(KEY) === '1'; } catch (e) { dismissed = false; }
+  if (dismissed) return;
+  const close = document.getElementById('tip-close');
+  bar.hidden = false;
+  document.body.classList.add('tip-open');
+  if (close) {
+    close.addEventListener('click', () => {
+      bar.hidden = true;
+      document.body.classList.remove('tip-open');
+      try { localStorage.setItem(KEY, '1'); } catch (e) { /* 隐私模式下忽略 */ }
+    });
+  }
+})();
+
+/* ============================================================
  * 移动端导航：≤760px 视口把侧栏改成抽屉。
  * 桌面端（≥1024）永不触发——isMobile() 是纯宽度判断，与 UA 无关。
  * 做四件事：
