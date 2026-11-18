@@ -1895,13 +1895,33 @@ function fitZhengheView(bounds) {
   leafletMap.setView(bounds.getCenter(), fitZoom, { animate: false });
 }
 
+/** 海路整形：港口数据只有港点，直连会在陆地上拉直线（刘家港→占城横切浙闽、
+ *  忽鲁谟斯→木骨都束穿阿拉伯半岛、亚丁→摩加迪沙切索马里内陆）。
+ *  这里按 routes.json 的 via 补几个海上转弯点，让线贴着水走；
+ *  这些点只用于整形，不是停泊港，所以既不画圆点也不进详情卡。 */
+function zhSeaPath(points) {
+  const via = (zhRouteData && zhRouteData.via) || {};
+  const out = [];
+  points.forEach((p, i) => {
+    if (i > 0) {
+      const prev = points[i - 1];
+      const key = `${prev.name}|${p.name}`;
+      const back = `${p.name}|${prev.name}`;
+      if (via[key]) via[key].forEach(([lat, lng]) => out.push([lat, lng]));
+      else if (via[back]) via[back].slice().reverse().forEach(([lat, lng]) => out.push([lat, lng]));
+    }
+    out.push([p.lat, p.lng]);
+  });
+  return out;
+}
+
 /** 单次航次：一条虚线航线 + 全部途经点 + 描线动画；起点/终点与主干港口加古地名标签 */
 function drawZhengheRoute(points) {
   if (!leafletMap || !points || points.length < 2) return;
   clearRouteAnimations();
   prepareZhengheStage();
   const color = (zhRouteData && zhRouteData.color) || '#247bc1';
-  const line = L.polyline(points.map((p) => [p.lat, p.lng]), {
+  const line = L.polyline(zhSeaPath(points), {
     color, weight: 3, opacity: 1, dashArray: '8 5', lineCap: 'round', lineJoin: 'round',
   }).addTo(leafletMap);
   const marks = points.map((p) => {
@@ -1973,7 +1993,7 @@ function drawZhengheShadow() {
   const trunkNames = zhTrunkStations(voyages);
   const trunkPts = voyages[0].points.filter((p) => trunkNames.includes(p.name === '锡兰' ? '锡兰山' : p.name));
   if (trunkPts.length >= 2) {
-    const trunk = L.polyline(trunkPts.map((p) => [p.lat, p.lng]), {
+    const trunk = L.polyline(zhSeaPath(trunkPts), {
       color, weight: 3.2, opacity: 0.62, lineJoin: 'round',
     }).addTo(leafletMap);
     trunk.bindTooltip(`七次共同主干：${trunkPts.map((p) => p.name).join(' → ')}（七次都到过的港口之间的直连）`, { sticky: true });
@@ -1993,7 +2013,7 @@ function drawZhengheShadow() {
   });
   branches.forEach((b, k) => {
     const op = Math.round((0.45 + (k / Math.max(1, branches.length - 1)) * 0.45) * 100) / 100;
-    const line = L.polyline(b.pts.map((p) => [p.lat, p.lng]), {
+    const line = L.polyline(zhSeaPath(b.pts), {
       color, weight: 2.6, opacity: op, lineJoin: 'round',
     }).addTo(leafletMap);
     line.bindTooltip(`${b.v.name}（${b.v.years}）· 古里以西：${b.pts.slice(1).map((p) => p.name).join(' → ')}`, { sticky: true });
@@ -2588,7 +2608,7 @@ function showRouteDetail(r) {
     <ol class="route-detail-stops">${pts.map((p, i) => `
       <li data-station="${i}"${(p.lat && p.lng) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ''}><b>${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}</b><span class="rs-dash"> —— </span><span class="rs-note">${p.note || ''}</span></li>`).join('')}
     </ol>` : `
-    <div class="route-detail-path"><b>读法：</b>图上那条略粗的主干是七次都到的港口直连（${trunkNames.join('—')}）；古里以西按航次分岔，越晚越浓——第四次起才越过印度洋抵波斯湾与东非。<b>规模：</b>七次共 ${totalStops} 站、${portCount} 个港口。<b>顺序：</b>七次各有各的来回，并不存在一条连续航线，请点上方的「第X次」看该次的路线与地点顺序。</div>`;
+    <div class="route-detail-path"><b>读法：</b>图上那条略粗的主干是七次都到的港口直连（${trunkNames.join('—')}）；古里以西按航次分岔，越晚越浓——第四次起才越过印度洋抵波斯湾与东非。线按海路绕行（只补海上转弯点，不算停泊港）。<b>规模：</b>七次共 ${totalStops} 站、${portCount} 个港口。<b>顺序：</b>七次各有各的来回，并不存在一条连续航线，请点上方的「第X次」看该次的路线与地点顺序。</div>`;
   box.classList.remove('hidden');
   box.innerHTML = `
     ${chips}

@@ -268,6 +268,40 @@ if (routesDoc) {
         errors.push(`data/routes/routes.json: ${where} 途经点 "${pt.name}" 缺 name/lat/lng`);
       }
     }
+    // via：海路整形用的转弯点，键为「甲港|乙港」，值是一串 [lat,lng]。
+    // 两个港名必须真实存在于这条路线（含各航次），坐标必须落在两端点外扩 8° 的框内——
+    // 这一条专门盯住经纬写反（写反后纬度会跑到另一端点的经度上，像航次点被拉去西班牙）。
+    const allPts = (r.points ?? []).concat((r.voyages ?? []).flatMap((v) => v.points ?? []));
+    const names = new Set(allPts.map((p) => p.name));
+    for (const [key, mid] of Object.entries(r.via ?? {})) {
+      const [a, b] = key.split('|');
+      if (!names.has(a) || !names.has(b)) {
+        errors.push(`data/routes/routes.json: ${where} via 键 "${key}" 的港名不在该路线里`);
+        continue;
+      }
+      const pa = allPts.find((p) => p.name === a);
+      const pb = allPts.find((p) => p.name === b);
+      if (!Array.isArray(mid) || !mid.length) {
+        errors.push(`data/routes/routes.json: ${where} via "${key}" 不是非空数组`);
+        continue;
+      }
+      const MARGIN = 8;
+      for (const pt of mid) {
+        if (!Array.isArray(pt) || pt.length !== 2 || typeof pt[0] !== 'number' || typeof pt[1] !== 'number') {
+          errors.push(`data/routes/routes.json: ${where} via "${key}" 的点不是 [lat,lng] 数字对`);
+          continue;
+        }
+        const [lat, lng] = pt;
+        if (Math.abs(lat) > 85 || Math.abs(lng) > 180) {
+          errors.push(`data/routes/routes.json: ${where} via "${key}" 坐标越界：${lat},${lng}`);
+        } else if (
+          lat < Math.min(pa.lat, pb.lat) - MARGIN || lat > Math.max(pa.lat, pb.lat) + MARGIN
+          || lng < Math.min(pa.lng, pb.lng) - MARGIN || lng > Math.max(pa.lng, pb.lng) + MARGIN
+        ) {
+          errors.push(`data/routes/routes.json: ${where} via "${key}" 的点 ${lat},${lng} 离两端太远（疑似经纬写反）`);
+        }
+      }
+    }
   }
 }
 
