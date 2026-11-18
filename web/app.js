@@ -1895,7 +1895,7 @@ function fitZhengheView(bounds) {
   leafletMap.setView(bounds.getCenter(), fitZoom, { animate: false });
 }
 
-/** 单次航次：一条虚线航线 + 全部途经点 + 描线动画 */
+/** 单次航次：一条虚线航线 + 全部途经点 + 描线动画；起点/终点与主干港口加古地名标签 */
 function drawZhengheRoute(points) {
   if (!leafletMap || !points || points.length < 2) return;
   clearRouteAnimations();
@@ -1910,12 +1910,54 @@ function drawZhengheRoute(points) {
     dot.addTo(leafletMap);
     return dot;
   });
-  leafletLayers.zhenghe = [line].concat(marks);
+  // 古地名：起点、终点，以及该次经过的共同主干港口（七次都到的那几处）。
+  // 同样等取景完成再看 zoom：手机退到 zoom 2 时只留起点/终点/古里，免得标签互相压住。
   fitZhengheView(line.getBounds());
+  const labels = [];
+  const trunk = zhTrunkStations(zhRouteData && zhRouteData.voyages);
+  const seen = new Set();
+  const pushLabel = (p, dir) => {
+    if (!p || seen.has(p.name)) return;
+    seen.add(p.name);
+    const m = addZhenghePlaceLabel(p, dir);
+    if (m) labels.push(m);
+  };
+  const tight = leafletMap.getZoom() < 3;
+  pushLabel(points[0], 'top');
+  pushLabel(points[points.length - 1], 'bottom');
+  points.forEach((p, i) => {
+    const name = p.name === '锡兰' ? '锡兰山' : p.name;
+    if (tight ? name === '古里' : trunk.includes(name)) pushLabel(p, i % 2 ? 'bottom' : 'top');
+  });
+  leafletLayers.zhenghe = [line].concat(marks, labels);
   animateRoute({ line, wps: marks, sMark: null, eMark: null }, 1800);
 }
 
-/** 七次叠影：七条同色航线按航次由淡到浓叠画，不画站点、不排先后。
+/** 七次共同主干：七次全都到过的港口，按第一次的行进顺序排列。
+ *  并集里写「锡兰」、各次写「锡兰山」，归一再求交集。 */
+function zhTrunkStations(voyages) {
+  if (!voyages || !voyages.length || !voyages[0].points) return [];
+  const norm = (n) => (n === '锡兰' ? '锡兰山' : n);
+  return voyages[0].points.map((p) => norm(p.name))
+    .filter((n) => voyages.every((v) => v.points.some((p) => norm(p.name) === n)));
+}
+
+/** 郑和古地名标签：与地图上的城市点同一套胶囊底板（白底 + 描边 + 古地名 + 今地名），
+ *  描边换成航线蓝；用 permanent tooltip 常显，方向可上可下，便于相邻地名错开。 */
+function addZhenghePlaceLabel(p, dir) {
+  if (!leafletMap || !p || p.lat == null || p.lng == null) return null;
+  const modern = p.modern && p.modern !== p.name ? `（今${p.modern}）` : '';
+  const icon = L.divIcon({ className: 'zh-place-anchor', html: '', iconSize: [0, 0] });
+  const m = L.marker([p.lat, p.lng], { icon, interactive: false, keyboard: false });
+  m.bindTooltip(`${p.name}<span class="zh-place-modern">${modern}</span>`, {
+    permanent: true, direction: dir || 'top', className: 'zh-place-tip', opacity: 1,
+  });
+  m.addTo(leafletMap);
+  if (m.openTooltip) m.openTooltip();
+  return m;
+}
+
+/** 七次叠影：主干一条略粗 + 古里以西按航次分岔加亮，配古地名标签；不画站点、不排先后。
  *  一张图上「越走越远」一眼可见，但顺序解释权只留给各航次胶囊——
  *  七次合起来不是一条连续航线，任何一条「合并折线」都会画出历史上不存在的航段。 */
 function drawZhengheShadow() {
@@ -1923,23 +1965,57 @@ function drawZhengheShadow() {
   clearRouteAnimations();
   prepareZhengheStage();
   const color = zhRouteData.color || '#247bc1';
-  const list = zhRouteData.voyages;
-  const lines = [];
+  const voyages = zhRouteData.voyages;
+  const layers = [];
   const bounds = L.latLngBounds([]);
-  list.forEach((v, i) => {
-    if (!v.points || v.points.length < 2) return;
-    const opacity = Math.round((0.18 + (i / Math.max(1, list.length - 1)) * 0.5) * 100) / 100;
-    // 叠影用细实线（不用虚线）：七条虚线交叉会变成一堆断续小段，读起来更乱；
-    // 实线叠加后共同的「南京—马六甲—古里」主干会自然加粗，西端分岔才看得出来。
-    const line = L.polyline(v.points.map((p) => [p.lat, p.lng]), {
-      color, weight: 1.6, opacity, lineJoin: 'round',
+
+  // 主干：七次都到的港口直连，画得略粗，让「共同走廊」自己站出来
+  const trunkNames = zhTrunkStations(voyages);
+  const trunkPts = voyages[0].points.filter((p) => trunkNames.includes(p.name === '锡兰' ? '锡兰山' : p.name));
+  if (trunkPts.length >= 2) {
+    const trunk = L.polyline(trunkPts.map((p) => [p.lat, p.lng]), {
+      color, weight: 3.2, opacity: 0.62, lineJoin: 'round',
     }).addTo(leafletMap);
-    line.bindTooltip(`${v.name}（${v.years}）· ${v.points.length} 站`, { sticky: true });
-    bounds.extend(line.getBounds());
-    lines.push(line);
+    trunk.bindTooltip(`七次共同主干：${trunkPts.map((p) => p.name).join(' → ')}（七次都到过的港口之间的直连）`, { sticky: true });
+    bounds.extend(trunk.getBounds());
+    layers.push(trunk);
+  }
+
+  // 西端分岔：古里以西的航段按航次单独加亮（第四次起才越过印度洋），越晚越浓
+  const gul = voyages[0].points.find((p) => p.name === '古里') || { lat: 11.25, lng: 75.78 };
+  const branches = [];
+  voyages.forEach((v) => {
+    const k = v.points.findIndex((p) => p.name === '古里');
+    if (k < 0) return;
+    // 只取古里及其以西（排除「回到锡兰山」这类回程段），少于两个点就不算一条分岔
+    const west = v.points.slice(k).filter((p, i) => i === 0 || p.lng < gul.lng - 0.5);
+    if (west.length >= 2) branches.push({ v, pts: west });
   });
-  leafletLayers.zhenghe = lines;
+  branches.forEach((b, k) => {
+    const op = Math.round((0.45 + (k / Math.max(1, branches.length - 1)) * 0.45) * 100) / 100;
+    const line = L.polyline(b.pts.map((p) => [p.lat, p.lng]), {
+      color, weight: 2.6, opacity: op, lineJoin: 'round',
+    }).addTo(leafletMap);
+    line.bindTooltip(`${b.v.name}（${b.v.years}）· 古里以西：${b.pts.slice(1).map((p) => p.name).join(' → ')}`, { sticky: true });
+    bounds.extend(line.getBounds());
+    layers.push(line);
+  });
+  if (!branches.length && trunkPts.length >= 2) bounds.extend(L.latLngBounds(trunkPts.map((p) => [p.lat, p.lng])));
   fitZhengheView(bounds);
+
+  // 古地名：主干五处（刘家港与南京相邻，省一个）+ 西端三处（波斯湾口、东非、最西）。
+  // 标签在取景之后再加——手机上常退到 zoom 2，八个标签会互相压住，此时只留四个锚点。
+  const labels = [];
+  const zoom = leafletMap.getZoom();
+  const want = zoom < 3 ? ['南京', '满剌加', '忽鲁谟斯', '幔八萨'] : ['南京', '占城', '满剌加', '锡兰山', '古里', '忽鲁谟斯', '木骨都束', '幔八萨'];
+  want.forEach((name, i) => {
+    const hit = trunkPts.find((p) => p.name === name)
+      || branches.map((b) => b.pts.find((p) => p.name === name)).find(Boolean);
+    if (!hit) return;
+    const m = addZhenghePlaceLabel(hit, i % 2 ? 'bottom' : 'top');
+    if (m) labels.push(m);
+  });
+  leafletLayers.zhenghe = layers.concat(labels);
 }
 
 function renderMap() {
@@ -2502,16 +2578,17 @@ function showRouteDetail(r) {
       ${voyages.map((x, i) => `<button class="zh-voyage-chip${pickIdx === i ? ' on' : ''}" data-v="${i}" role="tab" aria-selected="${pickIdx === i}"
         title="${x.name}（${x.years}）· ${x.points.length} 站">第${CN[x.no - 1] || (i + 1)}次</button>`).join('')}
     </div>` : '';
-  // 叠影态只给一句规模统计 + 一条使用提示：七次从不是一条连续航线，
-  // 所以这里刻意不排站序，顺序交给各航次。
+  // 叠影态只讲「读法」与规模：主干是七次共同走的那段，西端分岔才是个体差异，
+  // 七次从不是一条连续航线，所以这里刻意不排站序，顺序交给各航次。
   const totalStops = voyages ? voyages.reduce((s, x) => s + x.points.length, 0) : 0;
   const portCount = voyages ? new Set(voyages.flatMap((x) => x.points.map((p) => p.name))).size : 0;
+  const trunkNames = zhTrunkStations(voyages).filter((n) => n !== '刘家港');
   const body = v ? `
     <div class="route-detail-path"><b>路线：</b>${stops}</div>
     <ol class="route-detail-stops">${pts.map((p, i) => `
       <li data-station="${i}"${(p.lat && p.lng) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ''}><b>${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}</b><span class="rs-dash"> —— </span><span class="rs-note">${p.note || ''}</span></li>`).join('')}
     </ol>` : `
-    <div class="route-detail-path"><b>统计：</b>七次共 ${totalStops} 站、${portCount} 个港口；图上七条线由淡到浓依次是第一至第七次，越走越远一眼可见。<b>顺序：</b>七次各有各的来回，并不存在一条连续航线，请点上方的「第X次」看该次的路线与地点顺序。</div>`;
+    <div class="route-detail-path"><b>读法：</b>图上那条略粗的主干是七次都到的港口直连（${trunkNames.join('—')}）；古里以西按航次分岔，越晚越浓——第四次起才越过印度洋抵波斯湾与东非。<b>规模：</b>七次共 ${totalStops} 站、${portCount} 个港口。<b>顺序：</b>七次各有各的来回，并不存在一条连续航线，请点上方的「第X次」看该次的路线与地点顺序。</div>`;
   box.classList.remove('hidden');
   box.innerHTML = `
     ${chips}

@@ -976,6 +976,27 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
   border-color: #a0251c;
   color: #a0251c;
 }
+/* 航线古地名标签：与城市点同一套胶囊语言（白底 + 描边 + 古地名 + 今地名小字），描边用航线蓝。
+   郑和航线常显地名用，方向可上可下，相邻地名错开避免叠字。 */
+.zh-place-anchor { background: none; border: 0; }
+.zh-place-tip {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #247bc1;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1b5c91;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+  white-space: nowrap;
+}
+.zh-place-tip::before { display: none; }
+.zh-place-tip .zh-place-modern { font-size: 9.5px; color: #8a7a5c; font-weight: 400; }
+/* 手机端地图只有 350px 宽，标签按桌面字号会互相压住：缩字、省掉「今地名」 */
+@media (max-width: 760px) {
+  .zh-place-tip { font-size: 10.5px; padding: 0 6px; }
+  .zh-place-tip .zh-place-modern { display: none; }
+}
 
 .map-popup {
   /* 收在地图可视区内：高度锚定地图本身（#map-leaf 固定 540px），而不是 .map-wrap
