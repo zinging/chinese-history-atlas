@@ -1788,8 +1788,10 @@ function addRouteLayer(r, ri) {
 const _routeTimers = [];
 function animateRoute(layer, duration = 1500) {
   if (!layer) return;
-  // 立即隐藏本层所有途经点/起终点（防上一轮动画残留），定时器记录供统一清理
-  if (layer.wps) layer.wps.forEach((w) => w.setStyle({ opacity: 0, fillOpacity: 0 }));
+  // 立即隐藏本层所有途经点/起终点（防上一轮动画残留），定时器记录供统一清理。
+  // 只压 opacity，不动 fillOpacity——SVG 的 opacity 已能整体隐藏，若连 fillOpacity 归零，
+  // 回显时只恢复 opacity 就会留下「空心圈」，图上等于看不见停泊点。
+  if (layer.wps) layer.wps.forEach((w) => w.setStyle({ opacity: 0 }));
   hideRouteMarker(layer.sMark);
   hideRouteMarker(layer.eMark);
   const line = layer.line;
@@ -1808,7 +1810,7 @@ function animateRoute(layer, duration = 1500) {
   }
   layer.wps.forEach((w, i) => {
     const t = ((i + 1) / (layer.wps.length + 1)) * duration;
-    _routeTimers.push(setTimeout(() => w.setStyle({ opacity: 1 }), t));
+    _routeTimers.push(setTimeout(() => w.setStyle({ opacity: 1, fillOpacity: 1 }), t));
   });
   // 起点：动画一开始（0.2 比例）就显示标记+常显地名；终点：动画结束才显示
   if (layer.sMark) {
@@ -1962,8 +1964,8 @@ function zhTrunkStations(voyages) {
     .filter((n) => voyages.every((v) => v.points.some((p) => norm(p.name) === n)));
 }
 
-/** 郑和古地名标签：与图例「古地名」同一套格式（白底胶囊 + 圆点图标 + 古地名 + 灰字今地名），
- *  圆点与描边用航线蓝；用 permanent tooltip 常显，方向可上可下，便于相邻地名错开。 */
+/** 郑和古地名标签：照图例那一枚「地名」做——白底胶囊 + 红色圆角方图标 + 墨色古地名 + 灰字今地名
+ *  （描边与图标 #c0392b，实测自图例截图）；用 permanent tooltip 常显，方向可上可下，便于相邻地名错开。 */
 function addZhenghePlaceLabel(p, dir) {
   if (!leafletMap || !p || p.lat == null || p.lng == null) return null;
   const modern = p.modern && p.modern !== p.name ? `（今${p.modern}）` : '';
@@ -2022,6 +2024,19 @@ function drawZhengheShadow() {
   });
   if (!branches.length && trunkPts.length >= 2) bounds.extend(L.latLngBounds(trunkPts.map((p) => [p.lat, p.lng])));
   fitZhengheView(bounds);
+
+  // 停泊港：实心圆点标出船队真正到过的港口（主干六港 + 古里以西各分岔上的港）。
+  // via 里的海上转弯点只是整形用，不画点——图上「有圆点」就等于「在这里停过」。
+  const portMap = new Map();
+  trunkPts.forEach((p) => portMap.set(p.name, p));
+  branches.forEach((b) => b.pts.forEach((p) => portMap.set(p.name, p)));
+  portMap.forEach((p) => {
+    const dot = L.circleMarker([p.lat, p.lng], {
+      radius: 5, color: '#fff', weight: 1.5, fillColor: color, fillOpacity: 1, opacity: 1,
+    }).addTo(leafletMap);
+    dot.bindTooltip(`${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}`, { direction: 'top' });
+    layers.push(dot);
+  });
 
   // 古地名：主干五处（刘家港与南京相邻，省一个）+ 西端三处（波斯湾口、东非、最西）。
   // 标签在取景之后再加——手机上常退到 zoom 2，八个标签会互相压住，此时只留四个锚点。

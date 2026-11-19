@@ -976,15 +976,15 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
   border-color: #a0251c;
   color: #a0251c;
 }
-/* 航线古地名标签：与图例里的「古地名」同一套格式——白底胶囊 + 彩色圆点图标 + 墨色古地名
-   + 灰字今地名；只把描边与圆点换成航线蓝，和「城市」「事件古地名」并列而不抢样式。
+/* 航线古地名标签：照图例那一枚「地名」原样做——白底胶囊 + 红色圆角方图标 + 墨色地名，
+   后随灰字今地名。取色实测自图例截图：描边与图标 #c0392b（rgb 192,57,43），字色 #3a2e1f。
    方向可上可下，相邻地名错开避免叠字。 */
 .zh-place-anchor { background: none; border: 0; }
 .zh-place-tip {
   background: rgba(255, 255, 255, 0.94);
-  border: 1.5px solid #247bc1;
+  border: 1.5px solid #c0392b;
   border-radius: 999px;
-  padding: 1px 8px 1px 6px;
+  padding: 1px 8px 1px 5px;
   font-size: 12px;
   font-weight: 700;
   color: #3a2e1f;
@@ -992,19 +992,30 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
   white-space: nowrap;
 }
 .zh-place-tip::before { display: none; }
+/* 图标：红色圆角方框，中间挖一个白方块（与图例里的「地名」图标同形） */
 .zh-place-dot {
   display: inline-block;
-  width: 8px; height: 8px;
+  position: relative;
+  width: 9px; height: 9px;
   margin-right: 4px;
-  border-radius: 50%;
-  background: #247bc1;
-  vertical-align: 1px;
+  border-radius: 3px;
+  background: #c0392b;
+  vertical-align: 0px;
+}
+.zh-place-dot::after {
+  content: '';
+  position: absolute;
+  left: 2.5px; top: 2.5px;
+  width: 4px; height: 4px;
+  background: #fff;
+  border-radius: 1px;
 }
 .zh-place-tip .zh-place-modern { font-size: 9.5px; color: #8a7a5c; font-weight: 400; }
 /* 手机端地图只有 350px 宽，标签按桌面字号会互相压住：缩字、省掉「今地名」 */
 @media (max-width: 760px) {
   .zh-place-tip { font-size: 10.5px; padding: 1px 6px 1px 4px; }
-  .zh-place-dot { width: 6px; height: 6px; margin-right: 3px; }
+  .zh-place-dot { width: 7px; height: 7px; margin-right: 3px; border-radius: 2px; }
+  .zh-place-dot::after { left: 2px; top: 2px; width: 3px; height: 3px; }
   .zh-place-tip .zh-place-modern { display: none; }
 }
 
