@@ -719,34 +719,48 @@ function bookSummary(module, sect, b) {
   };
 }
 
-// ---------- 神话舆图热点（源在 web/guoxue/app.js 的 ROUTE_SCHEMATIC） ----------
+// ---------- 神话舆图热点（数据在 data/myth/schematic.json，来源是 web/guoxue/app.js） ----------
 let mythSchematic = null;
 function loadMythSchematic() {
   if (mythSchematic) return mythSchematic;
-  const appJs = fs.readFileSync(path.join(ROOT, 'web', 'guoxue', 'app.js'), 'utf8');
-  const extract = (marker) => {
-    const start = appJs.indexOf(marker);
-    if (start < 0) throw new Error('未在 app.js 中找到 ' + marker);
-    const arrStart = appJs.indexOf('[', start);
-    let depth = 0, inStr = null, i = arrStart;
-    for (; i < appJs.length; i++) {
-      const ch = appJs[i];
-      if (inStr) {
-        if (ch === '\\') { i++; continue; }
-        if (ch === inStr) inStr = null;
-      } else if (ch === '"' || ch === "'" || ch === '`') {
-        inStr = ch;
-      } else if (ch === '[') depth++;
-      else if (ch === ']') { depth--; if (depth === 0) break; }
+  // 首选数据文件：插件包里没有 web/guoxue/app.js（只发 data/），站点还没 clone 时
+  // 现场解析前端源码会直接抛 "path must be of type string, received null"。
+  // 所以这张表由 scripts/build-myth-schematic.mjs 落成 JSON，两种安装形态读同一份。
+  try {
+    const bundled = path.join(PKG_ROOT, 'data', 'myth', 'schematic.json');
+    if (fs.existsSync(bundled)) {
+      mythSchematic = JSON.parse(fs.readFileSync(bundled, 'utf8')).routes || [];
+      return mythSchematic;
     }
-    return appJs.slice(arrStart, i + 1);
-  };
-  const hotsSrc = extract('const SCHEMATIC_HOTS =');
-  const routesSrc = extract('const ROUTE_SCHEMATIC =');
-  const hots = vm.runInNewContext('(' + hotsSrc + ')', {});
-  const routes = vm.runInNewContext('(function(SCHEMATIC_HOTS){return (' + routesSrc + ');})', {})(hots);
-  mythSchematic = routes;
-  return routes;
+  } catch { /* 读不到就退回下面解析源码 */ }
+  // 兜底：老仓库还能从 app.js 现场摘（数据文件缺失时不至于整条神话舆图不可用）
+  try {
+    const appJs = fs.readFileSync(path.join(ROOT, 'web', 'guoxue', 'app.js'), 'utf8');
+    const extract = (marker) => {
+      const start = appJs.indexOf(marker);
+      if (start < 0) throw new Error('未在 app.js 中找到 ' + marker);
+      const arrStart = appJs.indexOf('[', start);
+      let depth = 0, inStr = null, i = arrStart;
+      for (; i < appJs.length; i++) {
+        const ch = appJs[i];
+        if (inStr) {
+          if (ch === '\\') { i++; continue; }
+          if (ch === inStr) inStr = null;
+        } else if (ch === '"' || ch === "'" || ch === '`') {
+          inStr = ch;
+        } else if (ch === '[') depth++;
+        else if (ch === ']') { depth--; if (depth === 0) break; }
+      }
+      return appJs.slice(arrStart, i + 1);
+    };
+    const hotsSrc = extract('const SCHEMATIC_HOTS =');
+    const routesSrc = extract('const ROUTE_SCHEMATIC =');
+    const hots = vm.runInNewContext('(' + hotsSrc + ')', {});
+    mythSchematic = vm.runInNewContext('(function(SCHEMATIC_HOTS){return (' + routesSrc + ');})', {})(hots);
+  } catch {
+    mythSchematic = [];   // 两处都拿不到：神话路线仍可返回，只是没有坐标与图注
+  }
+  return mythSchematic;
 }
 
 // ---------- 工具实现 ----------

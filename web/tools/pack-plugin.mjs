@@ -106,11 +106,41 @@ function reportVersionConsistency(exitWhenDiffer) {
   return true;
 }
 
+// 神话热点表一致性闸门
+//    这张表原本由服务端现场解析 web/guoxue/app.js 得到，插件包里没有 web/ 目录，
+//    所以改成了 data/myth/schematic.json（scripts/build-myth-schematic.mjs 生成）。
+//    若源里重新生成了、插件包没跟上，`get_route(module=myth)` 会给旧坐标/旧图注，
+//    而且不会报错——只有用户看到「地图热点对不上」时才发现。
+function reportMythSchematic(exitWhenDiffer) {
+  const read = (p) => {
+    try {
+      const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+      return { sig: j.sig || '', routes: (j.routes || []).length, hots: (j.routes || []).reduce((n, r) => n + (r.hots || []).length, 0) };
+    } catch { return null; }
+  };
+  const a = read(path.join(ROOT, 'data', 'myth', 'schematic.json'));
+  const b = read(path.join(PKG, 'data', 'myth', 'schematic.json'));
+  if (!a || !b) {
+    console.error('神话热点表缺失（data/myth/schematic.json 不存在）；请先运行 npm run build:myth');
+    if (exitWhenDiffer) process.exit(1);
+    return false;
+  }
+  console.log(`  源热点表   sig=${a.sig} routes=${a.routes} hots=${a.hots}`);
+  console.log(`  插件热点表 sig=${b.sig} routes=${b.routes} hots=${b.hots}`);
+  if (a.sig !== b.sig) {
+    console.error('\n不一致：插件包里的神话热点表已过期，请先运行 npm run pack:plugin。');
+    if (exitWhenDiffer) process.exit(1);
+    return false;
+  }
+  return true;
+}
+
 if (CHECK_ONLY) {
   console.log('[--check] 仅校验，不写文件');
   reportIndexMismatch(true);
   reportVersionConsistency(true);
-  console.log('\n一致：插件数据与站点同源，版本号四处同值。');
+  reportMythSchematic(true);
+  console.log('\n一致：插件数据与站点同源，版本号四处同值，神话热点表同步。');
   process.exit(0);
 }
 
@@ -127,6 +157,9 @@ rmRecursive(dataDst);
 fs.mkdirSync(dataDst, { recursive: true });
 for (const entry of fs.readdirSync(dataSrc, { withFileTypes: true })) {
   if (entry.name === 'portraits') continue; // 图片单独处理
+  // data/search/ 是前端搜索分片（由 search-index.json 派生），MCP 不读它；
+  // 拷进去只会白占 1.1MB 安装体积，而且它的内容随时会随索引重建变化。
+  if (entry.name === 'search') continue;
   const src = path.join(dataSrc, entry.name);
   const dst = path.join(dataDst, entry.name);
   if (entry.isDirectory()) {
@@ -194,6 +227,11 @@ if (!reportIndexMismatch(false)) {
 console.log('\n版本一致性：');
 if (!reportVersionConsistency(false)) {
   console.error('版本号四处不一致，请对齐后再发布。');
+  process.exit(1);
+}
+console.log('\n神话热点表一致性：');
+if (!reportMythSchematic(false)) {
+  console.error('神话热点表未同步，请检查 data/myth/schematic.json。');
   process.exit(1);
 }
 
