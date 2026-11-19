@@ -1,5 +1,6 @@
 {
   "id": "sanguo-emp-sunquan",
+  "lineage": "wu",
   "name": "孙权",
   "templeName": "太祖",
   "eraName": ["黄武", "黄龙", "嘉禾", "赤乌", "太元", "神凤"],

@@ -558,14 +558,33 @@ function sourceTitle(id) {
 function renderTimeline() {
   const wrap = $('#timeline-scroll');
   wrap.innerHTML = '';
+  // 三国：魏、蜀、吴是三条并立的皇位继承线，不能串成同一条时间线。
+  // 只有当本朝代每张卡都带 lineage 时才分组（「全部」视图与其它朝代完全不受影响）。
+  const LINEAGE_LABEL = { wei: '魏', shu: '蜀', wu: '吴' };
+  const lineageMode = DATA.emperors.length > 0 && DATA.emperors.every((e) => e.lineage);
+  let prevLineage = null;
   DATA.emperors.forEach((e, i) => {
+    const nextE = DATA.emperors[i + 1];
+    const groupEnd = lineageMode && (!nextE || nextE.lineage !== e.lineage);
+    if (lineageMode && prevLineage !== null && e.lineage !== prevLineage) {
+      // 跨继承线用分隔（虚线 + 政权名），不加右箭头——箭头只表示"同一线上的父死子继/兄终弟及"
+      const sep = el('div', 'tl-lineage-sep');
+      sep.innerHTML = `<span>${LINEAGE_LABEL[e.lineage] || ''}</span>`;
+      wrap.appendChild(sep);
+    }
+    prevLineage = lineageMode ? e.lineage : null;
     const card = el('div', 'emp-card');
+    if (lineageMode) {
+      card.classList.add('lineage-' + e.lineage);
+      if (groupEnd) card.classList.add('tl-group-end');
+    }
     // 头像按需加载 + 声明尺寸：首屏只取视口内几张卡片，其余等滚到再取（避免首屏一次性请求十几张画像）
     const lazy = ' loading="lazy" decoding="async" width="84" height="84"';
     const portrait = e.portrait
       ? `<img class="emp-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" ${lazy} onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')"/>`
       : `<div class="emp-portrait emp-portrait-fallback">${e.name ? e.name.slice(0, 1) : '?'}</div>`;
     card.innerHTML = `
+      ${lineageMode ? `<div class="lineage-badge">${LINEAGE_LABEL[e.lineage] || ''}</div>` : ''}
       ${portrait}
       <div class="name">${e.name}</div>
       <div class="era">${e.templeName} · ${e.eraName[0]}${e.eraName.length > 1 ? '等' + e.eraName.length + '个年号' : ''}</div>

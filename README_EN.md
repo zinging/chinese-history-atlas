@@ -9,7 +9,7 @@
 <img alt="Pure static" src="https://img.shields.io/badge/pure%20static-zero%20build-brightgreen">
 <img alt="Offline" src="https://img.shields.io/badge/offline-all%20assets%20local-1685c9">
 <img alt="Modules" src="https://img.shields.io/badge/modules-5-c0392b">
-<img alt="Artworks" src="https://img.shields.io/badge/gongbi%20artworks-795-e8c86a">
+<img alt="Artworks" src="https://img.shields.io/badge/gongbi%20artworks-796-e8c86a">
 <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg">
 </p>
 
@@ -17,7 +17,7 @@
 
 ---
 
-> An **interactive knowledge base of Chinese civilization** you open and start using: animated territory maps, ancient maps reconstructed from the original texts, eight-section case files, detective-style reasoning questions, and 795 original gongbi (fine-brush) illustrations in one consistent style. No account, no internet, one command to run after cloning.
+> An **interactive knowledge base of Chinese civilization** you open and start using: animated territory maps, ancient maps reconstructed from the original texts, eight-section case files, detective-style reasoning questions, and 796 original gongbi (fine-brush) illustrations in one consistent style. No account, no internet, one command to run after cloning.
 
 ## 🧭 The problem this solves
 
@@ -126,13 +126,13 @@ Send this to your AI client — DSH, Doubao, Cursor, Claude Desktop all work —
 
 `Poets Gallery` · `Poetry Cases` · `Poetry Routes` · `Inquiry`
 
-From Qu Yuan to Nalan Xingde, **22 poets** on one rail. No rote memorization — **first see where a life actually went, then read what stood behind a single poem**:
+From Qu Yuan to Nalan Xingde, **23 poets** on one rail. No rote memorization — **first see where a life actually went, then read what stood behind a single poem**:
 
-- **71 close readings**, four layers each — original, plain translation, writing context, later commentary; proper nouns annotated inline;
-- **95 golden lines**, each with the poet's state of mind and what it means for a real life. Why did Li Bai write "a light skiff has sailed past ten thousand mountains" at Jiangling? He had just received the amnesty order — spared and heading home, the boat felt that fast;
+- **74 close readings**, four layers each — original, plain translation, writing context, later commentary; proper nouns annotated inline; Zhuge Liang’s card carries the full text of the *Memorial on Sending Out the Troops*, its sequel (flagged as absent from the *Records of the Three Kingdoms* and first cited in the *Han Jin Chunqiu*), and the *Admonition to My Son*;
+- **98 golden lines**, each with the poet's state of mind and what it means for a real life. Why did Li Bai write "a light skiff has sailed past ten thousand mountains" at Jiangling? He had just received the amnesty order — spared and heading home, the boat felt that fast;
 - **Poetry Routes**: **13 animated routes** — Su Shi's exiles, Li Bai's wanderings, Du Fu's drift, Cen Shen's frontier — where they went and where the famous lines were written, in one view;
-- **Life events**: **44 key events** in the poets' lives (two per poet across 22 poets), covering background, key figures, place, course and outcome, plus the poem's original text and translation; clicking an event pins its location on the map and opens an illustrated card;
-- plus **107 chronology entries, 54 trivia, 13 poetry cases, 22 inquiry prompts** (e.g. Li Yu's *Yu Mei Ren* and the qianji-poison mystery).
+- **Life events**: **44 key events** in the poets' lives (two for each of 22 of the 23 poets), covering background, key figures, place, course and outcome, plus the poem's original text and translation; clicking an event pins its location on the map and opens an illustrated card;
+- plus **116 chronology entries, 54 trivia, 13 poetry cases, 23 inquiry prompts** (e.g. Li Yu's *Yu Mei Ren* and the qianji-poison mystery).
 
 ![Poetry Appreciation](docs/demo/module-poetry.gif)
 
@@ -192,7 +192,7 @@ Real history uses Leaflet: borders, ancient-place equivalents, campaign and voya
 
 **🕵️ Detective-style inquiry, not answer memorization**
 
-**57 inquiry questions** (thought 13 + poetry 22 + natural sciences 14 + myth 8): present the case, hand over **sourced clues** one by one, then leave an open question with no standard answer and a place to write. Plus **77 critical-choice questions** in the emperor module (assessment and causal chain), graded instantly.
+**58 inquiry questions** (thought 13 + poetry 23 + natural sciences 14 + myth 8): present the case, hand over **sourced clues** one by one, then leave an open question with no standard answer and a place to write. Plus **77 critical-choice questions** in the emperor module (assessment and causal chain), graded instantly.
 
 **📖 Original text beside plain translation, not conclusions only**
 
@@ -204,11 +204,11 @@ Timeline entries and detective clues cite the *Old/New Book of Tang*, *History o
 
 **🔎 Site-wide search that lands on the exact line**
 
-A magnifier sits at the top right; hover or click and it becomes an input. It searches 956 entries (88 emperors, 141 map events, 40 unsolved cases, 40 case files, 75 classics, 59 artifacts, 113 beasts, 57 quiz questions, 44 life events, 42 routes, 219 hotspots…) together with body sentences, and groups the results as *entries* and *body hits*. Selecting a result does not merely open a page — it scrolls to the matched sentence and highlights it: body hits jump to the sentence, entries land on their card, map events open in the popup, route places switch to the voyage that contains them, and quiz entries open the named question. The index is the same build artefact the MCP search uses (`npm run build:search`, with a content-signature check); the front end pulls it in five on-demand shards, about 1.1MB total.
+A magnifier sits at the top right; hover or click and it becomes an input. It searches 958 entries (88 emperors, 141 map events, 40 unsolved cases, 40 case files, 75 classics, 59 artifacts, 113 beasts, 58 quiz questions, 44 life events, 42 routes, 219 hotspots…) together with body sentences, and groups the results as *entries* and *body hits*. Selecting a result does not merely open a page — it scrolls to the matched sentence and highlights it: body hits jump to the sentence, entries land on their card, map events open in the popup, route places switch to the voyage that contains them, and quiz entries open the named question. The index is the same build artefact the MCP search uses (`npm run build:search`, with a content-signature check); the front end pulls it in five on-demand shards, about 1.1MB total.
 
-**🖼️ 795 original artworks, 1036 image files — one style, not a template skin**
+**🖼️ 796 original artworks, 1037 image files — one style, not a template skin**
 
-One consistent visual language throughout: rice-paper beige, vermilion seals, gongbi fine-brush colour. **795 original illustrations**, all generated in the same style:
+One consistent visual language throughout: rice-paper beige, vermilion seals, gongbi fine-brush colour. **796 original illustrations**, all generated in the same style:
 
 - **315 portraits of people and classics**: 163 relationship-graph portraits (ministers, consorts, rivals) under `people/`, plus 152 paintings of emperors, poets, thinkers and classics-adjacent images in the root folder;
 - **172 artifacts and beasts**: 113 beasts and spirits + 59 representative objects;
@@ -217,7 +217,7 @@ One consistent visual language throughout: rice-paper beige, vermilion seals, go
 - **38 illustrations of the Hundred Schools chronicles**: key events of thought spreading and schools forming;
 - **44 life-event illustrations**: gongbi scenes of key moments in the poets' lives.
 
-Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and cards fast, bringing the total to **1036 image files**. The ancient maps are checked point by point against the bearings and terrain described in the sources.
+Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and cards fast, bringing the total to **1037 image files**. The ancient maps are checked point by point against the bearings and terrain described in the sources.
 
 **⚡ Zero dependencies, instant open, works offline**
 
@@ -233,12 +233,12 @@ A built-in zero-dependency MCP server (v1.6.0, 15 read-only tools) plugs into Do
 
 | Module | Content |
 | :--- | :--- |
-| 🏮 Emperor Lineage | 8 dynasties · 88 emperors · 651 timeline entries · 203 major events · 141 map events · 126 figures · 40 cases · 77 critical-choice questions · 36 campaign/voyage routes · 44 ancient places |
+| 🏮 Emperor Lineage | 8 dynasties · 88 emperors · 651 timeline entries · 204 major events · 141 map events · 126 figures · 40 cases · 77 critical-choice questions · 36 campaign/voyage routes · 44 ancient places |
 | 📚 Thought Origins | 5 schools · 27 classics · 63 close readings · 15 cases · 13 inquiry prompts · 24 sage routes (82 waypoints, each with original line / translation / source / significance) · 38 Hundred Schools chronicles · 51 ancient places |
-| 🎋 Poetry Appreciation | 22 poets · 71 close readings · 95 golden lines · 107 chronology entries · 13 poetry cases · 13 routes · 44 life events · 22 inquiry prompts |
+| 🎋 Poetry Appreciation | 23 poets · 74 close readings · 98 golden lines · 116 chronology entries · 13 poetry cases · 13 routes · 44 life events · 23 inquiry prompts |
 | 🧭 Natural Sciences | 17 classics (6 categories) · 59 artifacts · 12 craft cases · 14 inquiry prompts |
 | 🐉 Myth & Legend | 9 classics (4 categories) · 113 beasts · 5 ancient maps with 69 hotspots · 8 inquiry prompts |
-| **Site total** | **80 eight-section case files · 57 inquiry questions · 77 critical-choice questions · 795 original gongbi artworks (1036 image files including thumbnails)** |
+| **Site total** | **80 eight-section case files · 58 inquiry questions · 77 critical-choice questions · 796 original gongbi artworks (1037 image files including thumbnails)** |
 
 *Territory outlines are simplified hand-drawn sketches after Tan Qixiang's Historical Atlas of China; portraits, artifacts, beasts and ancient maps are stylized gongbi images, not historical likenesses; the mythic maps are drawn strictly to the bearings and terrain in the original texts.*
 
@@ -266,7 +266,7 @@ The project ships a **zero-dependency MCP server** (`web/tools/history-mcp-serve
 - **Starts the server itself**: the MCP probes first and, if nothing is running, launches the site in the background (detached, ready in about 0.8s) and returns a clickable address — no disk scanning, no path guessing.
 - **Fetches the site itself**: when no local site is found, it starts a **background** clone from Gitee into your home directory (about 150MB) and `session_start` **returns immediately**, telling the AI "text search is already usable" — the conversation is never blocked by the install. It starts the server once the clone finishes. This step needs **`git` on PATH**; if it is missing the tool says so precisely and degrades to "text search only" (the plugin carries its own index, so search still works, minus images and deep links).
 - **Illustrations included**: single-object results (emperor / classic / artifact / event) attach a base64 image block; list results do not (dozens would blow up the response) — use the detail call for one item.
-- **Millisecond search**: a built-in uni/bi-gram inverted index over **956 documents** — about 230ms to build once, then 1–2ms per query. "Tumu Crisis", "Lansuo Temple", "Gao Village", "Kunlun Mound", "Ehu Debate" all land directly on the right event or hotspot.
+- **Millisecond search**: a built-in uni/bi-gram inverted index over **958 documents** — about 230ms to build once, then 1–2ms per query. "Tumu Crisis", "Lansuo Temple", "Gao Village", "Kunlun Mound", "Ehu Debate" all land directly on the right event or hotspot.
 - **Bundled image subset**: the plugin carries **547 narration images** (152 portraits · 172 artifact thumbnails · 141 map events · 38 Hundred Schools · 44 life events), so "ask who and see who" works before the site is fetched; once the site is ready it switches to the originals and adds the remaining **478** (163 figures · 172 artifact originals · 74 ancient maps · 69 hotspot thumbnails).
 - Full configuration: [`docs/AI集成-本地MCP配置.md`](docs/AI集成-本地MCP配置.md); self-test with `npm run mcp:selftest`.
 
@@ -281,7 +281,7 @@ chinese-history-atlas/
 │   ├── emperors/          # Ming emperor cards
 │   ├── cases/ events/ places/ routes/ people/ quiz/  # Ming datasets
 │   ├── rujia/ daojia/ foxue/ zhuzi/ lixue/   # Five schools of thought
-│   ├── shiwen/            # 22 poets (index + sharded books/)
+│   ├── shiwen/            # 23 poets (index + sharded books/)
 │   ├── gewu/              # 17 classics · artifacts · craft cases · inquiry
 │   ├── myth/              # 9 classics · bestiary · map routes · inquiry
 │   ├── boundaries/        # Dynasty territory GeoJSON

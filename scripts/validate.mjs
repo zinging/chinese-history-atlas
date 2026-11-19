@@ -120,6 +120,15 @@ for (const dy of DYNASTIES) {
       if (entry.portrait && !/^[a-z0-9-]+\.(jpg|jpeg|png|webp)$/i.test(entry.portrait)) {
         errors.push(`${rel}: portrait 文件名非法 "${entry.portrait}"`);
       }
+      // 三国魏/蜀/吴三政权并立：每帝必须归属一条皇位继承线，供前端分组、配色与"跨线不连箭头"使用
+      if (dy.key === 'sanguo') {
+        if (!['wei', 'shu', 'wu'].includes(entry.lineage)) {
+          errors.push(`${rel}: lineage 必须是 wei/shu/wu（当前 ${entry.lineage || '缺失'}）`);
+        }
+        if (e.lineage !== entry.lineage) errors.push(`${rel}: lineage "${entry.lineage}" 与索引 "${e.lineage}" 不一致`);
+      } else if (entry.lineage) {
+        errors.push(`${rel}: 只有三国节点使用 lineage，其它朝代不应出现`);
+      }
       if (entry.reign) { checkDate(rel, entry.reign.start, 'reign.start'); checkDate(rel, entry.reign.end, 'reign.end'); }
       checkTimeline(rel, entry.timeline);
       // majorEvents：明/宋为对象数组（含 summary/impact），唐/元/清为字符串数组（前端已兼容）

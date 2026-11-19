@@ -602,6 +602,38 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .emp-card.active { background: #c0392b; border-color: #c0392b; }
 .emp-card.active .name, .emp-card.active .era, .emp-card.active .reign { color: #fff; }
 .emp-card.active::after { background: #c0392b; color: #fff; }
+
+/* ---- 三国：魏/蜀/吴 三条并立的皇位继承线 ----
+   底色即政权标识（不是选中态）：魏玄青、蜀朱、吴青绿；
+   同一条线内用 ➜ 表示继承，跨线改用虚线隔断且不出箭头。 */
+.emp-card.lineage-wei { background: #eef2f7; border-color: #94a9c0; }
+.emp-card.lineage-shu { background: #fbefeb; border-color: #cd9589; }
+.emp-card.lineage-wu  { background: #eaf2ee; border-color: #85ab9a; }
+.lineage-badge {
+  position: absolute; left: 8px; top: 8px; min-width: 22px; height: 20px;
+  padding: 0 5px; border-radius: 4px; color: #fff;
+  font-size: 13px; font-weight: 700; line-height: 20px; letter-spacing: 1px;
+}
+.emp-card.lineage-wei .lineage-badge { background: #33506b; }
+.emp-card.lineage-shu .lineage-badge { background: #a8352a; }
+.emp-card.lineage-wu  .lineage-badge { background: #2f6b57; }
+.emp-card.tl-group-end::after { content: none; }   /* 换线处不画箭头 */
+.tl-lineage-sep {
+  flex: 0 0 26px; align-self: stretch; display: flex; align-items: center; justify-content: center;
+  border-left: 1px dashed rgba(90, 74, 52, .32);
+}
+.tl-lineage-sep span {
+  writing-mode: vertical-rl; letter-spacing: 2px;
+  background: var(--bg); color: #6b5a3c; font-size: 13px;
+  padding: 6px 3px; border-radius: 4px;
+}
+/* 选中态用本政权的强色，避免"红＝蜀"的误读 */
+.emp-card.lineage-wei.active { background: #33506b; border-color: #33506b; }
+.emp-card.lineage-shu.active { background: #a8352a; border-color: #a8352a; }
+.emp-card.lineage-wu.active  { background: #2f6b57; border-color: #2f6b57; }
+.emp-card.lineage-wei.active::after { background: #33506b; }
+.emp-card.lineage-shu.active::after { background: #a8352a; }
+.emp-card.lineage-wu.active::after  { background: #2f6b57; }
 .emp-portrait {
   width: 84px; height: 84px; margin: 0 auto 8px;
   border-radius: 50%; background: var(--gold);

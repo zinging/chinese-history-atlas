@@ -379,18 +379,22 @@ body[data-sect="myth"] {
   background: #fdf1ec;
   border-left: 4px solid var(--primary);
   border-radius: 6px;
+  /* 分段原文（如《出师表》八段）按数据里的换行断段；单段的诗词不受影响 */
+  white-space: pre-wrap;
 }
 .chapter .gloss {
   font-size: 14px; color: #5c5140; line-height: 1.9;
   padding: 8px 14px;
   background: #fbf6ea;
   border-radius: 6px;
+  white-space: pre-wrap;
 }
 .chapter .afterword {
   margin-top: 10px; font-size: 14px; color: #4d4234;
   background: linear-gradient(135deg, #fdf6e8 0%, #fbe8d4 100%);
   border: 1px solid #f0d9a8; border-left: 4px solid var(--primary);
   padding: 12px 16px; border-radius: 8px; line-height: 1.85;
+  white-space: pre-wrap;
 }
 .chapter .afterword .afterword-tag {
   display: inline-block; font-weight: 700; color: #fff;
