@@ -119,6 +119,9 @@
 
   // ---------------- 展开 / 收起 ----------------
   var hoverTimer = null, leaveTimer = null;
+  var GRACE_MS = 3000;   // hover 展开后的最低停留时间：鼠标从按钮移到输入框要时间，少于 3 秒会抓不住
+  var LEAVE_MS = 460;    // 真正离开组件后的收起延迟（留一点余量，防抖一下）
+  var graceUntil = 0;
 
   function openPanel(lock) {
     clearTimeout(leaveTimer);
@@ -150,24 +153,37 @@
   // 脚本比组件先执行（buildDom 在 init 里才跑），直接绑会拿到 undefined —— 本轮已踩过一次。
   document.addEventListener("mouseover", function (e) {
     var t = e.target;
-    if (!t.closest || !t.closest(".as-btn")) return;
-    if (state.open) return;
-    clearTimeout(leaveTimer);
+    if (!t.closest || !t.closest(".as-root")) return;
+    clearTimeout(leaveTimer);                     // 指针回到组件内（按钮或面板）就取消收起
+    if (!t.closest(".as-btn") || state.open) return;
     clearTimeout(hoverTimer);
-    hoverTimer = setTimeout(function () { openPanel(false); }, 120);
+    hoverTimer = setTimeout(function () {
+      openPanel(false);
+      graceUntil = Date.now() + GRACE_MS;          // 给 3 秒窗口，让鼠标能移进面板点输入框
+    }, 120);
   });
   document.addEventListener("mouseout", function (e) {
     var t = e.target;
-    if (!t.closest || !t.closest(".as-btn")) return;
+    if (!t.closest || !t.closest(".as-root")) return;
+    // 按钮 → 面板、面板内子元素之间移动，都不算离开组件（不算的话面板会在半路收起）
+    var to = e.relatedTarget;
+    if (to && to.closest && to.closest(".as-root")) return;
     clearTimeout(hoverTimer);
     if (state.locked || (input && input.value)) return;
-    leaveTimer = setTimeout(function () { if (!state.locked) closePanel(); }, 460);
+    var wait = Math.max(0, graceUntil - Date.now());
+    leaveTimer = setTimeout(function () { if (!state.locked) closePanel(); }, wait > 0 ? wait : LEAVE_MS);
   });
   document.addEventListener("click", function (e) {
     var t = e.target;
     if (t.closest && t.closest(".as-btn")) { e.stopPropagation(); openPanel(!state.open); return; }
     if (t.closest && t.closest(".as-close")) { closePanel(); return; }
     if (state.open && root && !root.contains(t)) closePanel();
+  });
+  // 光标真的进到输入框（点或 Tab），就视为「要用它」，不再跟着鼠标离开而收起
+  document.addEventListener("focusin", function (e) {
+    if (e.target !== input) return;
+    clearTimeout(leaveTimer);
+    if (state.open) state.locked = true;
   });
   document.addEventListener("keydown", function (e) {
     var isSlash = e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey;
