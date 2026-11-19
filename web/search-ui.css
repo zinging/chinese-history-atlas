@@ -176,10 +176,12 @@
   .as-root { top: 10px; right: 10px; }
   .as-root.is-expanded .as-panel {
     position: fixed;
-    top: 56px; left: 10px; right: 58px;
+    /* 92px = 汉堡按钮底边（44+44）再留 4px：面板别压在抽屉入口上，
+       否则手机上想收侧栏得先关搜索。横向仍压住页签区，这是下拉层本来的行为。 */
+    top: 92px; left: 10px; right: 58px;
     width: auto;
-    max-height: 62vh;
+    max-height: 58vh;
   }
-  .as-list { max-height: calc(62vh - 96px); }
+  .as-list { max-height: calc(58vh - 96px); }
   .as-input { font-size: 16px; }   /* iOS 上 <16px 会触发页面缩放 */
 }
