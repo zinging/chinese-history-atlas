@@ -1962,14 +1962,14 @@ function zhTrunkStations(voyages) {
     .filter((n) => voyages.every((v) => v.points.some((p) => norm(p.name) === n)));
 }
 
-/** 郑和古地名标签：与地图上的城市点同一套胶囊底板（白底 + 描边 + 古地名 + 今地名），
- *  描边换成航线蓝；用 permanent tooltip 常显，方向可上可下，便于相邻地名错开。 */
+/** 郑和古地名标签：与图例「古地名」同一套格式（白底胶囊 + 圆点图标 + 古地名 + 灰字今地名），
+ *  圆点与描边用航线蓝；用 permanent tooltip 常显，方向可上可下，便于相邻地名错开。 */
 function addZhenghePlaceLabel(p, dir) {
   if (!leafletMap || !p || p.lat == null || p.lng == null) return null;
   const modern = p.modern && p.modern !== p.name ? `（今${p.modern}）` : '';
   const icon = L.divIcon({ className: 'zh-place-anchor', html: '', iconSize: [0, 0] });
   const m = L.marker([p.lat, p.lng], { icon, interactive: false, keyboard: false });
-  m.bindTooltip(`${p.name}<span class="zh-place-modern">${modern}</span>`, {
+  m.bindTooltip(`<span class="zh-place-dot"></span>${p.name}<span class="zh-place-modern">${modern}</span>`, {
     permanent: true, direction: dir || 'top', className: 'zh-place-tip', opacity: 1,
   });
   m.addTo(leafletMap);
@@ -2608,7 +2608,7 @@ function showRouteDetail(r) {
     <ol class="route-detail-stops">${pts.map((p, i) => `
       <li data-station="${i}"${(p.lat && p.lng) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ''}><b>${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}</b><span class="rs-dash"> —— </span><span class="rs-note">${p.note || ''}</span></li>`).join('')}
     </ol>` : `
-    <div class="route-detail-path"><b>读法：</b>图上那条略粗的主干是七次都到的港口直连（${trunkNames.join('—')}）；古里以西按航次分岔，越晚越浓——第四次起才越过印度洋抵波斯湾与东非。线按海路绕行（只补海上转弯点，不算停泊港）。<b>规模：</b>七次共 ${totalStops} 站、${portCount} 个港口。<b>顺序：</b>七次各有各的来回，并不存在一条连续航线，请点上方的「第X次」看该次的路线与地点顺序。</div>`;
+    <div class="route-detail-path"><b>读法：</b>图上那条略粗的主干是七次都到的港口直连（${trunkNames.join('—')}）；古里以西按航次分岔，越晚越浓——第四次起才越过印度洋抵波斯湾与东非。线按海路绕行（只补海上转弯点，不算停泊港）。<b>规模：</b>七次共 ${totalStops} 站、${portCount} 个港口。<b>顺序：</b>七次各有各的来回，并不存在一条连续航线，请点上方的「第X次」看该次的路线与地点顺序。<b>考订：</b>忽鲁谟斯自第四次起通使（永乐十年敕书已列其名，十三年其使臣随船来朝）；麻林于永乐十三年献麒麟，可证第四次确曾到访；回程多循季风原路（北风去、南风回），图上只画去程港序。</div>`;
   box.classList.remove('hidden');
   box.innerHTML = `
     ${chips}
