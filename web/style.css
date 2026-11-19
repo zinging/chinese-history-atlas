@@ -1341,6 +1341,13 @@ input, textarea { cursor: text; }
 .gantt-king.song.alt { background: linear-gradient(180deg, #d97a63, #c05d48); }
 .gantt-king.tang-internal { background: linear-gradient(180deg, #6b8e6b, #57795a); }
 .gantt-king.tang-internal.alt { background: linear-gradient(180deg, #86a886, #6f916f); }
+/* 三国三线：与时间线卡片的三色保持一致（魏玄青 / 蜀朱 / 吴青绿） */
+.gantt-king.wei { background: linear-gradient(180deg, #33506b, #27415a); }
+.gantt-king.wei.alt { background: linear-gradient(180deg, #4d6c8a, #3c5872); }
+.gantt-king.shu { background: linear-gradient(180deg, #a8352a, #8d2a20); }
+.gantt-king.shu.alt { background: linear-gradient(180deg, #c15a4a, #a4372a); }
+.gantt-king.wu { background: linear-gradient(180deg, #2f6b57, #235344); }
+.gantt-king.wu.alt { background: linear-gradient(180deg, #478c73, #357059); }
 .gantt-note { margin-top: 10px; font-size: 12px; color: #8a6d3b; }
 .gantt-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: #5a4020; }
 .gantt-legend .sw { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }

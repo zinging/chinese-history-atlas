@@ -620,92 +620,88 @@ function renderTimeline() {
   updateArrows();
   // 拖拽滚动：按住左右拖动
   enableDragScroll(wrap);
-  // 五代十国：渲染十国甘特图
-  renderShiguoGantt();
+  // 并立政权甘特图（有 data/<朝>/gantt.json 的朝代才显示）
+  renderGantt(currentDynasty);
 }
 
-// 十国数据（史实：存续年、都城、历任君主序列）
-const SHIGUO = [
-  { name: '前蜀', start: 907, end: 925, capital: '成都', founder: '王建', fall: '后唐庄宗李存勖所灭', color: 'tang-internal',
-    kings: [['王建', 907, 918], ['王衍', 918, 925]] },
-  { name: '后蜀', start: 934, end: 965, capital: '成都', founder: '孟知祥', fall: '北宋太祖赵匡胤所灭', color: 'song',
-    kings: [['孟知祥', 934, 934], ['孟昶', 934, 965]] },
-  { name: '吴', start: 902, end: 937, capital: '广陵（今扬州）', founder: '杨行密', fall: '被南唐禅代', color: 'tang-internal',
-    kings: [['杨行密', 902, 905], ['杨渥', 905, 908], ['杨隆演', 908, 920], ['杨溥', 920, 937]] },
-  { name: '南唐', start: 937, end: 975, capital: '金陵（今南京）', founder: '李昪', fall: '北宋太祖赵匡胤所灭', color: 'song',
-    kings: [['李昪', 937, 943], ['李璟', 943, 961], ['李煜', 961, 975]] },
-  { name: '吴越', start: 907, end: 978, capital: '杭州', founder: '钱镠', fall: '钱俶纳土归宋', color: 'song',
-    kings: [['钱镠', 907, 932], ['钱元瓘', 932, 941], ['钱弘佐', 941, 947], ['钱弘倧', 947, 948], ['钱俶', 948, 978]] },
-  { name: '闽', start: 909, end: 945, capital: '长乐（今福州）', founder: '王审知', fall: '南唐所灭', color: 'tang-internal',
-    kings: [['王审知', 909, 925], ['王延翰', 925, 926], ['王延钧', 926, 935], ['王继鹏', 935, 939], ['王延羲', 939, 944]] },
-  { name: '南汉', start: 917, end: 971, capital: '番禺（今广州）', founder: '刘岩', fall: '北宋太祖赵匡胤所灭', color: 'song',
-    kings: [['刘岩', 917, 942], ['刘玢', 942, 943], ['刘晟', 943, 958], ['刘鋹', 958, 971]] },
-  { name: '南平（荆南）', start: 924, end: 963, capital: '江陵（今荆州）', founder: '高季兴', fall: '北宋太祖赵匡胤所灭', color: 'song',
-    kings: [['高季兴', 924, 929], ['高从诲', 929, 948], ['高保融', 948, 960], ['高保勖', 960, 962], ['高继冲', 962, 963]] },
-  { name: '楚', start: 907, end: 951, capital: '长沙', founder: '马殷', fall: '南唐所灭', color: 'tang-internal',
-    kings: [['马殷', 907, 930], ['马希声', 930, 932], ['马希范', 932, 947], ['马希广', 947, 950], ['马希萼', 950, 951]] },
-  { name: '北汉', start: 951, end: 979, capital: '太原', founder: '刘崇', fall: '北宋太宗赵光义所灭', color: 'song',
-    kings: [['刘崇', 951, 954], ['刘承钧', 954, 968], ['刘继恩', 968, 968], ['刘继元', 968, 979]] },
-];
+// ---------- 并立政权甘特图 ----------
+// 数据在 data/<朝>/gantt.json：t0/t1 为横轴范围；rows 每行一个政权，kings 为 [[名, 起, 止]]。
+// 五代十国、三国、晋（东晋十六国）共用这套渲染器；没有 gantt.json 的朝代自动隐藏。
+// 注意：行与行之间没有继承关系，色块只表示"某君主在某年至某年统治该政权"。
+const GANTT_CACHE = {};
 
-function renderShiguoGantt() {
+async function renderGantt(dyn) {
   const box = $('#shiguo-gantt');
   if (!box) return;
-  if (currentDynasty !== 'wudai') { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  const T0 = 902, T1 = 979;
-  const span = T1 - T0;
-  const ticks = [907, 923, 936, 947, 951, 960, 979];
+  const dir = DYNASTY_DIRS[dyn];
+  const hide = () => { box.classList.add('hidden'); box.innerHTML = ''; };
+  if (!dir) return hide();
+  if (!GANTT_CACHE[dyn]) {
+    try { GANTT_CACHE[dyn] = await loadJSON(`../data/${dir}gantt.json`); }
+    catch (e) { return hide(); }
+  }
+  const g = GANTT_CACHE[dyn];
+  if (!g || !Array.isArray(g.rows) || !g.rows.length) return hide();
+  const T0 = g.t0, T1 = g.t1;
+  const span = T1 - T0 || 1;
   const pct = (y) => ((y - T0) / span) * 100;
-  // 每个国家一行，行内按历任君主切块；同年即位（如孟知祥934/孟昶934）共用一根柱子
-  const bars = SHIGUO.map((g) => {
-    const kings = g.kings || [];
-    // 先按"起始年"合并同年君主为一根柱子（名字用 · 连写，跨度取较长者）
+
+  const bars = g.rows.map((row) => {
+    const kings = row.kings || [];
+    // 同年即位的君主共用一根柱子（如孟知祥 934 / 孟昶 934），名字用 · 连写、跨度取较长者
     const cols = [];
-    for (const k of kings) {
+    for (const [name, s, e] of kings) {
       const last = cols[cols.length - 1];
-      if (last && last.start === k[1]) {
-        last.names.push(k[0]);
-        last.end = Math.max(last.end, k[2]);
-        last.notes.push(`${k[0]}（${k[1]}-${k[2]}）`);
+      if (last && last.start === s) {
+        last.names.push(name);
+        last.end = Math.max(last.end, e);
+        last.notes.push(`${name}（${s}-${e}）`);
       } else {
-        cols.push({ start: k[1], end: k[2], names: [k[0]], notes: [`${k[0]}（${k[1]}-${k[2]}）`] });
+        cols.push({ start: s, end: e, names: [name], notes: [`${name}（${s}-${e}）`] });
       }
     }
+    // 宽度保持真实年份比例（与横坐标对齐），不人为拉宽
     const segs = cols.map((c, ci) => {
-      // 宽度保持真实年份比例（与横坐标对齐），不人为拉宽
       const left = pct(c.start);
       const width = Math.max(0, pct(c.end) - pct(c.start));
       const label = c.names.join('·');
-      const tip = `${c.notes.join(' · ')} · ${g.name}`;
-      return `<div class="gantt-king ${g.color} ${ci % 2 ? 'alt' : ''}" data-king="${label}" style="left:${left}%;width:${width}%" title="${tip}">
+      const tip = `${c.notes.join(' · ')} · ${row.name}`;
+      return `<div class="gantt-king ${row.color || ''} ${ci % 2 ? 'alt' : ''}" data-king="${label}" style="left:${left}%;width:${width}%" title="${tip}">
         <span class="gantt-king-name">${label}</span>
       </div>`;
     }).join('');
     const label = `<div class="gantt-label">
-      <b>${g.name}</b>
-      <span class="gantt-label-years">${g.start}-${g.end}</span>
+      <b>${row.name}</b>
+      <span class="gantt-label-years">${row.start}-${row.end}</span>
     </div>`;
     return `<div class="gantt-row">
       ${label}
       <div class="gantt-track">${segs}</div>
     </div>`;
   }).join('');
-  const axisTicks = ticks.map((t) => `<div class="tick" style="left:${pct(t)}%">${t}</div>`).join('');
+
+  const axisTicks = (g.ticks || []).map((t) => `<div class="tick" style="left:${pct(t)}%">${t}</div>`).join('');
+  const legend = (g.legend || []).map((l) => `<span><i class="sw" style="background:${l.color}${l.border ? `;border:1px solid ${l.border}` : ''}"></i>${l.label}</span>`).join('');
+
   box.innerHTML = `
-    <h3>十国并立图 · 历代君主时间线（与五代同时存在）</h3>
+    <h3>${g.title || ''}</h3>
+    ${g.sub ? `<p class="gantt-sub">${g.sub}</p>` : ''}
     <div class="gantt-axis">${axisTicks}</div>
     ${bars}
-    <div class="gantt-legend">
-      <span><i class="sw" style="background:#6b8e6b"></i>被五代内部吞并</span>
-      <span><i class="sw" style="background:#c8553d"></i>被北宋所灭</span>
-      <span><i class="sw" style="background:#fff;border:1px solid #c9a96a"></i>点按块看君主在位年</span>
-    </div>
-    <div class="gantt-note">吴越最长（钱镠祖孙三代，978年纳土归宋）；北汉唯一在北方（太原）；前蜀被后唐庄宗李存勖所灭。</div>
+    ${legend ? `<div class="gantt-legend">${legend}</div>` : ''}
+    ${g.note ? `<div class="gantt-note">${g.note}</div>` : ''}
   `;
-  // hover 已用 title 提示，无需额外绑定
+  // 图与卡片流联动：点色块 → 选中同名帝王卡 → 详情展开；没有对应帝王卡的政权（如十国）点了不跳
+  box.querySelectorAll('.gantt-king').forEach((k) => {
+    k.addEventListener('click', () => {
+      const first = (k.dataset.king || '').split('·')[0];
+      const card = [...document.querySelectorAll('#timeline-scroll .emp-card')]
+        .find((c) => ((c.querySelector('.name') || {}).textContent || '') === first);
+      if (card) card.click();
+    });
+  });
   box.classList.remove('hidden');
 }
-
 /** 已绑定过拖拽滚动的元素：同一元素只绑一次，避免每次渲染叠加监听（旧版切朝代/点年号会累积几十个处理器） */
 const _dragScrollBound = new WeakSet();
 function enableDragScroll(el) {
