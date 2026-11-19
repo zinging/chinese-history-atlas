@@ -312,6 +312,33 @@ if (mapEventsDoc && Array.isArray(mapEventsDoc.events)) {
   }
 }
 
+// 全站搜索分片（scripts/build-search.mjs 产物）：只校验「存在 + 与 data 签名一致 + 深链相对化」，
+// 具体切句/体积由 build-search --check 负责，避免两处重复实现同一套逻辑。
+const searchMan = readJson('data/search/manifest.json');
+if (!searchMan) {
+  warns.push('data/search/manifest.json 缺失：全站搜索不可用，先跑 npm run build:search');
+} else {
+  const shards = Array.isArray(searchMan.shards) ? searchMan.shards : [];
+  if (!shards.length) errors.push('data/search/manifest.json: shards 为空');
+  for (const sh of shards) {
+    const body = readJson('data/search/' + sh.f);
+    if (!body) { errors.push(`data/search/${sh.f}: 缺失或解析失败`); continue; }
+    if ((body.docs || []).length !== sh.n) {
+      errors.push(`data/search/${sh.f}: 条数 ${(body.docs || []).length} 与清单 ${sh.n} 不一致`);
+    }
+    const bad = (body.docs || []).find((d) => /^https?:\/\//.test(d.u) || !d.u);
+    if (bad) errors.push(`data/search/${sh.f}: 「${bad.t}」的深链不是相对路径（${bad.u}）`);
+  }
+  const title = readJson('data/search/title.json');
+  if (!title) errors.push('data/search/title.json: 缺失或解析失败');
+  else if ((title.docs || []).length !== searchMan.docs) {
+    errors.push(`data/search/title.json: 词条数 ${(title.docs || []).length} 与清单 ${searchMan.docs} 不一致`);
+  }
+  if (searchMan.sig && !readJson('data/search-index.json')) {
+    warns.push('data/search-index.json 缺失：分片无法校验新鲜度（npm run mcp:selftest 会生成）');
+  }
+}
+
 // 输出（警告超过 15 条时只列前 15 并汇总）
 const MAX_WARNS = 15;
 console.log(`\n校验完成：${errors.length} 个错误，${warns.length} 个警告。`);

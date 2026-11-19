@@ -198,6 +198,10 @@ Classics, poems and map hotspots keep the original words, immediately followed b
 
 Timeline entries and detective clues cite the *Old/New Book of Tang*, *History of Song*, *History of Ming* and more; legend and fiction are labelled "a novel's invention, not in the official histories"; myth content stays strictly faithful to the original text — so you never read *Romance of the Three Kingdoms* as history, and never let an imagined map impersonate the *Shanhaijing*.
 
+**🔎 Site-wide search that lands on the exact line**
+
+A magnifier sits at the top right; hover or click and it becomes an input. It searches 941 entries (77 emperors, 141 map events, 36 unsolved cases, 40 case files, 75 classics, 59 artifacts, 113 beasts, 57 quiz questions, 44 life events, 42 routes, 219 hotspots…) together with body sentences, and groups the results as *entries* and *body hits*. Selecting a result does not merely open a page — it scrolls to the matched sentence and highlights it: body hits jump to the sentence, entries land on their card, map events open in the popup, route places switch to the voyage that contains them, and quiz entries open the named question. The index is the same build artefact the MCP search uses (`npm run build:search`, with a content-signature check); the front end pulls it in five on-demand shards, about 1.1MB total.
+
 **🖼️ 784 original artworks, 1025 image files — one style, not a template skin**
 
 One consistent visual language throughout: rice-paper beige, vermilion seals, gongbi fine-brush colour. **784 original illustrations**, all generated in the same style:
@@ -278,6 +282,7 @@ chinese-history-atlas/
 │   ├── myth/              # 9 classics · bestiary · map routes · inquiry
 │   ├── boundaries/        # Dynasty territory GeoJSON
 │   ├── portraits/         # Portraits, artifact/beast illustrations, ancient maps (with thumbnails)
+│   ├── search/            # Site-search shards (derived from search-index.json: manifest + titles + 5 body shards)
 │   └── schema/ sources/   # Data schema and source citations
 ├── web/                   # Frontend: vanilla HTML/CSS/JS
 │   ├── index.html         # Emperor Lineage main page

@@ -1899,6 +1899,34 @@ async function applyDeepLink() {
       }
     }
   }
+  // 9. 问典：disc=<题目标题或 id>。问典一次只渲染一道题，不指名就只能停在「第一题」，
+  //    全站搜索里 57 条问典结果全靠这个参数才对得上。（gapp27 新增）
+  const discName = params.get("disc");
+  if (tab === "quiz" && discName) {
+    const ready = await waitFor(() => Array.isArray(bookData.discourses));
+    if (ready) {
+      const all = bookData.discourses || [];
+      const hit = all.find((x) => x.id === discName)
+        || all.find((x) => String(x.title) === discName)
+        || all.find((x) => String(x.title).includes(discName));
+      if (hit) {
+        // 分类条可能把它过滤掉了：先回到「全部」（点胶囊走既有逻辑，保持顶部胶囊状态一致）
+        const chip = document.querySelector('#era-switch .sect-btn[data-era="all"]');
+        if (currentEra !== "all" && chip) chip.click();
+        const shown = currentEra === "all"
+          ? all
+          : all.filter((x) => (x.category ? x.category === currentEra : x.era === currentEra));
+        const idx = shown.indexOf(hit);
+        if (idx >= 0) { discEra = currentEra; discIndex = idx; renderQuiz(); }
+      }
+    }
+  }
+  // 10. 全站搜索落点：q / ak / qt。父壳把这三个参数随 src 转发进 iframe，
+  //     子站渲染完自己定位（不用 postMessage，避免「子站还没 ready」的竞态）。（gapp27 新增）
+  const jumpQ = params.get("q");
+  if (jumpQ && window.__atlasJump) {
+    window.__atlasJump.locate(jumpQ, params.get("ak") || "", params.get("qt") || "");
+  }
 }
 
 // 启动

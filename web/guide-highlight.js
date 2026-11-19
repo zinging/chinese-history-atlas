@@ -103,11 +103,12 @@
       if (el) el.remove();
     }
 
-    // 与服务端共享的切句规则（句号/问号/感叹号/分号，保留句末标点；省略号 …… 不切句）
+    // 切句规则已抽到 web/split.js（浏览器挂 window.__split，Node 侧由 build-search.mjs 用 vm 取同一份）。
+    // 保留下面这份兜底实现：split.js 万一没加载，导览也不至于整块失效；两条规则必须一致。
     var TERM_RE = /[。！？；;!?]/;
-    // 仅由引号/括号收尾符组成的残句要并回上一句，前后端必须一致。
     var CLOSE_RE = /^[\s』」”）》〉、，]+$/;
     function splitSentences(text) {
+      if (window.__split && typeof window.__split.split === "function") return window.__split.split(text);
       var s = String(text == null ? "" : text), out = [], buf = "";
       for (var i = 0; i < s.length; i++) {
         var ch = s[i];
@@ -283,6 +284,21 @@
           });
           if (rlist.length) return rlist;
         }
+        // 4) 悬案卡（悬案疑案页。结构为 .case-card[data-id] > .case-section > p，
+        //    此前未覆盖 → 搜索「落到行」会停在卡片开头，这次补上）
+        var caseCards = document.querySelectorAll("#cases-list .case-card");
+        if (caseCards && caseCards.length) {
+          var clist = [];
+          Array.prototype.forEach.call(caseCards, function (card) {
+            if (!isVisible(card)) return;
+            var sum = card.querySelector(".case-summary");
+            if (sum && sum.textContent.trim()) clist.push({ k: "pure", el: sum });
+            Array.prototype.forEach.call(card.querySelectorAll(".case-section p"), function (p) {
+              if (p.textContent.trim()) clist.push({ k: "pure", el: p });
+            });
+          });
+          if (clist.length) return clist;
+        }
         return [];
       }
 
@@ -313,6 +329,20 @@
           if (aft && aft.textContent.trim()) groups.push({ k: "afterTag", el: aft });
         });
         if (groups.length) return groups;
+      }
+      // 悬案/公案卡（子站 cases tab）：与主站同结构，补上后卡片正文也能逐句定位
+      var gxCases = document.querySelectorAll("#cases-list .case-card");
+      if (gxCases && gxCases.length) {
+        var gcl = [];
+        Array.prototype.forEach.call(gxCases, function (card) {
+          if (!isVisible(card)) return;
+          var gsum = card.querySelector(".case-summary");
+          if (gsum && gsum.textContent.trim()) gcl.push({ k: "pure", el: gsum });
+          Array.prototype.forEach.call(card.querySelectorAll(".case-section p"), function (p) {
+            if (p.textContent.trim()) gcl.push({ k: "pure", el: p });
+          });
+        });
+        if (gcl.length) return gcl;
       }
       return [];
     }

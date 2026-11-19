@@ -1299,7 +1299,10 @@ function listJsonFiles() {
       const p = path.join(dir, name);
       const st = fs.statSync(p);
       if (st.isDirectory()) walk(p);
-      else if (name.endsWith('.json') && path.resolve(p) !== SEARCH_INDEX_FILE) out.push(p);
+      else if (name.endsWith('.json') && path.resolve(p) !== SEARCH_INDEX_FILE
+        // data/search/ 是前端检索分片（由 scripts/build-search.mjs 从本索引派生），
+        // 若计入签名会形成「签名→分片→签名」的循环依赖，每次构建都让签名变一次。
+        && p !== path.join(DATA, 'search') && !p.startsWith(path.join(DATA, 'search') + path.sep)) out.push(p);
     }
   })(DATA);
   return out.sort();

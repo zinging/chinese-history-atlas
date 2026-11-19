@@ -2338,6 +2338,22 @@ function renderMapControls(data) {
       const chip = document.querySelector(`.zh-voyage-chip[data-v="${vParam - 1}"]`);
       if (chip) chip.click();
     }
+    // 全站搜索的「地点/热点」深链：?route=…&stop=<站名>。
+    // 叠影态刻意不排站序（七次各有各的来回），不先定到某一次就永远找不到那一站；
+    // 这里反查该站出现在第几航次，再点对应的航次胶囊——仍走 chip.click()，不另写一份切换逻辑。
+    const stopParam = new URLSearchParams(location.search).get('stop');
+    if (stopParam && vParam < 1) {
+      const r = (DATA.routes || []).find((x) => x.id === deepRouteId);
+      const vos = (r && r.voyages) || [];
+      for (let i = 0; i < vos.length; i++) {
+        const pts = vos[i].points || [];
+        if (pts.some((p) => String(p.name) === stopParam || String(p.name).includes(stopParam))) {
+          const chip = document.querySelector(`.zh-voyage-chip[data-v="${i}"]`);
+          if (chip) chip.click();
+          break;
+        }
+      }
+    }
   };
   // 事件按钮（默认激活）：点击后在地图下方汇总事件涉及的古地名。
   // 文案跟随年号切换，与汇总面板标题保持一致（点年号后只汇总该年号的事件）。
@@ -3685,8 +3701,22 @@ async function applyDeepLink() {
     const findEv = () =>
       (DATA.mapEvents || []).find((e) => e.id === eventId || e.eventId === eventId) ||
       (DATA.events || []).find((e) => e.id === eventId || e.eventId === eventId);
-    const ok = await waitForEmp(() => leafletMap && findEv());
-    if (ok) showSingleEvent(findEv());
+    // 地图初始化要等 Leaflet + 边界 GeoJSON，冷启动 3 秒不够（实测深链会静默失败），给到 10 秒
+    const ok = await waitForEmp(() => leafletMap && findEv(), 100, 100);
+    if (ok) {
+      showSingleEvent(findEv());
+      // 等弹窗真的挂出来，否则后面的落行定位会拿不到正文（搜索跳转会「什么都没发生」）
+      await waitForEmp(() => {
+        const p = document.querySelector('#map-popup');
+        return p && !p.classList.contains('hidden');
+      }, 30, 120);
+    }
+  }
+  // 全站搜索跳转：q=用户输入的查询串，ak=落点类型（emperor/case/popup/route/stop/chapter…）。
+  // 只带 query 不带句号——data-s 每次渲染重排，索引里存句号必然错位（见 web/atlas-jump.js 文件头）。
+  const jumpQ = params.get('q');
+  if (jumpQ && window.__atlasJump) {
+    window.__atlasJump.locate(jumpQ, params.get('ak') || '');
   }
 }
 

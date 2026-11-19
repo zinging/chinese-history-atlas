@@ -9,6 +9,8 @@
   },
   "scripts": {
     "start": "node web/serve.mjs",
+    "build:search": "node scripts/build-search.mjs",
+    "build:search:check": "node scripts/build-search.mjs --check",
     "verify:mobile": "node web/verify-mobile.mjs",
     "mcp": "node web/tools/history-mcp-server.mjs",
     "mcp:selftest": "node web/tools/history-mcp-server.mjs --selftest",

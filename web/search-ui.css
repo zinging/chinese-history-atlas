@@ -1,0 +1,185 @@
+/* 全站搜索（壳层组件）—— gapp27
+ *
+ * 位置固定右上角、不参与布局：桌面六档几何因此天然 0 差异。
+ * 展开时序：hover 120ms（JS 计时）→ 宽度 0→330px（CSS transition），与 .tabs 的
+ * fixed 垂直居中互不干扰（.tabs 在 top:50%，本组件在 top:14px）。
+ */
+
+.as-root {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 60;
+  display: flex;
+  flex-direction: row-reverse;   /* 按钮贴右，面板向左展开 */
+  align-items: flex-start;
+  font-family: inherit;
+}
+
+.as-btn {
+  appearance: none;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  border: 1.5px solid #c9b380;
+  background: linear-gradient(180deg, #fdf8ec 0%, #f6ecd2 100%);
+  color: #6b5836;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(84, 62, 20, .18);
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .2s ease;
+  flex: none;
+}
+.as-btn:hover, .as-btn:focus-visible {
+  background: #f3e6c4;
+  color: #3a2e1f;
+  box-shadow: 0 3px 14px rgba(84, 62, 20, .26);
+  outline: none;
+}
+.as-root.is-open .as-btn { background: #f3e6c4; color: #8a5a00; transform: scale(.96); }
+
+.as-panel {
+  margin-right: 8px;
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fdf8ec;
+  border: 1px solid #c9b380;
+  box-shadow: 0 10px 34px rgba(70, 50, 14, .24);
+  transition: width .22s cubic-bezier(.2, .8, .3, 1), opacity .18s ease;
+  display: flex;
+  flex-direction: column;
+}
+.as-root.is-expanded .as-panel { width: 336px; opacity: 1; }
+
+.as-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 8px 8px 12px;
+  border-bottom: 1px solid rgba(201, 179, 128, .5);
+  flex: none;
+}
+.as-input {
+  flex: 1; min-width: 0;
+  appearance: none;
+  border: none; outline: none;
+  background: transparent;
+  font: inherit; font-size: 15px; color: #3a2e1f;
+  padding: 4px 0;
+  letter-spacing: .5px;
+}
+.as-input::placeholder { color: #a89a77; }
+.as-close {
+  appearance: none; border: none; background: transparent;
+  color: #9b7a3d; font-size: 14px; line-height: 1;
+  padding: 6px; border-radius: 50%; cursor: pointer;
+  flex: none;
+}
+.as-close:hover { background: rgba(160, 110, 30, .14); color: #5a3408; }
+
+.as-list {
+  max-height: 46vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 4px 2px;
+}
+
+.as-group { padding: 2px 0 4px; }
+.as-group-head {
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 6px 8px 4px;
+}
+.as-group-name { font-size: 11.5px; letter-spacing: 2px; color: #a08c60; }
+.as-group-count { font-size: 11px; color: #b9a778; }
+
+.as-row {
+  appearance: none;
+  width: 100%;
+  display: flex; align-items: flex-start; gap: 8px;
+  text-align: left;
+  border: none; background: transparent;
+  padding: 7px 8px;
+  border-radius: 9px;
+  cursor: pointer;
+  font: inherit;
+}
+.as-row:hover, .as-row.is-active { background: rgba(192, 57, 43, .07); }
+.as-row.is-active { box-shadow: inset 2px 0 0 #c0392b; }
+
+.as-row-main { flex: 1; min-width: 0; }
+.as-row-title {
+  font-size: 14.5px; color: #3a2e1f; line-height: 1.35;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.as-row-sub {
+  font-size: 12px; color: #8a7a5c; line-height: 1.45;
+  margin-top: 2px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.as-tag {
+  flex: none;
+  font-size: 10.5px; letter-spacing: 1px;
+  color: #8a5a00;
+  background: rgba(201, 179, 128, .26);
+  border: 1px solid rgba(201, 179, 128, .5);
+  border-radius: 6px;
+  padding: 1px 5px;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.as-mark { background: rgba(255, 216, 102, .62); color: inherit; border-radius: 2px; padding: 0 1px; }
+
+.as-more {
+  appearance: none; border: none; background: transparent;
+  color: #8a5a00; font: inherit; font-size: 12px;
+  padding: 6px 10px; cursor: pointer; border-radius: 8px;
+}
+.as-more:hover { background: rgba(160, 110, 30, .12); }
+
+.as-empty, .as-loading { padding: 14px 12px 16px; font-size: 12.5px; color: #8a7a5c; line-height: 1.7; }
+.as-empty b { color: #5c4a24; font-weight: 700; }
+.as-examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.as-chip {
+  appearance: none; cursor: pointer;
+  font: inherit; font-size: 12px;
+  color: #8a5a00; background: rgba(201, 179, 128, .22);
+  border: 1px solid rgba(201, 179, 128, .55);
+  border-radius: 999px; padding: 3px 10px;
+}
+.as-chip:hover { background: rgba(201, 179, 128, .4); }
+
+.as-tip {
+  flex: none;
+  font-size: 10.5px; color: #a89a77;
+  padding: 5px 10px 7px;
+  border-top: 1px solid rgba(201, 179, 128, .4);
+}
+
+/* 跳转后命中的那一行：与导览的 .gh-active（朗读态）刻意用不同样式，避免误以为在自动讲解 */
+.atlas-hit {
+  border-radius: 3px;
+  animation: atlasHit 3.2s ease-out 1 both;
+}
+@keyframes atlasHit {
+  0%   { background: rgba(255, 208, 74, .82); box-shadow: 0 0 0 2px rgba(192, 57, 43, .45); }
+  70%  { background: rgba(255, 226, 150, .38); box-shadow: 0 0 0 1px rgba(192, 57, 43, .22); }
+  100% { background: transparent; box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-hit { animation-duration: .9s; }
+  .as-panel { transition: none; }
+}
+
+/* 移动端：无 hover，点击展开成整宽面板，键盘弹起时列表自适应 */
+@media (max-width: 760px) {
+  .as-root { top: 10px; right: 10px; }
+  .as-root.is-expanded .as-panel {
+    position: fixed;
+    top: 56px; left: 10px; right: 58px;
+    width: auto;
+    max-height: 62vh;
+  }
+  .as-list { max-height: calc(62vh - 96px); }
+  .as-input { font-size: 16px; }   /* iOS 上 <16px 会触发页面缩放 */
+}
