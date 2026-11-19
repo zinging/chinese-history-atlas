@@ -1,0 +1,208 @@
+{
+  "meta": {
+    "title": "晋帝王索引",
+    "note": "两晋共十五帝：西晋四帝（265-316）、东晋十一帝（317-420）。西晋亡后司马睿在江左重建晋室，属同一条司马氏皇统，但中间经永嘉之乱与衣冠南渡，故分为西晋、东晋两条线呈现。",
+    "updated": "2026-11-20",
+    "lineages": {
+      "jinwest": "西晋",
+      "jineast": "东晋"
+    }
+  },
+  "emperors": [
+    {
+      "id": "jin-emp-simayan",
+      "lineage": "jinwest",
+      "name": "司马炎",
+      "templeName": "武帝",
+      "era": "泰始/咸宁/太康/太熙",
+      "reign": {
+        "start": "265",
+        "end": "290"
+      },
+      "portrait": "jin-simayan.jpg",
+      "file": "simayan.json"
+    },
+    {
+      "id": "jin-emp-simazhong",
+      "lineage": "jinwest",
+      "name": "司马衷",
+      "templeName": "惠帝",
+      "era": "永熙/永平/元康/永康/永宁/太安/永安/建武/永兴/光熙",
+      "reign": {
+        "start": "290",
+        "end": "307"
+      },
+      "portrait": "jin-simazhong.jpg",
+      "file": "simazhong.json"
+    },
+    {
+      "id": "jin-emp-simachi",
+      "lineage": "jinwest",
+      "name": "司马炽",
+      "templeName": "怀帝",
+      "era": "永嘉",
+      "reign": {
+        "start": "307",
+        "end": "311"
+      },
+      "portrait": "jin-simachi.jpg",
+      "file": "simachi.json"
+    },
+    {
+      "id": "jin-emp-simaye",
+      "lineage": "jinwest",
+      "name": "司马邺",
+      "templeName": "愍帝",
+      "era": "建兴",
+      "reign": {
+        "start": "313",
+        "end": "316"
+      },
+      "portrait": "jin-simaye.jpg",
+      "file": "simaye.json"
+    },
+    {
+      "id": "jin-emp-simarui",
+      "lineage": "jineast",
+      "name": "司马睿",
+      "templeName": "元帝",
+      "era": "建武/太兴/永昌",
+      "reign": {
+        "start": "317",
+        "end": "323"
+      },
+      "portrait": "jin-simarui.jpg",
+      "file": "simarui.json"
+    },
+    {
+      "id": "jin-emp-simingshao",
+      "lineage": "jineast",
+      "name": "司马绍",
+      "templeName": "明帝",
+      "era": "太宁",
+      "reign": {
+        "start": "323",
+        "end": "325"
+      },
+      "portrait": "jin-simingshao.jpg",
+      "file": "simingshao.json"
+    },
+    {
+      "id": "jin-emp-simayan2",
+      "lineage": "jineast",
+      "name": "司马衍",
+      "templeName": "成帝",
+      "era": "咸和/咸康",
+      "reign": {
+        "start": "325",
+        "end": "342"
+      },
+      "portrait": "jin-simayancheng.jpg",
+      "file": "simayancheng.json"
+    },
+    {
+      "id": "jin-emp-simayue",
+      "lineage": "jineast",
+      "name": "司马岳",
+      "templeName": "康帝",
+      "era": "建元",
+      "reign": {
+        "start": "342",
+        "end": "344"
+      },
+      "portrait": "jin-simayue.jpg",
+      "file": "simayue.json"
+    },
+    {
+      "id": "jin-emp-simadan",
+      "lineage": "jineast",
+      "name": "司马聃",
+      "templeName": "穆帝",
+      "era": "永和/升平",
+      "reign": {
+        "start": "344",
+        "end": "361"
+      },
+      "portrait": "jin-simadan.jpg",
+      "file": "simadan.json"
+    },
+    {
+      "id": "jin-emp-simapi",
+      "lineage": "jineast",
+      "name": "司马丕",
+      "templeName": "哀帝",
+      "era": "隆和/兴宁",
+      "reign": {
+        "start": "361",
+        "end": "365"
+      },
+      "portrait": "jin-simapi.jpg",
+      "file": "simapi.json"
+    },
+    {
+      "id": "jin-emp-simayi",
+      "lineage": "jineast",
+      "name": "司马奕",
+      "templeName": "废帝（海西公）",
+      "era": "太和",
+      "reign": {
+        "start": "365",
+        "end": "371"
+      },
+      "portrait": "jin-simayi.jpg",
+      "file": "simayi.json"
+    },
+    {
+      "id": "jin-emp-simayu",
+      "lineage": "jineast",
+      "name": "司马昱",
+      "templeName": "简文帝",
+      "era": "咸安",
+      "reign": {
+        "start": "371",
+        "end": "372"
+      },
+      "portrait": "jin-simayu.jpg",
+      "file": "simayu.json"
+    },
+    {
+      "id": "jin-emp-simayao",
+      "lineage": "jineast",
+      "name": "司马曜",
+      "templeName": "孝武帝",
+      "era": "宁康/太元",
+      "reign": {
+        "start": "372",
+        "end": "396"
+      },
+      "portrait": "jin-simayao.jpg",
+      "file": "simayao.json"
+    },
+    {
+      "id": "jin-emp-simadezong",
+      "lineage": "jineast",
+      "name": "司马德宗",
+      "templeName": "安帝",
+      "era": "隆安/元兴/义熙",
+      "reign": {
+        "start": "396",
+        "end": "419"
+      },
+      "portrait": "jin-simadezong.jpg",
+      "file": "simadezong.json"
+    },
+    {
+      "id": "jin-emp-simadewen",
+      "lineage": "jineast",
+      "name": "司马德文",
+      "templeName": "恭帝",
+      "era": "元熙",
+      "reign": {
+        "start": "419",
+        "end": "420"
+      },
+      "portrait": "jin-simadewen.jpg",
+      "file": "simadewen.json"
+    }
+  ]
+}

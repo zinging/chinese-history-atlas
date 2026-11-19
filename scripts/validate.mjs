@@ -67,6 +67,7 @@ const DYNASTIES = [
   { key: 'yuan', dir: 'yuan', empDir: 'emperors', events: 'events.json',       people: 'people.json',       cases: 'cases.json',       map: false },
   { key: 'qing', dir: 'qing', empDir: 'emperors', events: 'events.json',       people: 'people.json',       cases: 'cases.json',       map: false },
   { key: 'sanguo', dir: 'sanguo', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
+  { key: 'jin', dir: 'jin', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
 ];
 
 const d = (key) => (key === 'ming' ? '' : `${key}/`);
@@ -120,14 +121,17 @@ for (const dy of DYNASTIES) {
       if (entry.portrait && !/^[a-z0-9-]+\.(jpg|jpeg|png|webp)$/i.test(entry.portrait)) {
         errors.push(`${rel}: portrait 文件名非法 "${entry.portrait}"`);
       }
-      // 三国魏/蜀/吴三政权并立：每帝必须归属一条皇位继承线，供前端分组、配色与"跨线不连箭头"使用
-      if (dy.key === 'sanguo') {
-        if (!['wei', 'shu', 'wu'].includes(entry.lineage)) {
-          errors.push(`${rel}: lineage 必须是 wei/shu/wu（当前 ${entry.lineage || '缺失'}）`);
+      // 并立政权节点（三国、两晋…）：索引 meta.lineages 登记了哪几条皇位继承线，
+      // 每帝就必须归属其中一条，供前端分组、配色与"跨线不连箭头"使用；
+      // 未登记 lineages 的朝代不得出现 lineage 字段。
+      const lineageKeys = index.meta && index.meta.lineages ? Object.keys(index.meta.lineages) : null;
+      if (lineageKeys) {
+        if (!entry.lineage || !lineageKeys.includes(entry.lineage)) {
+          errors.push(`${rel}: lineage 必须是 ${lineageKeys.join('/')}（当前 ${entry.lineage || '缺失'}）`);
         }
         if (e.lineage !== entry.lineage) errors.push(`${rel}: lineage "${entry.lineage}" 与索引 "${e.lineage}" 不一致`);
       } else if (entry.lineage) {
-        errors.push(`${rel}: 只有三国节点使用 lineage，其它朝代不应出现`);
+        errors.push(`${rel}: ${dy.key} 节点未登记 meta.lineages，其它朝代不应出现 lineage`);
       }
       if (entry.reign) { checkDate(rel, entry.reign.start, 'reign.start'); checkDate(rel, entry.reign.end, 'reign.end'); }
       checkTimeline(rel, entry.timeline);
@@ -319,6 +323,37 @@ const mapEventsDoc = readJson('data/events/map-events.json');
 if (mapEventsDoc && Array.isArray(mapEventsDoc.events)) {
   for (const ev of mapEventsDoc.events) {
     if (!ev.name || !ev.date) errors.push('data/events/map-events.json: 地图事件缺 name/date');
+  }
+}
+
+// 并立政权甘特图（data/<朝>/gantt.json）：行=政权、块=君主在位区间，前端按真实年份比例绘制。
+// 这里只校验能导致图错位或误导的硬错误：轴范围、行内君主区间、块与行首尾是否自相矛盾。
+for (const ganttRel of ['data/wudai/gantt.json', 'data/sanguo/gantt.json', 'data/jin/gantt.json']) {
+  const g = readJson(ganttRel);
+  if (!g) continue;
+  if (typeof g.t0 !== 'number' || typeof g.t1 !== 'number' || g.t0 >= g.t1) {
+    errors.push(`${ganttRel}: t0/t1 必须是递增数字（当前 ${g.t0}/${g.t1}）`);
+    continue;
+  }
+  if (!Array.isArray(g.rows) || !g.rows.length) { errors.push(`${ganttRel}: rows 为空`); continue; }
+  for (const row of g.rows) {
+    if (!row.name || typeof row.start !== 'number' || typeof row.end !== 'number' || row.start >= row.end) {
+      errors.push(`${ganttRel}: 政权行 "${row.name || '?'}" 的 start/end 非法`);
+      continue;
+    }
+    if (row.start < g.t0 || row.end > g.t1) errors.push(`${ganttRel}: 政权行 "${row.name}" 超出横轴范围`);
+    if (!Array.isArray(row.kings) || !row.kings.length) { errors.push(`${ganttRel}: 政权行 "${row.name}" 缺 kings`); continue; }
+    let prev = -Infinity;
+    for (const k of row.kings) {
+      if (!Array.isArray(k) || k.length !== 3 || typeof k[0] !== 'string' || typeof k[1] !== 'number' || typeof k[2] !== 'number') {
+        errors.push(`${ganttRel}: 政权行 "${row.name}" 有君主三元组格式错误`);
+        continue;
+      }
+      if (k[1] > k[2]) errors.push(`${ganttRel}: ${row.name}·${k[0]} 在位区间倒置 ${k[1]}-${k[2]}`);
+      if (k[1] < row.start || k[2] > row.end) errors.push(`${ganttRel}: ${row.name}·${k[0]} ${k[1]}-${k[2]} 超出政权存续 ${row.start}-${row.end}`);
+      if (k[1] < prev) errors.push(`${ganttRel}: ${row.name} 君主顺序倒退（${k[0]} ${k[1]} < 前一位 ${prev}）`);
+      prev = k[1];
+    }
   }
 }
 

@@ -634,6 +634,15 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .emp-card.lineage-wei.active::after { background: #33506b; }
 .emp-card.lineage-shu.active::after { background: #a8352a; }
 .emp-card.lineage-wu.active::after  { background: #2f6b57; }
+/* ---- 两晋：西晋/东晋 两条继承线（同为司马氏，故用同族两色区分阶段） ---- */
+.emp-card.lineage-jinwest { background: #f7efea; border-color: #c39b8b; }
+.emp-card.lineage-jineast { background: #eaf1f0; border-color: #8fb0aa; }
+.emp-card.lineage-jinwest .lineage-badge { background: #7b3f2f; }
+.emp-card.lineage-jineast .lineage-badge { background: #2f5f6b; }
+.emp-card.lineage-jinwest.active { background: #7b3f2f; border-color: #7b3f2f; }
+.emp-card.lineage-jineast.active { background: #2f5f6b; border-color: #2f5f6b; }
+.emp-card.lineage-jinwest.active::after { background: #7b3f2f; }
+.emp-card.lineage-jineast.active::after { background: #2f5f6b; }
 .emp-portrait {
   width: 84px; height: 84px; margin: 0 auto 8px;
   border-radius: 50%; background: var(--gold);
@@ -1348,6 +1357,30 @@ input, textarea { cursor: text; }
 .gantt-king.shu.alt { background: linear-gradient(180deg, #c15a4a, #a4372a); }
 .gantt-king.wu { background: linear-gradient(180deg, #2f6b57, #235344); }
 .gantt-king.wu.alt { background: linear-gradient(180deg, #478c73, #357059); }
+/* 两晋十六国：上两行晋室，下面按族属配色（同族内用 alt 交替深浅区分相邻政权） */
+.gantt-king.jinwest { background: linear-gradient(180deg, #7b3f2f, #63301f); }
+.gantt-king.jineast { background: linear-gradient(180deg, #2f5f6b, #234b56); }
+.gantt-king.xiongnu { background: linear-gradient(180deg, #8a5a3a, #734a2e); }
+.gantt-king.xiongnu.alt { background: linear-gradient(180deg, #a3764f, #8a5f3d); }
+.gantt-king.jie { background: linear-gradient(180deg, #5f5a48, #4b4739); }
+.gantt-king.jie.alt { background: linear-gradient(180deg, #7b7560, #635e4d); }
+.gantt-king.xianbei { background: linear-gradient(180deg, #3f6b8a, #31566f); }
+.gantt-king.xianbei.alt { background: linear-gradient(180deg, #5b88a6, #45708b); }
+.gantt-king.di { background: linear-gradient(180deg, #6b4a7a, #563a63); }
+.gantt-king.di.alt { background: linear-gradient(180deg, #866196, #6c4d7c); }
+.gantt-king.qiang { background: linear-gradient(180deg, #8a6a2a, #72551e); }
+.gantt-king.qiang.alt { background: linear-gradient(180deg, #a5853f, #8a6d2e); }
+.gantt-king.han { background: linear-gradient(180deg, #4a6b4a, #3a563a); }
+.gantt-king.han.alt { background: linear-gradient(180deg, #668766, #527052); }
+.gantt-king.lu { background: linear-gradient(180deg, #7a5a6a, #634854); }
+.gantt-king.lu.alt { background: linear-gradient(180deg, #967686, #7c606e); }
+/* 行数多的朝代（两晋十六国 18 行）在窄屏上允许甘特图自身横向滚动，不压缩色块；
+   只有行数 > 8 才加 .gantt-wide，三国三行仍按容器宽度自适应 */
+@media (max-width: 760px) {
+  .shiguo-gantt.gantt-wide { overflow-x: auto; }
+  .shiguo-gantt.gantt-wide .gantt-axis,
+  .shiguo-gantt.gantt-wide .gantt-row { min-width: 640px; }
+}
 .gantt-note { margin-top: 10px; font-size: 12px; color: #8a6d3b; }
 .gantt-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: #5a4020; }
 .gantt-legend .sw { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }

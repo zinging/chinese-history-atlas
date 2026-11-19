@@ -155,10 +155,11 @@ const DYNASTY_DIRS = {
   sui: 'sui/',
   wudai: 'wudai/',
   sanguo: 'sanguo/',
+  jin: 'jin/',
 };
-// 三国暂无疆域 geojson（魏蜀吴三方并立，边界需要另画），先关掉地图层
-const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false };
-const DYNASTY_RANGE = { ming: '1368-1644', tang: '618-907', song: '960-1279', yuan: '1271-1368', qing: '1616-1912', sui: '581-618', wudai: '907-960', sanguo: '220-280' };
+// 三国、晋暂无疆域 geojson（并立政权边界需要另画），先关掉地图层
+const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false, jin: false };
+const DYNASTY_RANGE = { ming: '1368-1644', tang: '618-907', song: '960-1279', yuan: '1271-1368', qing: '1616-1912', sui: '581-618', wudai: '907-960', sanguo: '220-280', jin: '265-420' };
 // 各朝文件布局：明朝各库在 data/ 根目录下分目录，其他朝在朝代目录内
 const DYNASTY_LAYOUT = {
   ming: { people: 'people/people.json', cases: 'cases/cases.json', events: 'events/events.json', mapEvents: 'events/map-events.json', places: 'places/places.json', routes: 'routes/routes.json' },
@@ -169,6 +170,7 @@ const DYNASTY_LAYOUT = {
   sui: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   wudai: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   sanguo: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  jin: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
 };
 // 各朝文案：品牌名、朝代胶囊副标题（帝数）、地图 aria、图例注、页脚
 const DYNASTY_TEXT = {
@@ -212,6 +214,11 @@ const DYNASTY_TEXT = {
     legendNote: '三方疆界据《中国历史地图集·三国时期》示意，魏蜀吴以秦岭—淮河—长江为界',
     footer: '三国是东汉末年后魏、蜀、吴三方并立的时期 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《三国志》及裴松之注为主要依据，参校《资治通鉴》《后汉书》《晋书》',
   },
+  jin: {
+    brand: '两晋十六国', dynSub: '十五帝·西晋东晋', mapAria: '两晋示意地图',
+    legendNote: '西晋、东晋与十六国政权并立，暂无疆域示意图，相关政权分布见帝王世系页的并立图',
+    footer: '晋是三国归晋后西晋短暂统一、东晋南渡与十六国并立的时期 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《晋书》帝载记为主要依据，参校《资治通鉴》《中国通史》',
+  },
 };
 
 // ===== 全局加载动画控制 =====
@@ -240,7 +247,7 @@ async function loadAll() {
       if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
       return;
     }
-    const dynOrder = ['sanguo','sui','tang','wudai','song','yuan','ming','qing'];
+    const dynOrder = ['sanguo','jin','sui','tang','wudai','song','yuan','ming','qing'];
     const allEmperors = [];
     const allEvents = [];
     const allPeople = [];
@@ -270,6 +277,7 @@ async function loadAll() {
           const r = await fetch(`../data/${dir}emperors/index.json?v=v1`);
           if (!r.ok) return bucket;
           const idx = await r.json();
+          if (idx.meta && idx.meta.lineages) Object.assign(LINEAGE_LABEL, idx.meta.lineages);
           if (!idx.emperors || !Array.isArray(idx.emperors)) return bucket;
           // 逐皇帝加载详情
           const emps = await Promise.all(idx.emperors.map(e =>
@@ -555,12 +563,13 @@ function sourceTitle(id) {
 }
 
 // ---------- 界面一：时间线 ----------
+// 并立时代的继承线标签：内置三国与两晋，其余朝代可在各自 emperors/index.json 的 meta.lineages 里补充
+const LINEAGE_LABEL = { wei: '魏', shu: '蜀', wu: '吴', jinwest: '西晋', jineast: '东晋' };
 function renderTimeline() {
   const wrap = $('#timeline-scroll');
   wrap.innerHTML = '';
-  // 三国：魏、蜀、吴是三条并立的皇位继承线，不能串成同一条时间线。
+  // 三国、两晋：多个政权是并立的皇位继承线，不能串成同一条时间线。
   // 只有当本朝代每张卡都带 lineage 时才分组（「全部」视图与其它朝代完全不受影响）。
-  const LINEAGE_LABEL = { wei: '魏', shu: '蜀', wu: '吴' };
   const lineageMode = DATA.emperors.length > 0 && DATA.emperors.every((e) => e.lineage);
   let prevLineage = null;
   DATA.emperors.forEach((e, i) => {
@@ -700,6 +709,7 @@ async function renderGantt(dyn) {
       if (card) card.click();
     });
   });
+  box.classList.toggle('gantt-wide', g.rows.length > 8);
   box.classList.remove('hidden');
 }
 /** 已绑定过拖拽滚动的元素：同一元素只绑一次，避免每次渲染叠加监听（旧版切朝代/点年号会累积几十个处理器） */
@@ -2150,7 +2160,7 @@ function renderMap() {
     leafletLayers.shapeGeo = geoLayer;
     // 朝代号标在疆域总中心
     const c = basePoly.getBounds().getCenter();
-    const shortName = { ming:'明', tang:'唐', song:'宋', yuan:'元', qing:'清', sui:'隋', wudai:'五代', sanguo:'三国' }[currentDynasty] || '';
+    const shortName = { ming:'明', tang:'唐', song:'宋', yuan:'元', qing:'清', sui:'隋', wudai:'五代', sanguo:'三国', jin:'晋' }[currentDynasty] || '';
     if (shortName) addLabel(c.lng, c.lat, shortName);
   } else {
     const poly = L.polygon(toLatLngs(data.shape.points), {
@@ -2163,7 +2173,7 @@ function renderMap() {
     const pts = data.shape.points;
     const clng = pts.reduce((s, p) => s + p[0], 0) / pts.length;
     const clat = pts.reduce((s, p) => s + p[1], 0) / pts.length;
-    const shortName = { ming:'明', tang:'唐', song:'宋', yuan:'元', qing:'清', sui:'隋', wudai:'五代', sanguo:'三国' }[currentDynasty] || '';
+    const shortName = { ming:'明', tang:'唐', song:'宋', yuan:'元', qing:'清', sui:'隋', wudai:'五代', sanguo:'三国', jin:'晋' }[currentDynasty] || '';
     if (shortName) addLabel(clng, clat, shortName);
   }
 
@@ -3040,9 +3050,38 @@ const DETECTIVE_TASKS_BY_DYNASTY = {
       create: '结合线索，说说鸦片战争时清朝为什么打不过英国，《南京条约》又定下了哪些屈辱条款。',
     },
   ],
+  jin: [
+    {
+      title: '侦探档案 · 晋 1', quest: '八王之乱打了十六年，最后赢的司马越，为什么反而看着西晋亡了？',
+      queries: ['贾后诛杨骏·八王乱起', '永嘉之乱·洛阳陷落', '司马越'],
+      open: {
+        question: '西晋是亡于内乱，还是亡于外患？',
+        viewpoints: ['有人说内乱是因：诸王把中央军和财政打空，外族只是收尾。', '有人说外患是主：刘渊起兵时晋尚有天下，部署得当未必守不住洛阳。'],
+      },
+      create: '结合线索，把八王之乱到永嘉之乱的关键几步排成一条链，说说哪一步最不该发生。',
+    },
+    {
+      title: '侦探档案 · 晋 2', quest: '司马睿在江东登基时，为什么必须先让王导安排一场「出行仪式」？',
+      queries: ['司马睿称晋王·立国江左', '王敦之乱', '王导'],
+      open: {
+        question: '「王与马，共天下」是合作，还是皇权寄生？',
+        viewpoints: ['有人说是合作：皇室有名分、世族有根基，各取所需才站住脚。', '有人说是寄生：皇权从一开始就没有自己的兵与财。'],
+      },
+      create: '结合线索，说说东晋立国靠了哪几家人，再判断：这样的朝廷能北伐成功吗？',
+    },
+    {
+      title: '侦探档案 · 晋 3', quest: '八万北府兵打崩前秦号称百万的大军，秦军到底为什么退？',
+      queries: ['淝水之战', '谢玄', '苻坚'],
+      open: {
+        question: '淝水之胜，是东晋的实力，还是前秦自己的崩塌？',
+        viewpoints: ['有人说是实力：北府兵训练有素，洛涧一战已见差距。', '有人说是内崩：各族拼凑的大军，退阵一动就散了。'],
+      },
+      create: '结合线索，说出秦军退阵后发生了什么，再想想：如果你是苻坚，会怎么打这一仗。',
+    },
+  ],
 };
 
-const DYNASTY_LABEL = { sanguo: '三国', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
+const DYNASTY_LABEL = { sanguo: '三国', jin: '晋', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
 
 // 切朝代令牌：并发切换时只渲染最后一次
 let _dynastyToken = 0;
@@ -3053,7 +3092,7 @@ function detectiveTasks() {
   // 此前 all 落到 ming 的回退分支，首屏（默认就是全部）只能看到明代 3 题。
   if (currentDynasty === 'all') {
     const all = [];
-    for (const key of ['sanguo', 'sui', 'tang', 'wudai', 'song', 'yuan', 'ming', 'qing']) {
+    for (const key of ['sanguo', 'jin', 'sui', 'tang', 'wudai', 'song', 'yuan', 'ming', 'qing']) {
       const list = DETECTIVE_TASKS_BY_DYNASTY[key];
       if (list) list.forEach((t) => all.push(t));
     }
