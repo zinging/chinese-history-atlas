@@ -577,9 +577,16 @@ function renderTimeline() {
     const groupEnd = lineageMode && (!nextE || nextE.lineage !== e.lineage);
     if (lineageMode && prevLineage !== null && e.lineage !== prevLineage) {
       // 跨继承线用分隔（虚线 + 政权名），不加右箭头——箭头只表示"同一线上的父死子继/兄终弟及"
-      const sep = el('div', 'tl-lineage-sep');
+      const sep = el('div', 'tl-lineage-sep lineage-' + e.lineage);
       sep.innerHTML = `<span>${LINEAGE_LABEL[e.lineage] || ''}</span>`;
       wrap.appendChild(sep);
+    }
+    // 首条继承线也在卡片流最前面立一块同款国号牌（魏/西晋），
+    // 否则第一组只有卡角的小徽标、后面几组却有立牌，看上去像缺了一段
+    if (lineageMode && i === 0) {
+      const lead = el('div', 'tl-lineage-sep tl-lineage-lead lineage-' + e.lineage);
+      lead.innerHTML = `<span>${LINEAGE_LABEL[e.lineage] || ''}</span>`;
+      wrap.appendChild(lead);
     }
     prevLineage = lineageMode ? e.lineage : null;
     const card = el('div', 'emp-card');

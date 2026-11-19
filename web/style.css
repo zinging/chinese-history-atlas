@@ -619,14 +619,28 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .emp-card.lineage-wu  .lineage-badge { background: #2f6b57; }
 .emp-card.tl-group-end::after { content: none; }   /* 换线处不画箭头 */
 .tl-lineage-sep {
-  flex: 0 0 26px; align-self: stretch; display: flex; align-items: center; justify-content: center;
-  border-left: 1px dashed rgba(90, 74, 52, .32);
+  flex: 0 0 34px; align-self: stretch; display: flex; align-items: center; justify-content: center;
+  border-left: 1px dashed rgba(90, 74, 52, .22);
+  /* 卡片流是 scroll-snap-type:x mandatory + 卡片 snap-align:start；
+     立牌若不算吸附点，浏览器会把 0 吸附到首卡左缘（scrollLeft=46），组首国号牌永远被推到视口外 */
+  scroll-snap-align: start;
 }
+/* 国号立牌：竖排、本政权强色底、白字加粗，跨线与组首用同一款，一眼能看出这是"另一条继承线"；
+   固定牌高 64px（不随字数长短跳），像书脊签，1 字（魏/蜀/吴）与 2 字（西晋/东晋）视觉重量一致 */
 .tl-lineage-sep span {
-  writing-mode: vertical-rl; letter-spacing: 2px;
-  background: var(--bg); color: #6b5a3c; font-size: 13px;
-  padding: 6px 3px; border-radius: 4px;
+  writing-mode: vertical-rl; letter-spacing: 4px;
+  background: #6b5a3c; color: #fff; font-size: 16px; font-weight: 700;
+  height: 64px; padding: 0 7px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+  box-shadow: 0 2px 8px rgba(60, 44, 26, .22);
 }
+.tl-lineage-sep.lineage-wei span { background: #33506b; }
+.tl-lineage-sep.lineage-shu span { background: #a8352a; }
+.tl-lineage-sep.lineage-wu span { background: #2f6b57; }
+.tl-lineage-sep.lineage-jinwest span { background: #7b3f2f; }
+.tl-lineage-sep.lineage-jineast span { background: #2f5f6b; }
+/* 组首立牌不画分隔虚线（左边没有上一组可断），只留牌子 */
+.tl-lineage-sep.tl-lineage-lead { border-left: none; }
 /* 选中态用本政权的强色，避免"红＝蜀"的误读 */
 .emp-card.lineage-wei.active { background: #33506b; border-color: #33506b; }
 .emp-card.lineage-shu.active { background: #a8352a; border-color: #a8352a; }
