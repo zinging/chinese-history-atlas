@@ -145,6 +145,11 @@ if (CHECK_ONLY) {
 }
 
 // 1. server.mjs
+//    图片是否打进包：默认不带。
+//    站点 clone 是后台进行的（server 返回 state:'cloning'），所以首次 1–2 分钟里没有站点，
+//    那段窗口的图只能来自包内；但 552 张图占 25.5MB，而整包 36.6MB——上传时一次 ECONNRESET
+//    就报废，发版稳定性和 1 分钟的配图能力不成比例。带 `--with-images` 时行为与旧版一致。
+const WITH_IMAGES = process.argv.includes('--with-images');
 const serverSrc = path.join(ROOT, 'web', 'tools', 'history-mcp-server.mjs');
 const serverDst = path.join(PKG, 'server.mjs');
 fs.copyFileSync(serverSrc, serverDst);
@@ -181,10 +186,9 @@ const jsonCount = jsonFiles.length;
 const jsonBytes = jsonFiles.reduce((s, p) => s + fs.statSync(p).size, 0);
 console.log(`data/ JSON: ${jsonCount} 个，${(jsonBytes / 1048576).toFixed(1)} MB`);
 
-// 3. 图片：MCP 的 image 内容块只读这 5 个目录
+// 3. 图片：MCP 的 image 内容块只读这 5 个目录（默认不带，见上面 WITH_IMAGES 的说明）
 const imgBase = path.join(dataSrc, 'portraits');
 const imgDst = path.join(dataDst, 'portraits');
-fs.mkdirSync(imgDst, { recursive: true });
 const imgDirs = [
   { src: imgBase, dst: imgDst, filter: f => f.endsWith('.jpg') },           // 根：皇帝/诗人画像
   { src: path.join(imgBase, 'artifacts-thumb'), dst: path.join(imgDst, 'artifacts-thumb') },
@@ -193,17 +197,22 @@ const imgDirs = [
   { src: path.join(imgBase, 'poet-events'), dst: path.join(imgDst, 'poet-events') },
 ];
 let imgCount = 0, imgBytes = 0;
-for (const { src, dst, filter } of imgDirs) {
-  if (!fs.existsSync(src)) continue;
-  fs.mkdirSync(dst, { recursive: true });
-  for (const name of fs.readdirSync(src)) {
-    if (filter ? filter(name) : name.endsWith('.jpg')) {
-      fs.copyFileSync(path.join(src, name), path.join(dst, name));
-      imgCount++; imgBytes += fs.statSync(path.join(src, name)).size;
+if (WITH_IMAGES) {
+  fs.mkdirSync(imgDst, { recursive: true });
+  for (const { src, dst, filter } of imgDirs) {
+    if (!fs.existsSync(src)) continue;
+    fs.mkdirSync(dst, { recursive: true });
+    for (const name of fs.readdirSync(src)) {
+      if (filter ? filter(name) : name.endsWith('.jpg')) {
+        fs.copyFileSync(path.join(src, name), path.join(dst, name));
+        imgCount++; imgBytes += fs.statSync(path.join(src, name)).size;
+      }
     }
   }
+  console.log(`data/portraits/: ${imgCount} 张图片，${(imgBytes / 1048576).toFixed(1)} MB`);
+} else {
+  console.log('data/portraits/: 未打包（默认精简；需要 clone 窗口内也带图请加 --with-images）');
 }
-console.log(`data/portraits/: ${imgCount} 张图片，${(imgBytes / 1048576).toFixed(1)} MB`);
 
 // 4. 总体积
 const allFiles = [];

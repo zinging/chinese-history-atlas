@@ -2103,15 +2103,22 @@ async function selftest() {
   assert(nakedImg.length === 0, `各列表接口的图片字段均为对象，无裸字符串（异常 ${nakedImg.length} 处）`);
   // 图片内容块：单对象结果要真的带上 image 块（客户端才能渲染成图文），列表类不带。
   // 这是「图文并茂」的唯一通道——只给 URL 字符串客户端不会去取图。
+  // 精简版插件包不带图（clone 完成前没有图片文件），那种形态下跳过这三条，
+  // 否则每次发布都得对着必然失败的断言解释一遍。
   const imgOf = (res) => ((res && res.result && res.result.content) || []).filter((b) => b.type === 'image');
-  const empImg = imgOf(emp);
-  assert(empImg.length === 1 && empImg[0].mimeType === 'image/jpeg'
-    && typeof empImg[0].data === 'string' && empImg[0].data.length > 1000,
-    'get_emperor 附带 1 个 image 内容块（base64 jpeg）');
-  const artImg = imgOf(await call({ jsonrpc: '2.0', id: 40, method: 'tools/call', params: { name: 'get_artifact', arguments: { module: 'myth', name: '九尾狐' } } }));
-  assert(artImg.length === 1 && /^image\//.test(artImg[0].mimeType), 'get_artifact 附带 image 内容块');
-  const bookImg = imgOf(await call({ jsonrpc: '2.0', id: 41, method: 'tools/call', params: { name: 'get_book', arguments: { module: 'gewu', name: '天工开物' } } }));
-  assert(bookImg.length === 1, 'get_book 附带 image 内容块');
+  const hasImgData = [ROOT, PKG_ROOT].some((r) => r && fs.existsSync(path.join(r, 'data', 'portraits')));
+  if (hasImgData) {
+    const empImg = imgOf(emp);
+    assert(empImg.length === 1 && empImg[0].mimeType === 'image/jpeg'
+      && typeof empImg[0].data === 'string' && empImg[0].data.length > 1000,
+      'get_emperor 附带 1 个 image 内容块（base64 jpeg）');
+    const artImg = imgOf(await call({ jsonrpc: '2.0', id: 40, method: 'tools/call', params: { name: 'get_artifact', arguments: { module: 'myth', name: '九尾狐' } } }));
+    assert(artImg.length === 1 && /^image\//.test(artImg[0].mimeType), 'get_artifact 附带 image 内容块');
+    const bookImg = imgOf(await call({ jsonrpc: '2.0', id: 41, method: 'tools/call', params: { name: 'get_book', arguments: { module: 'gewu', name: '天工开物' } } }));
+    assert(bookImg.length === 1, 'get_book 附带 image 内容块');
+  } else {
+    dlog('未发现图片目录（精简包 / 站点未 clone）：跳过三条 image 内容块断言');
+  }
   const listImg = imgOf(await call({ jsonrpc: '2.0', id: 42, method: 'tools/call', params: { name: 'list_creatures', arguments: {} } }));
   assert(listImg.length === 0, '列表类结果不附图（避免几十张图撑爆返回体）');
   const sch = await call({ jsonrpc: '2.0', id: 8, method: 'tools/call', params: { name: 'search', arguments: { q: '空印案', limit: 5 } } });
@@ -2147,7 +2154,7 @@ async function selftest() {
   const swData = JSON.parse(swEvt.result.content.filter((b) => b.type === 'text').at(-1).text);
   assert(swData.name === '陷长安作《春望》' && swData.place && swData.place.name === '长安'
     && (swData.quotes || []).length >= 1 && (swData.significance || []).length >= 1
-    && /evt=shiwen-dufu-changan/.test(swData.url || '') && !!swData.image,
+    && /evt=shiwen-dufu-changan/.test(swData.url || '') && (!!swData.image || !hasImgData),
     'get_route(shiwen, event) 返回生平事件正文/原文译文/意义/配图与 evt 深链');
   const swList = await call({ jsonrpc: '2.0', id: 26, method: 'tools/call', params: { name: 'get_route', arguments: { module: 'shiwen' } } });
   const swlData = JSON.parse(swList.result.content.filter((b) => b.type === 'text').at(-1).text);
