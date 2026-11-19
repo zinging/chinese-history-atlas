@@ -65,9 +65,11 @@ Then run `npm run mcp:install` in the project root (Windows; on macOS/Linux use 
 
 #### Path B — DSH plugin: saves those two steps, but binds to the DSH plugin layer
 
-> ⚠️ **Current status: the plugin has not been published yet**, so `@chenye123/chinese-history-atlas` cannot be found in the plugin marketplace; this path works only after publication. For now use **Path A** (generic MCP), or register it from a local clone as described in [`docs/AI集成-本地MCP配置.md`](docs/AI集成-本地MCP配置.md).
+> ✅ **Published**: `@chenye123/chinese-history-atlas@1.6.0` ([npm](https://www.npmjs.com/package/@chenye123/chinese-history-atlas)). Search "中华历史图谱" in the plugin marketplace, or run `npm i @chenye123/chinese-history-atlas`. The marketplace index lags a little; if search comes up empty, do the self-check in item 3 below, or just use Path A.
 
-The plugin automates "clone + serve": install it, ask a question, and it answers from its bundled data copy, pulls the full site on first use, and starts the local web service in the background — illustrations included.
+The plugin automates "clone + serve": install it, ask a question, and it answers from its bundled data copy, pulls the full site on first use, and starts the local web service in the background.
+
+The published package is the **slim build** (2.7MB / 240 files: the 9.2MB data JSON only, without the 547 images), so it does not hit the upload failures the 29.5MB full build runs into on Chinese networks. The only cost: for the minute or two before the site clone finishes you get text plus image links, and illustrations return as soon as the clone completes.
 
 It goes through DSH's **plugin mount layer** (`cordis.patch.yml`), which is not guaranteed across versions. Check three things first:
 

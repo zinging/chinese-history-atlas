@@ -64,9 +64,11 @@ node web/serve.mjs          # 浏览器打开 http://127.0.0.1:5173/web/
 
 #### 路径 B —— DSH 插件：省掉上面两步，但绑定 DSH 插件层
 
-> ⚠️ **当前状态：插件包尚未公开发布**，插件市场暂搜不到 `@chenye123/chinese-history-atlas`；本路径仅在发布后可用。现阶段请走**路径 A**（通用 MCP 接入），或按 [`docs/AI集成-本地MCP配置.md`](docs/AI集成-本地MCP配置.md) 的「本地仓库安装」方式注册。
+> ✅ **已发布**：`@chenye123/chinese-history-atlas@1.6.0`（[npm](https://www.npmjs.com/package/@chenye123/chinese-history-atlas)）。插件市场搜「中华历史图谱」，或直接 `npm i @chenye123/chinese-history-atlas`。插件市场索引有延迟，搜不到时按下面第 3 条自检，或直接走路径 A。
 
 插件把「clone + 起服务」做成自动的：装好后直接提问即可，例如「讲一下靖难之役」——它会检索站内数据作答（自带数据副本）、首次提问时自动拉站点、后台拉起本地网页服务，讲解时自动配图。
+
+发布包是**精简形态**（2.7MB / 240 文件，只带 9.2MB 数据 JSON，不带 547 张图），好处是不像全量包（29.5MB）那样容易在国内链路上传失败。代价只有一处：站点 clone 完成前的那一两分钟只有文字与图片链接，clone 完成后单对象结果照常带图。
 
 但它走的是 DSH 的**插件挂载层**（`cordis.patch.yml`），跨版本不保证。装之前请确认三件事：
 
