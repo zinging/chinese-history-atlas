@@ -1346,6 +1346,9 @@ input, textarea { cursor: text; }
 .gantt-king { min-width: 14px; }
 .gantt-king:hover { transform: scaleY(1.3); z-index: 3; }
 .gantt-king .gantt-king-name { font-weight: 700; line-height: 1; font-size: 10px; }
+/* 短祚君主的块只有一二十像素，放不下三字姓名：留色块、藏字，全名交给 title 悬浮提示，
+   避免半截字挤在相邻块上（由 renderGantt 按实测像素宽加 .gantt-narrow） */
+.gantt-king.gantt-narrow .gantt-king-name { display: none; }
 .gantt-king.song { background: linear-gradient(180deg, #c8553d, #b04836); }
 .gantt-king.song.alt { background: linear-gradient(180deg, #d97a63, #c05d48); }
 .gantt-king.tang-internal { background: linear-gradient(180deg, #6b8e6b, #57795a); }

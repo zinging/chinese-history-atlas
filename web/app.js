@@ -675,7 +675,7 @@ async function renderGantt(dyn) {
       const width = Math.max(0, pct(c.end) - pct(c.start));
       const label = c.names.join('·');
       const tip = `${c.notes.join(' · ')} · ${row.name}`;
-      return `<div class="gantt-king ${row.color || ''} ${ci % 2 ? 'alt' : ''}" data-king="${label}" style="left:${left}%;width:${width}%" title="${tip}">
+      return `<div class="gantt-king ${row.color || ''} ${ci % 2 ? 'alt' : ''}" data-king="${label}" data-w="${width}" style="left:${left}%;width:${width}%" title="${tip}">
         <span class="gantt-king-name">${label}</span>
       </div>`;
     }).join('');
@@ -701,7 +701,12 @@ async function renderGantt(dyn) {
     ${g.note ? `<div class="gantt-note">${g.note}</div>` : ''}
   `;
   // 图与卡片流联动：点色块 → 选中同名帝王卡 → 详情展开；没有对应帝王卡的政权（如十国）点了不跳
+  // 块宽按真实年份比例，短祚君主（如晋愍帝 3 年）只有一二十像素，名字放不下就藏字留色，全名交给 title 悬浮提示
+  const trackW = (box.querySelector('.gantt-track') || {}).clientWidth || 600;
   box.querySelectorAll('.gantt-king').forEach((k) => {
+    const w = (parseFloat(k.dataset.w || '0') / 100) * trackW;
+    const need = (k.dataset.king || '').length * 12 + 8;
+    if (w < need) k.classList.add('gantt-narrow');
     k.addEventListener('click', () => {
       const first = (k.dataset.king || '').split('·')[0];
       const card = [...document.querySelectorAll('#timeline-scroll .emp-card')]
