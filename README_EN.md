@@ -37,6 +37,8 @@ This site lays the **five threads — emperors, thinkers, poets, craftsmen, myth
 
 ## 🚀 Install
 
+[![npm](https://img.shields.io/npm/v/@chenye123/chinese-history-atlas?label=npm&color=cb3837)](https://www.npmjs.com/package/@chenye123/chinese-history-atlas)
+
 ### 1. Just look — install nothing
 
 Open the live demo: [https://zinging.github.io/chinese-history-atlas/web/](https://zinging.github.io/chinese-history-atlas/web/)

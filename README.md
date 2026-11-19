@@ -36,6 +36,8 @@
 
 ## 🚀 安装
 
+[![npm](https://img.shields.io/npm/v/@chenye123/chinese-history-atlas?label=npm&color=cb3837)](https://www.npmjs.com/package/@chenye123/chinese-history-atlas)
+
 ### 一、只想看看，不装任何东西
 
 直接打开在线演示：[https://zinging.github.io/chinese-history-atlas/web/](https://zinging.github.io/chinese-history-atlas/web/)
