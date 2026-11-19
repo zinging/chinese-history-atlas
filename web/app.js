@@ -154,9 +154,11 @@ const DYNASTY_DIRS = {
   qing: 'qing/',
   sui: 'sui/',
   wudai: 'wudai/',
+  sanguo: 'sanguo/',
 };
-const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true };
-const DYNASTY_RANGE = { ming: '1368-1644', tang: '618-907', song: '960-1279', yuan: '1271-1368', qing: '1616-1912', sui: '581-618', wudai: '907-960' };
+// 三国暂无疆域 geojson（魏蜀吴三方并立，边界需要另画），先关掉地图层
+const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false };
+const DYNASTY_RANGE = { ming: '1368-1644', tang: '618-907', song: '960-1279', yuan: '1271-1368', qing: '1616-1912', sui: '581-618', wudai: '907-960', sanguo: '220-280' };
 // 各朝文件布局：明朝各库在 data/ 根目录下分目录，其他朝在朝代目录内
 const DYNASTY_LAYOUT = {
   ming: { people: 'people/people.json', cases: 'cases/cases.json', events: 'events/events.json', mapEvents: 'events/map-events.json', places: 'places/places.json', routes: 'routes/routes.json' },
@@ -166,6 +168,7 @@ const DYNASTY_LAYOUT = {
   qing: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   sui: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   wudai: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  sanguo: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
 };
 // 各朝文案：品牌名、朝代胶囊副标题（帝数）、地图 aria、图例注、页脚
 const DYNASTY_TEXT = {
@@ -204,6 +207,11 @@ const DYNASTY_TEXT = {
     legendNote: '疆域据谭其骧《中国历史地图集·五代十国时期》手绘简化示意',
     footer: '五代十国是唐末到宋初的大分裂时期 · 内容以《新五代史》《资治通鉴》为主要依据',
   },
+  sanguo: {
+    brand: '三国鼎立', dynSub: '十一帝·魏蜀吴', mapAria: '三国示意地图',
+    legendNote: '三方疆界据《中国历史地图集·三国时期》示意，魏蜀吴以秦岭—淮河—长江为界',
+    footer: '三国是东汉末年后魏、蜀、吴三方并立的时期 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《三国志》及裴松之注为主要依据，参校《资治通鉴》《后汉书》《晋书》',
+  },
 };
 
 // ===== 全局加载动画控制 =====
@@ -232,7 +240,7 @@ async function loadAll() {
       if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
       return;
     }
-    const dynOrder = ['sui','tang','wudai','song','yuan','ming','qing'];
+    const dynOrder = ['sanguo','sui','tang','wudai','song','yuan','ming','qing'];
     const allEmperors = [];
     const allEvents = [];
     const allPeople = [];
@@ -2127,7 +2135,7 @@ function renderMap() {
     leafletLayers.shapeGeo = geoLayer;
     // 朝代号标在疆域总中心
     const c = basePoly.getBounds().getCenter();
-    const shortName = { ming:'明', tang:'唐', song:'宋', yuan:'元', qing:'清', sui:'隋', wudai:'五代' }[currentDynasty] || '';
+    const shortName = { ming:'明', tang:'唐', song:'宋', yuan:'元', qing:'清', sui:'隋', wudai:'五代', sanguo:'三国' }[currentDynasty] || '';
     if (shortName) addLabel(c.lng, c.lat, shortName);
   } else {
     const poly = L.polygon(toLatLngs(data.shape.points), {
@@ -2140,7 +2148,7 @@ function renderMap() {
     const pts = data.shape.points;
     const clng = pts.reduce((s, p) => s + p[0], 0) / pts.length;
     const clat = pts.reduce((s, p) => s + p[1], 0) / pts.length;
-    const shortName = { ming:'明', tang:'唐', song:'宋', yuan:'元', qing:'清', sui:'隋', wudai:'五代' }[currentDynasty] || '';
+    const shortName = { ming:'明', tang:'唐', song:'宋', yuan:'元', qing:'清', sui:'隋', wudai:'五代', sanguo:'三国' }[currentDynasty] || '';
     if (shortName) addLabel(clng, clat, shortName);
   }
 
@@ -2776,6 +2784,44 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
 // queries 用该朝 events.json 的确切事件名 / 皇帝名，保证 search-core 一定命中；
 // open 为没有标准答案的思辨题（附双视角），create 为动手创作。
 const DETECTIVE_TASKS_BY_DYNASTY = {
+  sanguo: [
+    {
+      title: '侦探档案 · 三国 1', quest: '曹操打赢了官渡、统一了北方，为什么到死都没能过长江？',
+      queries: ['赤壁之战', '吕蒙袭荆州·关羽败亡', '曹操'],
+      open: {
+        question: '赤壁这一场败仗，是曹操轻敌，还是南北条件根本不允许他南下？',
+        viewpoints: ['有人说轻敌：刚取荆州就顺江而下，水军未练、疫病流行。', '有人说条件不许：北人不习水战，长江天险与补给线才是真正的对手。'],
+      },
+      create: '结合线索，说出曹军在赤壁输在哪几件事上，再想想：如果换你指挥，会先做什么准备。',
+    },
+    {
+      title: '侦探档案 · 三国 2', quest: '高平陵那一天，曹爽手里还有皇帝，为什么一夜之间就把权交了出去？',
+      queries: ['高平陵之变', '曹芳', '司马懿'],
+      open: {
+        question: '曹爽不战而降，是怯懦，还是他算错了一件事？',
+        viewpoints: ['有人说怯懦：桓范劝他奉少帝去许昌发兵，他舍不得家产。', '有人说被诓了：司马懿指洛水为誓只免官，他信了政治承诺。'],
+      },
+      create: '结合线索，梳理高平陵之变里司马懿做了哪几步，再说说曹爽错在哪一步。',
+    },
+    {
+      title: '侦探档案 · 三国 3', quest: '蜀汉有剑阁天险、姜维主力还在，成都为什么先降了？',
+      queries: ['魏灭蜀·三国格局折半', '刘禅', '邓艾'],
+      open: {
+        question: '刘禅开城出降，是明智止损还是弃国求安？',
+        viewpoints: ['有人说明智：成都无兵，再战只会让百姓遭兵火。', '有人说弃国：主力尚存就投降，前线的抵抗全成了空。'],
+      },
+      create: '结合线索，说说邓艾是怎么绕过剑阁的，再判断：如果你是刘禅，会守还是降。',
+    },
+    {
+      title: '侦探档案 · 三国 4', quest: '吴国有长江、有楼船，为什么最后还是被顺江而下打穿了？',
+      queries: ['晋灭吴·三国归晋', '孙皓', '陆抗'],
+      open: {
+        question: '吴亡该记在孙皓的暴政上，还是记在江东士族的离心上？',
+        viewpoints: ['有人说记在孙皓：杀能臣、拒直谏，陆抗一死无人守江。', '有人说记在结构：世族与皇权长期拉锯，换谁都难挡统一大势。'],
+      },
+      create: '结合线索，说出晋军破江防的两个关键手段，再评一评孙皓这个人。',
+    },
+  ],
   sui: [
     {
       title: '侦探档案 · 隋 1', quest: '隋文帝攒下那么厚的家底，隋炀帝为什么十几年就亡了国？',
@@ -2981,7 +3027,7 @@ const DETECTIVE_TASKS_BY_DYNASTY = {
   ],
 };
 
-const DYNASTY_LABEL = { sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
+const DYNASTY_LABEL = { sanguo: '三国', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
 
 // 切朝代令牌：并发切换时只渲染最后一次
 let _dynastyToken = 0;
@@ -2992,7 +3038,7 @@ function detectiveTasks() {
   // 此前 all 落到 ming 的回退分支，首屏（默认就是全部）只能看到明代 3 题。
   if (currentDynasty === 'all') {
     const all = [];
-    for (const key of ['sui', 'tang', 'wudai', 'song', 'yuan', 'ming', 'qing']) {
+    for (const key of ['sanguo', 'sui', 'tang', 'wudai', 'song', 'yuan', 'ming', 'qing']) {
       const list = DETECTIVE_TASKS_BY_DYNASTY[key];
       if (list) list.forEach((t) => all.push(t));
     }
@@ -3414,6 +3460,8 @@ async function loadBoundaries() {
   const key = currentDynasty;
   // 已取过就直接复用：切回某朝不再重发（旧版每次切朝代都重拉一遍 GeoJSON）
   if (Object.prototype.hasOwnProperty.call(MAP_GEO, key)) return MAP_GEO[key];
+  // 没有疆域数据的朝代（如三国三方并立、或「全部」合并视图）不去请求不存在的文件，直接回退示意色块
+  if (!DYNASTY_HAS_MAP[key]) { MAP_GEO[key] = null; return null; }
   const file = `../data/boundaries/${key}.geojson`;
   try {
     const r = await fetch(file);

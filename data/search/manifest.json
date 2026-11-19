@@ -1,15 +1,15 @@
 {
  "v": "1.6.0",
- "sig": "8650c96e8e165d7af77238767c35ebc6e47122b9",
- "builtAt": "2026-11-19T14:25:31.461Z",
- "docs": 941,
- "title": 221240,
+ "sig": "31c32bfc10644fa5b10164d170d3ce82f1c06032",
+ "builtAt": "2026-11-19T15:29:25.401Z",
+ "docs": 956,
+ "title": 224930,
  "shards": [
   {
    "m": "emperors",
    "f": "body-emperors.json",
-   "n": 254,
-   "bytes": 306040
+   "n": 269,
+   "bytes": 340886
   },
   {
    "m": "myth",

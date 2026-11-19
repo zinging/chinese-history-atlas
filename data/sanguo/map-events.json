@@ -1,0 +1,8 @@
+{
+  "meta": {
+    "title": "三国地图事件",
+    "description": "三国尚无疆域 GeoJSON，本表暂留空；事件叙事见 events.json，地名见 places.json。",
+    "updated": "2026-11-19"
+  },
+  "events": []
+}

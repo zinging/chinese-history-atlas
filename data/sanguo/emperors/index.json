@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "title": "三国帝王索引",
+    "note": "魏、蜀、吴三个并立政权，共十一帝。魏自曹丕受禅（220）起算，蜀自刘备称帝（221）起算，吴自孙权称帝（229）起算；三人称帝前的经历写进各自卡片的时间线。",
+    "updated": "2026-11-19"
+  },
+  "emperors": [
+    { "id": "sanguo-emp-caopi",  "name": "曹丕", "templeName": "文帝",   "era": "黄初",             "reign": { "start": "220", "end": "226" }, "portrait": "sanguo-caopi.jpg",  "file": "caopi.json" },
+    { "id": "sanguo-emp-caorui", "name": "曹叡", "templeName": "明帝",   "era": "太和/青龙/景初",   "reign": { "start": "226", "end": "239" }, "portrait": "sanguo-caorui.jpg", "file": "caorui.json" },
+    { "id": "sanguo-emp-caofang", "name": "曹芳", "templeName": "齐王",   "era": "正始/嘉平",        "reign": { "start": "239", "end": "254" }, "portrait": "sanguo-caofang.jpg", "file": "caofang.json" },
+    { "id": "sanguo-emp-caomao",  "name": "曹髦", "templeName": "高贵乡公", "era": "正元/甘露",       "reign": { "start": "254", "end": "260" }, "portrait": "sanguo-caomao.jpg", "file": "caomao.json" },
+    { "id": "sanguo-emp-caohuan", "name": "曹奂", "templeName": "元帝",   "era": "景元/咸熙",         "reign": { "start": "260", "end": "265" }, "portrait": "sanguo-caohuan.jpg", "file": "caohuan.json" },
+    { "id": "sanguo-emp-liubei",  "name": "刘备", "templeName": "昭烈帝", "era": "章武",             "reign": { "start": "221", "end": "223" }, "portrait": "sanguo-liubei.jpg", "file": "liubei.json" },
+    { "id": "sanguo-emp-liushan", "name": "刘禅", "templeName": "后主",   "era": "建兴/延熙/景耀/炎兴", "reign": { "start": "223", "end": "263" }, "portrait": "sanguo-liushan.jpg", "file": "liushan.json" },
+    { "id": "sanguo-emp-sunquan", "name": "孙权", "templeName": "太祖",   "era": "黄武/黄龙/嘉禾/赤乌/太元/神凤", "reign": { "start": "229", "end": "252" }, "portrait": "sanguo-sunquan.jpg", "file": "sunquan.json" },
+    { "id": "sanguo-emp-sunliang", "name": "孙亮", "templeName": "会稽王", "era": "建兴/五凤/太平",  "reign": { "start": "252", "end": "258" }, "portrait": "sanguo-sunliang.jpg", "file": "sunliang.json" },
+    { "id": "sanguo-emp-sunxiu",  "name": "孙休", "templeName": "景帝",   "era": "永安",              "reign": { "start": "258", "end": "264" }, "portrait": "sanguo-sunxiu.jpg", "file": "sunxiu.json" },
+    { "id": "sanguo-emp-sunhao",  "name": "孙皓", "templeName": "末帝",   "era": "元兴/甘露/宝鼎/建衡/凤凰/天册/天玺/天纪", "reign": { "start": "264", "end": "280" }, "portrait": "sanguo-sunhao.jpg", "file": "sunhao.json" }
+  ]
+}

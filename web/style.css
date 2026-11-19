@@ -63,6 +63,11 @@ body[data-era="wudai"] {
   background-color: #fdf6e9;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='80' viewBox='0 0 110 80'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Cpath d='M10 40 Q25 20 40 40 T70 40 T100 40'/%3E%3Ccircle cx='40' cy='40' r='5'/%3E%3Ccircle cx='70' cy='40' r='4'/%3E%3Cpath d='M20 60 Q35 50 50 60'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
 }
+/* 三国·汉晋云气纹：汉画像砖与漆器上的流云卷涡，连绵起伏 */
+body[data-era="sanguo"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Cpath d='M12 44 Q28 28 44 44 Q60 60 76 44 Q92 28 108 44'/%3E%3Cpath d='M12 76 Q28 60 44 76 Q60 92 76 76 Q92 60 108 76'/%3E%3Ccircle cx='44' cy='44' r='4'/%3E%3Ccircle cx='76' cy='44' r='3'/%3E%3Ccircle cx='44' cy='76' r='3'/%3E%3Ccircle cx='76' cy='76' r='4'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
 /* 宋·方胜纹：宋锦连环菱形 */
 body[data-era="song"] {
   background-color: #fdf6e9;

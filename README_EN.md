@@ -9,7 +9,7 @@
 <img alt="Pure static" src="https://img.shields.io/badge/pure%20static-zero%20build-brightgreen">
 <img alt="Offline" src="https://img.shields.io/badge/offline-all%20assets%20local-1685c9">
 <img alt="Modules" src="https://img.shields.io/badge/modules-5-c0392b">
-<img alt="Artworks" src="https://img.shields.io/badge/gongbi%20artworks-784-e8c86a">
+<img alt="Artworks" src="https://img.shields.io/badge/gongbi%20artworks-795-e8c86a">
 <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg">
 </p>
 
@@ -17,7 +17,7 @@
 
 ---
 
-> An **interactive knowledge base of Chinese civilization** you open and start using: animated territory maps, ancient maps reconstructed from the original texts, eight-section case files, detective-style reasoning questions, and 784 original gongbi (fine-brush) illustrations in one consistent style. No account, no internet, one command to run after cloning.
+> An **interactive knowledge base of Chinese civilization** you open and start using: animated territory maps, ancient maps reconstructed from the original texts, eight-section case files, detective-style reasoning questions, and 795 original gongbi (fine-brush) illustrations in one consistent style. No account, no internet, one command to run after cloning.
 
 ## 🧭 The problem this solves
 
@@ -96,16 +96,16 @@ Send this to your AI client — DSH, Doubao, Cursor, Claude Desktop all work —
 
 ## 🗺️ Five modules
 
-### 🏮 1. Emperor Lineage — power on stage, seven dynasties
+### 🏮 1. Emperor Lineage — power on stage, eight dynasties
 
 `Dynasty Lineage` · `Unsolved Cases` · `Territory Maps` · `History Detective`
 
-**7 dynasties, 77 emperors** (Sui 3 · Tang 14 · Five Dynasties 6 · Song 18 · Yuan 8 · Ming 16 · Qing 12) on a single horizontal card rail spanning 1,300 years. Open any emperor for a full "life on scene", not an encyclopedia stub:
+**8 dynasties, 88 emperors** (Three Kingdoms 11 · Sui 3 · Tang 14 · Five Dynasties 6 · Song 18 · Yuan 8 · Ming 16 · Qing 12) on a single horizontal card rail spanning 1,600 years. Open any emperor for a full "life on scene", not an encyclopedia stub:
 
-- **Dynasty lineage**: a **562-entry life timeline**, ministers / consorts / rivals, fun facts and controversies, with ★ marking the turning points;
-- **Unsolved cases**: **36** famous mysteries (Ming 12 · Tang 5 · Song 7 · Yuan 3 · Qing 4 · Five Dynasties 3 · Sui 2), each broken into eight sections — naming → background → people → course → outcome → impact → open debate → sources — giving you a full chain of reasoning instead of a one-line verdict;
+- **Dynasty lineage**: a **651-entry life timeline**, ministers / consorts / rivals, fun facts and controversies, with ★ marking the turning points;
+- **Unsolved cases**: **40** famous mysteries (Ming 12 · Tang 5 · Song 7 · Yuan 3 · Qing 4 · Five Dynasties 3 · Sui 2 · Three Kingdoms 4), each broken into eight sections — naming → background → people → course → outcome → impact → open debate → sources — giving you a full chain of reasoning instead of a one-line verdict;
 - **Territory maps**: a zoomable Leaflet map overlaying each dynasty's approximate borders and ancient place names, with **36 campaign and voyage routes** — the Jingnan campaign, Zheng He's voyages, the Qing entry through Shanhai Pass — animated in time order; click any ancient place for its modern equivalent (e.g. Muzhou ≈ modern Jiande, Zhejiang); **141 map events** each open a card with an illustration and a full narrative;
-- **History Detective**: **77 critical-choice questions** (one per emperor) in two kinds — "how do you assess this policy" and "why did this happen" — graded instantly; plus open dossiers with sourced clues where you reach your own verdict.
+- **History Detective**: **77 critical-choice questions** in two kinds — "how do you assess this policy" and "why did this happen" — graded instantly; plus open dossiers with sourced clues where you reach your own verdict (the Three Kingdoms node adds 4 debate dossiers).
 
 ![Emperor Lineage](docs/demo/module-emperors.gif)
 
@@ -204,24 +204,24 @@ Timeline entries and detective clues cite the *Old/New Book of Tang*, *History o
 
 **🔎 Site-wide search that lands on the exact line**
 
-A magnifier sits at the top right; hover or click and it becomes an input. It searches 941 entries (77 emperors, 141 map events, 36 unsolved cases, 40 case files, 75 classics, 59 artifacts, 113 beasts, 57 quiz questions, 44 life events, 42 routes, 219 hotspots…) together with body sentences, and groups the results as *entries* and *body hits*. Selecting a result does not merely open a page — it scrolls to the matched sentence and highlights it: body hits jump to the sentence, entries land on their card, map events open in the popup, route places switch to the voyage that contains them, and quiz entries open the named question. The index is the same build artefact the MCP search uses (`npm run build:search`, with a content-signature check); the front end pulls it in five on-demand shards, about 1.1MB total.
+A magnifier sits at the top right; hover or click and it becomes an input. It searches 956 entries (88 emperors, 141 map events, 40 unsolved cases, 40 case files, 75 classics, 59 artifacts, 113 beasts, 57 quiz questions, 44 life events, 42 routes, 219 hotspots…) together with body sentences, and groups the results as *entries* and *body hits*. Selecting a result does not merely open a page — it scrolls to the matched sentence and highlights it: body hits jump to the sentence, entries land on their card, map events open in the popup, route places switch to the voyage that contains them, and quiz entries open the named question. The index is the same build artefact the MCP search uses (`npm run build:search`, with a content-signature check); the front end pulls it in five on-demand shards, about 1.1MB total.
 
-**🖼️ 784 original artworks, 1025 image files — one style, not a template skin**
+**🖼️ 795 original artworks, 1036 image files — one style, not a template skin**
 
-One consistent visual language throughout: rice-paper beige, vermilion seals, gongbi fine-brush colour. **784 original illustrations**, all generated in the same style:
+One consistent visual language throughout: rice-paper beige, vermilion seals, gongbi fine-brush colour. **795 original illustrations**, all generated in the same style:
 
 - **315 portraits of people and classics**: 163 relationship-graph portraits (ministers, consorts, rivals) under `people/`, plus 152 paintings of emperors, poets, thinkers and classics-adjacent images in the root folder;
 - **172 artifacts and beasts**: 113 beasts and spirits + 59 representative objects;
-- **141 map-event paintings**: gongbi scenes of major events across seven dynasties;
+- **141 map-event paintings**: gongbi scenes of major events across the dynasties;
 - **74 ancient maps**: 5 top-down base maps + 69 hotspots from the original texts;
 - **38 illustrations of the Hundred Schools chronicles**: key events of thought spreading and schools forming;
 - **44 life-event illustrations**: gongbi scenes of key moments in the poets' lives.
 
-Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and cards fast, bringing the total to **1025 image files**. The ancient maps are checked point by point against the bearings and terrain described in the sources.
+Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and cards fast, bringing the total to **1036 image files**. The ancient maps are checked point by point against the bearings and terrain described in the sources.
 
 **⚡ Zero dependencies, instant open, works offline**
 
-Pure vanilla HTML / CSS / JS — no build, no framework, no backend; everything under `data/` is readable, editable JSON; no `npm install`, no database. Map library and fonts are fully localised, so it runs with the network unplugged. The seven dynasties load **concurrently** (136 JSON files in one round trip in the "all" view); JSON is sharded per module and fetched on demand; galleries and map cards use thumbnails with automatic fallback.
+Pure vanilla HTML / CSS / JS — no build, no framework, no backend; everything under `data/` is readable, editable JSON; no `npm install`, no database. Map library and fonts are fully localised, so it runs with the network unplugged. The eight dynasties load **concurrently** (a hundred-plus JSON files in one round trip in the "all" view); JSON is sharded per module and fetched on demand; galleries and map cards use thumbnails with automatic fallback.
 
 **🤖 An AI guide out of the box, illustrations included**
 
@@ -233,12 +233,12 @@ A built-in zero-dependency MCP server (v1.6.0, 15 read-only tools) plugs into Do
 
 | Module | Content |
 | :--- | :--- |
-| 🏮 Emperor Lineage | 7 dynasties · 77 emperors · 562 timeline entries · 117 major events · 141 map events · 114 figures · 36 cases · 77 critical-choice questions · 36 campaign/voyage routes · 29 ancient places |
+| 🏮 Emperor Lineage | 8 dynasties · 88 emperors · 651 timeline entries · 203 major events · 141 map events · 126 figures · 40 cases · 77 critical-choice questions · 36 campaign/voyage routes · 44 ancient places |
 | 📚 Thought Origins | 5 schools · 27 classics · 63 close readings · 15 cases · 13 inquiry prompts · 24 sage routes (82 waypoints, each with original line / translation / source / significance) · 38 Hundred Schools chronicles · 51 ancient places |
 | 🎋 Poetry Appreciation | 22 poets · 71 close readings · 95 golden lines · 107 chronology entries · 13 poetry cases · 13 routes · 44 life events · 22 inquiry prompts |
 | 🧭 Natural Sciences | 17 classics (6 categories) · 59 artifacts · 12 craft cases · 14 inquiry prompts |
 | 🐉 Myth & Legend | 9 classics (4 categories) · 113 beasts · 5 ancient maps with 69 hotspots · 8 inquiry prompts |
-| **Site total** | **76 eight-section case files · 57 inquiry questions · 77 critical-choice questions · 784 original gongbi artworks (1025 image files including thumbnails)** |
+| **Site total** | **80 eight-section case files · 57 inquiry questions · 77 critical-choice questions · 795 original gongbi artworks (1036 image files including thumbnails)** |
 
 *Territory outlines are simplified hand-drawn sketches after Tan Qixiang's Historical Atlas of China; portraits, artifacts, beasts and ancient maps are stylized gongbi images, not historical likenesses; the mythic maps are drawn strictly to the bearings and terrain in the original texts.*
 
@@ -248,7 +248,7 @@ A built-in zero-dependency MCP server (v1.6.0, 15 read-only tools) plugs into Do
 
 | Your goal | Suggested path |
 | :--- | :--- |
-| Build the big frame | Read the seven-dynasty rail to fix "Sui → Tang → Five Dynasties → Song → Yuan → Ming → Qing" |
+| Build the big frame | Read the eight-dynasty rail to fix "Three Kingdoms → Sui → Tang → Five Dynasties → Song → Yuan → Ming → Qing" |
 | Follow major events | Filter the territory map by reign and watch a campaign unfold from start to finish |
 | Train historical judgement | In each dynasty, take the causal-chain questions first, then the open dossiers |
 | Trace intellectual currents | From Kong-Meng to Zhu-Wang, see how the three teachings interacted and merged; walk a sage route and at each stop read "what happened → what was said → what it meant" |
@@ -266,7 +266,7 @@ The project ships a **zero-dependency MCP server** (`web/tools/history-mcp-serve
 - **Starts the server itself**: the MCP probes first and, if nothing is running, launches the site in the background (detached, ready in about 0.8s) and returns a clickable address — no disk scanning, no path guessing.
 - **Fetches the site itself**: when no local site is found, it starts a **background** clone from Gitee into your home directory (about 150MB) and `session_start` **returns immediately**, telling the AI "text search is already usable" — the conversation is never blocked by the install. It starts the server once the clone finishes. This step needs **`git` on PATH**; if it is missing the tool says so precisely and degrades to "text search only" (the plugin carries its own index, so search still works, minus images and deep links).
 - **Illustrations included**: single-object results (emperor / classic / artifact / event) attach a base64 image block; list results do not (dozens would blow up the response) — use the detail call for one item.
-- **Millisecond search**: a built-in uni/bi-gram inverted index over **941 documents** — about 230ms to build once, then 1–2ms per query. "Tumu Crisis", "Lansuo Temple", "Gao Village", "Kunlun Mound", "Ehu Debate" all land directly on the right event or hotspot.
+- **Millisecond search**: a built-in uni/bi-gram inverted index over **956 documents** — about 230ms to build once, then 1–2ms per query. "Tumu Crisis", "Lansuo Temple", "Gao Village", "Kunlun Mound", "Ehu Debate" all land directly on the right event or hotspot.
 - **Bundled image subset**: the plugin carries **547 narration images** (152 portraits · 172 artifact thumbnails · 141 map events · 38 Hundred Schools · 44 life events), so "ask who and see who" works before the site is fetched; once the site is ready it switches to the originals and adds the remaining **478** (163 figures · 172 artifact originals · 74 ancient maps · 69 hotspot thumbnails).
 - Full configuration: [`docs/AI集成-本地MCP配置.md`](docs/AI集成-本地MCP配置.md); self-test with `npm run mcp:selftest`.
 
