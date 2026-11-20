@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120s';
+const APP_BUILD = '20261120t';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -256,6 +256,13 @@ const DYNASTY_TEXT = {
     brand: '两晋十六国', dynSub: '十五帝·西晋东晋', mapAria: '两晋示意地图',
     legendNote: '西晋、东晋与十六国政权并立，暂无疆域示意图，相关政权分布见帝王世系页的并立图',
     footer: '晋是三国归晋后西晋短暂统一、东晋南渡与十六国并立的时期 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《晋书》帝载记为主要依据，参校《资治通鉴》《中国通史》',
+  },
+  // 「全部」是 103 帝的合并视图，不代表任何一个朝代：不套用任何一朝疆域，
+  // 文案也不能借用明朝口径，否则等于暗示这块地是明朝的。
+  all: {
+    brand: '中华历史', dynSub: '九朝 · 一百零三帝', mapAria: '全部朝代合并示意地图',
+    legendNote: '「全部」为九朝 103 帝合并视图，只画地名、事件与路线，不套用任何单一朝代的疆域轮廓',
+    footer: '本视图合并九朝 103 位皇帝 · 单朝疆域轮廓据谭其骧《中国历史地图集》示意，非精确边界 · 皇帝画像为 AI 生成工笔风格，仅供示意',
   },
 };
 
@@ -1897,9 +1904,12 @@ function buildMapData() {
   const fill = DYNASTY_FILL[d] || DYNASTY_FILL.ming;
   // 疆域：优先真实边界 geojson（各区块 Polygon，供描边/标签/点击区分）；
   //       无 geojson 的朝代（宋/隋/五代）回退 FALLBACK_SHAPES 单连续多边形
+  //       「全部」不画疆域——它是九朝 103 帝的合并视图，画任何一朝轮廓都是错的。
   const geo = (typeof MAP_GEO !== 'undefined') ? MAP_GEO[d] : null;
-  let shape;
-  if (geo && geo.features && geo.features.length) {
+  let shape = null;
+  if (d === 'all') {
+    shape = null;
+  } else if (geo && geo.features && geo.features.length) {
     shape = { type: 'geojson', geo, label: fill.title };
   } else {
     const fallback = FALLBACK_SHAPES[d] || FALLBACK_SHAPES.ming;
@@ -2458,7 +2468,8 @@ function renderMap() {
   syncPlaceLabelDensity();
 
   // ---- 疆域 ----
-  if (data.shape.type === 'geojson') {
+  // 「全部」视图 data.shape 为 null：九朝合并视图不画任何一朝疆域（见 buildMapData）
+  if (data.shape && data.shape.type === 'geojson') {
     // 双层渲染：底层用 FALLBACK 连续外轮廓整块填充（消除分区拼缝空白），
     // 上层叠加 geojson 区块仅提供分区标签与点击说明（透明填充，弱化分区线）。
     const fallback = FALLBACK_SHAPES[currentDynasty] || FALLBACK_SHAPES.ming;
@@ -2492,7 +2503,7 @@ function renderMap() {
     const c = basePoly.getBounds().getCenter();
     const shortName = { ming:'明', tang:'唐', song:'宋', yuan:'元', qing:'清', sui:'隋', wudai:'五代', sanguo:'三国', jin:'晋' }[currentDynasty] || '';
     if (shortName) addLabel(c.lng, c.lat, shortName);
-  } else {
+  } else if (data.shape) {
     const poly = L.polygon(toLatLngs(data.shape.points), {
       fillColor: data.fill.fill, fillOpacity: 0.32, color: data.fill.stroke,
       weight: 1.5, opacity: 0.9, dashArray: '6 4',
