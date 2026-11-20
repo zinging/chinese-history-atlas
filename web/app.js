@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120t';
+const APP_BUILD = '20261120u';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -2129,16 +2129,17 @@ function addRouteLayer(r, ri) {
   // 途经点（跳过首末点，因为它们由 sMark/eMark 覆盖）
   const allPts = r.points || [];
   const wps = allPts.slice(1, -1).map((p) => {
-    const dot = L.circleMarker([p.lat, p.lng], { radius: 4, color: '#fff', weight: 2, fillColor: r.color, fillOpacity: 1, opacity: 0 });
+    const dot = L.circleMarker([p.lat, p.lng], { radius: 4, color: '#fff', weight: 2, fillColor: r.color, fillOpacity: 0, opacity: 0 });
     dot.bindTooltip(`${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}：${p.note || ''}`, { direction: 'top' });
     dot.addTo(leafletMap);
     return dot;
   });
   const start = allPts[0], end = allPts[allPts.length - 1];
-  // 起点：绿色大点；终点：红色大点。fillOpacity 始终 1（opacity 只管描边），zIndex 高
-  // tooltip permanent 常显地名，动画开始时随标记一起隐藏、到达时一起显示
-  const sMark = start ? L.circleMarker([start.lat, start.lng], { radius: 9, color: '#fff', weight: 3, fillColor: '#2e7d32', fillOpacity: 1, opacity: 0, zIndexOffset: 1000 }) : null;
-  const eMark = end ? L.circleMarker([end.lat, end.lng], { radius: 9, color: '#fff', weight: 3, fillColor: '#a0251c', fillOpacity: 1, opacity: 0, zIndexOffset: 1000 }) : null;
+  // 起点：绿色大点；终点：红色大点。初始必须 opacity 0 + fillOpacity 0 双关：
+  // Leaflet 的 opacity 只管描边，fillOpacity 才管圆面；只关 opacity 会留下一颗实心彩点，
+  // 每朝没点路线时也常驻在图上（全部视图 45 条路线就是 90 颗大点）。
+  const sMark = start ? L.circleMarker([start.lat, start.lng], { radius: 9, color: '#fff', weight: 3, fillColor: '#2e7d32', fillOpacity: 0, opacity: 0, zIndexOffset: 1000 }) : null;
+  const eMark = end ? L.circleMarker([end.lat, end.lng], { radius: 9, color: '#fff', weight: 3, fillColor: '#a0251c', fillOpacity: 0, opacity: 0, zIndexOffset: 1000 }) : null;
   if (sMark) {
     sMark.bindTooltip(`起 · ${start.name}${start.modern && start.modern !== start.name ? '（今' + start.modern + '）' : ''}`, { permanent: true, direction: 'top', className: 'route-pt-tip' });
     sMark.addTo(leafletMap);
@@ -2159,9 +2160,9 @@ const _routeTimers = [];
 function animateRoute(layer, duration = 1500) {
   if (!layer) return;
   // 立即隐藏本层所有途经点/起终点（防上一轮动画残留），定时器记录供统一清理。
-  // 只压 opacity，不动 fillOpacity——SVG 的 opacity 已能整体隐藏，若连 fillOpacity 归零，
-  // 回显时只恢复 opacity 就会留下「空心圈」，图上等于看不见停泊点。
-  if (layer.wps) layer.wps.forEach((w) => w.setStyle({ opacity: 0 }));
+  // 注意 Leaflet 的 opacity 只作用于描边，圆面由 fillOpacity 控制：两个都要归零，
+  // 否则 hide 之后仍留实心彩点；回显时两个一起恢复，不会出现空心圈。
+  if (layer.wps) layer.wps.forEach((w) => w.setStyle({ opacity: 0, fillOpacity: 0 }));
   hideRouteMarker(layer.sMark);
   hideRouteMarker(layer.eMark);
   const line = layer.line;
@@ -3006,7 +3007,8 @@ function showRouteDetail(r) {
   const voyages = r.voyages || null;
   const pickIdx = (voyages && zhVoyageIndex >= 0 && zhVoyageIndex < voyages.length) ? zhVoyageIndex : -1;
   const v = pickIdx >= 0 ? voyages[pickIdx] : null;
-  const pts = (v ? v.points : []) || [];
+  // 普通路线（三国北伐、唐灭突厥这类）用的是自己的 points；只有郑和叠影态没有单次站点
+  const pts = (v ? v.points : (voyages ? [] : (r.points || []))) || [];
   const headName = v ? `郑和${v.name}` : (voyages ? '郑和七次航线 · 叠影' : r.name);
   const headYear = v ? v.years : (voyages
     ? `${voyages[0].years.split('—')[0]}—${voyages[voyages.length - 1].years.split('—')[1] || ''}`
@@ -3024,12 +3026,14 @@ function showRouteDetail(r) {
   const totalStops = voyages ? voyages.reduce((s, x) => s + x.points.length, 0) : 0;
   const portCount = voyages ? new Set(voyages.flatMap((x) => x.points.map((p) => p.name))).size : 0;
   const trunkNames = zhTrunkStations(voyages).filter((n) => n !== '刘家港');
-  const body = v ? `
+  // 郑和叠影态（有 voyages 但没选某一次）才讲「读法与规模」；
+  // 普通路线（三国北伐、唐灭突厥…）直接排自己的站点，不能套用郑和那段话。
+  const body = (voyages && !v) ? `
+    <div class="route-detail-path"><b>读法：</b>图上那条略粗的主干是七次都到的港口直连（${trunkNames.join('—')}）；古里以西按航次分岔，越晚越浓——第四次起才越过印度洋抵波斯湾与东非。线按海路绕行（只补海上转弯点，不算停泊港）。<b>规模：</b>七次共 ${totalStops} 站、${portCount} 个港口。<b>顺序：</b>七次各有各的来回，并不存在一条连续航线，请点上方的「第X次」看该次的路线与地点顺序。<b>考订：</b>忽鲁谟斯自第四次起通使（永乐十年敕书已列其名，十三年其使臣随船来朝）；麻林于永乐十三年献麒麟，可证第四次确曾到访；回程多循季风原路（北风去、南风回），图上只画去程港序。</div>` : `
     <div class="route-detail-path"><b>路线：</b>${stops}</div>
     <ol class="route-detail-stops">${pts.map((p, i) => `
       <li data-station="${i}"${(p.lat && p.lng) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ''}><b>${p.name}${p.modern && p.modern !== p.name ? '（今' + p.modern + '）' : ''}</b><span class="rs-dash"> —— </span><span class="rs-note">${p.note || ''}</span></li>`).join('')}
-    </ol>` : `
-    <div class="route-detail-path"><b>读法：</b>图上那条略粗的主干是七次都到的港口直连（${trunkNames.join('—')}）；古里以西按航次分岔，越晚越浓——第四次起才越过印度洋抵波斯湾与东非。线按海路绕行（只补海上转弯点，不算停泊港）。<b>规模：</b>七次共 ${totalStops} 站、${portCount} 个港口。<b>顺序：</b>七次各有各的来回，并不存在一条连续航线，请点上方的「第X次」看该次的路线与地点顺序。<b>考订：</b>忽鲁谟斯自第四次起通使（永乐十年敕书已列其名，十三年其使臣随船来朝）；麻林于永乐十三年献麒麟，可证第四次确曾到访；回程多循季风原路（北风去、南风回），图上只画去程港序。</div>`;
+    </ol>`;
   box.classList.remove('hidden');
   box.innerHTML = `
     ${chips}
