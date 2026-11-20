@@ -970,6 +970,14 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 }
 .map-place-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
 .map-place-modern { font-size: 9px; color: #8a7a5c; font-weight: 400; }
+/* 低缩放（整朝视野）只留圆点、不铺地名：三国/两晋/隋的地名集中在中原，
+   全显会叠成一团；放大到 zoom≥6 时由 app.js 去掉 map-labels-off，地名自动回显 */
+.leaflet-container.map-labels-off .map-place-name,
+.leaflet-container.map-labels-off .map-place-modern { display: none; }
+.leaflet-container.map-labels-off .map-place-inner {
+  padding: 0 4px 0 3px;
+  background: rgba(255, 255, 255, 0.75);
+}
 /* 事件点：古地名标记（⚑ 红色圆点 + 古地名 + 今地名） */
 .map-event-inner {
   display: flex; align-items: center; gap: 4px;

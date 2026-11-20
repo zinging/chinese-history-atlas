@@ -1,21 +1,21 @@
 {
  "v": "1.6.0",
- "sig": "7740fb5e4110198ac3c902d0d3a8b756e9013609",
- "builtAt": "2026-11-20T10:07:56.439Z",
- "docs": 977,
- "title": 229916,
+ "sig": "932cfe988d9764e47e0df85ed04317bf56923c5e",
+ "builtAt": "2026-11-20T14:16:41.902Z",
+ "docs": 1014,
+ "title": 238970,
  "shards": [
   {
    "m": "emperors",
    "f": "body-emperors.json",
-   "n": 288,
-   "bytes": 383611
+   "n": 325,
+   "bytes": 405763
   },
   {
    "m": "myth",
    "f": "body-myth.json",
    "n": 204,
-   "bytes": 114956
+   "bytes": 114970
   },
   {
    "m": "thought",
@@ -27,7 +27,7 @@
    "m": "shiwen",
    "f": "body-shiwen.json",
    "n": 184,
-   "bytes": 197524
+   "bytes": 197527
   },
   {
    "m": "gewu",

@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120r';
+const APP_BUILD = '20261120s';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -81,7 +81,7 @@ function renderEraStrip() {
   };
   // 年号按朝代分组：组头标归属朝代，「全部」单独一组。
   // 「全部」视图下 DATA.emperors 已按 dynOrder 顺序合并并带 _dynasty，据此断组；
-  // 单朝视图只有一组，组头仍显示本朝名，便于和舆图对照。
+  // 单朝视图不需要组头——顶上那排朝代胶囊已经写明了是哪一朝，再标一次是重复。
   const groupBody = (label) => {
     const g = el('div', 'era-group');
     if (label) {
@@ -94,7 +94,7 @@ function renderEraStrip() {
     strip.appendChild(g);
     return body;
   };
-  const allBody = groupBody(currentDynasty === 'all' ? '总览' : (DYNASTY_LABEL[currentDynasty] || ''));
+  const allBody = groupBody(currentDynasty === 'all' ? '总览' : '');
   const allBtn = el('button', 'era-btn' + (activeEraId ? '' : ' active'));
   // 「全部」的年号范围按实际首位皇帝取，别再用写死的明朝区间——三国 220 起就要显示 220
   const range = currentDynasty === 'all' && DATA && DATA.emperors && DATA.emperors.length
@@ -111,11 +111,13 @@ function renderEraStrip() {
   allBody.appendChild(allBtn);
   let curDyn = currentDynasty === 'all' ? null : currentDynasty;
   let curBody = allBody;
+  const mergedView = currentDynasty === 'all';
   DATA.emperors.forEach((e) => {
     const d = e._dynasty || currentDynasty;
     if (d !== curDyn) {
       curDyn = d;
-      curBody = groupBody(DYNASTY_LABEL[d] || '');
+      // 只有「全部」合并视图才标朝代归属；单朝视图本身就在某朝里，不重复标注
+      curBody = groupBody(mergedView ? (DYNASTY_LABEL[d] || '') : '');
     }
     const btn = el('button', 'era-btn' + (activeEraId === e.id ? ' active' : ''));
     btn.innerHTML = `<span class="era-name">${e.eraName[0]}</span><span class="era-years">${e.reign.start}-${e.reign.end}</span>`;
@@ -189,8 +191,12 @@ const DYNASTY_DIRS = {
   sanguo: 'sanguo/',
   jin: 'jin/',
 };
-// 三国、晋暂无疆域 geojson（并立政权边界需要另画），先关掉地图层
-const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false, jin: false };
+// 地图层开关：有「地图」数据的朝代才去拉 places/routes/map-events 三库。
+// 三国、两晋的并立政权边界没有现成 geojson（见 DYNASTY_HAS_GEO），
+// 但地名、事件、路线都有独立数据，所以这里必须是 true，否则整块舆图是空的。
+const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: true, jin: true };
+// 是否有真实边界 geojson（data/boundaries/<朝>.geojson）。没有的朝代回退示意色块，不去发 404 请求。
+const DYNASTY_HAS_GEO = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false, jin: false };
 const DYNASTY_RANGE = { ming: '1368-1644', tang: '618-907', song: '960-1279', yuan: '1271-1368', qing: '1616-1912', sui: '581-618', wudai: '907-960', sanguo: '220-280', jin: '265-420' };
 // 各朝文件布局：明朝各库在 data/ 根目录下分目录，其他朝在朝代目录内
 const DYNASTY_LAYOUT = {
@@ -1705,6 +1711,35 @@ const FALLBACK_SHAPES = {
     [100.5,30.5],[102.0,32.0],[103.5,34.0],[104.5,36.0],[103.0,36.5],
     [101.0,37.5],[97.0,38.0],[94.0,39.5],
   ],
+  // 三国（220-280）三方合计范围（据谭其骧《中国历史地图集·三国时期》示意）：
+  // 北：魏之幽州—并州，阴山—燕山一线（约41°N）；西：凉州敦煌（约94°E），未含西域；
+  // 东：辽东（约124°E）；南：吴之交州（日南，约18°N）、蜀之南中（约22°N）
+  // 说明：这是魏蜀吴三块合起来的外轮廓，不是单方边界——三方分界线见页脚说明。
+  sanguo: [
+    [94.0,40.0],[97.0,40.5],[100.0,40.8],[103.0,40.8],[106.0,41.0],
+    [109.5,41.2],[113.5,41.0],[117.0,41.2],[119.5,41.3],[121.5,41.8],
+    [123.5,41.5],[124.5,40.5],[123.0,39.5],[122.0,38.0],[121.5,36.5],
+    [122.5,35.0],[121.5,33.5],[121.5,31.5],[120.5,29.0],[119.3,26.1],
+    [118.2,24.5],[116.5,23.3],[113.5,22.3],[110.5,20.5],[108.0,18.3],
+    [106.5,19.5],[105.0,21.0],[103.5,22.3],[101.5,21.8],[99.5,22.8],
+    [98.5,24.0],[98.5,26.0],[100.5,28.5],[102.0,31.0],[103.0,33.0],
+    [104.5,34.0],[104.5,36.0],[103.0,36.5],[101.0,37.5],[99.0,38.0],
+    [96.5,39.0],[94.0,39.5],[94.0,40.0],
+  ],
+  // 两晋（265-420）取西晋太康年间（280 灭吴后）极盛范围（据《中国历史地图集·西晋时期》示意）：
+  // 北界阴山—燕山（约41.5°N），西到凉州敦煌并领西域长史府（约91°E），东到辽东（约124°E），
+  // 南含交州日南（约18°N）、南中（约22°N）。东晋南渡后只剩东南半壁，图上按西晋全盛示意。
+  jin: [
+    [91.0,40.0],[95.0,40.5],[99.0,40.8],[103.0,41.0],[107.0,41.2],
+    [111.0,41.5],[113.5,41.2],[117.0,41.3],[119.5,41.4],[121.5,41.9],
+    [123.5,41.6],[124.5,40.6],[123.0,39.5],[122.0,38.0],[121.5,36.5],
+    [122.5,35.0],[121.5,33.5],[121.5,31.5],[120.5,29.0],[119.3,26.1],
+    [118.2,24.5],[116.5,23.3],[113.5,22.3],[110.5,20.5],[108.0,18.3],
+    [106.5,19.5],[105.0,21.0],[103.5,22.3],[101.5,21.8],[99.5,22.8],
+    [98.5,24.0],[98.5,26.0],[100.5,28.5],[102.0,31.0],[103.0,33.0],
+    [104.5,34.0],[104.5,36.0],[103.0,36.5],[101.0,37.5],[98.0,38.5],
+    [94.5,39.2],[91.0,39.5],[91.0,40.0],
+  ],
   // 五代：中原五代疆域（后周最大范围，据谭其骧《中国历史地图集·五代十国时期》示意）：
   // 北至燕云十六州（石敬瑭割让后到契丹手中，后周实际北界在雁门—白沟一线），
   // 南到淮河-长江（南方十国并立，含后蜀四川），西到陇右（约104°E，河西走廊属回鹘等）
@@ -1837,7 +1872,21 @@ const MAP_VIEW = {
   qing: { center: [38, 102], zoom: 4 },
   sui: { center: [35, 105], zoom: 4 },
   wudai: { center: [34, 106], zoom: 4 },
+  sanguo: { center: [33.5, 108], zoom: 4 },
+  jin: { center: [34, 106], zoom: 4 },
 };
+
+/** 城市标签密度随缩放变化。
+ *  三国、两晋、隋的地名几乎全挤在中原—江淮一线（洛阳、许昌、邺城、建业、寿春…），
+ *  在整朝视野（zoom ≤ 5）里如果每个都常显名字，会叠成一团、互相盖住。
+ *  所以低缩放下只留彩色圆点，放大到 zoom ≥ 6 再显示地名，点圆点仍可看详情。
+ *  只切容器上的一个 class、由 CSS 隐藏文字，不重建任何图层。 */
+function syncPlaceLabelDensity() {
+  if (!leafletMap) return;
+  const box = leafletMap.getContainer();
+  if (!box) return;
+  box.classList.toggle('map-labels-off', leafletMap.getZoom() < 6);
+}
 
 /** 归一化各朝数据，产出纯数据对象（可脱离 Leaflet 测试）：
  *  { shape, wall, songBorder, rivers, provinces, neighbors, places, events, routes } */
@@ -2083,10 +2132,14 @@ function addRouteLayer(r, ri) {
   if (sMark) {
     sMark.bindTooltip(`起 · ${start.name}${start.modern && start.modern !== start.name ? '（今' + start.modern + '）' : ''}`, { permanent: true, direction: 'top', className: 'route-pt-tip' });
     sMark.addTo(leafletMap);
+    // 常显 tooltip 是「addTo 即开」的，而路线初始是隐藏态（opacity 0）。
+    // 不主动关掉，一进舆图就会只剩一串「起·某地/终·某地」气泡飘在空图上（各朝都中招）。
+    sMark.closeTooltip();
   }
   if (eMark) {
     eMark.bindTooltip(`终 · ${end.name}${end.modern && end.modern !== end.name ? '（今' + end.modern + '）' : ''}`, { permanent: true, direction: 'bottom', className: 'route-pt-tip' });
     eMark.addTo(leafletMap);
+    eMark.closeTooltip();
   }
   return { line, wps, sMark, eMark };
 }
@@ -2396,10 +2449,13 @@ function renderMap() {
     // 修复 Leaflet fadeAnimation 关闭后 opacity 残留 0 的问题：tileload 时强制可见
     tiles.on('tileload', (e) => { if (e.tile) e.tile.style.opacity = 1; });
     tiles.addTo(leafletMap);
+    // 缩放决定城市标签密度：低缩放下只留圆点，放大才铺地名（见 syncPlaceLabelDensity）
+    leafletMap.on('zoomend', syncPlaceLabelDensity);
   }
   clearLeafletLayers();
   const v = MAP_VIEW[currentDynasty] || MAP_VIEW.ming;
   leafletMap.setView(v.center, v.zoom);
+  syncPlaceLabelDensity();
 
   // ---- 疆域 ----
   if (data.shape.type === 'geojson') {
@@ -2824,9 +2880,21 @@ const EVENT_ROUTE_MAP = {
   'sui-ev-589': 'sui-pingchen',
   'sui-ev-goguryeo': 'sui-zheng-gaogouli',
   'sui-ev-jiangdu': 'sui-jiangdu',
+  'sui-ev-canal': 'sui-yunhe',
   // 五代
   'wudai-event-houtang': 'wudai-houtang-mie-liang',
   'wudai-event-chairong': 'wudai-chairong-beifa',
+  // 三国
+  'sanguo-event-chushibiao': 'sanguo-zhuge-beifa',
+  'sanguo-event-wuzhangyuan': 'sanguo-zhuge-beifa',
+  'sanguo-ev-228': 'sanguo-zhuge-beifa',
+  'sanguo-event-mieshu': 'sanguo-dengai-mieshu',
+  'sanguo-event-pingwu': 'sanguo-jin-miewu',
+  // 两晋
+  'jin-event-bashang': 'jin-huanwen-beifa',
+  'jin-ev-369': 'jin-huanwen-fangtou',
+  'jin-event-feishui': 'jin-feishui',
+  'jin-event-liuyu': 'jin-liuyu-beifa',
 };
 
 /** 显示与事件关联的路线（动态绘制，起终点按图例颜色：起点绿/终点深红）
@@ -3821,7 +3889,7 @@ async function loadBoundaries() {
   // 已取过就直接复用：切回某朝不再重发（旧版每次切朝代都重拉一遍 GeoJSON）
   if (Object.prototype.hasOwnProperty.call(MAP_GEO, key)) return MAP_GEO[key];
   // 没有疆域数据的朝代（如三国三方并立、或「全部」合并视图）不去请求不存在的文件，直接回退示意色块
-  if (!DYNASTY_HAS_MAP[key]) { MAP_GEO[key] = null; return null; }
+  if (!DYNASTY_HAS_GEO[key]) { MAP_GEO[key] = null; return null; }
   const file = `../data/boundaries/${key}.geojson`;
   try {
     const r = await fetch(file);
@@ -3912,6 +3980,8 @@ const DYNASTY_FILL = {
   qing: { fill: '#c4d4c0', stroke: '#5a7a4a', title: '清 朝 疆 域（乾隆/嘉庆年间，据《中国历史地图集》简化示意）' },
   sui: { fill: '#d8c0e0', stroke: '#6a4a8a', title: '隋 朝 疆 域（据《中国历史地图集·隋时期》简化示意）' },
   wudai: { fill: '#e0b8a0', stroke: '#8a5a3a', title: '五 代 十 国（中原五代与南方十国并立，据《中国历史地图集》简化示意）' },
+  sanguo: { fill: '#e6cfa8', stroke: '#7a5a30', title: '三 国 疆 域（魏·蜀·吴三方合计范围，据《中国历史地图集·三国时期》示意）' },
+  jin: { fill: '#cfc6e0', stroke: '#57457f', title: '两 晋 疆 域（西晋太康年间极盛范围，据《中国历史地图集》示意）' },
 };
 
 // ---------- LLM 配置（历史侦探页内卡片） ----------
