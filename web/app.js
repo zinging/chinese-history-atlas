@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120v';
+const APP_BUILD = '20261121a';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -1973,15 +1973,31 @@ function clearLeafletLayers() {
   if (!leafletMap) return;
   // 路线起终点的「起·某地 / 终·某地」是常显 tooltip，挂在 map 的 tooltipPane 上，
   // 不随 marker 被 removeLayer 一起清掉：切朝代后会留在新朝地图上（唐→明 实测残留
-  // 「起·长安 / 终·安市城」），反复切换就攒出一堆气泡把路线盖住。先逐个关掉，再扫一遍残留节点。
+  // 「起·长安 / 终·安市城」），反复切换就攒出一堆气泡把路线盖住。先逐个关掉。
   (leafletLayers.routes || []).forEach((l) => {
     if (!l) return;
     hideRouteMarker(l.sMark);
     hideRouteMarker(l.eMark);
   });
+  // leafletLayers.routes 里存的是 { line, wps, sMark, eMark } 包装对象，不是 Layer 本体。
+  // 旧代码直接 removeLayer(x) 传进去的是个普通对象，等于什么也没删——于是每次切朝代
+  // 都把上一朝的路线折线、途经点、起终点标记留在图上（隋→唐→隋 实测攒到 8 条路线，
+  // 选中的那条还保持 opacity 1，看上去「什么都没点地图上就有路线，而且不会消失」）。
+  // 这里按包装对象拆开逐个移除。
+  const removeLayerSafe = (x) => {
+    if (!x) return;
+    if (x.line || x.wps || x.sMark || x.eMark) {
+      if (x.line) leafletMap.removeLayer(x.line);
+      (x.wps || []).forEach((w) => w && leafletMap.removeLayer(w));
+      if (x.sMark) leafletMap.removeLayer(x.sMark);
+      if (x.eMark) leafletMap.removeLayer(x.eMark);
+      return;
+    }
+    leafletMap.removeLayer(x);
+  };
   Object.values(leafletLayers).forEach((l) => {
-    if (Array.isArray(l)) l.forEach((x) => x && leafletMap.removeLayer(x));
-    else if (l && l.remove) leafletMap.removeLayer(l);
+    if (Array.isArray(l)) l.forEach(removeLayerSafe);
+    else removeLayerSafe(l);
   });
   leafletLayers = {};
   const pane = leafletMap.getPane ? leafletMap.getPane('tooltipPane') : null;
