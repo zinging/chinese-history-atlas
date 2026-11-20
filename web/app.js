@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120q';
+const APP_BUILD = '20261120r';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -124,8 +124,9 @@ function renderEraStrip() {
       // 折叠态跟着年号复位：上一个年号展开过，换年号不应仍保持全展开
       evtSummaryShowAll = false;
       renderEraStrip(); renderMap(); renderEraInfo();
-      // 选中某个年号＝用户明确要看这一段，此时把该年号的事件地标自动上图（默认视图仍不铺）
-      if (activeEraId) showEventMarkersOnMap(false); else showPlacesOnMap();
+      // 选中某个年号＝只是收窄下方事件胶囊的范围，地图仍只留城市/名胜；
+      // 事件地标一律等用户点具体胶囊再单独上图（一个年号十几个地标铺开一样会挤成一团）
+      showPlacesOnMap();
       showEventsSummary(); // 保持「该朝事件」汇总展开（默认视图）
       centerTo(document.querySelector(`#era-strip .era-btn${activeEraId ? '.active' : ''}`));
     });
@@ -2486,8 +2487,8 @@ function renderMap() {
   leafletLayers.places = data.places.map(addPlaceMarker);
 
   // ---- 事件点（按古地名聚合：同地点的多个事件合并成一个标记）----
-  // 默认不上图：全朝地标一次铺开会把地图压满，先只备好对象，
-  // 等「该朝事件」按钮、年号胶囊或事件胶囊被点击时再按需 addTo
+  // 默认不上图，也不在「该朝事件」/年号胶囊被点击时批量上图：
+  // 只有用户点了下方具体的事件胶囊，才把该事件的那一个地标单独加到地图（见 showSingleEvent）
   if (window.__dbg) window.__dbg.beforeEvents = data.events.length;
   leafletLayers.events = buildEventClusters(data.events).map((c) => addEventMarker(c, true));
   if (window.__dbg) window.__dbg.afterEvents = (leafletLayers.events || []).length;
@@ -2502,26 +2503,12 @@ function renderMap() {
 // 路线胶囊是否已展开（默认收起，只露前 8 条）。每次重渲染都回到收起态。
 let routeShowAll = false;
 
-/** 默认视图：只把城市/名胜点上图；事件地标先留白，避免一进舆图就被几十个⚑压满 */
+/** 默认视图：只把城市/名胜点上图；事件地标一律留白。
+ *  事件地标不再「整朝一次铺开」（几十个⚑会压满地图、标签互相叠住），
+ *  而是跟着下方「该朝事件」胶囊点哪条上哪一个（见 showSingleEvent）。 */
 function showPlacesOnMap() {
   (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) m.addTo(leafletMap); });
   (leafletLayers.events || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
-}
-
-/** 用户明确要看事件时：把地图事件地名点按需上图。flash=true 时逐个闪一下（「该朝事件」按钮） */
-function showEventMarkersOnMap(flash) {
-  (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) m.addTo(leafletMap); });
-  (leafletLayers.events || []).forEach((m) => {
-    if (!m || !leafletMap) return;
-    m.addTo(leafletMap);
-    if (!flash) return;
-    const el = m.getElement && m.getElement();
-    if (el) {
-      el.classList.remove('map-flash');
-      void el.offsetWidth; // 重触发动画
-      el.classList.add('map-flash');
-    }
-  });
 }
 
 function renderMapControls(data) {
@@ -2558,6 +2545,10 @@ function renderMapControls(data) {
     if (l) animateRoute(l, 1500);
   };
   const showEvents = () => {
+    // 先清动画定时器：上一条路线的起/终点标记是「延时打开常显 tooltip」的
+    // （起 200ms、终动画结束），不清理的话收图后那个「终 · 某地」气泡会在
+    // 隐藏之后又冒出来挂在空地图上（实测复现）。
+    clearRouteAnimations();
     // 隐藏所有路线与郑和
     (leafletLayers.routes || []).forEach((l) => {
       l.line.setStyle({ opacity: 0, fillOpacity: 0 });
@@ -2566,8 +2557,10 @@ function renderMapControls(data) {
       hideRouteMarker(l.eMark);
     });
     clearZhengheLayers();
-    // 重新加回城市点 + 事件地名点
-    showEventMarkersOnMap(true);
+    // 「该朝事件」＝总览：只保留城市/名胜，事件地标一个都不上图。
+    // 整朝事件动辄几十条、地名标签互相压住，改成由下方事件胶囊按条点名：
+    // 点哪条，地图才飞过去只亮那一个⚑（见 showSingleEvent）。
+    showPlacesOnMap();
   };
   // 路线胶囊默认只露出前 8 个，其余折进「展示更多」——「全部」朝代下七朝合计三十余条，
   // 全平铺会把地图挤出视口。郑和航线也算一条，按整体顺序一起折叠。
@@ -2673,7 +2666,8 @@ function renderMapControls(data) {
       }
     }
   };
-  // 事件按钮（默认激活）：点击后在地图下方汇总事件涉及的古地名。
+  // 事件按钮（默认激活）：点击后只在地图下方汇总事件胶囊（事件名＋古地名）。
+  // 地图保持城市/名胜的干净总览——事件地标不批量上图，点哪条胶囊才亮哪一个⚑。
   // 文案跟随年号切换，与汇总面板标题保持一致（点年号后只汇总该年号的事件）。
   // 外观与路线胶囊刻意区分：矩形 + 列表图标（路线胶囊是圆角胶囊 + ▶）。
   const evtBtn = el('button', 'route-btn evt-toggle-btn');
