@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120d';
+const APP_BUILD = '20261120e';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -703,34 +703,22 @@ async function renderGantt(dyn) {
   const BLOCK_META = [];   // 与 .gantt-king 的 DOM 顺序一一对应：状态名、君主、小传、是否末主
   const bars = g.rows.map((row) => {
     const kings = row.kings || [];
-    // 同年即位的君主共用一根柱子（如孟知祥 934 / 孟昶 934），名字用 · 连写、跨度取较长者
-    const cols = [];
-    for (const [name, s, e] of kings) {
-      const last = cols[cols.length - 1];
-      if (last && last.start === s) {
-        last.names.push(name);
-        last.end = Math.max(last.end, e);
-        last.notes.push(`${name}（${s}-${e}）`);
-      } else {
-        cols.push({ start: s, end: e, names: [name], notes: [`${name}（${s}-${e}）`] });
-      }
-    }
     const lastKing = (kings[kings.length - 1] || [])[0];
-    // 宽度保持真实年份比例（与横坐标对齐），不人为拉宽
-    const segs = cols.map((c, ci) => {
-      const left = pct(c.start);
-      const width = Math.max(0, pct(c.end) - pct(c.start));
-      const label = c.names.join('·');
+    // 一块只代表一位君主：同年即位的短祚君主（如刘和 310、刘粲 318）单独切块。
+    // 这里先按真实年份比例占位，渲染后再按实测像素做"最小可见宽 + 顺序不重叠"的补算
+    const segs = kings.map(([name, s, e], ki) => {
+      const left = pct(s);
+      const width = Math.max(0, pct(e) - pct(s));
       BLOCK_META.push({
         state: row.name, stateStart: row.start, stateEnd: row.end, color: row.color || '',
         family: row.family || ((g.legend || []).find((l) => l.color === row.color) || {}).label || '',
         desc: row.desc || '',
-        names: c.names.slice(), start: c.start, end: c.end,
+        names: [name], start: s, end: e,
         bios: row.bios || {}, founder: row.founder || '', lastKing,
         kingNames: kings.map((k) => k[0]),
       });
-      return `<div class="gantt-king ${row.color || ''} ${ci % 2 ? 'alt' : ''}" data-king="${label}" data-w="${width}" tabindex="0" aria-label="${c.notes.join(' · ')}" style="left:${left}%;width:${width}%">
-        <span class="gantt-king-name">${label}</span>
+      return `<div class="gantt-king ${row.color || ''} ${ki % 2 ? 'alt' : ''}" data-king="${name}" data-start="${s}" data-end="${e}" tabindex="0" aria-label="${name}（${s}-${e}）" style="left:${left}%;width:${width}%">
+        <span class="gantt-king-name">${name}</span>
       </div>`;
     }).join('');
     const label = `<div class="gantt-label">
@@ -752,17 +740,35 @@ async function renderGantt(dyn) {
     <div class="gantt-axis">${axisTicks}</div>
     ${bars}
     ${legend ? `<div class="gantt-legend">${legend}</div>` : ''}
-    <div class="gantt-hint">色块悬停＝君主小传弹窗（所属政权、在位年、身份、事迹概要）；有帝王卡的色块，点击即跳转帝纪全文。</div>
+    <div class="gantt-hint">一块一位君主（在位不足一年的短祚之君也单列，按最小可见宽绘制）；色块悬停＝君主小传弹窗（所属政权、在位年、身份、事迹概要）；有帝王卡的色块，点击即跳转帝纪全文。</div>
     ${g.note ? `<div class="gantt-note">${g.note}</div>` : ''}
   `;
   // 图与卡片流联动：点色块 → 选中同名帝王卡 → 详情展开；
   // 十六国、十国的多数小政权没有帝卡，块宽又只有一二十像素放不下字，改为悬停（触屏点按）弹小传，不再"点了没反应"
-  const trackW = (box.querySelector('.gantt-track') || {}).clientWidth || 600;
+  // 一位君主一块：短祚君主的真实任期在年份比例下可能不足 1 像素，这里按实测轨道宽补到最小可见宽，
+  // 并把后面的块顺次右移，保证"按时间顺序、互不重叠"（只在块内造成极小的横向偏差）
+  const MIN_BLOCK_PX = 14, MIN_GAP_PX = 2;
+  box.querySelectorAll('.gantt-track').forEach((tr) => {
+    const W = tr.clientWidth || 600;
+    let prevRight = -Infinity;
+    tr.querySelectorAll('.gantt-king').forEach((k) => {
+      const s = Number(k.dataset.start), e = Number(k.dataset.end);
+      if (!Number.isFinite(s) || !Number.isFinite(e)) return;
+      const rawLeft = (pct(s) / 100) * W;
+      const rawW = Math.max(0, ((pct(e) - pct(s)) / 100) * W);
+      const w = Math.max(rawW, MIN_BLOCK_PX);
+      let left = Math.max(rawLeft, prevRight + MIN_GAP_PX);
+      if (left + w > W) left = Math.max(0, W - w);
+      k.style.left = `${left.toFixed(2)}px`;
+      k.style.width = `${w.toFixed(2)}px`;
+      prevRight = left + w;
+    });
+  });
   const cardNames = new Set([...document.querySelectorAll('#timeline-scroll .emp-card')]
     .map((c) => ((c.querySelector('.name') || {}).textContent || '').trim()));
   box.querySelectorAll('.gantt-king').forEach((k, idx) => {
     const meta = BLOCK_META[idx];
-    const w = (parseFloat(k.dataset.w || '0') / 100) * trackW;
+    const w = k.getBoundingClientRect().width;
     const need = (k.dataset.king || '').length * 12 + 8;
     if (w < need) k.classList.add('gantt-narrow');
     if (!meta) return;
@@ -828,6 +834,7 @@ function showGanttTip(meta, block, cardNames, pinned) {
     return parts.join(' · ');
   };
   const hasCard = meta.names.some((n) => cardNames && cardNames.has(n));
+  const yrOf = (m) => (m.start === m.end ? `${m.start}（在位不足一年）` : `${m.start}-${m.end}`);
   const rows = meta.names.map((n) => {
     const bio = (meta.bios || {})[n] || '';
     const role = roleOf(n);
@@ -836,7 +843,7 @@ function showGanttTip(meta, block, cardNames, pinned) {
       ? '该君主有完整帝纪卡：点击色块即展开生卒、年号、人物关系。'
       : '该政权未单列帝卡，此块仅有在位区间。';
     return `<div class="gt-king">
-      <div class="gt-king-head"><b>${esc(n)}</b>${role ? `<em>${role}</em>` : ''}<span>${meta.start}-${meta.end}</span></div>
+      <div class="gt-king-head"><b>${esc(n)}</b>${role ? `<em>${role}</em>` : ''}<span>${yrOf(meta)}</span></div>
       ${ord ? `<div class="gt-order">${esc(ord)}</div>` : ''}
       ${bio ? `<p class="gt-bio">${esc(bio)}</p>` : `<p class="gt-bio gt-muted">${fallback}</p>`}
     </div>`;

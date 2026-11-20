@@ -1409,20 +1409,26 @@ input, textarea { cursor: text; }
 /* 甘特色块悬停小传：小政权没有帝卡可跳，块里也放不下字，改由这张纸卡承载核心信息 */
 .gantt-tip {
   position: fixed; z-index: 3000; width: max-content; max-width: 320px;
-  background: linear-gradient(180deg, #fdf8ec, #f8efdb);
-  border: 1px solid #cbb083; border-radius: 10px;
-  box-shadow: 0 10px 28px rgba(60, 44, 26, .24), 0 2px 6px rgba(60, 44, 26, .12);
+  /* 实色纸面：不再透出下面的色块与年表，压住邻行时才读得清 */
+  background: #faf1dd;
+  background-image: linear-gradient(180deg, #fffdf2 0%, #f8edd6 56%, #f0e2c2 100%);
+  border: 1px solid #bb9f6d; border-radius: 10px;
+  /* 光从左上打来：投影主要落在右侧，略向下 */
+  box-shadow: 24px 10px 30px -8px rgba(52, 36, 18, .42),
+              10px 5px 14px -6px rgba(52, 36, 18, .24),
+              0 1px 2px rgba(52, 36, 18, .18);
   padding: 10px 12px 9px; color: #3f2f1c; pointer-events: none;
   font-size: 13px; line-height: 1.62;
 }
 .gantt-tip.hidden { display: none; }
 .gantt-tip::after {
   content: ""; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%) rotate(45deg);
-  width: 12px; height: 12px; background: #f8efdb; border-right: 1px solid #cbb083; border-bottom: 1px solid #cbb083;
+  width: 12px; height: 12px; background: #f0e2c2; border-right: 1px solid #bb9f6d; border-bottom: 1px solid #bb9f6d;
 }
 /* 空间不够时弹窗落到色块下方，箭头翻到顶部 */
 .gantt-tip.tip-below::after {
   bottom: auto; top: -7px; transform: translateX(-50%) rotate(225deg);
+  background: #fffdf2;
 }
 .gantt-tip .gt-state {
   display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
