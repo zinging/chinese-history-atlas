@@ -354,6 +354,19 @@ for (const ganttRel of ['data/wudai/gantt.json', 'data/sanguo/gantt.json', 'data
       if (k[1] < prev) errors.push(`${ganttRel}: ${row.name} 君主顺序倒退（${k[0]} ${k[1]} < 前一位 ${prev}）`);
       prev = k[1];
     }
+    // 小传覆盖：没有同名帝卡的政权行（十六国、十国）必须为每位列主备一条 bios，
+    // 前端悬停弹窗直接读它；缺了就会弹「未单列帝卡」的空壳，等于没介绍。
+    const needsBio = /jin|wudai/.test(ganttRel) && !['西晋', '东晋'].includes(row.name);
+    if (needsBio) {
+      const bios = row.bios || {};
+      for (const k of row.kings) {
+        if (!bios[k[0]] || !String(bios[k[0]]).trim()) errors.push(`${ganttRel}: ${row.name}·${k[0]} 缺君主小传 bios`);
+        else if (String(bios[k[0]]).length < 35) warns.push(`${ganttRel}: ${row.name}·${k[0]} 小传偏短（${String(bios[k[0]]).length} 字）`);
+      }
+      for (const key of Object.keys(bios)) {
+        if (!row.kings.some((k) => k[0] === key)) warns.push(`${ganttRel}: ${row.name} 的 bios 有多余条目「${key}」`);
+      }
+    }
   }
 }
 

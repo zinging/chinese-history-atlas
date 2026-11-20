@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120c';
+const APP_BUILD = '20261120d';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -700,6 +700,7 @@ async function renderGantt(dyn) {
   const span = T1 - T0 || 1;
   const pct = (y) => ((y - T0) / span) * 100;
 
+  const BLOCK_META = [];   // 与 .gantt-king 的 DOM 顺序一一对应：状态名、君主、小传、是否末主
   const bars = g.rows.map((row) => {
     const kings = row.kings || [];
     // 同年即位的君主共用一根柱子（如孟知祥 934 / 孟昶 934），名字用 · 连写、跨度取较长者
@@ -714,13 +715,21 @@ async function renderGantt(dyn) {
         cols.push({ start: s, end: e, names: [name], notes: [`${name}（${s}-${e}）`] });
       }
     }
+    const lastKing = (kings[kings.length - 1] || [])[0];
     // 宽度保持真实年份比例（与横坐标对齐），不人为拉宽
     const segs = cols.map((c, ci) => {
       const left = pct(c.start);
       const width = Math.max(0, pct(c.end) - pct(c.start));
       const label = c.names.join('·');
-      const tip = `${c.notes.join(' · ')} · ${row.name}`;
-      return `<div class="gantt-king ${row.color || ''} ${ci % 2 ? 'alt' : ''}" data-king="${label}" data-w="${width}" style="left:${left}%;width:${width}%" title="${tip}">
+      BLOCK_META.push({
+        state: row.name, stateStart: row.start, stateEnd: row.end, color: row.color || '',
+        family: row.family || ((g.legend || []).find((l) => l.color === row.color) || {}).label || '',
+        desc: row.desc || '',
+        names: c.names.slice(), start: c.start, end: c.end,
+        bios: row.bios || {}, founder: row.founder || '', lastKing,
+        kingNames: kings.map((k) => k[0]),
+      });
+      return `<div class="gantt-king ${row.color || ''} ${ci % 2 ? 'alt' : ''}" data-king="${label}" data-w="${width}" tabindex="0" aria-label="${c.notes.join(' · ')}" style="left:${left}%;width:${width}%">
         <span class="gantt-king-name">${label}</span>
       </div>`;
     }).join('');
@@ -743,24 +752,116 @@ async function renderGantt(dyn) {
     <div class="gantt-axis">${axisTicks}</div>
     ${bars}
     ${legend ? `<div class="gantt-legend">${legend}</div>` : ''}
+    <div class="gantt-hint">色块悬停＝君主小传弹窗（所属政权、在位年、身份、事迹概要）；有帝王卡的色块，点击即跳转帝纪全文。</div>
     ${g.note ? `<div class="gantt-note">${g.note}</div>` : ''}
   `;
-  // 图与卡片流联动：点色块 → 选中同名帝王卡 → 详情展开；没有对应帝王卡的政权（如十国）点了不跳
-  // 块宽按真实年份比例，短祚君主（如晋愍帝 3 年）只有一二十像素，名字放不下就藏字留色，全名交给 title 悬浮提示
+  // 图与卡片流联动：点色块 → 选中同名帝王卡 → 详情展开；
+  // 十六国、十国的多数小政权没有帝卡，块宽又只有一二十像素放不下字，改为悬停（触屏点按）弹小传，不再"点了没反应"
   const trackW = (box.querySelector('.gantt-track') || {}).clientWidth || 600;
-  box.querySelectorAll('.gantt-king').forEach((k) => {
+  const cardNames = new Set([...document.querySelectorAll('#timeline-scroll .emp-card')]
+    .map((c) => ((c.querySelector('.name') || {}).textContent || '').trim()));
+  box.querySelectorAll('.gantt-king').forEach((k, idx) => {
+    const meta = BLOCK_META[idx];
     const w = (parseFloat(k.dataset.w || '0') / 100) * trackW;
     const need = (k.dataset.king || '').length * 12 + 8;
     if (w < need) k.classList.add('gantt-narrow');
+    if (!meta) return;
+    k.addEventListener('mouseenter', () => showGanttTip(meta, k, cardNames));
+    k.addEventListener('mouseleave', () => hideGanttTip(true));
+    k.addEventListener('focus', () => showGanttTip(meta, k, cardNames));
+    k.addEventListener('blur', () => hideGanttTip(true));
     k.addEventListener('click', () => {
       const first = (k.dataset.king || '').split('·')[0];
       const card = [...document.querySelectorAll('#timeline-scroll .emp-card')]
-        .find((c) => ((c.querySelector('.name') || {}).textContent || '') === first);
-      if (card) card.click();
+        .find((c) => ((c.querySelector('.name') || {}).textContent || '').trim() === first);
+      if (card) { hideGanttTip(false); card.click(); return; }
+      // 没有帝卡：点按也能看到小传（触屏没有 hover）
+      showGanttTip(meta, k, cardNames, true);
     });
   });
   box.classList.toggle('gantt-wide', g.rows.length > 8);
   box.classList.remove('hidden');
+}
+
+/* ---- 甘特色块的君主小传弹窗 ----
+   小政权色块只有十几像素，既放不下字，又没有同名帝王卡可跳；悬停即在色块上方浮出一张纸卡，
+   给"所属政权 / 族属 / 君主 / 在位 / 身份 / 一句事迹"，点击有帝卡的仍跳全文。 */
+let _ganttTipEl = null, _ganttTipTimer = 0;
+function ensureGanttTip() {
+  if (_ganttTipEl && document.body.contains(_ganttTipEl)) return _ganttTipEl;
+  _ganttTipEl = document.createElement('div');
+  _ganttTipEl.className = 'gantt-tip hidden';
+  document.body.appendChild(_ganttTipEl);
+  // 滚动画布/页面时浮窗会脱位，直接收起（同一处理器只挂一次）
+  if (!window._ganttTipScroll) {
+    window._ganttTipScroll = true;
+    window.addEventListener('scroll', () => hideGanttTip(false), true);
+    window.addEventListener('resize', () => hideGanttTip(false));
+  }
+  return _ganttTipEl;
+}
+function hideGanttTip(delayed) {
+  const tip = _ganttTipEl;
+  if (!tip) return;
+  clearTimeout(_ganttTipTimer);
+  const doHide = () => { tip.classList.add('hidden'); tip.dataset.pinned = ''; };
+  if (delayed) _ganttTipTimer = setTimeout(doHide, 140);
+  else doHide();
+}
+function showGanttTip(meta, block, cardNames, pinned) {
+  const tip = ensureGanttTip();
+  clearTimeout(_ganttTipTimer);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // 色块用的是 CSS 类名（xiongnu / song …），弹窗小色标要真实颜色，这里给一份类名→底色对照
+  const GANTT_HEX = { jinwest: '#7b3f2f', jineast: '#2f5f6b', xiongnu: '#8a5a3a', jie: '#5f5a48', xianbei: '#3f6b8a', di: '#6b4a7a', qiang: '#8a6a2a', han: '#4a6b4a', lu: '#7a5a6a', wei: '#33506b', shu: '#a8352a', wu: '#2f6b57', song: '#c8553d', 'tang-internal': '#6b8e6b' };
+  const hex = GANTT_HEX[meta.color] || '#8a6d3b';
+  const roleOf = (n) => (n === meta.founder ? '开国' : '') || (n === meta.lastKing ? '末主' : '');
+  const orderOf = (n) => {
+    const names = meta.kingNames || [];
+    const i = names.indexOf(n);
+    if (i < 0 || names.length < 2) return '';
+    const prev = i > 0 ? names[i - 1] : '';
+    const next = i < names.length - 1 ? names[i + 1] : '';
+    const parts = [`${meta.state}第 ${i + 1} 位 / 共 ${names.length} 位`];
+    if (prev) parts.push(`前任 ${prev}`);
+    if (next) parts.push(`继任 ${next}`);
+    return parts.join(' · ');
+  };
+  const hasCard = meta.names.some((n) => cardNames && cardNames.has(n));
+  const rows = meta.names.map((n) => {
+    const bio = (meta.bios || {})[n] || '';
+    const role = roleOf(n);
+    const ord = orderOf(n);
+    const fallback = hasCard
+      ? '该君主有完整帝纪卡：点击色块即展开生卒、年号、人物关系。'
+      : '该政权未单列帝卡，此块仅有在位区间。';
+    return `<div class="gt-king">
+      <div class="gt-king-head"><b>${esc(n)}</b>${role ? `<em>${role}</em>` : ''}<span>${meta.start}-${meta.end}</span></div>
+      ${ord ? `<div class="gt-order">${esc(ord)}</div>` : ''}
+      ${bio ? `<p class="gt-bio">${esc(bio)}</p>` : `<p class="gt-bio gt-muted">${fallback}</p>`}
+    </div>`;
+  }).join('');
+  tip.innerHTML = `
+    <div class="gt-state"><b>${esc(meta.state)}</b><span>${meta.stateStart}-${meta.stateEnd}</span></div>
+    ${meta.family ? `<div class="gt-line"><i style="background:${esc(hex)}"></i>${esc(meta.family)}</div>` : ''}
+    ${meta.desc ? `<p class="gt-desc">${esc(meta.desc)}</p>` : ''}
+    ${rows}
+    <div class="gt-hint">${hasCard ? '点击该色块 → 跳到下方帝王卡，读完整帝纪' : '该政权没有单独帝卡，以上即其简介'}</div>
+  `;
+  tip.classList.remove('hidden');
+  tip.dataset.pinned = pinned ? '1' : '';
+  const br = block.getBoundingClientRect();
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let x = br.left + br.width / 2 - tw / 2;
+  x = Math.max(8, Math.min(x, vw - tw - 8));
+  let y = br.top - th - 8;
+  const below = y < 8;
+  if (below) y = Math.min(br.bottom + 8, vh - th - 8);
+  tip.classList.toggle('tip-below', below);
+  tip.style.left = `${Math.round(x)}px`;
+  tip.style.top = `${Math.round(y)}px`;
+  if (pinned) _ganttTipTimer = setTimeout(() => hideGanttTip(false), 3200);
 }
 /** 已绑定过拖拽滚动的元素：同一元素只绑一次，避免每次渲染叠加监听（旧版切朝代/点年号会累积几十个处理器） */
 const _dragScrollBound = new WeakSet();
