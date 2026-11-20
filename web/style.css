@@ -152,7 +152,7 @@ body::after {
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; flex-wrap: wrap;
-  padding: 4px 6px 10px;
+  padding: 4px 6px 6px;
 }
 /* 朝代切换条向两侧扩出正文列（不受 .module-inner 的 1105px 约束）：
    左借侧栏与正文列之间的留白、右借右上导航胶囊左侧的空间，具体像素由 app.js 的 fitTopbar() 实测设定
@@ -638,7 +638,8 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
   background: #6b5a3c; color: #fff; font-size: 16px; font-weight: 700;
   height: 64px; padding: 0 7px; border-radius: 7px;
   display: flex; align-items: center; justify-content: center; line-height: 1;
-  box-shadow: 0 2px 8px rgba(60, 44, 26, .22);
+  /* 牌面实色、投影偏向右侧：像一块挂在纸面上的木牌，压住牌下的纹样 */
+  box-shadow: 7px 6px 16px -4px rgba(40, 28, 16, .38), 0 2px 8px rgba(60, 44, 26, .22);
 }
 .tl-lineage-sep.lineage-wei span { background: #33506b; }
 .tl-lineage-sep.lineage-shu span { background: #a8352a; }
@@ -650,17 +651,21 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
    只有中间一枚墨牌写字；政权彩牌保持小签、不铺底，二者层次一眼可分。 */
 .tl-lineage-sep.tl-sep-dyn {
   flex: 0 0 46px;
+  /* 纸底改实：原来 .28-.45 的淡褐会透出宣纸波纹，整段读起来像"半透明塑料"，
+     现在按宣纸上的旧纸色给到接近实色，只保留一点通透感 */
   background: linear-gradient(180deg,
-    rgba(150, 112, 62, .45) 0%,
-    rgba(150, 112, 62, .28) 16%,
-    rgba(150, 112, 62, .28) 84%,
-    rgba(150, 112, 62, .45) 100%);
+    rgba(211, 186, 148, .96) 0%,
+    rgba(205, 179, 140, .90) 16%,
+    rgba(205, 179, 140, .90) 84%,
+    rgba(211, 186, 148, .96) 100%);
   border-left: none;
   border-right: 1px solid rgba(128, 96, 54, .30);
+  /* 左缘一道加粗朱红竖线：朝代与朝代的分界，从上一朝的末卡切到本朝首卡 */
+  box-shadow: inset 3px 0 0 0 #a8352a, 12px 0 18px -10px rgba(96, 70, 36, .34);
 }
 .tl-sep-dyn span {
   background: #463726; font-size: 15px; letter-spacing: 3px;
-  box-shadow: 0 2px 10px rgba(40, 28, 16, .28);
+  box-shadow: 7px 6px 16px -4px rgba(28, 19, 10, .46), 0 2px 10px rgba(40, 28, 16, .28);
 }
 /* 组首立牌不画分隔虚线（左边没有上一组可断），只留牌子 */
 .tl-lineage-sep.tl-lineage-lead { border-left: none; }
@@ -1310,8 +1315,8 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 
 /* ---- 朝代时间线 ---- */
 .era-strip {
-  flex: 1; display: flex; align-items: flex-start; gap: 14px; overflow-x: auto;
-  padding: 8px 0 12px; scroll-behavior: smooth;
+  flex: 1; display: flex; align-items: flex-start; gap: 12px; overflow-x: auto;
+  padding: 2px 0 10px; scroll-behavior: smooth;
   scrollbar-width: thin; scrollbar-color: #a8352a #f0e6d2;
   border-bottom: 2px dashed var(--border);
 }
@@ -1321,14 +1326,14 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 /* 年号按朝代分组：每组是一块浅纸色面板（组头 + 组体），让「这一串年号属于哪朝」一眼可见；
    「全部」自成「总览」面板。组与组之间只留间隙，不再另画虚线。 */
 .era-group {
-  flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px;
+  flex: 0 0 auto; display: flex; flex-direction: column; gap: 3px;
   background: #faf1dd;
   border: 1px solid rgba(190, 155, 90, .62);
   border-radius: 10px;
-  padding: 6px 10px 7px;
+  padding: 3px 10px 6px;
 }
 .era-group-head {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 6px; line-height: 1.15;
   font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #7b5f33;
   padding: 0 2px; white-space: nowrap;
 }
@@ -1385,9 +1390,14 @@ input, textarea { cursor: text; }
 .shiguo-gantt h3 { margin: 0 0 4px; font-size: 18px; color: #6b4a1f; }
 .shiguo-gantt .gantt-sub { margin: 0 0 14px; font-size: 13px; color: #8a6d3b; }
 .gantt-axis { position: relative; height: 26px; margin-left: 130px; border-bottom: 2px solid #c9a96a; }
-.gantt-axis .tick { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; color: #8a6d3b; }
-.gantt-row { display: flex; align-items: center; height: 44px; margin: 4px 0; }
-.gantt-label { width: 130px; font-size: 13px; color: #5a4020; padding-right: 10px; text-align: right; flex: 0 0 auto; line-height: 1.2; }
+.gantt-axis .tick { position: absolute; top: 0; transform: translateX(-50%); font-size: 12.5px; font-weight: 700; color: #6b4a1f; }
+.gantt-row { display: flex; align-items: center; height: 44px; margin: 4px 0; position: relative; }
+/* 行与行之间一条极浅的横线：分隔用，不能压过色块和行首色标 */
+.gantt-row::after { content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px; background: rgba(138, 109, 59, .36); }
+.gantt-label { width: 130px; font-size: 13px; color: #5a4020; padding: 3px 10px 3px 7px; border-left: 3px solid transparent; text-align: right; flex: 0 0 auto; line-height: 1.2; cursor: help; border-radius: 8px; }
+.gantt-label:hover .gantt-label-years, .gantt-label:focus .gantt-label-years { color: #7a5a2a; }
+.gantt-label:hover b, .gantt-label:focus b { color: #a8352a; }
+.gantt-label:focus { outline: none; box-shadow: 0 0 0 2px rgba(201, 169, 106, .55); }
 .gantt-label b { display: block; font-size: 14px; color: #4a3020; }
 .gantt-label .gantt-label-years { font-size: 11px; color: #8a6d3b; font-weight: 600; }
 .gantt-track { position: relative; flex: 1; height: 26px; }
@@ -1450,8 +1460,12 @@ input, textarea { cursor: text; }
 }
 .gantt-tip .gt-king-head span { font-size: 12px; color: #8a6d3b; font-weight: 700; }
 .gantt-tip .gt-bio { margin: 4px 0 0; text-align: justify; }
-.gantt-tip .gt-bio.gt-muted { color: #8a7a63; font-style: italic; }
-.gantt-tip .gt-hint { margin-top: 7px; font-size: 12px; color: #98622c; }
+.gantt-tip .gt-bio { margin: 4px 0 0; text-align: justify; }
+/* 政权小史卡：说得比人物卡更宽一点，君主序列一行铺开 */
+.gantt-tip.gt-state-card { max-width: 360px; }
+.gantt-tip .gt-kings { margin-top: 6px; padding-top: 6px; border-top: 1px dotted rgba(160, 120, 60, .22); font-size: 12px; color: #5c4a30; line-height: 1.6; }
+.gantt-tip .gt-kings b { color: #7b3f2f; margin-right: 6px; }
+.gantt-tip .gt-kings span { color: #6b5432; }
 .gantt-king.song { background: linear-gradient(180deg, #c8553d, #b04836); }
 .gantt-king.song.alt { background: linear-gradient(180deg, #d97a63, #c05d48); }
 .gantt-king.tang-internal { background: linear-gradient(180deg, #6b8e6b, #57795a); }
@@ -1488,8 +1502,6 @@ input, textarea { cursor: text; }
   .shiguo-gantt.gantt-wide .gantt-row { min-width: 640px; }
 }
 .gantt-note { margin-top: 10px; font-size: 12px; color: #8a6d3b; }
-.gantt-hint { margin-top: 8px; font-size: 12px; color: #98622c; }
-.gantt-hint::before { content: "◈ "; color: #c9a96a; }
 .gantt-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: #5a4020; }
 .gantt-legend .sw { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
 
@@ -1909,7 +1921,7 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   .emp-card .reign { font-size: 12px; }
 
   /* 9) 十国甘特图：行标签 130px 占了正文 40%，移动端缩到 84px 并换行显示朝代名。 */
-  .gantt-label { width: 84px; font-size: 11.5px; padding-right: 6px; }
+  .gantt-label { width: 84px; font-size: 11.5px; padding: 2px 6px 2px 5px; border-left-width: 2px; }
   .gantt-label b { font-size: 12px; }
   .gantt-axis { margin-left: 84px; }
   .gantt-row { height: 38px; }

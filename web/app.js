@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120e';
+const APP_BUILD = '20261120q';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -96,11 +96,15 @@ function renderEraStrip() {
   };
   const allBody = groupBody(currentDynasty === 'all' ? '总览' : (DYNASTY_LABEL[currentDynasty] || ''));
   const allBtn = el('button', 'era-btn' + (activeEraId ? '' : ' active'));
-  const range = DYNASTY_RANGE[currentDynasty] || '1368-1644';
+  // 「全部」的年号范围按实际首位皇帝取，别再用写死的明朝区间——三国 220 起就要显示 220
+  const range = currentDynasty === 'all' && DATA && DATA.emperors && DATA.emperors.length
+    ? `${DATA.emperors[0].reign.start}-${DATA.emperors[DATA.emperors.length - 1].reign.end}`
+    : (DYNASTY_RANGE[currentDynasty] || '1368-1644');
   allBtn.innerHTML = `<span class="era-name">全部</span><span class="era-years">${range}</span>`;
   allBtn.addEventListener('click', () => {
     activeEraId = null; evtSummaryShowAll = false;
     renderEraStrip(); renderMap(); renderEraInfo();
+    showPlacesOnMap();   // 「全部」回到默认视图：只有城市/名胜，事件地标等点击再上图
     showEventsSummary(); // 保持「该朝事件」汇总展开（默认视图）
     centerTo(document.querySelector('#era-strip .era-btn'));
   });
@@ -120,6 +124,8 @@ function renderEraStrip() {
       // 折叠态跟着年号复位：上一个年号展开过，换年号不应仍保持全展开
       evtSummaryShowAll = false;
       renderEraStrip(); renderMap(); renderEraInfo();
+      // 选中某个年号＝用户明确要看这一段，此时把该年号的事件地标自动上图（默认视图仍不铺）
+      if (activeEraId) showEventMarkersOnMap(false); else showPlacesOnMap();
       showEventsSummary(); // 保持「该朝事件」汇总展开（默认视图）
       centerTo(document.querySelector(`#era-strip .era-btn${activeEraId ? '.active' : ''}`));
     });
@@ -683,12 +689,65 @@ function renderTimeline() {
 // 五代十国、三国、晋（东晋十六国）共用这套渲染器；没有 gantt.json 的朝代自动隐藏。
 // 注意：行与行之间没有继承关系，色块只表示"某君主在某年至某年统治该政权"。
 const GANTT_CACHE = {};
+const MIN_BLOCK_PX = 14, MIN_GAP_PX = 2;
+let _ganttRO = null;
+/* #rrggbb → rgba()：行首政权名的底色取该行族属色（与图例/色块同一套），
+   淡染一层就够，不能压过墨字；左缘一条实色竖线当色标。 */
+function ganttTint(hex, a) {
+  const h = String(hex || '').replace('#', '');
+  if (h.length !== 6 || !/^[0-9a-f]{6}$/i.test(h)) return `rgba(138, 109, 59, ${a})`;
+  const n = parseInt(h, 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
+/* 色块摆位：把年份比例换算成轨道内的像素。
+   每次轨道宽度变化都必须重算——首次渲染时面板往往还没撑到最终宽度（侧栏卷收、
+   顶栏 fitTopbar 后置都会改宽度），只按当时的宽度摆位，整幅色块会缩在左侧，
+   右边空出半截轨道，和顶部年份刻度对不上（用户看到的「右侧一片空白」就是它）。*/
+function layoutGanttBlocks(box) {
+  if (!box || box.classList.contains('hidden')) return;
+  const T0 = Number(box.dataset.t0), T1 = Number(box.dataset.t1);
+  const span = T1 - T0;
+  if (!Number.isFinite(span) || span <= 0) return;
+  const pct = (y) => ((y - T0) / span) * 100;
+  box.querySelectorAll('.gantt-track').forEach((tr) => {
+    const W = tr.clientWidth;
+    if (!W || W < 60) return;      // 面板隐藏或过窄时先不摆位，等 ResizeObserver 再算
+    let prevRight = -Infinity;
+    tr.querySelectorAll('.gantt-king').forEach((k) => {
+      const s = Number(k.dataset.start), e = Number(k.dataset.end);
+      if (!Number.isFinite(s) || !Number.isFinite(e)) return;
+      const rawLeft = (pct(s) / 100) * W;
+      const rawW = Math.max(0, ((pct(e) - pct(s)) / 100) * W);
+      const w = Math.max(rawW, MIN_BLOCK_PX);
+      let left = Math.max(rawLeft, prevRight + MIN_GAP_PX);
+      if (left + w > W) left = Math.max(0, W - w);
+      k.style.left = `${left.toFixed(2)}px`;
+      k.style.width = `${w.toFixed(2)}px`;
+      // 宽度不足以放名字时只留色条（.gantt-narrow）；宽度变了要跟着重判
+      k.classList.toggle('gantt-narrow', w < (k.dataset.king || '').length * 12 + 8);
+      prevRight = left + w;
+    });
+  });
+}
+function observeGanttResize(box) {
+  if (typeof ResizeObserver !== 'function') return;
+  if (_ganttRO) _ganttRO.disconnect();
+  let raf = 0;
+  _ganttRO = new ResizeObserver(() => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => layoutGanttBlocks(box));
+  });
+  box.querySelectorAll('.gantt-track').forEach((tr) => _ganttRO.observe(tr));
+}
 
 async function renderGantt(dyn) {
   const box = $('#shiguo-gantt');
   if (!box) return;
   const dir = DYNASTY_DIRS[dyn];
-  const hide = () => { box.classList.add('hidden'); box.innerHTML = ''; };
+  const hide = () => {
+    box.classList.add('hidden'); box.innerHTML = '';
+    if (_ganttRO) { _ganttRO.disconnect(); _ganttRO = null; }
+  };
   if (!dir) return hide();
   if (!GANTT_CACHE[dyn]) {
     try { GANTT_CACHE[dyn] = await loadJSON(`../data/${dir}gantt.json`); }
@@ -701,9 +760,16 @@ async function renderGantt(dyn) {
   const pct = (y) => ((y - T0) / span) * 100;
 
   const BLOCK_META = [];   // 与 .gantt-king 的 DOM 顺序一一对应：状态名、君主、小传、是否末主
-  const bars = g.rows.map((row) => {
+  const ROW_META = [];     // 行首政权名（.gantt-label）的政权小史数据，与 data-row 一一对应
+  const bars = g.rows.map((row, ri) => {
     const kings = row.kings || [];
     const lastKing = (kings[kings.length - 1] || [])[0];
+    ROW_META.push({
+      state: row.name, start: row.start, end: row.end, color: row.color || '',
+      family: row.family || ((g.legend || []).find((l) => l.color === row.color) || {}).label || '',
+      desc: row.desc || '', kingNames: kings.map((k) => k[0]),
+      founder: row.founder || '', lastKing,
+    });
     // 一块只代表一位君主：同年即位的短祚君主（如刘和 310、刘粲 318）单独切块。
     // 这里先按真实年份比例占位，渲染后再按实测像素做"最小可见宽 + 顺序不重叠"的补算
     const segs = kings.map(([name, s, e], ki) => {
@@ -721,12 +787,17 @@ async function renderGantt(dyn) {
         <span class="gantt-king-name">${name}</span>
       </div>`;
     }).join('');
-    const label = `<div class="gantt-label">
+    // 行首政权名的底色＝该行族属色（与图例、色块同一套色号），起到"哪行属于哪一族"的色标作用
+    const rowHex = GANTT_HEX[row.color] || (ROW_META[ri] && GANTT_HEX[ROW_META[ri].color]) || '';
+    const labelStyle = rowHex
+      ? `background:${ganttTint(rowHex, 0.15)};border-left-color:${ganttTint(rowHex, 0.85)};`
+      : '';
+    const labelHtml = `<div class="gantt-label" data-row="${ri}" tabindex="0" aria-label="${row.name} 政权小史" style="${labelStyle}">
       <b>${row.name}</b>
       <span class="gantt-label-years">${row.start}-${row.end}</span>
     </div>`;
     return `<div class="gantt-row">
-      ${label}
+      ${labelHtml}
       <div class="gantt-track">${segs}</div>
     </div>`;
   }).join('');
@@ -740,41 +811,37 @@ async function renderGantt(dyn) {
     <div class="gantt-axis">${axisTicks}</div>
     ${bars}
     ${legend ? `<div class="gantt-legend">${legend}</div>` : ''}
-    <div class="gantt-hint">一块一位君主（在位不足一年的短祚之君也单列，按最小可见宽绘制）；色块悬停＝君主小传弹窗（所属政权、在位年、身份、事迹概要）；有帝王卡的色块，点击即跳转帝纪全文。</div>
     ${g.note ? `<div class="gantt-note">${g.note}</div>` : ''}
   `;
   // 图与卡片流联动：点色块 → 选中同名帝王卡 → 详情展开；
   // 十六国、十国的多数小政权没有帝卡，块宽又只有一二十像素放不下字，改为悬停（触屏点按）弹小传，不再"点了没反应"
   // 一位君主一块：短祚君主的真实任期在年份比例下可能不足 1 像素，这里按实测轨道宽补到最小可见宽，
   // 并把后面的块顺次右移，保证"按时间顺序、互不重叠"（只在块内造成极小的横向偏差）
-  const MIN_BLOCK_PX = 14, MIN_GAP_PX = 2;
-  box.querySelectorAll('.gantt-track').forEach((tr) => {
-    const W = tr.clientWidth || 600;
-    let prevRight = -Infinity;
-    tr.querySelectorAll('.gantt-king').forEach((k) => {
-      const s = Number(k.dataset.start), e = Number(k.dataset.end);
-      if (!Number.isFinite(s) || !Number.isFinite(e)) return;
-      const rawLeft = (pct(s) / 100) * W;
-      const rawW = Math.max(0, ((pct(e) - pct(s)) / 100) * W);
-      const w = Math.max(rawW, MIN_BLOCK_PX);
-      let left = Math.max(rawLeft, prevRight + MIN_GAP_PX);
-      if (left + w > W) left = Math.max(0, W - w);
-      k.style.left = `${left.toFixed(2)}px`;
-      k.style.width = `${w.toFixed(2)}px`;
-      prevRight = left + w;
-    });
+  box.dataset.t0 = T0; box.dataset.t1 = T1;
+  layoutGanttBlocks(box);
+  // 首次渲染时面板可能还没撑到最终宽度（侧栏卷收、顶栏 fitTopbar 后置等），
+  // 那时按旧宽度摆位会让整幅色块缩在左侧、右侧留一大截空轨道，跟顶上的年份刻度对不上。
+  // 所以渲染后再补算两次，并用 ResizeObserver 跟随轨道宽度变化。
+  requestAnimationFrame(() => {
+    layoutGanttBlocks(box);
+    requestAnimationFrame(() => layoutGanttBlocks(box));
   });
-  const cardNames = new Set([...document.querySelectorAll('#timeline-scroll .emp-card')]
-    .map((c) => ((c.querySelector('.name') || {}).textContent || '').trim()));
+  // 行首政权名＝政权本身：悬停出「政权小史」，与色块上的「君主小传」分开，各说各的一层
+  box.querySelectorAll('.gantt-label').forEach((el) => {
+    const meta = ROW_META[Number(el.dataset.row)];
+    if (!meta) return;
+    el.addEventListener('mouseenter', () => showGanttStateTip(meta, el));
+    el.addEventListener('mouseleave', () => hideGanttTip(true));
+    el.addEventListener('focus', () => showGanttStateTip(meta, el));
+    el.addEventListener('blur', () => hideGanttTip(true));
+    el.addEventListener('click', () => showGanttStateTip(meta, el, true));
+  });
   box.querySelectorAll('.gantt-king').forEach((k, idx) => {
     const meta = BLOCK_META[idx];
-    const w = k.getBoundingClientRect().width;
-    const need = (k.dataset.king || '').length * 12 + 8;
-    if (w < need) k.classList.add('gantt-narrow');
     if (!meta) return;
-    k.addEventListener('mouseenter', () => showGanttTip(meta, k, cardNames));
+    k.addEventListener('mouseenter', () => showGanttTip(meta, k));
     k.addEventListener('mouseleave', () => hideGanttTip(true));
-    k.addEventListener('focus', () => showGanttTip(meta, k, cardNames));
+    k.addEventListener('focus', () => showGanttTip(meta, k));
     k.addEventListener('blur', () => hideGanttTip(true));
     k.addEventListener('click', () => {
       const first = (k.dataset.king || '').split('·')[0];
@@ -782,17 +849,20 @@ async function renderGantt(dyn) {
         .find((c) => ((c.querySelector('.name') || {}).textContent || '').trim() === first);
       if (card) { hideGanttTip(false); card.click(); return; }
       // 没有帝卡：点按也能看到小传（触屏没有 hover）
-      showGanttTip(meta, k, cardNames, true);
+      showGanttTip(meta, k, true);
     });
   });
   box.classList.toggle('gantt-wide', g.rows.length > 8);
   box.classList.remove('hidden');
+  observeGanttResize(box);
 }
 
 /* ---- 甘特色块的君主小传弹窗 ----
    小政权色块只有十几像素，既放不下字，又没有同名帝王卡可跳；悬停即在色块上方浮出一张纸卡，
    给"所属政权 / 族属 / 君主 / 在位 / 身份 / 一句事迹"，点击有帝卡的仍跳全文。 */
 let _ganttTipEl = null, _ganttTipTimer = 0;
+// 色块用的是 CSS 类名（xiongnu / song …），弹窗小色标要真实颜色，这里给一份类名→底色对照（两处弹窗共用）
+const GANTT_HEX = { jinwest: '#7b3f2f', jineast: '#2f5f6b', xiongnu: '#8a5a3a', jie: '#5f5a48', xianbei: '#3f6b8a', di: '#6b4a7a', qiang: '#8a6a2a', han: '#4a6b4a', lu: '#7a5a6a', wei: '#33506b', shu: '#a8352a', wu: '#2f6b57', song: '#c8553d', 'tang-internal': '#6b8e6b' };
 function ensureGanttTip() {
   if (_ganttTipEl && document.body.contains(_ganttTipEl)) return _ganttTipEl;
   _ganttTipEl = document.createElement('div');
@@ -814,12 +884,10 @@ function hideGanttTip(delayed) {
   if (delayed) _ganttTipTimer = setTimeout(doHide, 140);
   else doHide();
 }
-function showGanttTip(meta, block, cardNames, pinned) {
+function showGanttTip(meta, block, pinned) {
   const tip = ensureGanttTip();
   clearTimeout(_ganttTipTimer);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  // 色块用的是 CSS 类名（xiongnu / song …），弹窗小色标要真实颜色，这里给一份类名→底色对照
-  const GANTT_HEX = { jinwest: '#7b3f2f', jineast: '#2f5f6b', xiongnu: '#8a5a3a', jie: '#5f5a48', xianbei: '#3f6b8a', di: '#6b4a7a', qiang: '#8a6a2a', han: '#4a6b4a', lu: '#7a5a6a', wei: '#33506b', shu: '#a8352a', wu: '#2f6b57', song: '#c8553d', 'tang-internal': '#6b8e6b' };
   const hex = GANTT_HEX[meta.color] || '#8a6d3b';
   const roleOf = (n) => (n === meta.founder ? '开国' : '') || (n === meta.lastKing ? '末主' : '');
   const orderOf = (n) => {
@@ -833,30 +901,47 @@ function showGanttTip(meta, block, cardNames, pinned) {
     if (next) parts.push(`继任 ${next}`);
     return parts.join(' · ');
   };
-  const hasCard = meta.names.some((n) => cardNames && cardNames.has(n));
   const yrOf = (m) => (m.start === m.end ? `${m.start}（在位不足一年）` : `${m.start}-${m.end}`);
+  // 只讲史实：不再加「点击即跳帝卡」之类的操作提示，没小传就干脆不出这一行
   const rows = meta.names.map((n) => {
     const bio = (meta.bios || {})[n] || '';
     const role = roleOf(n);
     const ord = orderOf(n);
-    const fallback = hasCard
-      ? '该君主有完整帝纪卡：点击色块即展开生卒、年号、人物关系。'
-      : '该政权未单列帝卡，此块仅有在位区间。';
     return `<div class="gt-king">
       <div class="gt-king-head"><b>${esc(n)}</b>${role ? `<em>${role}</em>` : ''}<span>${yrOf(meta)}</span></div>
       ${ord ? `<div class="gt-order">${esc(ord)}</div>` : ''}
-      ${bio ? `<p class="gt-bio">${esc(bio)}</p>` : `<p class="gt-bio gt-muted">${fallback}</p>`}
+      ${bio ? `<p class="gt-bio">${esc(bio)}</p>` : ''}
     </div>`;
   }).join('');
+  tip.classList.remove('gt-state-card');
+  tip.innerHTML = rows;
+  tip.classList.remove('hidden');
+  tip.dataset.pinned = pinned ? '1' : '';
+  placeGanttTip(tip, block);
+  if (pinned) _ganttTipTimer = setTimeout(() => hideGanttTip(false), 3200);
+}
+/* 政权小史：挂在行首政权名上。人物弹窗只讲人，政权沿革（族属、结局、立国亡国）归这里 */
+function showGanttStateTip(row, anchor, pinned) {
+  const tip = ensureGanttTip();
+  clearTimeout(_ganttTipTimer);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const hex = GANTT_HEX[row.color] || '#8a6d3b';
+  const names = row.kingNames || [];
+  const chain = names.map((n) => (n === row.founder ? `${n}（开国）` : n === row.lastKing ? `${n}（末主）` : n)).join(' → ');
+  tip.classList.add('gt-state-card');
   tip.innerHTML = `
-    <div class="gt-state"><b>${esc(meta.state)}</b><span>${meta.stateStart}-${meta.stateEnd}</span></div>
-    ${meta.family ? `<div class="gt-line"><i style="background:${esc(hex)}"></i>${esc(meta.family)}</div>` : ''}
-    ${meta.desc ? `<p class="gt-desc">${esc(meta.desc)}</p>` : ''}
-    ${rows}
-    <div class="gt-hint">${hasCard ? '点击该色块 → 跳到下方帝王卡，读完整帝纪' : '该政权没有单独帝卡，以上即其简介'}</div>
+    <div class="gt-state"><b>${esc(row.state)}</b><span>${row.start}-${row.end}</span></div>
+    ${row.family ? `<div class="gt-line"><i style="background:${esc(hex)}"></i>${esc(row.family)}</div>` : ''}
+    ${row.desc ? `<p class="gt-desc">${esc(row.desc)}</p>` : ''}
+    <div class="gt-kings"><b>共 ${names.length} 位君主</b>${chain ? `<span>${esc(chain)}</span>` : ''}</div>
   `;
   tip.classList.remove('hidden');
   tip.dataset.pinned = pinned ? '1' : '';
+  placeGanttTip(tip, anchor);
+  if (pinned) _ganttTipTimer = setTimeout(() => hideGanttTip(false), 3200);
+}
+/* 浮窗定位：以锚点矩形居中、夹在视口内；上方放不下就落到下方并把箭头翻过来 */
+function placeGanttTip(tip, block) {
   const br = block.getBoundingClientRect();
   const tw = tip.offsetWidth, th = tip.offsetHeight;
   const vw = window.innerWidth, vh = window.innerHeight;
@@ -868,7 +953,6 @@ function showGanttTip(meta, block, cardNames, pinned) {
   tip.classList.toggle('tip-below', below);
   tip.style.left = `${Math.round(x)}px`;
   tip.style.top = `${Math.round(y)}px`;
-  if (pinned) _ganttTipTimer = setTimeout(() => hideGanttTip(false), 3200);
 }
 /** 已绑定过拖拽滚动的元素：同一元素只绑一次，避免每次渲染叠加监听（旧版切朝代/点年号会累积几十个处理器） */
 const _dragScrollBound = new WeakSet();
@@ -992,6 +1076,36 @@ const PERSON_PORTRAITS = {
   '景延广': 'wudai-jingyanguang.jpg', '苏逢吉': 'wudai-sufengji.jpg',
   '史弘肇': 'wudai-shihongzhao.jpg', '柴皇后': 'wudai-chaihuanghou.jpg',
   '符皇后': 'wudai-fuhuanghou.jpg', '柴宗训': 'wudai-chaizongxun.jpg',
+  // 三国人物像（工笔头肩像，320×320，data/portraits/people/）
+  '曹爽': 'caoshuang.jpg', '司马懿': 'simayi.jpg', '何晏': 'heyan.jpg', '王凌': 'wangling.jpg',
+  '夏侯玄': 'xiahouxuan.jpg', '司马昭': 'simazhao.jpg', '司马炎': 'jin-simayan.jpg',
+  '邓艾': 'dengai.jpg', '钟会': 'zhonghui.jpg', '姜维': 'jiangwei.jpg', '贾充': 'jiachong.jpg',
+  '成济': 'chengji.jpg', '王经': 'wangjing.jpg', '诸葛诞': 'zhugedan.jpg',
+  '曹操': 'caocao.jpg', '陈群': 'chenqun.jpg', '曹植': 'caozhi.jpg', '吴质': 'wuzhi.jpg',
+  '曹真': 'caozhen.jpg', '曹休': 'caoxiu.jpg', '诸葛亮': 'zhugeliang.jpg',
+  '关羽': 'guanyu.jpg', '张飞': 'zhangfei.jpg', '赵云': 'zhaoyun.jpg', '法正': 'fazheng.jpg',
+  '蒋琬': 'jiangwan.jpg', '费祎': 'feiyi.jpg', '黄皓': 'huanghao.jpg', '谯周': 'qiaozhou.jpg',
+  '陆抗': 'lukang.jpg', '张悌': 'zhangti.jpg', '王濬': 'wangjun.jpg', '杜预': 'duyu.jpg',
+  '韦昭': 'weizhao.jpg', '诸葛恪': 'zhugeke.jpg', '孙峻': 'sunjun.jpg', '孙綝': 'sunchen.jpg',
+  '全尚': 'quanshang.jpg', '孙和': 'sunhe.jpg', '周瑜': 'zhouyu.jpg', '鲁肃': 'lusu.jpg',
+  '吕蒙': 'lvmeng.jpg', '陆逊': 'luxun.jpg', '张昭': 'zhangzhao.jpg', '张布': 'zhangbu.jpg',
+  '丁奉': 'dingfeng.jpg', '濮阳兴': 'puyangxing.jpg',
+  // 两晋十六国人物像
+  '司马越': 'simayue.jpg', '王衍': 'wangyan.jpg', '刘聪': 'liucong.jpg', '刘曜': 'liuyao.jpg',
+  '石勒': 'shile.jpg', '苟晞': 'guxi.jpg', '褚裒': 'chupou.jpg', '殷浩': 'yinhao.jpg',
+  '桓温': 'huanwen.jpg', '谢尚': 'xieshang.jpg', '王猛': 'wangmeng.jpg', '刘裕': 'liuyu.jpg',
+  '傅亮': 'fuliang.jpg', '谢晦': 'xiehui.jpg', '褚灵媛': 'chulingyuan.jpg',
+  '司马道子': 'simadaozi.jpg', '司马元显': 'simayuanxian.jpg', '桓玄': 'huanxuan.jpg',
+  '孙恩': 'sunen.jpg', '司马昱': 'jin-simayu.jpg', '褚蒜子': 'chusuanzi.jpg',
+  '王导': 'wangdao.jpg', '王敦': 'wangdun.jpg', '顾荣': 'gurong.jpg', '贺循': 'hexun.jpg',
+  '祖逖': 'zuti.jpg', '刁协': 'diaoxie.jpg', '羊祜': 'yanghu.jpg', '杨骏': 'yangjun.jpg',
+  '庾亮': 'yuliang.jpg', '温峤': 'wenqiao.jpg', '陶侃': 'taokan.jpg', '苏峻': 'sujun.jpg',
+  '郗鉴': 'xijian.jpg', '谢安': 'xiean.jpg', '谢玄': 'xiexuan.jpg', '桓冲': 'huanchong.jpg',
+  '苻坚': 'fujian.jpg', '张贵人': 'zhangguiren.jpg', '麴允': 'quyun.jpg', '索綝': 'suolin.jpg',
+  '司马保': 'simabao.jpg', '郗超': 'xichao.jpg', '慕容垂': 'murongchui.jpg',
+  '王坦之': 'wangtanzhi.jpg', '庾冰': 'yubing.jpg', '庾翼': 'yuyi.jpg', '何充': 'hechong.jpg',
+  '贾南风': 'jiananfeng.jpg', '司马亮': 'simaliang.jpg', '司马玮': 'simawei.jpg',
+  '张华': 'zhanghua.jpg', '司马遹': 'simayu-taizi.jpg',
 };
 
 const PERSON_TITLES = {
@@ -1142,7 +1256,7 @@ function personPortrait(name) {
   const f = PERSON_PORTRAITS[name];
   if (!f) return null;
   // 皇帝互相关联的像在 portraits/ 根目录，其他人在 portraits/people/
-  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤','和世㻋'].includes(name)) {
+  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤','和世㻋','曹操','曹植','诸葛亮','司马炎','司马昱','李克用'].includes(name)) {
     return `../data/portraits/${f}`;
   }
   return `../data/portraits/people/${f}`;
@@ -1917,8 +2031,9 @@ function buildEventClusters(events) {
   return [...map.values()];
 }
 
-/** 事件点标记：显示古地名（同名聚合，多个事件带数量角标），点击弹该地全部事件 */
-function addEventMarker(cluster) {
+/** 事件点标记：显示古地名（同名聚合，多个事件带数量角标），点击弹该地全部事件
+ *  defer=true 时只建对象不上图——默认视图地标太多，改由「该朝事件」/年号胶囊/事件胶囊按需上图 */
+function addEventMarker(cluster, defer) {
   const placeName = cluster.name;
   const modern = cluster.modern ? `（今${cluster.modern}）` : '';
   const n = cluster.events.length;
@@ -1938,7 +2053,7 @@ function addEventMarker(cluster) {
   m._evtIds = cluster.events.map((e) => e.eventId);
   m._evtId = cluster.events[0].eventId; // 兼容 isEra 等旧引用
   m.on('click', () => showEventPopup(cluster.events.length > 1 ? cluster.events : cluster.events[0], cluster));
-  m.addTo(leafletMap);
+  if (!defer) m.addTo(leafletMap);
   if (window.__dbg) window.__dbg.eventMarkers = (window.__dbg.eventMarkers || 0) + 1;
   return m;
 }
@@ -2371,8 +2486,10 @@ function renderMap() {
   leafletLayers.places = data.places.map(addPlaceMarker);
 
   // ---- 事件点（按古地名聚合：同地点的多个事件合并成一个标记）----
+  // 默认不上图：全朝地标一次铺开会把地图压满，先只备好对象，
+  // 等「该朝事件」按钮、年号胶囊或事件胶囊被点击时再按需 addTo
   if (window.__dbg) window.__dbg.beforeEvents = data.events.length;
-  leafletLayers.events = buildEventClusters(data.events).map(addEventMarker);
+  leafletLayers.events = buildEventClusters(data.events).map((c) => addEventMarker(c, true));
   if (window.__dbg) window.__dbg.afterEvents = (leafletLayers.events || []).length;
 
   // ---- 路线（按钮单选，初始全部隐藏）----
@@ -2384,6 +2501,28 @@ function renderMap() {
 /** 地图下方的路线按钮区 + 郑和航次选择（与图例一起挂在 route-panel） */
 // 路线胶囊是否已展开（默认收起，只露前 8 条）。每次重渲染都回到收起态。
 let routeShowAll = false;
+
+/** 默认视图：只把城市/名胜点上图；事件地标先留白，避免一进舆图就被几十个⚑压满 */
+function showPlacesOnMap() {
+  (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) m.addTo(leafletMap); });
+  (leafletLayers.events || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
+}
+
+/** 用户明确要看事件时：把地图事件地名点按需上图。flash=true 时逐个闪一下（「该朝事件」按钮） */
+function showEventMarkersOnMap(flash) {
+  (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) m.addTo(leafletMap); });
+  (leafletLayers.events || []).forEach((m) => {
+    if (!m || !leafletMap) return;
+    m.addTo(leafletMap);
+    if (!flash) return;
+    const el = m.getElement && m.getElement();
+    if (el) {
+      el.classList.remove('map-flash');
+      void el.offsetWidth; // 重触发动画
+      el.classList.add('map-flash');
+    }
+  });
+}
 
 function renderMapControls(data) {
   const legend = $('#map-route-btns');
@@ -2428,19 +2567,7 @@ function renderMapControls(data) {
     });
     clearZhengheLayers();
     // 重新加回城市点 + 事件地名点
-    (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) m.addTo(leafletMap); });
-    (leafletLayers.events || []).forEach((m) => {
-      if (m && leafletMap) {
-        m.addTo(leafletMap);
-        // 闪烁一下吸引注意
-        const el = m.getElement && m.getElement();
-        if (el) {
-          el.classList.remove('map-flash');
-          void el.offsetWidth; // 重触发动画
-          el.classList.add('map-flash');
-        }
-      }
-    });
+    showEventMarkersOnMap(true);
   };
   // 路线胶囊默认只露出前 8 个，其余折进「展示更多」——「全部」朝代下七朝合计三十余条，
   // 全平铺会把地图挤出视口。郑和航线也算一条，按整体顺序一起折叠。
@@ -2559,7 +2686,6 @@ function renderMapControls(data) {
     + `<rect x="6.1" y="11.15" width="8.3" height="1.6" rx=".8" fill="currentColor"/>`
     + `</svg><span>${curEmp ? '该年号事件' : '该朝事件'}</span>`;
   evtBtn.dataset.layer = 'events';
-  evtBtn.classList.add('on');
   evtBtn.addEventListener('click', () => {
     legend.querySelectorAll('.route-btn').forEach((b) => { b.style.background = ''; b.classList.remove('on'); });
     evtBtn.classList.add('on');
@@ -2569,8 +2695,8 @@ function renderMapControls(data) {
   });
   // 放在最前面：它是「总览」入口，比各条路线更基础
   legend.insertBefore(evtBtn, legend.firstChild);
-  // 初始状态：显示城市点 + 事件点（默认"该朝事件"视图）
-  showEvents();
+  // 初始状态：默认视图只给城市/名胜点，事件地名等用户点「该朝事件」或选年号后再上图
+  showPlacesOnMap();
   // 深链要在默认视图之后应用，否则航线刚画好就被 showEvents() 清掉
   applyDeepRoute();
 }
