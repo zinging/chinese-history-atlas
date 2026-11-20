@@ -645,8 +645,20 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .tl-lineage-sep.lineage-wu span { background: #2f6b57; }
 .tl-lineage-sep.lineage-jinwest span { background: #7b3f2f; }
 .tl-lineage-sep.lineage-jineast span { background: #2f5f6b; }
-/* 「全部」视图的朝代牌：墨色，与政权彩牌区分——墨＝朝代段，彩＝并立政权 */
-.tl-lineage-sep.tl-sep-dyn span {
+/* 「全部」视图的朝代牌：墨色，与政权彩牌区分——墨＝朝代段，彩＝并立政权。
+   大朝代（三国/晋/隋唐…）要「一眼看出这一段属于谁」，所以整条分隔带上下全填充，
+   只有中间一枚墨牌写字；政权彩牌保持小签、不铺底，二者层次一眼可分。 */
+.tl-lineage-sep.tl-sep-dyn {
+  flex: 0 0 46px;
+  background: linear-gradient(180deg,
+    rgba(150, 112, 62, .45) 0%,
+    rgba(150, 112, 62, .28) 16%,
+    rgba(150, 112, 62, .28) 84%,
+    rgba(150, 112, 62, .45) 100%);
+  border-left: none;
+  border-right: 1px solid rgba(128, 96, 54, .30);
+}
+.tl-sep-dyn span {
   background: #463726; font-size: 15px; letter-spacing: 3px;
   box-shadow: 0 2px 10px rgba(40, 28, 16, .28);
 }
@@ -1306,9 +1318,15 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .era-strip::-webkit-scrollbar { height: 6px; }
 .era-strip::-webkit-scrollbar-thumb { background: #a8352a; border-radius: 3px; }
 .era-strip::-webkit-scrollbar-track { background: #f0e6d2; }
-/* 年号按朝代分组：组头标归属，「全部」自成一「总览」组；组间虚线分隔 */
-.era-group { flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; }
-.era-group + .era-group { padding-left: 12px; border-left: 1px dashed rgba(160, 120, 60, .3); }
+/* 年号按朝代分组：每组是一块浅纸色面板（组头 + 组体），让「这一串年号属于哪朝」一眼可见；
+   「全部」自成「总览」面板。组与组之间只留间隙，不再另画虚线。 */
+.era-group {
+  flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px;
+  background: #faf1dd;
+  border: 1px solid rgba(190, 155, 90, .62);
+  border-radius: 10px;
+  padding: 6px 10px 7px;
+}
 .era-group-head {
   display: flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #7b5f33;
