@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120a';
+const APP_BUILD = '20261120b';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -72,11 +72,29 @@ function renderEraStrip() {
   if (!strip) return;
   strip.innerHTML = '';
   const centerTo = (btn) => {
-    // 被点击的年号自动滚到视口中央
-    const target = btn.offsetLeft - (strip.clientWidth - btn.offsetWidth) / 2;
+    // 被点击的年号自动滚到视口中央（用 rect 计算：按钮现在嵌在分组容器里，offsetLeft 不再相对条带）
+    if (!btn) return;
+    const sr = strip.getBoundingClientRect(), br = btn.getBoundingClientRect();
+    const target = br.left - sr.left + strip.scrollLeft - (strip.clientWidth - br.width) / 2;
     const max = strip.scrollWidth - strip.clientWidth;
     strip.scrollTo({ left: Math.max(0, Math.min(target, max)), behavior: 'smooth' });
   };
+  // 年号按朝代分组：组头标归属朝代，「全部」单独一组。
+  // 「全部」视图下 DATA.emperors 已按 dynOrder 顺序合并并带 _dynasty，据此断组；
+  // 单朝视图只有一组，组头仍显示本朝名，便于和舆图对照。
+  const groupBody = (label) => {
+    const g = el('div', 'era-group');
+    if (label) {
+      const h = el('div', 'era-group-head');
+      h.textContent = label;
+      g.appendChild(h);
+    }
+    const body = el('div', 'era-group-body');
+    g.appendChild(body);
+    strip.appendChild(g);
+    return body;
+  };
+  const allBody = groupBody(currentDynasty === 'all' ? '总览' : (DYNASTY_LABEL[currentDynasty] || ''));
   const allBtn = el('button', 'era-btn' + (activeEraId ? '' : ' active'));
   const range = DYNASTY_RANGE[currentDynasty] || '1368-1644';
   allBtn.innerHTML = `<span class="era-name">全部</span><span class="era-years">${range}</span>`;
@@ -86,8 +104,15 @@ function renderEraStrip() {
     showEventsSummary(); // 保持「该朝事件」汇总展开（默认视图）
     centerTo(document.querySelector('#era-strip .era-btn'));
   });
-  strip.appendChild(allBtn);
+  allBody.appendChild(allBtn);
+  let curDyn = currentDynasty === 'all' ? null : currentDynasty;
+  let curBody = allBody;
   DATA.emperors.forEach((e) => {
+    const d = e._dynasty || currentDynasty;
+    if (d !== curDyn) {
+      curDyn = d;
+      curBody = groupBody(DYNASTY_LABEL[d] || '');
+    }
     const btn = el('button', 'era-btn' + (activeEraId === e.id ? ' active' : ''));
     btn.innerHTML = `<span class="era-name">${e.eraName[0]}</span><span class="era-years">${e.reign.start}-${e.reign.end}</span>`;
     btn.addEventListener('click', () => {
@@ -98,7 +123,7 @@ function renderEraStrip() {
       showEventsSummary(); // 保持「该朝事件」汇总展开（默认视图）
       centerTo(document.querySelector(`#era-strip .era-btn${activeEraId ? '.active' : ''}`));
     });
-    strip.appendChild(btn);
+    curBody.appendChild(btn);
   });
   // 年号条左右箭头
   const prev = $('#era-prev'), next = $('#era-next');
@@ -568,39 +593,52 @@ const LINEAGE_LABEL = { wei: '魏', shu: '蜀', wu: '吴', jinwest: '西晋', ji
 function renderTimeline() {
   const wrap = $('#timeline-scroll');
   wrap.innerHTML = '';
-  // 三国、两晋：多个政权是并立的皇位继承线，不能串成同一条时间线。
-  // 只有当本朝代每张卡都带 lineage 时才分组（「全部」视图与其它朝代完全不受影响）。
+  // 分组规则：
+  //  · 单朝代且每张卡都带 lineage（三国、两晋）→ 按政权线分组，立「魏/蜀/吴/西晋/东晋」彩牌；
+  //  · 「全部」视图 → 先按朝代分组，朝代交界立墨色朝代牌；同一朝代内部若分政权线（三国、晋），
+  //    再立一块彩牌。此前「全部」完全不分线，首屏看到的只是 103 张卡平铺，魏/蜀/吴无处可辨。
   const lineageMode = DATA.emperors.length > 0 && DATA.emperors.every((e) => e.lineage);
-  let prevLineage = null;
+  const allMode = currentDynasty === 'all';
+  const groupMode = lineageMode || allMode;
+  const dynOf = (emp) => emp._dynasty || currentDynasty;
+  const keyOf = (emp) => (groupMode ? `${dynOf(emp)}|${emp.lineage || ''}` : '');
+  let prevEmp = null;
+  const pushSep = (text, colorCls, lead) => {
+    const sep = el('div', 'tl-lineage-sep' + (lead ? ' tl-lineage-lead' : '') + (colorCls ? ' ' + colorCls : ''));
+    sep.innerHTML = `<span>${text}</span>`;
+    wrap.appendChild(sep);
+  };
   DATA.emperors.forEach((e, i) => {
     const nextE = DATA.emperors[i + 1];
-    const groupEnd = lineageMode && (!nextE || nextE.lineage !== e.lineage);
-    if (lineageMode && prevLineage !== null && e.lineage !== prevLineage) {
-      // 跨继承线用分隔（虚线 + 政权名），不加右箭头——箭头只表示"同一线上的父死子继/兄终弟及"
-      const sep = el('div', 'tl-lineage-sep lineage-' + e.lineage);
-      sep.innerHTML = `<span>${LINEAGE_LABEL[e.lineage] || ''}</span>`;
-      wrap.appendChild(sep);
+    const groupEnd = groupMode && (!nextE || keyOf(nextE) !== keyOf(e));
+    if (allMode) {
+      // 朝代交界：墨色朝代牌；该朝首帝若属某条政权线，紧跟一块彩牌（如「三国」「魏」）
+      if (i === 0) {
+        pushSep(DYNASTY_SHORT[dynOf(e)] || DYNASTY_LABEL[dynOf(e)] || '', 'tl-sep-dyn', true);
+        if (e.lineage) pushSep(LINEAGE_LABEL[e.lineage] || '', 'lineage-' + e.lineage, false);
+      } else if (dynOf(e) !== dynOf(prevEmp)) {
+        pushSep(DYNASTY_SHORT[dynOf(e)] || DYNASTY_LABEL[dynOf(e)] || '', 'tl-sep-dyn', false);
+        if (e.lineage) pushSep(LINEAGE_LABEL[e.lineage] || '', 'lineage-' + e.lineage, false);
+      } else if (keyOf(e) !== keyOf(prevEmp) && e.lineage) {
+        // 同朝换线（魏→蜀→吴、西晋→东晋）
+        pushSep(LINEAGE_LABEL[e.lineage] || '', 'lineage-' + e.lineage, false);
+      }
+    } else if (lineageMode) {
+      // 单朝代：跨继承线立彩牌，首条线也立（否则首组像缺了一段）
+      if (i === 0) pushSep(LINEAGE_LABEL[e.lineage] || '', 'lineage-' + e.lineage, true);
+      else if (keyOf(e) !== keyOf(prevEmp)) pushSep(LINEAGE_LABEL[e.lineage] || '', 'lineage-' + e.lineage, false);
     }
-    // 首条继承线也在卡片流最前面立一块同款国号牌（魏/西晋），
-    // 否则第一组只有卡角的小徽标、后面几组却有立牌，看上去像缺了一段
-    if (lineageMode && i === 0) {
-      const lead = el('div', 'tl-lineage-sep tl-lineage-lead lineage-' + e.lineage);
-      lead.innerHTML = `<span>${LINEAGE_LABEL[e.lineage] || ''}</span>`;
-      wrap.appendChild(lead);
-    }
-    prevLineage = lineageMode ? e.lineage : null;
+    prevEmp = e;
     const card = el('div', 'emp-card');
-    if (lineageMode) {
-      card.classList.add('lineage-' + e.lineage);
-      if (groupEnd) card.classList.add('tl-group-end');
-    }
+    if (e.lineage) card.classList.add('lineage-' + e.lineage);
+    if (groupEnd) card.classList.add('tl-group-end');
     // 头像按需加载 + 声明尺寸：首屏只取视口内几张卡片，其余等滚到再取（避免首屏一次性请求十几张画像）
     const lazy = ' loading="lazy" decoding="async" width="84" height="84"';
     const portrait = e.portrait
       ? `<img class="emp-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" ${lazy} onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')"/>`
       : `<div class="emp-portrait emp-portrait-fallback">${e.name ? e.name.slice(0, 1) : '?'}</div>`;
     card.innerHTML = `
-      ${lineageMode ? `<div class="lineage-badge">${LINEAGE_LABEL[e.lineage] || ''}</div>` : ''}
+      ${e.lineage ? `<div class="lineage-badge">${LINEAGE_LABEL[e.lineage] || ''}</div>` : ''}
       ${portrait}
       <div class="name">${e.name}</div>
       <div class="era">${e.templeName} · ${e.eraName[0]}${e.eraName.length > 1 ? '等' + e.eraName.length + '个年号' : ''}</div>
@@ -3094,6 +3132,8 @@ const DETECTIVE_TASKS_BY_DYNASTY = {
 };
 
 const DYNASTY_LABEL = { sanguo: '三国', jin: '晋', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
+// 时间线朝代立牌用两字内简称（竖排书脊签高度固定 64px，四字会撑破）
+const DYNASTY_SHORT = { sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
 
 // 切朝代令牌：并发切换时只渲染最后一次
 let _dynastyToken = 0;
@@ -3461,6 +3501,32 @@ function setBodyData(key, value) {
   if (!b || !b.dataset) return;
   if (value == null) delete b.dataset[key];
   else b.dataset[key] = value;
+}
+
+/* 顶部朝代条左右扩宽：把 .topbar 从 .module-inner 的 1105px 正文列里放出来——
+   左借侧栏与正文列之间的留白，右借右上固定导航胶囊左侧的空间（并避开搜索圆钮）。
+   不写死像素：≤1467px 时 .module-inner 会为右胶囊沟槽追加 padding-right，纯 CSS 算不准，
+   这里实测元素矩形后给行内负 margin；窄屏与移动端直接清空，回到原布局。 */
+function fitTopbar() {
+  const bar = document.querySelector('.topbar');
+  const inner = document.querySelector('.module-inner');
+  if (!bar || !inner) return;
+  bar.style.marginLeft = '';
+  bar.style.marginRight = '';
+  if (window.innerWidth < 1240) return;
+  const bb = bar.getBoundingClientRect();
+  const side = document.querySelector('.mega-sidebar');
+  const tabs = document.querySelector('.tabs');
+  const availL = (side ? side.getBoundingClientRect().right : 0) + 8;
+  const availR = Math.min(
+    tabs ? tabs.getBoundingClientRect().left - 14 : window.innerWidth - 16,
+    window.innerWidth - 76,
+  );
+  // 左右同宽对称扩，避免胶囊条在大屏上偏向一侧（右侧被固定导航胶囊卡住时，左扩也同步收敛）
+  const bleed = Math.max(0, Math.min(bb.left - availL, availR - bb.right, 200));
+  const m = bleed > 0 ? `-${Math.round(bleed)}px` : '0px';
+  if (bar.style.marginLeft !== m) bar.style.marginLeft = m;
+  if (bar.style.marginRight !== m) bar.style.marginRight = m;
 }
 
 async function switchDynasty(d) {
@@ -3846,6 +3912,16 @@ async function applyDeepLink() {
     setBodyData('era', currentDynasty !== 'all' ? currentDynasty : null);
     renderTimeline();
     renderDetective();
+    fitTopbar();
+    if (!window._fitTopbarBound) {
+      window._fitTopbarBound = true;
+      let raf = 0;
+      const relay = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(fitTopbar); };
+      window.addEventListener('resize', relay);
+      const side = document.querySelector('.mega-sidebar');
+      if (side && window.ResizeObserver) new ResizeObserver(relay).observe(side);
+      if (window.ResizeObserver) new ResizeObserver(relay).observe(document.querySelector('.module-inner'));
+    }
     // 鼠标滚轮横向滚动帝王卡片
     const tsc = $('#timeline-scroll');
     if (tsc && !tsc._wheelBound) {
