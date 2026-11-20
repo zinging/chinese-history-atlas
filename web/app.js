@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261120u';
+const APP_BUILD = '20261120v';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -1971,11 +1971,21 @@ function toLatLngs(pts) {
 /** 清除旧图层（只留底图） */
 function clearLeafletLayers() {
   if (!leafletMap) return;
+  // 路线起终点的「起·某地 / 终·某地」是常显 tooltip，挂在 map 的 tooltipPane 上，
+  // 不随 marker 被 removeLayer 一起清掉：切朝代后会留在新朝地图上（唐→明 实测残留
+  // 「起·长安 / 终·安市城」），反复切换就攒出一堆气泡把路线盖住。先逐个关掉，再扫一遍残留节点。
+  (leafletLayers.routes || []).forEach((l) => {
+    if (!l) return;
+    hideRouteMarker(l.sMark);
+    hideRouteMarker(l.eMark);
+  });
   Object.values(leafletLayers).forEach((l) => {
     if (Array.isArray(l)) l.forEach((x) => x && leafletMap.removeLayer(x));
     else if (l && l.remove) leafletMap.removeLayer(l);
   });
   leafletLayers = {};
+  const pane = leafletMap.getPane ? leafletMap.getPane('tooltipPane') : null;
+  if (pane) pane.querySelectorAll('.route-pt-tip').forEach((el) => el.remove());
 }
 
 /** 把坐标点集画成 polyline（rivers/mountains/wall/songBorder 共用） */
