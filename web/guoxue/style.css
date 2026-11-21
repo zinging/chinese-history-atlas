@@ -627,14 +627,19 @@ body[data-sect="myth"] {
 }
 .sch-detail {
   position: absolute; right: 16px; bottom: 16px;
-  width: 400px; max-height: 500px;
+  width: 400px;
+  /* 译文改成独立块后，昆仑之丘这类三段原文的卡片会比旧版高一些：
+     高度改为跟随地图容器（最低留 32px 边距），并给底部一道内阴影，
+     滚到尽头时不会半截译文块被生生切断、看着像坏版。 */
+  max-height: min(520px, calc(100% - 32px));
   background: #fdf8ec;
   border: 2px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 16px 16px 14px;
   z-index: 600;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15), inset 0 -16px 12px -14px rgba(120,90,50,0.28);
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .sch-detail img {
   width: 100%; border-radius: 6px; margin-bottom: 10px;
