@@ -764,8 +764,8 @@ body[data-sect="myth"] {
   background: #fbf6e8; border-left: 3px solid #d9b56b; border-radius: 3px;
   font-size: 13.5px; line-height: 1.72; color: #5c5140;
 }
-.route-detail-stops { margin: 0; padding-left: 22px; font-size: 14px; color: #5c5140; }
-.route-detail-stops li { margin-bottom: 14px; }
+.route-detail-stops { margin: 0; padding-left: 22px; font-size: 13.5px; color: #5c5140; }
+.route-detail-stops li { margin-bottom: 11px; }
 .route-detail-stops b { color: var(--ink); }
 .stop-head { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
 .stop-year {
@@ -774,23 +774,25 @@ body[data-sect="myth"] {
 }
 .stop-event { font-size: 13px; line-height: 1.6; color: #6b5d48; padding-left: 2px; }
 /* 途经点原句：与事件弹窗的 .evt-quote 同款分层——原文用墨色楷意，
-   译文用蓝色「译 ·」前缀，出处右对齐小字。三者不能被读成一坨正文。 */
+   译文用蓝色「译 ·」前缀，出处跟原文同排右挂小字。
+   出处若独占一行，会在原文与译文之间留出一条空白，整条路线读起来松垮。 */
 .stop-quote {
-  margin: 6px 0 0; padding: 7px 10px;
+  margin: 5px 0 0; padding: 6px 10px;
   background: #fdf8ee; border-left: 3px solid #d9b56b; border-radius: 3px;
 }
-.stop-quote-original { font-size: 13.5px; line-height: 1.66; color: #4a3a1c; font-weight: 600; }
+.stop-quote-original { font-size: 13.5px; line-height: 1.55; color: #4a3a1c; font-weight: 600; }
 .stop-quote-translation {
-  margin-top: 4px; font-size: 13px; line-height: 1.66; color: #5c5140;
+  margin-top: 2px; font-size: 13px; line-height: 1.58; color: #5c5140;
 }
 .stop-quote-translation::before { content: "译 · "; font-weight: 600; color: #247bc1; }
 .stop-quote-source {
-  margin-top: 3px; font-size: 11.5px; color: #8a7a5c; text-align: right;
+  margin-left: 8px; font-size: 11.5px; font-weight: 400;
+  color: #8a7a5c; white-space: nowrap;
 }
 /* 历史意义：与「事发经过」区分开，避免读者把评述当成史实。 */
 .stop-meaning {
-  margin-top: 6px; padding-left: 9px; border-left: 2px solid rgba(168,53,42,.25);
-  font-size: 13px; line-height: 1.7; color: #4d4234;
+  margin-top: 4px; padding-left: 9px; border-left: 2px solid rgba(168,53,42,.25);
+  font-size: 13px; line-height: 1.62; color: #4d4234;
 }
 .stop-meaning::before { content: "意义 · "; font-weight: 700; color: var(--primary); }
 /* 事件弹窗：与帝王谱系舆图疆域同一位置与尺寸——贴地图左上角，宽 min(380px,46%)，

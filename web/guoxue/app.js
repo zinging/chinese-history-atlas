@@ -1663,9 +1663,8 @@ function toggleRoute(ri) {
         <div class="stop-head"><b>${esc(p.name || "")}</b>${p.year ? `<span class="stop-year">${esc(p.year)}</span>` : ""}</div>
         ${p.event ? `<div class="stop-event">${esc(p.event)}</div>` : ""}
         ${p.quote && p.quote.original ? `<div class="stop-quote">
-          <div class="stop-quote-original">${esc(p.quote.original)}</div>
+          <div class="stop-quote-original">${esc(p.quote.original)}${p.quote.source ? `<small class="stop-quote-source">—— ${esc(p.quote.source)}</small>` : ""}</div>
           <div class="stop-quote-translation">${esc(p.quote.translation)}</div>
-          ${p.quote.source ? `<div class="stop-quote-source">—— ${esc(p.quote.source)}</div>` : ""}
         </div>` : ""}
         ${p.meaning ? `<div class="stop-meaning">${esc(p.meaning)}</div>` : ""}
       </li>`).join("")}
