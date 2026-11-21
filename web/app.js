@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261121e';
+const APP_BUILD = '20261121f';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -4146,56 +4146,69 @@ function setBodyData(key, value) {
   else b.dataset[key] = value;
 }
 
-/* 顶部朝代条左右扩宽：把 .topbar 从 .module-inner 的 1105px 正文列里放出来——
-   左借侧栏与正文列之间的留白，右借右上固定导航胶囊左侧的空间（并避开搜索圆钮）。
-   不写死像素：≤1467px 时 .module-inner 会为右胶囊沟槽追加 padding-right，纯 CSS 算不准，
-   这里实测元素矩形后给行内负 margin；窄屏与移动端只算列数、不扩宽。
-
-   左右现在各扩到可用边界（不再「左右同宽、最多 200px」）：13 朝 + 全部 单行要 1400px 以上，
-   同宽对称只能扩到 ~1360，元/明/清 必定被切。让条子真的铺满可用宽度，13 个朝代才全露出来。 */
+/* 顶部朝代条：宽度回到正文列（.module-inner）的宽度，左右对称，不再向两侧出血扩宽。
+   12 个朝代一行装不下，所以条子里是一条不折行的横滑轨道，两端各给一个箭头提示还能往哪边滑。
+   旧实现按实测宽度写 --dyn-cols 折行、并向两侧借留白扩宽，条子会被顶成左右不对称的宽条；
+   这里只负责清掉遗留的扩宽行内样式，并刷新箭头可用态。 */
 function fitTopbar() {
   const bar = document.querySelector('.topbar');
-  const inner = document.querySelector('.module-inner');
-  if (!bar || !inner) return;
-  bar.style.marginLeft = '';
-  bar.style.marginRight = '';
-  const sw = document.querySelector('#dynasty-switch');
-  /* 列数：13 朝 + 全部，按每格至少 104px 折算需要几行，再除回来取列数，
-     保证最后一行的格数与前面接近（14 朝：宽屏 14 列一行；中屏 7 列两行；窄屏 5 列三行）。 */
-  const setCols = (avail) => {
-    if (!sw) return;
-    const n = sw.querySelectorAll('.dynasty-btn').length || 14;
-    // 手机格子太窄时（「五代14帝·十国41主」这类副标题 132px 起），宁可少一列、多一行：
-    // 390px 视口 4 列只剩 84px，字会被切；改成 3 列 130px 就完整了。
-    const minCell = avail > 0 && avail < 520 ? 118 : 104;
-    let cols = n;
-    if (avail > 0) {
-      const rows = Math.max(1, Math.ceil((n * minCell) / avail));
-      cols = Math.ceil(n / rows);
-    }
-    cols = Math.max(3, Math.min(n, cols));
-    if (sw.style.getPropertyValue('--dyn-cols') !== String(cols)) {
-      sw.style.setProperty('--dyn-cols', String(cols));
-    }
-  };
-  if (window.innerWidth < 1240) {
-    // 窄屏/移动端：不扩宽（.topbar 已是整行），但仍按视口宽度折列
-    setCols(bar.getBoundingClientRect().width - 8);
-    return;
+  if (bar) {
+    bar.style.marginLeft = '';
+    bar.style.marginRight = '';
   }
-  const bb = bar.getBoundingClientRect();
-  const side = document.querySelector('.mega-sidebar');
-  const tabs = document.querySelector('.tabs');
-  const availL = (side ? side.getBoundingClientRect().right : 0) + 8;
-  const availR = Math.min(
-    tabs ? tabs.getBoundingClientRect().left - 14 : window.innerWidth - 16,
-    window.innerWidth - 76,
-  );
-  const bleedL = Math.max(0, bb.left - availL);
-  const bleedR = Math.max(0, availR - bb.right);
-  if (bleedL > 0) bar.style.marginLeft = `-${Math.round(bleedL)}px`;
-  if (bleedR > 0) bar.style.marginRight = `-${Math.round(bleedR)}px`;
-  setCols(bb.width + bleedL + bleedR - 12);
+  const sw = document.querySelector('#dynasty-switch');
+  if (sw && sw.style.getPropertyValue('--dyn-cols')) sw.style.removeProperty('--dyn-cols');
+  updateDynArrows();
+}
+
+/* 朝代条横滑：箭头可用态、按屏宽步进、滚轮也能横滚 */
+function updateDynArrows() {
+  const track = document.getElementById('dyn-track');
+  const prev = document.getElementById('dyn-arrow-l');
+  const next = document.getElementById('dyn-arrow-r');
+  if (!track || !prev || !next) return;
+  const max = track.scrollWidth - track.clientWidth;
+  const eps = 2;
+  prev.disabled = track.scrollLeft <= eps;
+  next.disabled = max <= eps || track.scrollLeft >= max - eps;
+}
+function dynScrollBy(dir) {
+  const track = document.getElementById('dyn-track');
+  if (!track) return;
+  const step = Math.max(180, Math.round(track.clientWidth * 0.62));
+  track.scrollBy({ left: dir * step, behavior: 'smooth' });
+}
+/* 选中的朝代若被滑到看不见的地方，横向把它带回来（不惊动页面纵向滚动） */
+function revealDynBtn(btn) {
+  const track = document.getElementById('dyn-track');
+  if (!track || !btn) return;
+  const tr = track.getBoundingClientRect();
+  const br = btn.getBoundingClientRect();
+  const pad = 6;
+  if (br.left < tr.left + pad) track.scrollLeft -= (tr.left + pad - br.left);
+  else if (br.right > tr.right - pad) track.scrollLeft += (br.right - (tr.right - pad));
+  updateDynArrows();
+}
+function initDynScroll() {
+  const track = document.getElementById('dyn-track');
+  const prev = document.getElementById('dyn-arrow-l');
+  const next = document.getElementById('dyn-arrow-r');
+  if (!track || !prev || !next) return;
+  if (!track._dynScrollBound) {
+    track._dynScrollBound = true;
+    prev.addEventListener('click', () => dynScrollBy(-1));
+    next.addEventListener('click', () => dynScrollBy(1));
+    track.addEventListener('scroll', () => updateDynArrows(), { passive: true });
+    // 鼠标纵向滚轮也能横滚（触控板横滑本身走原生滚动）
+    track.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        track.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+    if (window.ResizeObserver) new ResizeObserver(() => updateDynArrows()).observe(track);
+  }
+  updateDynArrows();
 }
 
 async function switchDynasty(d) {
@@ -4212,6 +4225,7 @@ async function switchDynasty(d) {
   document.querySelectorAll('.dynasty-btn').forEach((b) => {
     b.classList.toggle('active', b.dataset.d === d);
   });
+  revealDynBtn(document.querySelector('.dynasty-btn.active'));
   // 更新页头/标题/图例/页脚文案（按配置表）
   applyDynastyText(d);
   // 重新加载数据并渲染
@@ -4593,7 +4607,10 @@ async function applyDeepLink() {
     setBodyData('era', currentDynasty !== 'all' ? currentDynasty : null);
     renderTimeline();
     renderDetective();
+    initDynScroll();
     fitTopbar();
+    // 深链指定了靠后的朝代（?dynasty=ming 等），首屏就把它滑进可视区
+    revealDynBtn(document.querySelector('.dynasty-btn.active'));
     if (!window._fitTopbarBound) {
       window._fitTopbarBound = true;
       let raf = 0;

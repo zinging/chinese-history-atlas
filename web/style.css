@@ -325,12 +325,11 @@ body.sidebar-collapsed .tabs {
   box-shadow: 0 0 6px rgba(247,215,116,.7);
 }
 
+/* 朝代切换条：宽度＝正文列宽（左右对称，不再向两侧出血扩宽）；
+   12 个朝代装在一条不折行的横滑轨道里，两端各一个箭头提示还能往哪边滑。 */
 .dynasty-switch {
-  display: grid;
-  /* 列数由 app.js 的 fitTopbar() 按实测宽度写进 --dyn-cols：
-     13 朝 + 全部放一行太挤（大屏实测单个只剩 78px、元/明/清被横滑切掉），
-     所以改成「按格平铺、装不下就整行换行」，每格保底 104px，行数与列数自动折中。 */
-  grid-template-columns: repeat(var(--dyn-cols, 7), minmax(0, 1fr));
+  display: flex;
+  align-items: stretch;
   gap: 0; padding: 0;
   background: #efe6d0; border-radius: 6px;
   border: 1px solid #c9b88a;
@@ -339,20 +338,44 @@ body.sidebar-collapsed .tabs {
   max-width: 100%;
   margin: 0 auto;
 }
+/* 横滑轨道：不折行、隐藏滚动条，靠箭头 / 触摸横滑 / 鼠标滚轮看后面的朝代 */
+.dyn-track {
+  display: flex; flex: 1 1 auto; min-width: 0;
+  overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: none; -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.dyn-track::-webkit-scrollbar { width: 0; height: 0; display: none; }
+/* 两端箭头：滑到头就变暗，避免误点 */
+.dyn-arrow {
+  flex: 0 0 30px; width: 30px; padding: 0;
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #8a3a28;
+  background: linear-gradient(180deg, #f5edda, #e8dcbd);
+  transition: background .18s ease, color .18s ease, opacity .18s ease;
+}
+.dyn-arrow svg { width: 10px; height: 14px; }
+.dyn-arrow svg path { fill: currentColor; }
+.dyn-arrow-l { border-right: 1px solid #d9c9a3; }
+.dyn-arrow-r { border-left: 1px solid #d9c9a3; }
+.dyn-arrow:hover:not([disabled]) { background: #ddcda6; color: #6a2118; }
+.dyn-arrow[disabled] { opacity: .38; cursor: default; }
+
 .dynasty-btn {
-  min-width: 0;
+  flex: 0 0 auto;
+  min-width: 104px;
   border: none; background: transparent; cursor: pointer;
   font-size: clamp(12px, 1.05vw, 15.5px); font-weight: 700; color: #6b5432;
-  padding: 8px 4px; border-radius: 0;
+  padding: 8px 10px; border-radius: 0;
   transition: background .2s ease, color .2s ease;
   border-right: 1px solid #d9c9a3;
-  border-bottom: 1px solid #d9c9a3;
   text-align: center;
-  white-space: nowrap; overflow: hidden;
+  white-space: nowrap;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 1px;
 }
-.dynasty-btn[data-d="all"] { min-width: 0; }
 /* 年号行 */
 .dynasty-btn .dyn-top { display: block; }
 .dynasty-btn .dyn-year {
@@ -1848,7 +1871,7 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
     margin-left: 0;
     margin-right: 0;
   }
-  .dynasty-switch { padding-left: 54px; }
+  .dynasty-switch { padding-left: 66px; }
 
   /* 3.5) 两条顶部切换栏左右拉满：正文留白来自 .module-inner 的 16px + .topbar 的 6px，
         合计左右各 22px（实测 dynasty-switch l=22 / r=368，390 屏白丢 44px）。
@@ -1919,17 +1942,19 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   .tabs .tab::before { left: 3px; height: 22px; width: 2.5px; }
   body.sidebar-collapsed .tabs { right: auto; }
 
-  /* 5) 顶部朝代切换条：手机上每格只剩 ~40px，「隋 581-618」必然压到邻格（旧版靠横向滚动兜），
-        现在直接走格子折行：JS 按实测宽度写 --dyn-cols（手机通常 4 列），13 朝 + 全部 四行铺满，
-        不再需要左右滑，也不会有被切掉的朝代。 */
-  .dynasty-switch {
-    grid-template-columns: repeat(var(--dyn-cols, 4), minmax(0, 1fr));
-    overflow: hidden;
-  }
+  /* 5) 顶部朝代切换条：手机上不折行（12 朝折起来要三四行、把时间线挤到屏幕外），
+        维持单行横滑，箭头缩到 24px 让出格子空间。
+        右侧 58px 让给固定的搜索圆钮（.as-root 占 330→380 的竖条），否则右箭头正好被它压住点不到。 */
+  .dynasty-switch { width: calc(100% - 58px); margin-right: 58px; margin-left: 0; }
+  .dyn-track { scroll-snap-type: x proximity; }
+  .dyn-arrow { flex-basis: 24px; width: 24px; }
+  .dyn-arrow svg { width: 8px; height: 10px; }
   .dynasty-btn {
     font-size: 12.5px;
-    padding: 7px 4px;
+    padding: 7px 8px;
     letter-spacing: 0;
+    min-width: 92px;
+    scroll-snap-align: center;
   }
   .dynasty-btn .dyn-year { font-size: 11px; margin-left: 2px; }
   .dynasty-btn .dyn-sub { font-size: 11px; height: 14px; line-height: 14px; }
