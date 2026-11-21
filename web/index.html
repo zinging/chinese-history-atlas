@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中国历史图谱 · Chinese History Atlas</title>
-<link rel="stylesheet" href="style.css?v=gapp55">
-<link rel="stylesheet" href="search-ui.css?v=gapp55">
-<script src="split.js?v=gapp55"></script>
+<link rel="stylesheet" href="style.css?v=gapp56">
+<link rel="stylesheet" href="search-ui.css?v=gapp56">
+<script src="split.js?v=gapp56"></script>
 </head>
 <body>
 <!-- 移动端顶部提示条：只在小屏竖屏出现、可关闭（关闭后记住），桌面端 display:none 不参与布局 -->
@@ -134,23 +134,25 @@
   <header class="topbar">
     <div class="brand" id="brand">帝王谱系</div>
     <div class="dynasty-switch" id="dynasty-switch" role="tablist" aria-label="朝代切换">
-      <!-- 条子保持正文列宽度（左右对称、不再向两侧出血扩宽）；12 个朝代放在一条不折行的横滑轨道里，两端各给一个箭头 -->
+      <!-- 左右箭头单独成件、落在条子外侧；条子本身的框（.dyn-bar）保持正文列宽度、居中对称 -->
       <button class="dyn-arrow dyn-arrow-l" id="dyn-arrow-l" type="button" aria-label="向左查看更多朝代">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3 L5 12 L16 21 Z"/></svg>
       </button>
-      <div class="dyn-track" id="dyn-track">
-        <button class="dynasty-btn active" data-d="all"><span class="dyn-top">全部</span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="qin"><span class="dyn-top">秦<span class="dyn-year">前221-前207</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="han"><span class="dyn-top">汉<span class="dyn-year">前202-220</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="sanguo"><span class="dyn-top">三国<span class="dyn-year">220-280</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="jin"><span class="dyn-top">晋<span class="dyn-year">265-420</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="sui"><span class="dyn-top">隋<span class="dyn-year">581-618</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="tang"><span class="dyn-top">唐<span class="dyn-year">618-907</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="wudai"><span class="dyn-top">五代<span class="dyn-year">907-960</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="song"><span class="dyn-top">宋<span class="dyn-year">960-1279</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="yuan"><span class="dyn-top">元<span class="dyn-year">1271-1368</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="ming"><span class="dyn-top">明<span class="dyn-year">1368-1644</span></span><span class="dyn-sub"></span></button>
-        <button class="dynasty-btn" data-d="qing"><span class="dyn-top">清<span class="dyn-year">1616-1912</span></span><span class="dyn-sub"></span></button>
+      <div class="dyn-bar">
+        <div class="dyn-track" id="dyn-track">
+          <button class="dynasty-btn active" data-d="all"><span class="dyn-top">全部</span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="qin"><span class="dyn-top">秦<span class="dyn-year">前221-前207</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="han"><span class="dyn-top">汉<span class="dyn-year">前202-220</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="sanguo"><span class="dyn-top">三国<span class="dyn-year">220-280</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="jin"><span class="dyn-top">晋<span class="dyn-year">265-420</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="sui"><span class="dyn-top">隋<span class="dyn-year">581-618</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="tang"><span class="dyn-top">唐<span class="dyn-year">618-907</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="wudai"><span class="dyn-top">五代<span class="dyn-year">907-960</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="song"><span class="dyn-top">宋<span class="dyn-year">960-1279</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="yuan"><span class="dyn-top">元<span class="dyn-year">1271-1368</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="ming"><span class="dyn-top">明<span class="dyn-year">1368-1644</span></span><span class="dyn-sub"></span></button>
+          <button class="dynasty-btn" data-d="qing"><span class="dyn-top">清<span class="dyn-year">1616-1912</span></span><span class="dyn-sub"></span></button>
+        </div>
       </div>
       <button class="dyn-arrow dyn-arrow-r" id="dyn-arrow-r" type="button" aria-label="向右查看更多朝代">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3 L19 12 L8 21 Z"/></svg>
@@ -231,9 +233,9 @@
 </div>
 <script src="search-core.js?v=sc6"></script>
 <script>window.__dbg={};</script>
-<script src="app.js?v=gapp55"></script>
+<script src="app.js?v=gapp56"></script>
 <script src="guide-highlight.js?v=gh9"></script>
-<script src="atlas-jump.js?v=gapp55"></script>
-<script src="search-ui.js?v=gapp55"></script>
+<script src="atlas-jump.js?v=gapp56"></script>
+<script src="search-ui.js?v=gapp56"></script>
 </body>
 </html>

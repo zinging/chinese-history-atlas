@@ -325,18 +325,26 @@ body.sidebar-collapsed .tabs {
   box-shadow: 0 0 6px rgba(247,215,116,.7);
 }
 
-/* 朝代切换条：宽度＝正文列宽（左右对称，不再向两侧出血扩宽）；
-   12 个朝代装在一条不折行的横滑轨道里，两端各一个箭头提示还能往哪边滑。 */
+/* 朝代切换条：左右箭头落在条子外侧、单独成件；中间 .dyn-bar 才是带框的横滑条。
+   整体宽度＝正文列宽、居中对称，箭头靠左右两侧的 padding 让位。 */
 .dynasty-switch {
   display: flex;
-  align-items: stretch;
-  gap: 0; padding: 0;
-  background: #efe6d0; border-radius: 6px;
-  border: 1px solid #c9b88a;
-  overflow: hidden;
+  align-items: center;
+  gap: 9px;
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+.dyn-bar {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; align-items: stretch;
+  background: #efe6d0;
+  border: 1px solid #c9b88a;
+  border-radius: 6px;
+  overflow: hidden;
 }
 /* 横滑轨道：不折行、隐藏滚动条，靠箭头 / 触摸横滑 / 鼠标滚轮看后面的朝代 */
 .dyn-track {
@@ -347,21 +355,23 @@ body.sidebar-collapsed .tabs {
   -webkit-overflow-scrolling: touch;
 }
 .dyn-track::-webkit-scrollbar { width: 0; height: 0; display: none; }
-/* 两端箭头：滑到头就变暗，避免误点 */
+/* 两端箭头：条子外侧的独立方块标识，滑到头就变暗 */
 .dyn-arrow {
-  flex: 0 0 30px; width: 30px; padding: 0;
-  border: none; cursor: pointer;
+  flex: 0 0 28px; width: 28px; height: 40px;
   display: flex; align-items: center; justify-content: center;
+  padding: 0; cursor: pointer;
   color: #8a3a28;
-  background: linear-gradient(180deg, #f5edda, #e8dcbd);
-  transition: background .18s ease, color .18s ease, opacity .18s ease;
+  background: linear-gradient(180deg, #f8f2e2, #e9dfc2);
+  border: 1px solid #c9b88a;
+  border-radius: 4px;
+  transition: background .18s ease, color .18s ease, opacity .18s ease, border-color .18s ease;
 }
-.dyn-arrow svg { width: 10px; height: 14px; }
+.dyn-arrow svg { width: 11px; height: 15px; }
 .dyn-arrow svg path { fill: currentColor; }
-.dyn-arrow-l { border-right: 1px solid #d9c9a3; }
-.dyn-arrow-r { border-left: 1px solid #d9c9a3; }
-.dyn-arrow:hover:not([disabled]) { background: #ddcda6; color: #6a2118; }
-.dyn-arrow[disabled] { opacity: .38; cursor: default; }
+.dyn-arrow:hover:not([disabled]) {
+  background: #8a3a28; border-color: #6a2118; color: #f6ecd8;
+}
+.dyn-arrow[disabled] { opacity: .3; cursor: default; }
 
 .dynasty-btn {
   flex: 0 0 auto;
@@ -1947,8 +1957,8 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
         右侧 58px 让给固定的搜索圆钮（.as-root 占 330→380 的竖条），否则右箭头正好被它压住点不到。 */
   .dynasty-switch { width: calc(100% - 58px); margin-right: 58px; margin-left: 0; }
   .dyn-track { scroll-snap-type: x proximity; }
-  .dyn-arrow { flex-basis: 24px; width: 24px; }
-  .dyn-arrow svg { width: 8px; height: 10px; }
+  .dyn-arrow { flex: 0 0 27px; width: 27px; height: 27px; }
+  .dyn-arrow svg { width: 10px; height: 13px; }
   .dynasty-btn {
     font-size: 12.5px;
     padding: 7px 8px;
