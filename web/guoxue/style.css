@@ -641,6 +641,7 @@ body[data-sect="myth"] {
 }
 .sch-detail h4 { margin: 0 0 4px; color: var(--primary); font-size: 16px; }
 .sch-detail p { margin: 0; font-size: 13px; line-height: 1.7; color: var(--ink); }
+.sch-detail-body { font-size: 13px; line-height: 1.7; color: var(--ink); }
 .sch-detail .tr {
   display: block; margin: 3px 0 6px; padding: 3px 8px;
   font-size: 12.5px; line-height: 1.65; color: #8a5a2e;
@@ -773,6 +774,32 @@ body[data-sect="myth"] {
   background: rgba(168,53,42,.1); padding: 1px 8px; border-radius: 3px;
 }
 .stop-event { font-size: 13px; line-height: 1.6; color: #6b5d48; padding-left: 2px; }
+/* 神话舆图：原文与译文分层（.myth-body 内由 fmtMythBody 生成两种块）
+   —— 原文按行文排，译文单独一块米色底 + 朱红「译」印。
+   同一字号、同一行里塞「（译文：…）」，读者分不清哪句是《庄子》哪句是白话，
+   所以译文必须自带底色与边界，不能只靠颜色深浅区分。 */
+.myth-body .myth-orig {
+  margin: 0 0 7px; font-size: 13.5px; line-height: 1.78; color: #453c30;
+  text-align: justify;
+}
+.myth-body .myth-orig:last-child { margin-bottom: 0; }
+.myth-body .myth-tr {
+  position: relative; margin: 2px 0 9px; padding: 7px 10px 7px 30px;
+  background: #fbf3e2;
+  border: 1px solid #e8d6b3; border-left: 3px solid #b9843b;
+  border-radius: 4px;
+  font-size: 12.6px; line-height: 1.7; color: #6b4f2f;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+}
+.myth-body .myth-tr .tr-mark {
+  position: absolute; left: 8px; top: 8px;
+  width: 16px; height: 16px; line-height: 16px;
+  background: #a8352a; color: #f7ecd8;
+  font-size: 11px; font-style: normal; font-weight: 700; text-align: center;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px #f2e2c4;
+}
+.myth-body .myth-tr .tr-body { display: block; }
 /* 途经点原句：与事件弹窗的 .evt-quote 同款分层——原文用墨色楷意，
    译文用蓝色「译 ·」前缀，出处跟原文同排右挂小字。
    出处若独占一行，会在原文与译文之间留出一条空白，整条路线读起来松垮。 */

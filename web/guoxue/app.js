@@ -109,6 +109,54 @@ function esc(s) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+/**
+ * 神话舆图的正文排版：把「原文」与「译文」分层。
+ *
+ * 数据里译文有两种写法，都塞在同一段行文里：
+ *   - 路线站点：   「《庄子·逍遥游》：『…』（译文：在遥远的姑射山上…）神凝则物不疵疠…」
+ *   - 热点详情：   「《海外北经》：『…』<span class='tr'>译文：一目国在它的东边…</span>」
+ * 同字号、同颜色、同一行连着排，读者分不清哪句是庄子、哪句是白话（用户 2026-11-21 截图指出）。
+ *
+ * 这里不改编数据 —— 只把译文在渲染层拆成独立块：
+ *   原文各归其段（.myth-orig），译文统一成米色底 + 朱红「译」印的块（.myth-tr）。
+ * 译文中若再出现括号（如「（今河南）」），按括号深度配对，不会被提前截断。
+ * 数据不动的好处：MCP 与讲解员取到的仍是完整原串，搜索分片也不用重建。
+ */
+function fmtMythBody(raw) {
+  if (!raw) return "";
+  const src = String(raw);
+  // 没有译文标记的段落原样输出（思想源流的圣贤路线、部分异国条目都没有译文，
+  // 不能因为换了个排版把它们的字号行高也一起改掉）
+  if (!/译文/.test(src)) return `<span class="myth-plain">${esc(src)}</span>`;
+  // 先把 <span class='tr'>译文：…</span> 归一成「（译文：…）」，后面只走一套解析
+  const text = src.replace(
+    /<span\s+class=['"]tr['"]>([\s\S]*?)<\/span>/gi,
+    (m, body) => "（译文：" + String(body).replace(/^\s*译文[：:]\s*/, "") + "）"
+  );
+  const OPEN = "（译文：";
+  const parts = [];
+  const pushOrig = (s) => { if (s && s.trim()) parts.push(`<p class="myth-orig">${esc(s)}</p>`); };
+  let i = 0;
+  while (i < text.length) {
+    const at = text.indexOf(OPEN, i);
+    if (at < 0) { pushOrig(text.slice(i)); break; }
+    pushOrig(text.slice(i, at));
+    // 从「（译文：」起按括号深度找配对的「）」——译文内部允许再嵌括号
+    let depth = 0;
+    let end = -1;
+    for (let k = at; k < text.length; k++) {
+      const ch = text[k];
+      if (ch === "（") depth += 1;
+      else if (ch === "）") { depth -= 1; if (depth === 0) { end = k; break; } }
+    }
+    if (end < 0) { pushOrig(text.slice(at)); break; }   // 括号没配平：原样吐回去，不吞内容
+    const body = text.slice(at + OPEN.length, end).trim();
+    if (body) parts.push(`<div class="myth-tr"><i class="tr-mark">译</i><span class="tr-body">${esc(body)}</span></div>`);
+    i = end + 1;
+  }
+  return parts.join("");
+}
+
 /** 清空本模块添加的图层（保留底图瓦片） */
 function clearMapLayers() {
   routeTimers.forEach((t) => clearTimeout(t));
@@ -1502,7 +1550,7 @@ function showSchematicDetail(h) {
     ${h.img ? `<img src="../../data/portraits/myth-map-thumb/${h.img}" data-fallback="../../data/portraits/myth-map/${h.img}" alt="${h.name}" decoding="async">` : ""}
     <h4>${h.name}</h4>
     ${h.src ? `<p class="sch-detail-src">${h.src}</p>` : ""}
-    <p>${h.desc}</p>
+    <div class="sch-detail-body myth-body">${fmtMythBody(h.desc)}</div>
   `;
   document.querySelector(".map-wrap").appendChild(panel);
   // 关闭按钮
@@ -1661,7 +1709,7 @@ function toggleRoute(ri) {
     <ol class="route-detail-stops">
       ${(r.points || []).map((p, i) => `<li data-station="${i}"${(p.lat != null && p.lng != null) ? ` data-lat="${p.lat}" data-lng="${p.lng}"` : ""}>
         <div class="stop-head"><b>${esc(p.name || "")}</b>${p.year ? `<span class="stop-year">${esc(p.year)}</span>` : ""}</div>
-        ${p.event ? `<div class="stop-event">${esc(p.event)}</div>` : ""}
+        ${p.event ? `<div class="stop-event myth-body">${fmtMythBody(p.event)}</div>` : ""}
         ${p.quote && p.quote.original ? `<div class="stop-quote">
           <div class="stop-quote-original">${esc(p.quote.original)}${p.quote.source ? `<small class="stop-quote-source">—— ${esc(p.quote.source)}</small>` : ""}</div>
           <div class="stop-quote-translation">${esc(p.quote.translation)}</div>
