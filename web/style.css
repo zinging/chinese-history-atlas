@@ -1122,7 +1122,7 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
      z-index 必须高于 .map-legend-float(800)：卡片加宽后右缘会伸到图例下方，
      否则图例会吃掉右上角关闭按钮的点击（实测 1100–1150px 宽度区间按钮点不到）。
      右侧留 12px 与图例同距，避免视觉重叠。 */
-  position: absolute; top: 12px; left: 12px; z-index: 900;
+  position: absolute; top: 12px; left: 58px; z-index: 900;
   width: min(380px, 46%);
   max-height: calc(540px - 24px); overflow-y: auto; overscroll-behavior: contain;
   background: #fff; border: 2px solid var(--border);
@@ -1130,6 +1130,9 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 }
 .map-popup h4 { margin: 0 0 6px; font-size: 18px; color: var(--primary); }
 .map-popup p { margin: 0; font-size: 15px; color: #5c5140; }
+/* 地名卡：同城异名一行 + 「为何重要」一行（比正文小、弱化，避免喧宾夺主） */
+.map-popup .popup-place-alias { margin: 0 0 6px; font-size: 12.5px; color: #8a7a5c; }
+.map-popup .popup-place-note { margin: 0 0 8px; font-size: 13px; color: #6b5f4b; border-left: 2px solid rgba(192,57,43,.35); padding-left: 8px; }
 .map-popup .close { position: absolute; top: 6px; right: 10px; border: none; background: none; font-size: 18px; cursor: pointer; color: var(--muted); }
 /* 事件工笔彩绘图（事件卡顶部），无图时整块不渲染，绝不破图 */
 .event-fig { display: none; margin: 0 0 8px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: #f4ecd8; }
@@ -1165,6 +1168,8 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15); }
 .dot-capital { background: #c0392b; }
+/* 诸国·前朝都城（十六国都城、元大都之类）：褐色，和历史地图上「本朝都城」区分开 */
+.dot-regime { background: #8a5a2b; }
 .dot-city { background: #247bc1; }
 .dot-site { background: #f0a500; }
 
@@ -1185,6 +1190,10 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
   padding: 7px 14px; border-radius: 999px; font-size: 14px; cursor: pointer; font-weight: 600;
 }
 .route-btn.on { color: #fff; border-color: transparent; }
+/* 「地名 N 处」图层开关：与路线胶囊同款但用方形褐边，选中态填褐——
+   它切换的是底图层而不是某条路线，颜色也要和「诸国都城」的褐区分开层次。 */
+.route-btn.place-toggle-btn { border-radius: 8px; border-color: #b99a55; color: #6b4b2a; }
+.route-btn.place-toggle-btn.on { background: #6b4b2a; border-color: #6b4b2a; color: #fff; }
 /* 「该朝事件」开关：与路线胶囊刻意区分——
    与路线胶囊靠形状与图标区分（矩形 8px + 列表图标），底色一致。
    常态白底，选中态用主色深红（与顶部模块页签 .tab.active 同色）。 */

@@ -911,6 +911,7 @@ function initMap() {
       maxZoom: 12,
       errorTileUrl: "",
     }).addTo(map);
+    map.on("zoomend", () => { syncGuoxueLabels(); declutterGuoxueLabels(); });
   }
   try { renderMapData(); } catch(e) { console.warn("initMap render:", e.message); }
   // 容器若处在隐藏的页面里，Leaflet 首次量到的尺寸是 0，图层会画到看不见的地方。
@@ -933,6 +934,41 @@ function refreshMapWhenVisible() {
   });
 }
 
+/** 地名标签随缩放显隐：整幅视野（zoom<6）只留彩色圆点，放大后再铺地名。
+ *  只切容器上的一个 class、由 CSS 隐藏文字，不重建图层（bindTooltip 的常显标签也不销毁）。 */
+function syncGuoxueLabels() {
+  if (!map) return;
+  const box = map.getContainer && map.getContainer();
+  if (!box) return;
+  box.classList.toggle("gx-labels-off", map.getZoom() < 6);
+}
+
+/** 地名标签互相压住的处理：放大到 6 级后 43 枚常显标签仍会在中原—江淮一带撞在一起
+ *  （曲阜/邹城、嵩山、商丘三团最密）。按「故里优先、合并点优先」的顺序逐条排布，
+ *  与已放下的标签有重叠就先藏起来——点还在，点一下照样能看卡片；再放大一级自然散开。 */
+function declutterGuoxueLabels() {
+  if (!map || activeRoute !== null) return;   // 路线视图里地名点本来就是隐藏的
+  if (activeSectEventId) return;              // 点选事件后只留那一枚地点名，别把总名重新摊开
+  if (map.getZoom() < 6) return;              // 低缩放由 CSS 统一隐藏
+  const entries = (mapLayers.places || []).map((m) => {
+    const tip = m.getTooltip && m.getTooltip();
+    const el = tip && tip.getElement && tip.getElement();
+    return { m, tip, el };
+  }).filter((x) => x.el);
+  entries.forEach(({ tip }) => tip.setOpacity(1));
+  const rank = (x) => (x.m._kind === "place" ? 0 : 1);
+  entries.sort((a, b) => (rank(a) - rank(b)) || ((b.m._groupSize || 1) - (a.m._groupSize || 1)));
+  const kept = [];
+  const PAD = 4;
+  entries.forEach(({ tip, el }) => {
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const hit = kept.some((k) => !(r.right + PAD < k.left || r.left - PAD > k.right || r.bottom + PAD < k.top || r.top - PAD > k.bottom));
+    if (hit) { tip.setOpacity(0); return; }
+    kept.push({ left: r.left, right: r.right, top: r.top, bottom: r.bottom });
+  });
+}
+
 /** 按当前流派数据重绘地名与路线图层（切换流派/进入地图页时调用） */
 function renderMapData() {
   // 神话异志：神话舆图全部为古式示意图，不渲染真实 Leaflet 图层
@@ -943,24 +979,45 @@ function renderMapData() {
   const places = bookData.places || [];
   const routes = bookData.routes || [];
 
-  // 地名：圆点 + 常显名称标签，点击弹窗看今名与故事
+  // 地名：圆点 + 名称标签。
+  // 东部几处（曲阜—邹城、嵩山、商丘）在整朝视野里只有几像素宽，常显标签会糊成一团；
+  // 且同一座城/同一座山上常登记了好几处胜迹（嵩阳书院 3 条、商丘 3 条、洛阳 2 条），
+  // 旧版一条一个标签，叠起来连地名都读不出。这里做两件事：
+  //   1) 12km 内的同一处地名合成一个点，弹窗里并列列出，不再各挂一枚标签；
+  //   2) 标签随缩放显隐：zoom<6 只留圆点，放大后再出名字（见 syncGuoxueLabels）。
+  const PLACE_MERGE_DEG = 0.12;   // ≈13km，同城/同山；再远就不是一处了
+  const placeGroups = [];
   places.forEach((p) => {
     if (typeof p.lat !== "number" || typeof p.lng !== "number") return;
-    const kind = placeKind(p.name);
-    const dot = L.circleMarker([p.lat, p.lng], {
+    const g = placeGroups.find((x) => Math.abs(x.lat - p.lat) < PLACE_MERGE_DEG && Math.abs(x.lng - p.lng) < PLACE_MERGE_DEG);
+    if (g) { g.items.push(p); return; }
+    placeGroups.push({ lat: p.lat, lng: p.lng, items: [p] });
+  });
+  placeGroups.forEach((g) => {
+    const main = g.items[0];
+    const kind = placeKind(main.name);
+    const dot = L.circleMarker([g.lat, g.lng], {
       radius: 7, color: "#ffffff", weight: 2,
       fillColor: kind === "site" ? "#f0a500" : "#c0392b", fillOpacity: 0.95,
     });
+    const more = g.items.length > 1 ? `<small class="map-place-more">等 ${g.items.length} 处</small>` : "";
     dot.bindTooltip(
-      `<span class="map-place-inner"><i class="dot dot-${kind}"></i>${esc(p.name)}</span>`,
+      `<span class="map-place-inner"><i class="dot dot-${kind}"></i>${esc(main.name)}${more}</span>`,
       { direction: "right", offset: [8, 0], permanent: true, className: "map-place-tip" }
     );
-    dot.bindPopup(
-      `<b>${esc(p.name)}</b>${p.note ? `<p class="note">${esc(p.note)}</p>` : ""}`
-    );
+    // 合并点：一个卡里列出全部胜迹（各自带一句来历），点一下就能分清谁是谁
+    const body = g.items.length > 1
+      ? `<p class="note">此处有 ${g.items.length} 处胜迹：</p><ul class="place-group-list">${
+        g.items.map((it) => `<li><b>${esc(it.name)}</b>${it.note ? `<span>${esc(it.note)}</span>` : ""}</li>`).join("")
+      }</ul>`
+      : (main.note ? `<p class="note">${esc(main.note)}</p>` : "");
+    dot.bindPopup(`<b>${esc(main.name)}</b>${body}`);
+    dot._kind = kind === "site" ? "site" : "place";
+    dot._groupSize = g.items.length;
     dot.addTo(map);
     mapLayers.places.push(dot);
   });
+  syncGuoxueLabels();
 
   // 路线：线 + 起终点标签，默认全部隐藏，点按钮才显示对应那条
   routeLayerGroups = [];
@@ -1022,6 +1079,9 @@ function renderMapData() {
   });
 
   renderRouteButtons(routes);
+  // 默认没有任何路线展开：图例里的「路线起点/终点」先收起（它们对应的绿/红点此时不在图上）
+  const mapLegend = document.querySelector(".map-legend");
+  if (mapLegend) mapLegend.classList.remove("route-on");
   // 默认展示「百家纪事」汇总（与舆图疆域默认展开「该朝事件」一致）；
   // 没有事件的流派（诗词鉴赏）仍按原样收起面板。
   // 每次重渲染都回到「未选中任何事件」：切流派后旧的事件标记与隐藏的地名都要复位。
@@ -1040,9 +1100,16 @@ function renderMapData() {
     : places.map((p) => [p.lat, p.lng]));
   if (bounds.length) {
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 7 });
+    // 龟兹（82.96E）、奈良（135.8E）这类远点会把整幅画压到 zoom≈4，中国东部挤成一小块，
+    // 二十多枚地名标签互相盖住。低于 5 级就改成「以中国为主」的固定视野：
+    // 远点仍在图上（滚轮缩小即可看到），但默认先看得清中原与江南。
+    if (map.getZoom() < 5) map.setView([33.5, 112.5], 5);
   } else {
     map.setView([34.5, 108.9], 5);
   }
+  syncGuoxueLabels();
+  // 首次渲染的标签位置要等视野定下来才算得准，这里再排一次
+  setTimeout(declutterGuoxueLabels, 120);
 }
 
 /** 路线开关按钮：点一下展开该条路线的途经点详情，再点收起。
@@ -1210,6 +1277,8 @@ function showAllPlaces() {
     const tip = p.getTooltip && p.getTooltip();
     if (tip) tip.setOpacity(1);
   });
+  // 恢复后仍要避让一次，否则放大状态下又会叠成一团
+  declutterGuoxueLabels();
 }
 
 /** 撤掉「百家纪事」落在地图上的事件标记 */
@@ -1460,6 +1529,9 @@ function toggleRoute(ri) {
   if (!r) return;
   if (activeRoute === ri) { hideRouteDetail(); return; }
   activeRoute = ri;
+  // 选中路线后绿/红起终点才真实存在，图例同步放出这两项
+  const legendBox = document.querySelector(".map-legend");
+  if (legendBox) legendBox.classList.add("route-on");
   // 切到路线视图：撤掉「百家纪事」留下的事件标记与选中记录。
   // 地名不用在这里恢复——路线视图本来就只显示当前路线的站点，
   // 后面「有路线展开时隐藏全局故里地名点」那一段会统一把它们设为透明。
@@ -1615,6 +1687,9 @@ function toggleRoute(ri) {
  *  ——「百家纪事」汇总要占用同一个面板，复位后紧接着写入事件胶囊。 */
 function hideRouteDetail(opts = {}) {
   activeRoute = null;
+  // 路线收起后图例里的起终点也一起收起
+  const legendBox = document.querySelector(".map-legend");
+  if (legendBox) legendBox.classList.remove("route-on");
   const mapLeaf = document.getElementById("map-leaf");
   const schematicEl = document.getElementById("map-schematic");
   const mapWrap = document.querySelector(".map-wrap");

@@ -672,8 +672,16 @@ body[data-sect="myth"] {
   box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
 }
 .map-place-inner .dot { width: 6px; height: 6px; border-width: 1px; }
+/* 合并点多出来的「等 N 处」小字：主名之外再给一句规模提示，不喧宾夺主 */
+.map-place-more { font-size: 9px; font-weight: 400; color: #8a7a5c; margin-left: 1px; }
+/* 低缩放（整幅视野）只留圆点、不铺地名：中原几处（曲阜—邹城、嵩山、商丘）相距只有几像素，
+   常显标签会叠成一团；放大到 zoom≥6 由 app.js 去掉 gx-labels-off，名字自动回显 */
+.leaflet-container.gx-labels-off .map-place-tip { display: none; }
 .map-place-tip, .map-route-tip { background: transparent; border: none; box-shadow: none; }
 .map-place-tip::before, .map-route-tip::before { display: none; }
+/* 没有路线被选中时不显示「路线起点/终点」图例：那种绿/红点在默认视图里根本不存在，
+   挂在图例上只会让人以为图上有这两类点（用户实测反馈的困惑点之一）。 */
+.map-legend:not(.route-on) .legend-route { display: none; }
 
 /* 路线起/终点常显标签（起=绿，终=深红，与图例一致） */
 .route-pt-tip {
@@ -788,7 +796,7 @@ body[data-sect="myth"] {
 /* 事件弹窗：与帝王谱系舆图疆域同一位置与尺寸——贴地图左上角，宽 min(380px,46%)，
    内容超长时卡片内部滚动，不遮挡地图右下角的图例。 */
 .map-popup {
-  position: absolute; top: 12px; left: 12px; z-index: 1000;
+  position: absolute; top: 12px; left: 58px; z-index: 1000;
   width: min(380px, 46%);
   max-height: calc(540px - 24px); overflow-y: auto; overscroll-behavior: contain;
   background: var(--card); border: 2px solid var(--border); border-radius: 12px;
@@ -805,6 +813,12 @@ body[data-sect="myth"] {
 .map-popup .evt-summary { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #a8352a; }
 .map-popup .evt-people { margin: 0 0 6px; font-size: 13px; color: #247bc1; }
 .map-popup .evt-body { margin: 0; font-size: 14px; color: #5c5140; }
+/* 合并地点卡：一处地名下并列若干处胜迹（嵩阳书院 3 条、商丘 3 条…），
+   每条一行「名称 + 一句来历」，避免用户点了点却不知道哪个是哪个 */
+.map-popup .place-group-list { margin: 4px 0 0; padding-left: 18px; }
+.map-popup .place-group-list li { margin: 0 0 6px; font-size: 13px; color: #5c5140; }
+.map-popup .place-group-list li b { display: block; color: var(--primary); font-size: 13.5px; }
+.map-popup .place-group-list li span { display: block; color: #6b5f4b; }
 /* 事件配图：按约定路径 data/portraits/sect-events/<id>.jpg 取；无图时 onerror 整块移除，
    不会留下破图空框。图片就位后自动出现，无需再改代码。 */
 .map-popup .event-fig {

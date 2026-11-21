@@ -103,6 +103,8 @@ for (const s of SECTS) {
     });
     return {
       placeLayers: T.mapLayers.places.length,
+      // 同城/同山胜迹已按 0.12° 合并，点位会少于原始条数；组内条数之和应仍等于原始条数
+      groupTotal: T.mapLayers.places.reduce((n, m) => n + (m._groupSize || 1), 0),
       routePolylines: routes,
       routeEndMarkers: startEnd,
       // 只统计真正的路线胶囊：「百家纪事」开关与「展示更多」不是路线
@@ -125,7 +127,8 @@ for (const s of SECTS) {
     console.log(`— ${s}: 本页无此流派（已独立成其他板块），跳过`);
     continue;
   }
-  ok(r.placeLayers === exp.places, `${s}: 地名图层 ${r.placeLayers} = places ${exp.places}`);
+  ok(r.placeLayers <= exp.places && r.groupTotal === exp.places,
+    `${s}: 地名点位 ${r.placeLayers}（原始 ${exp.places} 条同城已并，组内合计 ${r.groupTotal}）`);
   ok(r.routePolylines === exp.routes, `${s}: 路线折线 ${r.routePolylines} = routes ${exp.routes}`);
   ok(r.routeEndMarkers === exp.routes * 2, `${s}: 起终点标记 ${r.routeEndMarkers} = ${exp.routes}×2`);
   ok(r.routePanelHidden === (exp.routes === 0), `${s}: 路线按钮区显隐正确（routes=${exp.routes}）`);
@@ -208,9 +211,11 @@ const noLeak = await evalJs(`(async () => {
   document.querySelector('.sect-btn[data-s=lixue]').click();
   await new Promise(r => setTimeout(r, 600));
   const b = T.mapLayers.places.length;
-  return { a, b, lixueExpect: T.bookData.places.length };
+  const sum = T.mapLayers.places.reduce((n, m) => n + (m._groupSize || 1), 0);
+  return { a, b, sum, lixueExpect: T.bookData.places.length };
 })()`);
-ok(noLeak.b === noLeak.lixueExpect, `切到 lixue 后地名图层 ${noLeak.b} = 数据 ${noLeak.lixueExpect}（未叠加 rujia 的 ${noLeak.a}）`);
+ok(noLeak.b === perSect.lixue.placeLayers && noLeak.b !== noLeak.a && noLeak.sum === noLeak.lixueExpect,
+  `切到 lixue 后地名点位 ${noLeak.b} = lixue 自身点位（组内合计 ${noLeak.lixueExpect}），未叠加 rujia 的 ${noLeak.a}`);
 
 console.log('\n=== 无脚本异常 + 图层真的渲染出来了 ===');
 // 关键回归：曾经 mapLayers.routes 里混入 tooltip，对 tooltip 调 setStyle 会抛异常，

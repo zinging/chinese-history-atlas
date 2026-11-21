@@ -35,7 +35,7 @@
     {
       "name": "平阳",
       "modernName": "山西临汾",
-      "type": "capital",
+      "type": "regime",
       "note": "汉赵都城，怀帝、愍帝被押至此遇害。",
       "lat": 36.09,
       "lng": 111.52,
@@ -44,7 +44,7 @@
     {
       "name": "左国城",
       "modernName": "山西方山",
-      "type": "battle",
+      "type": "site",
       "note": "304 年刘渊起兵处，十六国时代的起点。",
       "lat": 37.9,
       "lng": 111.24,
@@ -53,7 +53,7 @@
     {
       "name": "灞上",
       "modernName": "陕西西安东",
-      "type": "battle",
+      "type": "site",
       "note": "354 年桓温北伐进抵此地，关中父老牛酒相迎。",
       "lat": 34.3,
       "lng": 109.06,
@@ -62,7 +62,7 @@
     {
       "name": "枋头",
       "modernName": "河南浚县",
-      "type": "battle",
+      "type": "site",
       "note": "369 年桓温北伐在此被慕容垂击败，退军时襄邑再败。",
       "lat": 35.67,
       "lng": 114.55,
@@ -71,7 +71,7 @@
     {
       "name": "寿阳",
       "modernName": "安徽寿县",
-      "type": "battle",
+      "type": "site",
       "note": "383 年淝水之战前线，苻坚登城望八公山。",
       "lat": 32.58,
       "lng": 116.78,
@@ -80,7 +80,7 @@
     {
       "name": "成都",
       "modernName": "四川成都",
-      "type": "battle",
+      "type": "site",
       "note": "成汉都城，347 年被桓温攻破。",
       "lat": 30.57,
       "lng": 104.07,
@@ -89,7 +89,7 @@
     {
       "name": "襄阳",
       "modernName": "湖北襄阳",
-      "type": "battle",
+      "type": "site",
       "note": "荆襄上游重镇，庾亮、庾翼、桓温先后经营。",
       "lat": 32.01,
       "lng": 112.12,
@@ -98,7 +98,7 @@
     {
       "name": "会稽",
       "modernName": "浙江绍兴",
-      "type": "battle",
+      "type": "site",
       "note": "399 年孙恩攻陷此郡，八郡响应。",
       "lat": 30,
       "lng": 120.58,
@@ -107,7 +107,7 @@
     {
       "name": "邺城",
       "modernName": "河北临漳",
-      "type": "capital",
+      "type": "regime",
       "note": "后赵都城，石勒、石虎经营北方的心脏。",
       "lat": 36.33,
       "lng": 114.61,
@@ -116,7 +116,7 @@
     {
       "name": "姑臧",
       "modernName": "甘肃武威",
-      "type": "capital",
+      "type": "regime",
       "note": "前凉都城，十六国中汉人政权延续最久者。",
       "lat": 37.93,
       "lng": 102.64,
@@ -125,7 +125,7 @@
     {
       "name": "统万城",
       "modernName": "陕西靖边",
-      "type": "capital",
+      "type": "regime",
       "note": "夏国都城，赫连勃勃所筑。",
       "lat": 37.99,
       "lng": 108.85,

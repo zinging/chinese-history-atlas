@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261121a';
+const APP_BUILD = '20261121b';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -1923,7 +1923,7 @@ function buildMapData() {
     mountains: MOUNTAINS,
     provinces: isMing ? MING_PROVINCES : [],
     neighbors: isSong ? SONG_NEIGHBORS : NEIGHBORS,
-    places: (DATA.places || []).filter((p) => p.type !== 'overseas'),
+    places: mergePlaces((DATA.places || []).filter((p) => p.type !== 'overseas')),
     events: eventsForEra(activeEraId),
     routes: (DATA.routes || []).filter((r) => r.id !== 'zhenghe-west'),
     zhenghe: (DATA.routes || []).find((r) => r.id === 'zhenghe-west') || null,
@@ -2031,10 +2031,92 @@ function addLabel(lng, lat, text, opts = {}) {
   return m;
 }
 
+/** ---- 地名归一：一座城只留一个点 ----
+ *  同一座城在史料里有多个名字（长安／大兴城／西安），又被各朝各记一条；
+ *  「全部」视图把九朝的 places 直接拼接，于是同一坐标叠着红点+蓝点。
+ *  做法：按「别名组」合并成一条，类型取最强的一个（都城 > 诸国都城 > 城市 > 名胜），
+ *  坐标、故事取自主条目，其余称谓记进 variants，弹窗里作为「历代称谓」列出。
+ *  注意只按名归并，不按坐标近邻归并：长安与灞上相距 0.11°，却是两处地方。 */
+const PLACE_ALIAS_GROUPS = [
+  ['长安', '大兴城', '西安', '京兆'],
+  ['建业', '建康', '应天府', '南京', '金陵'],
+  ['北平', '北京', '大都', '燕京', '涿郡'],
+  ['余杭', '杭州', '临安'],
+  ['晋阳', '太原'],
+  ['江都', '扬州', '广陵'],
+  ['许昌', '许都'],
+  ['会稽', '绍兴', '山阴'],
+  ['江陵', '荆州'],
+  ['邺城', '邺'],
+];
+/** 跨朝代合并时的显示名（中性、最通用的一种称呼）：避免「全部」视图里出现某个朝代专属的名字
+ *  （如九朝合看却写着「应天府」「大兴城」「西安」）。单朝视图不走这张表，仍用当朝称谓。 */
+const PLACE_DISPLAY = { '长安': '长安', '建业': '建康', '北平': '北京', '余杭': '杭州', '晋阳': '太原', '江都': '扬州' };
+const PLACE_ALIAS_KEY = (() => {
+  const m = new Map();
+  PLACE_ALIAS_GROUPS.forEach((g) => g.forEach((n) => m.set(n, g[0])));
+  return m;
+})();
+const PLACE_TYPE_RANK = { capital: 0, regime: 1, city: 2, site: 3 };
+
+/** 按别名组把地名列表合并成唯一地点；「全部」视图靠它消掉跨朝的重复点 */
+function mergePlaces(list) {
+  const byKey = new Map();
+  (list || []).forEach((p) => {
+    const key = PLACE_ALIAS_KEY.get(p.name) || p.name;
+    const type = p.type || 'city';
+    const cur = byKey.get(key);
+    if (!cur) {
+      byKey.set(key, {
+        name: p.name, modernName: p.modernName || '', type, lat: p.lat, lng: p.lng,
+        story: p.story || '', note: p.note || '', _dynasty: p._dynasty, _key: key,
+        variants: [{ name: p.name, dynasty: p._dynasty, type, modernName: p.modernName || '' }],
+      });
+      return;
+    }
+    const v = { name: p.name, dynasty: p._dynasty, type, modernName: p.modernName || '' };
+    // 同名不同朝也要各自留一条（成都＝三国都城＋晋战场＋明重镇），否则弹窗里说不出它在各朝的角色
+    if (!cur.variants.some((x) => x.name === v.name && x.dynasty === v.dynasty)) cur.variants.push(v);
+    const curRank = PLACE_TYPE_RANK[cur.type] ?? 9;
+    const newRank = PLACE_TYPE_RANK[type] ?? 9;
+    // 类型更强 → 换成那条作为主条；类型同级 → 取后出现的（更接近该朝后期的正式称谓，
+    // 明朝「北平→北京」就会落在「北京」上，而不是洪武旧名）
+    if (newRank < curRank || (newRank === curRank && p.name !== cur.name)) {
+      cur.name = p.name; cur.modernName = p.modernName || cur.modernName;
+      cur.type = type; cur.lat = p.lat; cur.lng = p.lng;
+      // 故事与说明跟着主条走：否则会出现「标题＝北京、正文＝隋涿郡」这种错位
+      cur.story = p.story || cur.story;
+      cur.note = p.note || cur.note;
+    }
+    if (!cur.story && p.story) cur.story = p.story;
+    if (!cur.note && p.note) cur.note = p.note;
+  });
+  // 跨朝代（「全部」视图）时用中性称谓，别让九朝合看的地图上只写某一朝的名字
+  byKey.forEach((v) => {
+    const dyns = new Set(v.variants.map((x) => x.dynasty).filter(Boolean));
+    if (dyns.size > 1) {
+      if (PLACE_DISPLAY[v._key]) v.name = PLACE_DISPLAY[v._key];
+      v._multiDynasty = true;
+    }
+  });
+  // 城内细点：名胜/小城落在某座城的 0.06° 内（紫禁城、南宫、豹房之于北京，大兴善寺之于长安），
+  // 整朝视野不铺，zoom≥9 才展开，避免同一处叠成一坨。
+  const anchors = [...byKey.values()].filter((v) => PLACE_TYPE_RANK[v.type] <= PLACE_TYPE_RANK.city);
+  byKey.forEach((v) => {
+    if (PLACE_TYPE_RANK[v.type] <= PLACE_TYPE_RANK.city) return;
+    const host = anchors.find((a) => Math.abs(a.lat - v.lat) < 0.06 && Math.abs(a.lng - v.lng) < 0.06);
+    if (host) v._inner = host.name;
+  });
+  return [...byKey.values()];
+}
+
 /** 城市点：圆圈 + 名字（divIcon），可点击弹窗 */
 function addPlaceMarker(p) {
   const cls = p.type || 'city';
-  const color = cls === 'capital' ? '#c0392b' : cls === 'site' ? '#f0a500' : '#247bc1';
+  // 四类点位，与图例一一对应：本朝都城（红）/ 诸国·前朝都城（褐）/ 重镇（蓝）/ 战场·名胜（黄）
+  const color = cls === 'capital' ? '#c0392b'
+    : cls === 'regime' ? '#8a5a2b'
+    : cls === 'site' ? '#f0a500' : '#247bc1';
   const modern = p.modernName && p.modernName !== p.name ? `（今${p.modernName}）` : '';
   const icon = L.divIcon({
     className: 'map-place',
@@ -2046,7 +2128,9 @@ function addPlaceMarker(p) {
     iconSize: null,
   });
   const m = L.marker([p.lat, p.lng], { icon, title: p.name });
-  m.on('click', () => showPopup(p.name, p.modernName, p.story || '（暂无故事）'));
+  m._place = p;
+  m._inner = !!p._inner;
+  m.on('click', () => showPlacePopup(p));
   m.addTo(leafletMap);
   return m;
 }
@@ -2487,7 +2571,7 @@ function renderMap() {
     tiles.on('tileload', (e) => { if (e.tile) e.tile.style.opacity = 1; });
     tiles.addTo(leafletMap);
     // 缩放决定城市标签密度：低缩放下只留圆点，放大才铺地名（见 syncPlaceLabelDensity）
-    leafletMap.on('zoomend', syncPlaceLabelDensity);
+    leafletMap.on('zoomend', () => { syncPlaceLabelDensity(); syncInnerPlaceVisibility(); });
   }
   clearLeafletLayers();
   const v = MAP_VIEW[currentDynasty] || MAP_VIEW.ming;
@@ -2596,13 +2680,34 @@ function renderMap() {
 /** 地图下方的路线按钮区 + 郑和航次选择（与图例一起挂在 route-panel） */
 // 路线胶囊是否已展开（默认收起，只露前 8 条）。每次重渲染都回到收起态。
 let routeShowAll = false;
+// 地名点是否展开（默认只留都城；点「地名 N 处」才把城市/战场/名胜一起铺开）
+let placesShowAll = false;
 
 /** 默认视图：只把城市/名胜点上图；事件地标一律留白。
  *  事件地标不再「整朝一次铺开」（几十个⚑会压满地图、标签互相叠住），
  *  而是跟着下方「该朝事件」胶囊点哪条上哪一个（见 showSingleEvent）。 */
 function showPlacesOnMap() {
-  (leafletLayers.places || []).forEach((m) => { if (m && leafletMap) m.addTo(leafletMap); });
+  const zoom = leafletMap ? leafletMap.getZoom() : 6;
+  (leafletLayers.places || []).forEach((m) => {
+    if (!m || !leafletMap) return;
+    const p = m._place || {};
+    let keep;
+    if (placesShowAll) keep = !(p._inner && zoom < 9);   // 城内细点放大到 zoom≥9 才铺
+    else keep = p.type === 'capital' || p.type === 'regime'; // 默认只留都城（本朝红 / 诸国褐）
+    if (currentDynasty === 'all' && !placesShowAll) keep = false; // 九朝叠加无单一语义，默认不画
+    if (keep) m.addTo(leafletMap); else leafletMap.removeLayer(m);
+  });
   (leafletLayers.events || []).forEach((m) => { if (m && leafletMap) leafletMap.removeLayer(m); });
+}
+
+/** 缩放变化时补画／收回「城内细点」（紫禁城、南宫、豹房这一层），标签密度另见 syncPlaceLabelDensity */
+function syncInnerPlaceVisibility() {
+  if (!placesShowAll || !leafletMap) return;
+  const zoom = leafletMap.getZoom();
+  (leafletLayers.places || []).forEach((m) => {
+    if (!m || !m._inner) return;
+    if (zoom >= 9) m.addTo(leafletMap); else leafletMap.removeLayer(m);
+  });
 }
 
 function renderMapControls(data) {
@@ -2618,6 +2723,26 @@ function renderMapControls(data) {
     return r.year >= s && r.year <= en;
   };
   const visibleDomestic = data.routes.filter(inEra);
+  // 地名开关：默认只留都城（整朝视野里地名全铺开只会互相压住、也看不出重点）；
+  // 点一下才把城市/战场/名胜一起铺开，再点收起。计数是归一后的地点数（一座城只算一个）。
+  const placeBtn = el('button', 'route-btn place-toggle-btn');
+  // 计数只算默认能铺开的点：城内的具体地点（紫禁城、南宫…）要 zoom≥9 才展开，不该算进「N 处」
+  const placeTotal = (data.places || []).filter((p) => !p._inner).length;
+  const placeLabel = () => (placesShowAll ? '收起地名 ▴' : `地名 ${placeTotal} 处 ▾`);
+  placeBtn.textContent = placeLabel();
+  placeBtn.title = placesShowAll
+    ? '收起城市、战场与名胜，只留都城'
+    : '铺开该视图全部城市、战场与名胜（放大到 9 级以上还会展开城内的具体地点）';
+  placeBtn.addEventListener('click', () => {
+    placesShowAll = !placesShowAll;
+    placeBtn.textContent = placeLabel();
+    placeBtn.classList.toggle('on', placesShowAll);
+    placeBtn.title = placesShowAll
+      ? '收起城市、战场与名胜，只留都城'
+      : '铺开该视图全部城市、战场与名胜（放大到 9 级以上还会展开城内的具体地点）';
+    showPlacesOnMap();
+  });
+  legend.appendChild(placeBtn);
   /** 隐藏除目标路线外的所有动态图层（其他路线/事件点/城市点/郑和航线） */
   const hideOthers = (exceptRi) => {
     (leafletLayers.routes || []).forEach((l, i) => {
@@ -2780,6 +2905,8 @@ function renderMapControls(data) {
     resetMapView();   // 回到总览：镜头从某个事件的放大视野收回该朝默认视野
     showEvents();
     showEventsSummary();
+    // 上一行会把所有 route-btn 的选中态清空，地名开关的状态要补回来（它不是「路线」）
+    placeBtn.classList.toggle('on', placesShowAll);
   });
   // 放在最前面：它是「总览」入口，比各条路线更基础
   legend.insertBefore(evtBtn, legend.firstChild);
@@ -3099,6 +3226,40 @@ window.__guideFlyTo = function (lat, lng) {
   leafletMap.panTo([lat, lng], { animate: true, duration: 1.0 });
 };
 
+const DYN_SHORT = { sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
+const PLACE_KIND = { capital: '都城', regime: '诸国都城', city: '重镇', site: '战场·名胜', overseas: '海外' };
+
+/** 地名弹窗：一城一卡。
+ *  同一座城在史料里有多个名字（长安／大兴城／西安），旧版会各弹一张、看起来像「重复地点」；
+ *  归一后主条给当朝称谓，其余称谓并列一行说明「这是同一座城」。 */
+function showPlacePopup(p) {
+  const pop = $('#map-popup');
+  if (!pop) return;
+  pop.classList.remove('hidden');
+  const modern = p.modernName && p.modernName !== p.name ? ` <small style="color:#8a7a5c">（今${p.modernName}）</small>` : '';
+  const seen = new Set([p.name]);
+  const others = (p.variants || []).filter((v) => {
+    if (seen.has(v.name)) return false;
+    seen.add(v.name);
+    return true;
+  });
+  const aliasLine = others.length
+    ? `<p class="popup-place-alias">同一座城的其他称谓：${others.map((v) => `${v.name}${v.dynasty && DYN_SHORT[v.dynasty] ? `（${DYN_SHORT[v.dynasty]}）` : ''}`).join('、')}</p>`
+    : '';
+  // 「全部」视图里这个点通常代表好几朝共用的同一座城：说清它在各朝扮演的角色，
+  // 否则用户只会看到一个色点和一堆地名，不知道为什么要合在一起。
+  const roles = [...new Set((p.variants || []).filter((v) => v.dynasty).map((v) => `${DYN_SHORT[v.dynasty] || ''}·${PLACE_KIND[v.type] || ''}`))];
+  const roleLine = (p._multiDynasty && roles.length > 1)
+    ? `<p class="popup-place-alias">此地在各朝的角色：${roles.join('、')}</p>`
+    : '';
+  const noteLine = p.note ? `<p class="popup-place-note">${p.note}</p>` : '';
+  pop.innerHTML = `<button class="close" aria-label="关闭">✕</button>
+    <h4>${p.name}${modern}</h4>
+    ${aliasLine}${roleLine}${noteLine}
+    <p>${p.story || '（暂无故事）'}</p>`;
+  pop.querySelector('.close').addEventListener('click', () => pop.classList.add('hidden'));
+}
+
 function showPopup(name, modern, story) {
   const pop = $('#map-popup');
   if (!pop) return;
@@ -3184,7 +3345,7 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
     const t = e.target;
     if (!t || typeof t.closest !== 'function') return;
     if (pop.contains(t)) return;
-    if (t.closest('.map-event, .evt-summary-chip, .popup-event-row')) return;
+    if (t.closest('.map-event, .evt-summary-chip, .popup-event-row, .map-place, .map-place-inner')) return;
     pop.classList.add('hidden');
   });
 }

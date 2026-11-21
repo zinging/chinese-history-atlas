@@ -258,7 +258,9 @@ if (instDoc) {
 
 const placesDoc = readJson('data/places/places.json');
 if (placesDoc) {
-  const placeTypes = ['capital', 'city', 'site', 'overseas'];
+  // regime = 与本朝并存的割据/前朝政权都城（如元大都之于明、十六国诸都之于晋），
+  // 与 capital（本朝都城）分开，地图上用褐色而非红色。
+  const placeTypes = ['capital', 'regime', 'city', 'site', 'overseas'];
   for (const p of placesDoc.places) {
     if (!p.name || !p.modernName) errors.push('data/places/places.json: 地名缺 name/modernName');
     if (p.type && !placeTypes.includes(p.type)) errors.push(`data/places/places.json: 地名 "${p.name}" type 非法 "${p.type}"`);
