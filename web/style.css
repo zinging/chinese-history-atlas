@@ -327,10 +327,10 @@ body.sidebar-collapsed .tabs {
 
 /* 朝代切换条：箭头贴住条子、中间不留缝；整组靠 --dyn-out 向两侧各外扩一份，
    于是带框的横滑条（.dyn-bar）吃满正文列宽，箭头正好落在列外的留白里，左右对称。
-   --dyn-out 默认取箭头宽度（28px）；实测留白不够时由 app.js 的 fitTopbar() 收紧，
+   --dyn-out 默认取箭头宽度（58px）；实测留白不够时由 app.js 的 fitTopbar() 收紧，
    保证永远不压到左侧栏与右上导航胶囊。 */
 .dynasty-switch {
-  --dyn-out: 28px;
+  --dyn-out: 58px;
   display: flex;
   align-items: center;
   gap: 0;
@@ -346,7 +346,7 @@ body.sidebar-collapsed .tabs {
   display: flex; align-items: stretch;
   background: #efe6d0;
   border: 1px solid #c9b88a;
-  border-radius: 6px;
+  border-radius: 0;              /* 左右两端永远被箭头盖住，圆角交给箭头外侧 */
   overflow: hidden;
 }
 /* 横滑轨道：不折行、隐藏滚动条，靠箭头 / 触摸横滑 / 鼠标滚轮看后面的朝代 */
@@ -358,14 +358,16 @@ body.sidebar-collapsed .tabs {
   -webkit-overflow-scrolling: touch;
 }
 .dyn-track::-webkit-scrollbar { width: 0; height: 0; display: none; }
-/* 两端箭头：与条子同高、贴边拼成一体的独立方块，滑到头变暗（实色，不用半透明） */
+/* 两端箭头：高度与朝代按钮齐平（跟着条子 stretch）、扁而宽的一截，朱印红实底，
+   与右上导航胶囊同一套配色；滑到头换成褪朱实色，不用半透明 */
 .dyn-arrow {
-  flex: 0 0 28px; width: 28px; height: 40px;
+  flex: 0 0 58px; width: 58px;
+  align-self: stretch; height: auto;
   display: flex; align-items: center; justify-content: center;
   padding: 0; cursor: pointer;
-  color: #8a3a28;
-  background: linear-gradient(180deg, #f8f2e2, #e9dfc2);
-  border: 1px solid #c9b88a;
+  color: #fdf1dd;
+  background: linear-gradient(180deg, #a8352a 0%, #8c2318 100%);
+  border: 1px solid #6d1a11;
   border-radius: 4px;
   transition: background .18s ease, color .18s ease, border-color .18s ease;
 }
@@ -381,14 +383,19 @@ body.sidebar-collapsed .tabs {
   border-radius: 0 5px 5px 0;
   border-left: 0;
 }
-.dyn-arrow svg { width: 11px; height: 15px; }
+.dyn-arrow svg { width: 13px; height: 18px; }
 .dyn-arrow svg path { fill: currentColor; }
 .dyn-arrow:hover:not([disabled]) {
-  background: #8a3a28; border-color: #6a2118; color: #f6ecd8;
+  background: linear-gradient(180deg, #bd3d2f 0%, #9a2a1d 100%);
+  border-color: #5c150d;
+  color: #fff8ea;
 }
+/* 滑到头：底色仍是同一块朱印红（只是压暗一档），只把箭头字符收淡，不再用半透明 */
 .dyn-arrow[disabled] {
   cursor: default;
-  background: #ece1c5; border-color: #d9caa6; color: #c0ad86;
+  background: linear-gradient(180deg, #8f2c22 0%, #761c12 100%);
+  border-color: #5b1409;
+  color: #c49a8c;
 }
 
 .dynasty-btn {
@@ -1975,7 +1982,7 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
         右侧 58px 让给固定的搜索圆钮（.as-root 占 330→380 的竖条），否则右箭头正好被它压住点不到。 */
   .dynasty-switch { width: calc(100% - 58px); margin-right: 58px; margin-left: 0; --dyn-out: 0px; }
   .dyn-track { scroll-snap-type: x proximity; }
-  .dyn-arrow { flex: 0 0 27px; width: 27px; height: 27px; }
+  .dyn-arrow { flex: 0 0 40px; width: 40px; }
   .dyn-arrow svg { width: 10px; height: 13px; }
   .dynasty-btn {
     font-size: 12.5px;
