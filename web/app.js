@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261122a';
+const APP_BUILD = '20261122b';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
