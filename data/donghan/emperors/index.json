@@ -22,7 +22,8 @@
     "start": "25",
     "end": "57"
    },
-   "file": "guangwu.json"
+   "file": "guangwu.json",
+   "portrait": "donghan-guangwu.jpg"
   },
   {
    "id": "donghan-emp-mingdi",
@@ -36,7 +37,8 @@
     "start": "57",
     "end": "75"
    },
-   "file": "mingdi.json"
+   "file": "mingdi.json",
+   "portrait": "donghan-mingdi.jpg"
   },
   {
    "id": "donghan-emp-zhangdi",
@@ -52,7 +54,8 @@
     "start": "75",
     "end": "88"
    },
-   "file": "zhangdi.json"
+   "file": "zhangdi.json",
+   "portrait": "donghan-zhangdi.jpg"
   },
   {
    "id": "donghan-emp-hedi",
@@ -67,7 +70,8 @@
     "start": "88",
     "end": "106"
    },
-   "file": "hedi.json"
+   "file": "hedi.json",
+   "portrait": "donghan-hedi.jpg"
   },
   {
    "id": "donghan-emp-shangdi",
@@ -81,7 +85,8 @@
     "start": "106",
     "end": "106"
    },
-   "file": "shangdi.json"
+   "file": "shangdi.json",
+   "portrait": "donghan-shangdi.jpg"
   },
   {
    "id": "donghan-emp-andi",
@@ -99,7 +104,8 @@
     "start": "106",
     "end": "125"
    },
-   "file": "andi.json"
+   "file": "andi.json",
+   "portrait": "donghan-andi.jpg"
   },
   {
    "id": "donghan-emp-yi",
@@ -113,7 +119,8 @@
     "start": "125",
     "end": "125"
    },
-   "file": "shao-beixiang.json"
+   "file": "shao-beixiang.json",
+   "portrait": "donghan-yi.jpg"
   },
   {
    "id": "donghan-emp-shundi",
@@ -131,7 +138,8 @@
     "start": "125",
     "end": "144"
    },
-   "file": "shundi.json"
+   "file": "shundi.json",
+   "portrait": "donghan-shundi.jpg"
   },
   {
    "id": "donghan-emp-chongdi",
@@ -145,7 +153,8 @@
     "start": "144",
     "end": "145"
    },
-   "file": "chongdi.json"
+   "file": "chongdi.json",
+   "portrait": "donghan-chongdi.jpg"
   },
   {
    "id": "donghan-emp-zhidi",
@@ -159,7 +168,8 @@
     "start": "145",
     "end": "146"
    },
-   "file": "zhidi.json"
+   "file": "zhidi.json",
+   "portrait": "donghan-zhidi.jpg"
   },
   {
    "id": "donghan-emp-huandi",
@@ -179,7 +189,8 @@
     "start": "146",
     "end": "168"
    },
-   "file": "huandi.json"
+   "file": "huandi.json",
+   "portrait": "donghan-huandi.jpg"
   },
   {
    "id": "donghan-emp-lingdi",
@@ -196,7 +207,8 @@
     "start": "168",
     "end": "189"
    },
-   "file": "lingdi.json"
+   "file": "lingdi.json",
+   "portrait": "donghan-lingdi.jpg"
   },
   {
    "id": "donghan-emp-shaodi",
@@ -211,7 +223,8 @@
     "start": "189",
     "end": "189"
    },
-   "file": "shaodi.json"
+   "file": "shaodi.json",
+   "portrait": "donghan-shaodi.jpg"
   },
   {
    "id": "donghan-emp-xiandi",
@@ -228,7 +241,8 @@
     "start": "189",
     "end": "220"
    },
-   "file": "xiandi.json"
+   "file": "xiandi.json",
+   "portrait": "donghan-xiandi.jpg"
   }
  ]
 }

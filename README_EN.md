@@ -100,7 +100,7 @@ Send this to your AI client — DSH, Doubao, Cursor, Claude Desktop all work —
 
 `Dynasty Lineage` · `Unsolved Cases` · `Territory Maps` · `History Detective`
 
-**11 dynasties, 133 emperors** (Qin 3 · Han 27 · Three Kingdoms 11 · Jin 15 · Sui 3 · Tang 14 · Five Dynasties 6 · Song 18 · Yuan 8 · Ming 16 · Qing 12) on a single horizontal card rail spanning 2,100 years. The Qin and Han nodes ship without generated portraits: each shows a vermilion name seal instead, so a placeholder never passes for a painting. Open any emperor for a full "life on scene", not an encyclopedia stub:
+**11 dynasties, 133 emperors** (Qin 3 · Han 27 · Three Kingdoms 11 · Jin 15 · Sui 3 · Tang 14 · Five Dynasties 6 · Song 18 · Yuan 8 · Ming 16 · Qing 12) on a single horizontal card rail spanning 2,100 years. All 133 emperors now carry a 320×320 gongbi portrait (Qin's 3 and Han's 27 were the last batch). Robe colours follow the Five Virtues cycle — Qin and Western Han in black-and-crimson (water), Xin in ochre-yellow (earth), Eastern Han in vermilion (fire) — and faces follow the physical notes in the histories, e.g. Liu Bang's "high nose, dragon brow, beautiful beard", Liu Xiu's "handsome brows, wide mouth, high nose, square brow" or Wang Mang's "big mouth, sunken jaw, red-rimmed eyes, bald". Open any emperor for a full "life on scene", not an encyclopedia stub:
 
 - **Dynasty lineage**: a **739-entry life timeline**, ministers / consorts / rivals, fun facts and controversies, with ★ marking the turning points;
 - **Coexisting-regime Gantt**: three rows for the Three Kingdoms, ten for the Five Dynasties / Ten States, eighteen for the Two Jin and Sixteen Kingdoms — every ruler's reign drawn at true year-proportional width on one chart, one block per ruler (rulers reigning under a year get their own block at a minimum visible width); click a block to jump to that emperor's card. Blocks too narrow to carry a name and without an emperor card (most Sixteen Kingdoms and Ten States rulers) pop a hover/tap biography of that one ruler; the regime name at the head of each row carries its own separate regime note (lifespan, ethnic group or fate, founding and fall, line of rulers), so person and polity are never mixed in one card. Neighbouring blocks in different rows are not successors; only within a row do they chain father to son;
@@ -207,18 +207,18 @@ Timeline entries and detective clues cite the *Old/New Book of Tang*, *History o
 
 A magnifier sits at the top right; hover or click and it becomes an input. It searches 1087 entries (133 emperors, 213 map events, 52 unsolved cases, 40 case files, 75 classics, 59 artifacts, 113 beasts, 58 quiz questions, 44 life events, 57 routes, 219 hotspots…) together with body sentences, and groups the results as *entries* and *body hits*. Selecting a result does not merely open a page — it scrolls to the matched sentence and highlights it: body hits jump to the sentence, entries land on their card, map events open in the popup, route places switch to the voyage that contains them, and quiz entries open the named question. The index is the same build artefact the MCP search uses (`npm run build:search`, with a content-signature check); the front end pulls it in five on-demand shards, about 1.1MB total.
 
-**🖼️ 906 original artworks, 1147 image files — one style, not a template skin**
+**🖼️ 936 original artworks, 1177 image files — one style, not a template skin**
 
-One consistent visual language throughout: rice-paper beige, vermilion seals, gongbi fine-brush colour. **811 original illustrations**, all generated in the same style:
+One consistent visual language throughout: rice-paper beige, vermilion seals, gongbi fine-brush colour. **936 original illustrations**, all generated in the same style:
 
-- **410 portraits of people and classics**: 258 relationship-graph portraits (ministers, consorts, rivals) under `people/`, plus 152 paintings of emperors, poets, thinkers and classics-adjacent images in the root folder;
+- **440 portraits of people and classics**: 258 relationship-graph portraits (ministers, consorts, rivals) under `people/`, plus 182 paintings of emperors, poets, thinkers and classics-adjacent images in the root folder (30 of them Qin and Han emperors, added last);
 - **172 artifacts and beasts**: 113 beasts and spirits + 59 representative objects;
 - **141 map-event paintings**: gongbi scenes of major events across the dynasties;
 - **74 ancient maps**: 5 top-down base maps + 69 hotspots from the original texts;
 - **38 illustrations of the Hundred Schools chronicles**: key events of thought spreading and schools forming;
 - **44 life-event illustrations**: gongbi scenes of key moments in the poets' lives.
 
-Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and cards fast, bringing the total to **1147 image files**. The ancient maps are checked point by point against the bearings and terrain described in the sources.
+Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and cards fast, bringing the total to **1177 image files**. The ancient maps are checked point by point against the bearings and terrain described in the sources.
 
 **⚡ Zero dependencies, instant open, works offline**
 
@@ -241,7 +241,7 @@ A built-in zero-dependency MCP server (v1.6.0, 15 read-only tools) plugs into Do
 | 🐉 Myth & Legend | 9 classics (4 categories) · 113 beasts · 5 ancient maps with 69 hotspots · 8 inquiry prompts |
 | **Site total** | **84 eight-section case files · 58 inquiry questions · 77 critical-choice questions · 906 original gongbi artworks (1147 image files including thumbnails)** |
 
-*Territory outlines are simplified hand-drawn sketches after Tan Qixiang's Historical Atlas of China; portraits, artifacts, beasts and ancient maps are stylized gongbi images, not historical likenesses; the mythic maps are drawn strictly to the bearings and terrain in the original texts.*
+*Territory outlines are simplified hand-drawn sketches after Tan Qixiang's Historical Atlas of China; portraits follow the ceremonial dress codes and the physical descriptions in the standard histories but remain stylized gongbi images, not historical likenesses; the mythic maps are drawn strictly to the bearings and terrain in the original texts.*
 
 ---
 
@@ -268,7 +268,7 @@ The project ships a **zero-dependency MCP server** (`web/tools/history-mcp-serve
 - **Fetches the site itself**: when no local site is found, it starts a **background** clone from Gitee into your home directory (about 150MB) and `session_start` **returns immediately**, telling the AI "text search is already usable" — the conversation is never blocked by the install. It starts the server once the clone finishes. This step needs **`git` on PATH**; if it is missing the tool says so precisely and degrades to "text search only" (the plugin carries its own index, so search still works, minus images and deep links).
 - **Illustrations included**: single-object results (emperor / classic / artifact / event) attach a base64 image block; list results do not (dozens would blow up the response) — use the detail call for one item.
 - **Millisecond search**: a built-in uni/bi-gram inverted index over **1087 documents** — about 230ms to build once, then 1–2ms per query. "Tumu Crisis", "Lansuo Temple", "Gao Village", "Kunlun Mound", "Ehu Debate" all land directly on the right event or hotspot.
-- **Bundled image subset**: the plugin carries **547 narration images** (152 portraits · 172 artifact thumbnails · 141 map events · 38 Hundred Schools · 44 life events), so "ask who and see who" works before the site is fetched; once the site is ready it switches to the originals and adds the remaining **573** (258 figures · 172 artifact originals · 74 ancient maps · 69 hotspot thumbnails).
+- **Bundled image subset**: the plugin carries **547 narration images** (152 portraits · 172 artifact thumbnails · 141 map events · 38 Hundred Schools · 44 life events), so "ask who and see who" works before the site is fetched; once the site is ready it switches to the originals and adds the remaining **603** (258 figures · 172 artifact originals · 74 ancient maps · 69 hotspot thumbnails · 30 Qin and Han imperial portraits).
 - Full configuration: [`docs/AI集成-本地MCP配置.md`](docs/AI集成-本地MCP配置.md); self-test with `npm run mcp:selftest`.
 
 ---

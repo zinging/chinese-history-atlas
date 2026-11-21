@@ -16,7 +16,8 @@
     "start": "-246",
     "end": "-210"
    },
-   "file": "shihuang.json"
+   "file": "shihuang.json",
+   "portrait": "qin-shihuang.jpg"
   },
   {
    "id": "qin-emp-ershi",
@@ -29,7 +30,8 @@
     "start": "-210",
     "end": "-207"
    },
-   "file": "ershi.json"
+   "file": "ershi.json",
+   "portrait": "qin-ershi.jpg"
   },
   {
    "id": "qin-emp-ziying",
@@ -42,7 +44,8 @@
     "start": "-207",
     "end": "-207"
    },
-   "file": "ziying.json"
+   "file": "ziying.json",
+   "portrait": "qin-ziying.jpg"
   }
  ]
 }

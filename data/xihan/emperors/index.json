@@ -21,7 +21,8 @@
     "start": "-202",
     "end": "-195"
    },
-   "file": "gaozu.json"
+   "file": "gaozu.json",
+   "portrait": "xihan-gaozu.jpg"
   },
   {
    "id": "xihan-emp-huidi",
@@ -35,7 +36,8 @@
     "start": "-195",
     "end": "-188"
    },
-   "file": "huidi.json"
+   "file": "huidi.json",
+   "portrait": "xihan-huidi.jpg"
   },
   {
    "id": "xihan-emp-wendi",
@@ -49,7 +51,8 @@
     "start": "-180",
     "end": "-157"
    },
-   "file": "wendi.json"
+   "file": "wendi.json",
+   "portrait": "xihan-wendi.jpg"
   },
   {
    "id": "xihan-emp-jingdi",
@@ -63,7 +66,8 @@
     "start": "-157",
     "end": "-141"
    },
-   "file": "jingdi.json"
+   "file": "jingdi.json",
+   "portrait": "xihan-jingdi.jpg"
   },
   {
    "id": "xihan-emp-wudi",
@@ -87,7 +91,8 @@
     "start": "-141",
     "end": "-87"
    },
-   "file": "wudi.json"
+   "file": "wudi.json",
+   "portrait": "xihan-wudi.jpg"
   },
   {
    "id": "xihan-emp-zhaodi",
@@ -103,7 +108,8 @@
     "start": "-87",
     "end": "-74"
    },
-   "file": "zhaodi.json"
+   "file": "zhaodi.json",
+   "portrait": "xihan-zhaodi.jpg"
   },
   {
    "id": "xihan-emp-xuandi",
@@ -123,7 +129,8 @@
     "start": "-74",
     "end": "-49"
    },
-   "file": "xuandi.json"
+   "file": "xuandi.json",
+   "portrait": "xihan-xuandi.jpg"
   },
   {
    "id": "xihan-emp-yuandi",
@@ -140,7 +147,8 @@
     "start": "-49",
     "end": "-33"
    },
-   "file": "yuandi.json"
+   "file": "yuandi.json",
+   "portrait": "xihan-yuandi.jpg"
   },
   {
    "id": "xihan-emp-chengdi",
@@ -160,7 +168,8 @@
     "start": "-33",
     "end": "-7"
    },
-   "file": "chengdi.json"
+   "file": "chengdi.json",
+   "portrait": "xihan-chengdi.jpg"
   },
   {
    "id": "xihan-emp-aidi",
@@ -175,7 +184,8 @@
     "start": "-7",
     "end": "-1"
    },
-   "file": "aidi.json"
+   "file": "aidi.json",
+   "portrait": "xihan-aidi.jpg"
   },
   {
    "id": "xihan-emp-pingdi",
@@ -189,7 +199,8 @@
     "start": "-1",
     "end": "5"
    },
-   "file": "pingdi.json"
+   "file": "pingdi.json",
+   "portrait": "xihan-pingdi.jpg"
   },
   {
    "id": "xihan-emp-ruzi",
@@ -204,7 +215,8 @@
     "start": "6",
     "end": "8"
    },
-   "file": "ruzi.json"
+   "file": "ruzi.json",
+   "portrait": "xihan-ruzi.jpg"
   }
  ]
 }
