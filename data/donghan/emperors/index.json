@@ -2,12 +2,17 @@
  "meta": {
   "title": "东汉帝王索引",
   "description": "自光武称帝至献帝禅魏，共十四帝（含北乡侯刘懿、少帝刘辩）",
-  "updated": "2026-11-21"
+  "lineages": {
+      "haneast": "东汉"
+    },
+    "note": "东汉十四帝（25-220），光武中兴后都洛阳，故称东京；与西汉同出汉室而帝系远支重建，故列为汉之东京段。",
+    "updated": "2026-11-21"
  },
  "emperors": [
   {
    "id": "donghan-emp-guangwu",
-   "name": "刘秀",
+   "lineage": "haneast",
+    "name": "刘秀",
    "templeName": "光武帝",
    "eraName": [
     "建武",
@@ -21,7 +26,8 @@
   },
   {
    "id": "donghan-emp-mingdi",
-   "name": "刘庄",
+   "lineage": "haneast",
+    "name": "刘庄",
    "templeName": "明帝",
    "eraName": [
     "永平"
@@ -34,7 +40,8 @@
   },
   {
    "id": "donghan-emp-zhangdi",
-   "name": "刘炟",
+   "lineage": "haneast",
+    "name": "刘炟",
    "templeName": "章帝",
    "eraName": [
     "建初",
@@ -49,7 +56,8 @@
   },
   {
    "id": "donghan-emp-hedi",
-   "name": "刘肇",
+   "lineage": "haneast",
+    "name": "刘肇",
    "templeName": "和帝",
    "eraName": [
     "永元",
@@ -63,7 +71,8 @@
   },
   {
    "id": "donghan-emp-shangdi",
-   "name": "刘隆",
+   "lineage": "haneast",
+    "name": "刘隆",
    "templeName": "殇帝",
    "eraName": [
     "延平"
@@ -76,7 +85,8 @@
   },
   {
    "id": "donghan-emp-andi",
-   "name": "刘祜",
+   "lineage": "haneast",
+    "name": "刘祜",
    "templeName": "安帝",
    "eraName": [
     "永初",
@@ -93,7 +103,8 @@
   },
   {
    "id": "donghan-emp-yi",
-   "name": "刘懿",
+   "lineage": "haneast",
+    "name": "刘懿",
    "templeName": "北乡侯",
    "eraName": [
     "未改元"
@@ -106,7 +117,8 @@
   },
   {
    "id": "donghan-emp-shundi",
-   "name": "刘保",
+   "lineage": "haneast",
+    "name": "刘保",
    "templeName": "顺帝",
    "eraName": [
     "永建",
@@ -123,7 +135,8 @@
   },
   {
    "id": "donghan-emp-chongdi",
-   "name": "刘炳",
+   "lineage": "haneast",
+    "name": "刘炳",
    "templeName": "冲帝",
    "eraName": [
     "永嘉"
@@ -136,7 +149,8 @@
   },
   {
    "id": "donghan-emp-zhidi",
-   "name": "刘缵",
+   "lineage": "haneast",
+    "name": "刘缵",
    "templeName": "质帝",
    "eraName": [
     "本初"
@@ -149,7 +163,8 @@
   },
   {
    "id": "donghan-emp-huandi",
-   "name": "刘志",
+   "lineage": "haneast",
+    "name": "刘志",
    "templeName": "桓帝",
    "eraName": [
     "建和",
@@ -168,7 +183,8 @@
   },
   {
    "id": "donghan-emp-lingdi",
-   "name": "刘宏",
+   "lineage": "haneast",
+    "name": "刘宏",
    "templeName": "灵帝",
    "eraName": [
     "建宁",
@@ -184,7 +200,8 @@
   },
   {
    "id": "donghan-emp-shaodi",
-   "name": "刘辩",
+   "lineage": "haneast",
+    "name": "刘辩",
    "templeName": "少帝",
    "eraName": [
     "光熹",
@@ -198,7 +215,8 @@
   },
   {
    "id": "donghan-emp-xiandi",
-   "name": "刘协",
+   "lineage": "haneast",
+    "name": "刘协",
    "templeName": "献帝",
    "eraName": [
     "初平",

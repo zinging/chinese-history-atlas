@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261121d';
+const APP_BUILD = '20261121e';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -123,15 +123,22 @@ function renderEraStrip() {
     centerTo(document.querySelector('#era-strip .era-btn'));
   });
   allBody.appendChild(allBtn);
-  let curDyn = currentDynasty === 'all' ? null : currentDynasty;
-  let curBody = allBody;
+  // 分组键：「全部」按朝代断组；汉这种一个节点装三段的，按段（西汉/新莽/东汉）断组；
+  // 其余单朝视图整条就是一个组，不立组头（顶上那排朝代胶囊已经写明是哪一朝）。
   const mergedView = currentDynasty === 'all';
+  const segView = !!DYNASTY_SEGS[currentDynasty];
+  const groupKey = (e) => (mergedView ? (e._dynasty || currentDynasty) : segView ? (e.lineage || '') : '');
+  const groupLabel = (e) => (mergedView
+    ? (DYNASTY_LABEL[e._dynasty || currentDynasty] || '')
+    : segView ? (LINEAGE_LABEL[e.lineage] || '') : '');
+  let curKey = DATA.emperors.length ? groupKey(DATA.emperors[0]) : '\u0000';
+  let curBody = allBody;
+  if (DATA.emperors.length && curKey !== '') curBody = groupBody(groupLabel(DATA.emperors[0]));
   DATA.emperors.forEach((e) => {
-    const d = e._dynasty || currentDynasty;
-    if (d !== curDyn) {
-      curDyn = d;
-      // 只有「全部」合并视图才标朝代归属；单朝视图本身就在某朝里，不重复标注
-      curBody = groupBody(mergedView ? (DYNASTY_LABEL[d] || '') : '');
+    const k = groupKey(e);
+    if (k !== curKey) {
+      curKey = k;
+      curBody = groupBody(groupLabel(e));
     }
     const btn = el('button', 'era-btn' + (activeEraId === e.id ? ' active' : ''));
     btn.innerHTML = `<span class="era-name">${e.eraName[0]}</span><span class="era-years">${fmtYear(e.reign.start)}-${fmtYear(e.reign.end)}</span>`;
@@ -208,19 +215,30 @@ const DYNASTY_DIRS = {
   xihan: 'xihan/',
   xin: 'xin/',
   donghan: 'donghan/',
+  han: 'xihan/',   // 汉节点的首个分段；三段全部由 DYNASTY_SEGS 拼（见下）
+};
+/* 一个大朝由多个数据目录拼成的情形：与「晋＝西晋＋东晋」同一套思路——
+   节点只有一个，内部按段（lineage）分段，段牌由 renderTimeline 的 lineageMode 自动立。
+   汉＝西京（西汉）＋新莽＋东京（东汉），三段共用一张舆图。 */
+const DYNASTY_SEGS = {
+  han: [
+    { dir: 'xihan/',   tag: 'xihan',   lineage: 'hanwest', label: '西汉' },
+    { dir: 'xin/',     tag: 'xin',     lineage: 'hanxin',  label: '新莽' },
+    { dir: 'donghan/', tag: 'donghan', lineage: 'haneast', label: '东汉' },
+  ],
 };
 // 地图层开关：有「地图」数据的朝代才去拉 places/routes/map-events 三库。
 // 三国、两晋的并立政权边界没有现成 geojson（见 DYNASTY_HAS_GEO），
 // 但地名、事件、路线都有独立数据，所以这里必须是 true，否则整块舆图是空的。
 // 秦、西汉、新莽、东汉同样没有手绘边界 geojson，走「示意」路径。
-const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: true, jin: true, qin: true, xihan: true, xin: true, donghan: true };
+const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: true, jin: true, qin: true, han: true, xihan: true, xin: true, donghan: true };
 // 是否有真实边界 geojson（data/boundaries/<朝>.geojson）。没有的朝代回退示意色块，不去发 404 请求。
-const DYNASTY_HAS_GEO = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false, jin: false, qin: false, xihan: false, xin: false, donghan: false };
+const DYNASTY_HAS_GEO = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false, jin: false, qin: false, han: false, xihan: false, xin: false, donghan: false };
 // 年代范围：公元前用负数（-221 即前 221 年）
 const DYNASTY_RANGE = {
   ming: '1368-1644', tang: '618-907', song: '960-1279', yuan: '1271-1368', qing: '1616-1912',
   sui: '581-618', wudai: '907-960', sanguo: '220-280', jin: '265-420',
-  qin: '-221--207', xihan: '-202-8', xin: '9-23', donghan: '25-220',
+  qin: '-221--207', han: '-202-220', xihan: '-202-8', xin: '9-23', donghan: '25-220',
 };
 // 各朝文件布局：明朝各库在 data/ 根目录下分目录，其他朝在朝代目录内
 const DYNASTY_LAYOUT = {
@@ -234,6 +252,7 @@ const DYNASTY_LAYOUT = {
   sanguo: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   jin: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   qin: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  han: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   xihan: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   xin: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   donghan: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
@@ -305,12 +324,19 @@ const DYNASTY_TEXT = {
     legendNote: '东汉疆域与西汉大体相当而西域三通三绝，暂无手绘边界，事件据《后汉书》系年',
     footer: '东汉是光武中兴后重建的汉室，外戚宦官交替专权，终于黄巾之乱与群雄割据 · 帝王画像暂以印章占位 · 内容以《后汉书》帝纪、列传为主要依据',
   },
+  // 汉一个节点装三段：西京（西汉）→ 新莽 → 东京（东汉），与「晋＝西晋＋东晋」同一套折法。
+  // 段与段之间立彩牌、卡上挂段徽，年号条按段分组，舆图三段数据合绘一张。
+  han: {
+    brand: '大汉四百年', dynSub: '二十七帝·三段', mapAria: '汉朝示意地图',
+    legendNote: '汉分西京（前202-8）、新莽（9-23）、东京（25-220）三段共二十七帝，中间隔十七年无汉帝；疆域按武帝极盛范围示意，暂无手绘边界，地名与事件据《汉书》《后汉书》系年',
+    footer: '汉四百年分三段：西京长安、新莽代汉十五年、东京洛阳 · 帝王画像暂以印章占位 · 内容以《汉书》《后汉书》帝纪、列传为主要依据',
+  },
   // 「全部」是 133 帝的合并视图，不代表任何一个朝代：不套用任何一朝疆域，
   // 文案也不能借用明朝口径，否则等于暗示这块地是明朝的。
   all: {
-    brand: '中华历史', dynSub: '十三朝 · 一百三十三帝', mapAria: '全部朝代合并示意地图',
-    legendNote: '「全部」为十三朝 133 帝合并视图，只画地名、事件与路线，不套用任何单一朝代的疆域轮廓',
-    footer: '本视图合并十三朝 133 位皇帝（秦、西汉、新莽、东汉四朝画像暂以印章占位）· 单朝疆域轮廓据谭其骧《中国历史地图集》示意，非精确边界 · 其余画像为 AI 生成工笔风格，仅供示意',
+    brand: '中华历史', dynSub: '十一朝 · 一百三十三帝', mapAria: '全部朝代合并示意地图',
+    legendNote: '「全部」为十一朝 133 帝合并视图（汉含西京、新莽、东京三段），只画地名、事件与路线，不套用任何单一朝代的疆域轮廓',
+    footer: '本视图合并十一朝 133 位皇帝（秦、汉两朝画像暂以印章占位）· 单朝疆域轮廓据谭其骧《中国历史地图集》示意，非精确边界 · 其余画像为 AI 生成工笔风格，仅供示意',
   },
 };
 
@@ -330,6 +356,75 @@ function hideLoader() {
   el.classList.remove('show');
 }
 
+/* 读一个数据目录（一个「段」）：朝代节点可能是单目录，也可能由 DYNASTY_SEGS 拼多段。
+   返回的每条记录都打上 _dynasty（节点 id）与 _seg（段 tag，单段朝代为 null），
+   帝王另外补 _segLabel 与 lineage，供时间线的段牌和年号条分段使用。 */
+async function loadSeg(dyn, seg) {
+  const dir = seg ? seg.dir : (DYNASTY_DIRS[dyn] || '');
+  const lay = DYNASTY_LAYOUT[dyn] || DYNASTY_LAYOUT.ming;
+  const hasMap = DYNASTY_HAS_MAP[dyn] || false;
+  const p = (rel) => `../data/${dir}${rel}`;
+  const maybe = (path) => loadJSON(path).catch(() => null);
+  const bucket = { emperors: [], events: [], people: [], places: [], routes: [], mapEvents: [], institutions: [], quiz: [], cases: [], cats: [], sourcesDoc: null };
+  const tag = (x) => { x._dynasty = dyn; x._seg = seg ? seg.tag : null; };
+  try {
+    const idx = await loadJSON(p('emperors/index.json'));
+    if (idx.meta && idx.meta.lineages) Object.assign(LINEAGE_LABEL, idx.meta.lineages);
+    if (!idx.emperors || !Array.isArray(idx.emperors)) return bucket;
+    const emps = await Promise.all(idx.emperors.map((e) => loadJSON(p(`emperors/${e.file}`)).catch(() => null)));
+    emps.filter(Boolean).forEach((emp) => {
+      tag(emp);
+      if (seg) { emp.lineage = seg.lineage; emp._segLabel = seg.label; }
+      bucket.emperors.push(emp);
+    });
+    // 其余分区同样要合并：漏掉哪一块，「全部」视图对应面板就是空的
+    // （「该朝事件」显示没有事件、人物关系与探案缺内容都是这个原因）。
+    const [evDoc, peoDoc, plaDoc, rouDoc, mevDoc, insDoc, quizDoc, casDoc] = await Promise.all([
+      maybe(p(lay.events)), maybe(p(lay.people)),
+      hasMap ? maybe(p(lay.places)) : null,
+      hasMap ? maybe(p(lay.routes)) : null,
+      hasMap ? maybe(p(lay.mapEvents)) : null,
+      dyn === 'ming' ? maybe(p('institutions/institutions.json')) : null,
+      maybe(p(dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json')),
+      maybe(p(lay.cases)),
+    ]);
+    (evDoc && evDoc.events || []).forEach(x => { tag(x); bucket.events.push(x); });
+    (peoDoc && peoDoc.people || []).forEach(x => { tag(x); bucket.people.push(x); });
+    (plaDoc && plaDoc.places || []).forEach(x => { tag(x); bucket.places.push(x); });
+    (rouDoc && rouDoc.routes || []).forEach(x => { tag(x); bucket.routes.push(x); });
+    (mevDoc && mevDoc.events || []).forEach(x => { tag(x); bucket.mapEvents.push(x); });
+    (insDoc && insDoc.institutions || []).forEach(x => { tag(x); bucket.institutions.push(x); });
+    (quizDoc && quizDoc.quiz || []).forEach(x => { tag(x); bucket.quiz.push(x); });
+    // 悬案疑案：各朝都有自己的 cases.json 与分类，全部视图必须一起合并，
+    // 否则「全部」下只显示一套分类。
+    (casDoc && casDoc.cases || []).forEach(x => { tag(x); bucket.cases.push(x); });
+    (casDoc && casDoc.categories || []).forEach((c) => {
+      if (c && c.id) bucket.cats.push({ id: c.id, name: c.name, _dynasty: dyn });
+    });
+  } catch (e) { /* 单段加载失败不阻塞整朝 */ }
+  return bucket;
+}
+
+/* 读一个朝代节点：有分段就逐段读再拼（顺序＝segs 顺序，即时间顺序），没有就是单目录。 */
+async function loadDynasty(dyn) {
+  const segs = DYNASTY_SEGS[dyn];
+  const parts = segs ? await Promise.all(segs.map((s) => loadSeg(dyn, s))) : [await loadSeg(dyn, null)];
+  const out = { emperors: [], events: [], people: [], places: [], routes: [], mapEvents: [], institutions: [], quiz: [], cases: [], caseCategories: [] };
+  for (const b of parts) {
+    out.emperors.push(...b.emperors);
+    out.events.push(...b.events);
+    out.people.push(...b.people);
+    out.places.push(...b.places);
+    out.routes.push(...b.routes);
+    out.mapEvents.push(...b.mapEvents);
+    out.institutions.push(...b.institutions);
+    out.quiz.push(...b.quiz);
+    out.cases.push(...b.cases);
+    for (const c of b.cats) if (!out.caseCategories.some((x) => x.id === c.id)) out.caseCategories.push(c);
+  }
+  return out;
+}
+
 async function loadAll() {
   showLoader();
   try {
@@ -340,7 +435,7 @@ async function loadAll() {
       if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
       return;
     }
-    const dynOrder = ['qin','xihan','xin','donghan','sanguo','jin','sui','tang','wudai','song','yuan','ming','qing'];
+    const dynOrder = ['qin','han','sanguo','jin','sui','tang','wudai','song','yuan','ming','qing'];
     const allEmperors = [];
     const allEvents = [];
     const allPeople = [];
@@ -365,44 +460,18 @@ async function loadAll() {
           mapEvents: [], institutions: [], quiz: [], cases: [], cats: [],
         };
         try {
-          const dir = DYNASTY_DIRS[dyn] || '';
-          const lay = DYNASTY_LAYOUT[dyn] || DYNASTY_LAYOUT.ming;
-          const r = await fetch(`../data/${dir}emperors/index.json?v=v1`);
-          if (!r.ok) return bucket;
-          const idx = await r.json();
-          if (idx.meta && idx.meta.lineages) Object.assign(LINEAGE_LABEL, idx.meta.lineages);
-          if (!idx.emperors || !Array.isArray(idx.emperors)) return bucket;
-          // 逐皇帝加载详情
-          const emps = await Promise.all(idx.emperors.map(e =>
-            loadJSON(`../data/${dir}emperors/${e.file}`).catch(() => null)
-          ));
-          emps.filter(Boolean).forEach(emp => { emp._dynasty = dyn; bucket.emperors.push(emp); });
-
-          // 其余分区同样要合并：此前只合了 emperors，把 events/mapEvents/cases/people/
-          // quiz/sourcesDoc 全留空，而「全部」是默认视图，导致首屏「该朝事件」显示
-          // 「这个朝代还没有标记在地图上的事件」、人物关系与探案也缺内容。
-          const p = (rel) => `../data/${dir}${rel}`;
-          const maybe = (path) => loadJSON(path).catch(() => null);
-          const [evDoc, peoDoc, plaDoc, rouDoc, mevDoc, insDoc, quizDoc, casDoc] = await Promise.all([
-            maybe(p(lay.events)), maybe(p(lay.people)), maybe(p(lay.places)),
-            maybe(p(lay.routes)), maybe(p(lay.mapEvents)),
-            dyn === 'ming' ? maybe(p('institutions/institutions.json')) : null,
-            maybe(p(dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json')),
-            maybe(p(lay.cases)),
-          ]);
-          (evDoc && evDoc.events || []).forEach(x => { x._dynasty = dyn; bucket.events.push(x); });
-          (peoDoc && peoDoc.people || []).forEach(x => { x._dynasty = dyn; bucket.people.push(x); });
-          (plaDoc && plaDoc.places || []).forEach(x => { x._dynasty = dyn; bucket.places.push(x); });
-          (rouDoc && rouDoc.routes || []).forEach(x => { x._dynasty = dyn; bucket.routes.push(x); });
-          (mevDoc && mevDoc.events || []).forEach(x => { x._dynasty = dyn; bucket.mapEvents.push(x); });
-          (insDoc && insDoc.institutions || []).forEach(x => { x._dynasty = dyn; bucket.institutions.push(x); });
-          (quizDoc && quizDoc.quiz || []).forEach(x => { x._dynasty = dyn; bucket.quiz.push(x); });
-          // 悬案疑案：各朝都有自己的 cases.json 与分类，全部视图必须一起合并，
-          // 否则「全部」下只显示明朝那一套分类 4 项（其余六朝 8 项看不到）。
-          (casDoc && casDoc.cases || []).forEach(x => { x._dynasty = dyn; bucket.cases.push(x); });
-          (casDoc && casDoc.categories || []).forEach((c) => {
-            if (c && c.id) bucket.cats.push({ id: c.id, name: c.name, _dynasty: dyn });
-          });
+          // 一个节点可能由多段拼成（汉＝西汉＋新莽＋东汉），统一走 loadDynasty
+          const got = await loadDynasty(dyn);
+          bucket.emperors.push(...got.emperors);
+          bucket.events.push(...got.events);
+          bucket.people.push(...got.people);
+          bucket.places.push(...got.places);
+          bucket.routes.push(...got.routes);
+          bucket.mapEvents.push(...got.mapEvents);
+          bucket.institutions.push(...got.institutions);
+          bucket.quiz.push(...got.quiz);
+          bucket.cases.push(...got.cases);
+          bucket.cats.push(...got.caseCategories);
         } catch(e) { /* 跳过加载失败的朝代 */ }
         return bucket;
       })),
@@ -482,43 +551,25 @@ async function loadAll() {
 
 /** 真正拉取某朝全部 JSON（结果写入 DATA_CACHE 由调用方负责） */
 async function _fetchDynasty(dyn) {
-  const dir = DYNASTY_DIRS[dyn] || '';
-  const hasMap = DYNASTY_HAS_MAP[dyn] || false;
-  const lay = DYNASTY_LAYOUT[dyn] || DYNASTY_LAYOUT.ming;
-  const p = (rel) => `../data/${dir}${rel}`;
-  const maybe = (path) => loadJSON(path).catch(() => null);
-
-  const urls = [
-    loadJSON(p('emperors/index.json')),
-    loadJSON(p(lay.events)),
-    loadJSON(p(lay.people)),
-    loadJSON(p(lay.cases)),
-  ];
-  if (hasMap) urls.push(maybe(p(lay.places)), maybe(p(lay.routes)), maybe(p(lay.mapEvents)));
-  // 明朝额外加载机构制度；史料出处所有朝代共用 data/sources/sources.json（含隋书/资治通鉴/北史/两唐书等）
-  if (dyn === 'ming') {
-    urls.push(maybe(p('institutions/institutions.json')), maybe(p('sources/sources.json')));
-  } else {
-    urls.push(null, maybe('../data/sources/sources.json'));
-  }
-  const quizPath = dyn === 'ming' ? 'quiz/quiz.json' : 'quiz.json';
-  urls.push(maybe(p(quizPath)));
-
-  const [empIdx, events, people, casesDoc, places, routes, mapEventsDoc, institutions, sourcesDoc, quizDoc] = await Promise.all(urls);
-  // 逐皇帝读条目（并发，替代原串行）
-  const emperors = await Promise.all(empIdx.emperors.map((e) => loadJSON(p(`emperors/${e.file}`))));
+  // 汉这类多段节点由 loadDynasty 逐段拼接；单段朝代 loadSeg 一次读完
+  const [body, sourcesDoc] = await Promise.all([
+    loadDynasty(dyn),
+    dyn === 'ming'
+      ? loadJSON(`../data/${DYNASTY_DIRS[dyn]}sources/sources.json`).catch(() => null)
+      : loadJSON('../data/sources/sources.json').catch(() => null),
+  ]);
   return {
-    emperors,
-    people: people.people || [],
-    events: events.events || [],
-    places: (places && places.places) || [],
-    routes: (routes && routes.routes) || [],
-    institutions: (institutions && institutions.institutions) || [],
+    emperors: body.emperors,
+    people: body.people,
+    events: body.events,
+    places: body.places,
+    routes: body.routes,
+    institutions: body.institutions,
     sourcesDoc: sourcesDoc || { sources: [] },
-    mapEvents: (mapEventsDoc && mapEventsDoc.events) || [],
-    cases: casesDoc.cases || [],
-    caseCategories: casesDoc.categories || [],
-    quiz: (quizDoc && quizDoc.quiz) || [],
+    mapEvents: body.mapEvents,
+    cases: body.cases,
+    caseCategories: body.caseCategories,
+    quiz: body.quiz,
   };
 }
 
@@ -657,7 +708,7 @@ function sourceTitle(id) {
 
 // ---------- 界面一：时间线 ----------
 // 并立时代的继承线标签：内置三国与两晋，其余朝代可在各自 emperors/index.json 的 meta.lineages 里补充
-const LINEAGE_LABEL = { wei: '魏', shu: '蜀', wu: '吴', jinwest: '西晋', jineast: '东晋' };
+const LINEAGE_LABEL = { wei: '魏', shu: '蜀', wu: '吴', jinwest: '西晋', jineast: '东晋', hanwest: '西汉', hanxin: '新莽', haneast: '东汉' };
 function renderTimeline() {
   const wrap = $('#timeline-scroll');
   wrap.innerHTML = '';
@@ -679,14 +730,20 @@ function renderTimeline() {
   DATA.emperors.forEach((e, i) => {
     const nextE = DATA.emperors[i + 1];
     const groupEnd = groupMode && (!nextE || keyOf(nextE) !== keyOf(e));
+    // 段牌与朝代牌同名的不立两块（「西汉」朝代牌后面紧跟「西汉」段牌会重复一屏）
+    const segPlate = (emp) => {
+      const lab = LINEAGE_LABEL[emp.lineage] || '';
+      const dynLab = DYNASTY_SHORT[dynOf(emp)] || DYNASTY_LABEL[dynOf(emp)] || '';
+      return lab && lab !== dynLab ? lab : '';
+    };
     if (allMode) {
       // 朝代交界：墨色朝代牌；该朝首帝若属某条政权线，紧跟一块彩牌（如「三国」「魏」）
       if (i === 0) {
         pushSep(DYNASTY_SHORT[dynOf(e)] || DYNASTY_LABEL[dynOf(e)] || '', 'tl-sep-dyn', true);
-        if (e.lineage) pushSep(LINEAGE_LABEL[e.lineage] || '', 'lineage-' + e.lineage, false);
+        if (segPlate(e)) pushSep(segPlate(e), 'lineage-' + e.lineage, false);
       } else if (dynOf(e) !== dynOf(prevEmp)) {
         pushSep(DYNASTY_SHORT[dynOf(e)] || DYNASTY_LABEL[dynOf(e)] || '', 'tl-sep-dyn', false);
-        if (e.lineage) pushSep(LINEAGE_LABEL[e.lineage] || '', 'lineage-' + e.lineage, false);
+        if (segPlate(e)) pushSep(segPlate(e), 'lineage-' + e.lineage, false);
       } else if (keyOf(e) !== keyOf(prevEmp) && e.lineage) {
         // 同朝换线（魏→蜀→吴、西晋→东晋）
         pushSep(LINEAGE_LABEL[e.lineage] || '', 'lineage-' + e.lineage, false);
@@ -1826,6 +1883,7 @@ const FALLBACK_SHAPES = {
     [113.5,22.5],[111.0,21.3],[109.5,21.6],[107.5,21.8],[106.0,22.5],
     [104.5,25.0],[104.0,29.0],[103.5,33.0],[104.0,36.0],[104.0,38.0],
   ],
+  han: HAN_OUTLINE,
   xihan: HAN_OUTLINE,
   xin: HAN_OUTLINE,
   donghan: HAN_OUTLINE,
@@ -1964,6 +2022,7 @@ const MAP_VIEW = {
   sanguo: { center: [33.5, 108], zoom: 4 },
   jin: { center: [34, 106], zoom: 4 },
   qin: { center: [34, 108], zoom: 4 },
+  han: { center: [34.5, 106.5], zoom: 4 },
   xihan: { center: [35, 105], zoom: 4 },
   xin: { center: [35, 106], zoom: 4 },
   donghan: { center: [34, 108], zoom: 4 },
@@ -3312,7 +3371,7 @@ window.__guideFlyTo = function (lat, lng) {
   leafletMap.panTo([lat, lng], { animate: true, duration: 1.0 });
 };
 
-const DYN_SHORT = { qin: '秦', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
+const DYN_SHORT = { qin: '秦', han: '汉', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
 const PLACE_KIND = { capital: '都城', regime: '诸国都城', city: '重镇', site: '战场·名胜', overseas: '海外' };
 
 /** 地名弹窗：一城一卡。
@@ -3715,9 +3774,9 @@ const DETECTIVE_TASKS_BY_DYNASTY = {
   ],
 };
 
-const DYNASTY_LABEL = { qin: '秦朝', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋朝', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
+const DYNASTY_LABEL = { qin: '秦朝', han: '汉朝', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋朝', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
 // 时间线朝代立牌用两字内简称（竖排书脊签高度固定 64px，四字会撑破）
-const DYNASTY_SHORT = { qin: '秦', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
+const DYNASTY_SHORT = { qin: '秦', han: '汉', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
 
 // 切朝代令牌：并发切换时只渲染最后一次
 let _dynastyToken = 0;
@@ -4298,6 +4357,7 @@ const DYNASTY_FILL = {
   jin: { fill: '#cfc6e0', stroke: '#57457f', title: '两 晋 疆 域（西晋太康年间极盛范围，据《中国历史地图集》示意）' },
   // 秦汉四朝没有手绘边界 geojson，这里用简化外轮廓示意；秦尚黑、汉尚赤，配色按五德终始取色。
   qin: { fill: '#bcb0a4', stroke: '#3f382f', title: '秦 朝 疆 域（前 221 年并六国，北以长城为界，据《中国历史地图集·秦时期》示意）' },
+  han: { fill: '#e2a08a', stroke: '#8a3a28', title: '汉 朝 疆 域（西京·新莽·东京三段，取武帝极盛范围，据《中国历史地图集》示意）' },
   xihan: { fill: '#e2a08a', stroke: '#8a3a28', title: '西 汉 疆 域（武帝极盛，西领西域、东置乐浪，据《中国历史地图集·西汉时期》示意）' },
   xin: { fill: '#e6cf8a', stroke: '#7a6320', title: '新 莽 疆 域（承西汉旧疆而改郡县名，据《中国历史地图集》示意）' },
   donghan: { fill: '#e0a898', stroke: '#8a3a28', title: '东 汉 疆 域（西域三通三绝，据《中国历史地图集·东汉时期》示意）' },
@@ -4427,7 +4487,11 @@ async function waitForEmp(fn, tries = 40, gap = 80) {
 async function applyDeepLink() {
   const params = new URLSearchParams(location.search);
   const page = params.get('page');
-  const dynasty = params.get('dynasty');
+  // 汉已合成一个节点：旧链接 dynasty=xihan/xin/donghan 一律转到 han，
+  // emperor 参数不动（帝 id 没变），落地后照样展开到那位皇帝。
+  const DYN_ALIAS = { xihan: 'han', xin: 'han', donghan: 'han' };
+  const dynastyRaw = params.get('dynasty');
+  const dynasty = (dynastyRaw && DYN_ALIAS[dynastyRaw]) || dynastyRaw;
   // 国学子站深链：?module=myth&tab=books&book=shanhaijing
   // 走主壳是为了保留左侧栏（用户可自行切换板块），而不是直接打开裸 iframe 页面。
   const moduleId = params.get('module');

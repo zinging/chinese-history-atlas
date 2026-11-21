@@ -2,12 +2,17 @@
  "meta": {
   "title": "西汉帝王索引",
   "description": "自高祖称帝至孺子婴废，共十二帝（不含吕后称制）",
-  "updated": "2026-11-21"
+  "lineages": {
+      "hanwest": "西汉"
+    },
+    "note": "西汉十二帝（前202-8），都长安，故称西京；与东汉同出汉室，中间隔新莽十五年，故列为汉之西京段。",
+    "updated": "2026-11-21"
  },
  "emperors": [
   {
    "id": "xihan-emp-gaozu",
-   "name": "刘邦",
+   "lineage": "hanwest",
+    "name": "刘邦",
    "templeName": "高祖",
    "eraName": [
     "高祖"
@@ -20,7 +25,8 @@
   },
   {
    "id": "xihan-emp-huidi",
-   "name": "刘盈",
+   "lineage": "hanwest",
+    "name": "刘盈",
    "templeName": "惠帝",
    "eraName": [
     "惠帝"
@@ -33,7 +39,8 @@
   },
   {
    "id": "xihan-emp-wendi",
-   "name": "刘恒",
+   "lineage": "hanwest",
+    "name": "刘恒",
    "templeName": "文帝",
    "eraName": [
     "文帝"
@@ -46,7 +53,8 @@
   },
   {
    "id": "xihan-emp-jingdi",
-   "name": "刘启",
+   "lineage": "hanwest",
+    "name": "刘启",
    "templeName": "景帝",
    "eraName": [
     "景帝"
@@ -59,7 +67,8 @@
   },
   {
    "id": "xihan-emp-wudi",
-   "name": "刘彻",
+   "lineage": "hanwest",
+    "name": "刘彻",
    "templeName": "武帝",
    "eraName": [
     "建元",
@@ -82,7 +91,8 @@
   },
   {
    "id": "xihan-emp-zhaodi",
-   "name": "刘弗陵",
+   "lineage": "hanwest",
+    "name": "刘弗陵",
    "templeName": "昭帝",
    "eraName": [
     "始元",
@@ -97,7 +107,8 @@
   },
   {
    "id": "xihan-emp-xuandi",
-   "name": "刘询",
+   "lineage": "hanwest",
+    "name": "刘询",
    "templeName": "宣帝",
    "eraName": [
     "本始",
@@ -116,7 +127,8 @@
   },
   {
    "id": "xihan-emp-yuandi",
-   "name": "刘奭",
+   "lineage": "hanwest",
+    "name": "刘奭",
    "templeName": "元帝",
    "eraName": [
     "初元",
@@ -132,7 +144,8 @@
   },
   {
    "id": "xihan-emp-chengdi",
-   "name": "刘骜",
+   "lineage": "hanwest",
+    "name": "刘骜",
    "templeName": "成帝",
    "eraName": [
     "建始",
@@ -151,7 +164,8 @@
   },
   {
    "id": "xihan-emp-aidi",
-   "name": "刘欣",
+   "lineage": "hanwest",
+    "name": "刘欣",
    "templeName": "哀帝",
    "eraName": [
     "建平",
@@ -165,7 +179,8 @@
   },
   {
    "id": "xihan-emp-pingdi",
-   "name": "刘衎",
+   "lineage": "hanwest",
+    "name": "刘衎",
    "templeName": "平帝",
    "eraName": [
     "元始"
@@ -178,7 +193,8 @@
   },
   {
    "id": "xihan-emp-ruzi",
-   "name": "刘婴",
+   "lineage": "hanwest",
+    "name": "刘婴",
    "templeName": "孺子婴",
    "eraName": [
     "居摄",

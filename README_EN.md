@@ -96,11 +96,11 @@ Send this to your AI client — DSH, Doubao, Cursor, Claude Desktop all work —
 
 ## 🗺️ Five modules
 
-### 🏮 1. Emperor Lineage — power on stage, thirteen dynasties
+### 🏮 1. Emperor Lineage — power on stage, eleven dynasties
 
 `Dynasty Lineage` · `Unsolved Cases` · `Territory Maps` · `History Detective`
 
-**13 dynasties, 133 emperors** (Qin 3 · Western Han 12 · Xin 1 · Eastern Han 14 · Three Kingdoms 11 · Jin 15 · Sui 3 · Tang 14 · Five Dynasties 6 · Song 18 · Yuan 8 · Ming 16 · Qing 12) on a single horizontal card rail spanning 2,100 years. The four Qin–Han nodes ship without generated portraits: each shows a vermilion name seal instead, so a placeholder never passes for a painting. Open any emperor for a full "life on scene", not an encyclopedia stub:
+**11 dynasties, 133 emperors** (Qin 3 · Han 27 · Three Kingdoms 11 · Jin 15 · Sui 3 · Tang 14 · Five Dynasties 6 · Song 18 · Yuan 8 · Ming 16 · Qing 12) on a single horizontal card rail spanning 2,100 years. The Qin and Han nodes ship without generated portraits: each shows a vermilion name seal instead, so a placeholder never passes for a painting. Open any emperor for a full "life on scene", not an encyclopedia stub:
 
 - **Dynasty lineage**: a **739-entry life timeline**, ministers / consorts / rivals, fun facts and controversies, with ★ marking the turning points;
 - **Coexisting-regime Gantt**: three rows for the Three Kingdoms, ten for the Five Dynasties / Ten States, eighteen for the Two Jin and Sixteen Kingdoms — every ruler's reign drawn at true year-proportional width on one chart, one block per ruler (rulers reigning under a year get their own block at a minimum visible width); click a block to jump to that emperor's card. Blocks too narrow to carry a name and without an emperor card (most Sixteen Kingdoms and Ten States rulers) pop a hover/tap biography of that one ruler; the regime name at the head of each row carries its own separate regime note (lifespan, ethnic group or fate, founding and fall, line of rulers), so person and polity are never mixed in one card. Neighbouring blocks in different rows are not successors; only within a row do they chain father to son;
@@ -222,7 +222,7 @@ Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and card
 
 **⚡ Zero dependencies, instant open, works offline**
 
-Pure vanilla HTML / CSS / JS — no build, no framework, no backend; everything under `data/` is readable, editable JSON; no `npm install`, no database. Map library and fonts are fully localised, so it runs with the network unplugged. The thirteen dynasties load **concurrently** (a hundred-plus JSON files in one round trip in the "all" view); JSON is sharded per module and fetched on demand; galleries and map cards use thumbnails with automatic fallback.
+Pure vanilla HTML / CSS / JS — no build, no framework, no backend; everything under `data/` is readable, editable JSON; no `npm install`, no database. Map library and fonts are fully localised, so it runs with the network unplugged. The eleven dynasties load **concurrently** (a hundred-plus JSON files in one round trip in the "all" view); JSON is sharded per module and fetched on demand; galleries and map cards use thumbnails with automatic fallback.
 
 **🤖 An AI guide out of the box, illustrations included**
 

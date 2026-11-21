@@ -63,8 +63,12 @@ body[data-era="wudai"] {
   background-color: #fdf6e9;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='80' viewBox='0 0 110 80'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Cpath d='M10 40 Q25 20 40 40 T70 40 T100 40'/%3E%3Ccircle cx='40' cy='40' r='5'/%3E%3Ccircle cx='70' cy='40' r='4'/%3E%3Cpath d='M20 60 Q35 50 50 60'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
 }
-/* 三国·汉晋云气纹：汉画像砖与漆器上的流云卷涡，连绵起伏 */
-body[data-era="sanguo"] {
+/* 汉·四神瓦当卷云纹：汉长安城遗址出土瓦当的卷云母题，配漆器朱绘，用极淡朱色 */
+body[data-era="han"] {
+  background-color: #fdf6e9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'%3E%3Cg fill='none' stroke='%238a5a4a' stroke-width='0.9' opacity='0.2'%3E%3Ccircle cx='64' cy='64' r='9'/%3E%3Cpath d='M64 55 Q56 64 64 73 Q72 64 64 55'/%3E%3Cpath d='M64 40 Q46 52 46 64 Q46 76 64 88'/%3E%3Cpath d='M64 40 Q82 52 82 64 Q82 76 64 88'/%3E%3Cpath d='M30 64 Q42 46 64 46'/%3E%3Cpath d='M98 64 Q86 82 64 82'/%3E%3Cpath d='M20 40 Q34 30 48 38'/%3E%3Cpath d='M80 90 Q94 100 108 88'/%3E%3Ccircle cx='30' cy='88' r='3'/%3E%3Ccircle cx='100' cy='38' r='3'/%3E%3Ccircle cx='12' cy='110' r='2.5'/%3E%3Ccircle cx='116' cy='16' r='2.5'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
+}
+/* 三国·汉晋云气纹：汉画像砖与漆器上的流云卷涡，连绵起伏 */body[data-era="sanguo"] {
   background-color: #fdf6e9;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%238a7a5c' stroke-width='0.9' opacity='0.22'%3E%3Cpath d='M12 44 Q28 28 44 44 Q60 60 76 44 Q92 28 108 44'/%3E%3Cpath d='M12 76 Q28 60 44 76 Q60 92 76 76 Q92 60 108 76'/%3E%3Ccircle cx='44' cy='44' r='4'/%3E%3Ccircle cx='76' cy='44' r='3'/%3E%3Ccircle cx='44' cy='76' r='3'/%3E%3Ccircle cx='76' cy='76' r='4'/%3E%3C/g%3E%3C/svg%3E"), var(--paper-noise);
 }
@@ -648,6 +652,10 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .tl-lineage-sep.lineage-wu span { background: #2f6b57; }
 .tl-lineage-sep.lineage-jinwest span { background: #7b3f2f; }
 .tl-lineage-sep.lineage-jineast span { background: #2f5f6b; }
+/* 汉三段：西京与东京同为汉家赤色，靠深浅区分；新莽取土德黄，一眼看出是两汉之间的插曲 */
+.tl-lineage-sep.lineage-hanwest span { background: #8a3a28; }
+.tl-lineage-sep.lineage-hanxin span { background: #7a6320; }
+.tl-lineage-sep.lineage-haneast span { background: #7c2d3a; }
 /* 「全部」视图的朝代牌：墨色，与政权彩牌区分——墨＝朝代段，彩＝并立政权。
    大朝代（三国/晋/隋唐…）要「一眼看出这一段属于谁」，所以整条分隔带上下全填充，
    只有中间一枚墨牌写字；政权彩牌保持小签、不铺底，二者层次一眼可分。 */
@@ -687,6 +695,19 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .emp-card.lineage-jineast.active { background: #2f5f6b; border-color: #2f5f6b; }
 .emp-card.lineage-jinwest.active::after { background: #7b3f2f; }
 .emp-card.lineage-jineast.active::after { background: #2f5f6b; }
+/* 汉三段卡片配色（与段牌同色系，浅底 + 同色徽标） */
+.emp-card.lineage-hanwest { background: #fbf0ec; border-color: #c99a8c; }
+.emp-card.lineage-hanxin  { background: #fbf5e5; border-color: #cbb782; }
+.emp-card.lineage-haneast { background: #f8eef0; border-color: #c79aa3; }
+.emp-card.lineage-hanwest .lineage-badge { background: #8a3a28; }
+.emp-card.lineage-hanxin  .lineage-badge { background: #7a6320; }
+.emp-card.lineage-haneast .lineage-badge { background: #7c2d3a; }
+.emp-card.lineage-hanwest.active { background: #8a3a28; border-color: #8a3a28; }
+.emp-card.lineage-hanxin.active  { background: #7a6320; border-color: #7a6320; }
+.emp-card.lineage-haneast.active { background: #7c2d3a; border-color: #7c2d3a; }
+.emp-card.lineage-hanwest.active::after { background: #8a3a28; }
+.emp-card.lineage-hanxin.active::after  { background: #7a6320; }
+.emp-card.lineage-haneast.active::after { background: #7c2d3a; }
 .emp-portrait {
   width: 84px; height: 84px; margin: 0 auto 8px;
   border-radius: 50%; background: var(--gold);
