@@ -322,31 +322,33 @@ body.sidebar-collapsed .tabs {
 }
 
 .dynasty-switch {
-  display: flex; gap: 0; padding: 0;
+  display: grid;
+  /* 列数由 app.js 的 fitTopbar() 按实测宽度写进 --dyn-cols：
+     13 朝 + 全部放一行太挤（大屏实测单个只剩 78px、元/明/清被横滑切掉），
+     所以改成「按格平铺、装不下就整行换行」，每格保底 104px，行数与列数自动折中。 */
+  grid-template-columns: repeat(var(--dyn-cols, 7), minmax(0, 1fr));
+  gap: 0; padding: 0;
   background: #efe6d0; border-radius: 6px;
   border: 1px solid #c9b88a;
-  /* 后续再加朝代也不挤：按钮改「按内容最小宽 + 均分剩余」，装不下时整条横滑（隐藏滚动条） */
-  overflow-x: auto; overflow-y: hidden;
-  scrollbar-width: none; -ms-overflow-style: none;
+  overflow: hidden;
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
 }
-.dynasty-switch::-webkit-scrollbar { display: none; }
 .dynasty-btn {
-  flex: 1 0 auto;
-  min-width: 88px;
+  min-width: 0;
   border: none; background: transparent; cursor: pointer;
-  font-size: clamp(12px, 1.1vw, 16px); font-weight: 700; color: #6b5432;
+  font-size: clamp(12px, 1.05vw, 15.5px); font-weight: 700; color: #6b5432;
   padding: 8px 4px; border-radius: 0;
-  transition: all .2s ease;
+  transition: background .2s ease, color .2s ease;
   border-right: 1px solid #d9c9a3;
+  border-bottom: 1px solid #d9c9a3;
   text-align: center;
-  white-space: nowrap;
+  white-space: nowrap; overflow: hidden;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 1px;
 }
-.dynasty-btn[data-d="all"] { flex: 0 0 70px; min-width: 70px; }
+.dynasty-btn[data-d="all"] { min-width: 0; }
 /* 年号行 */
 .dynasty-btn .dyn-top { display: block; }
 .dynasty-btn .dyn-year {
@@ -1896,24 +1898,19 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   .tabs .tab::before { left: 3px; height: 22px; width: 2.5px; }
   body.sidebar-collapsed .tabs { right: auto; }
 
-  /* 5) 顶部朝代切换条：8 个按钮等分时每格约 43px，而「隋 581-618」nowrap
-        必然压到相邻格上（实测两行文字互相重叠）。改为横向滚动，每格保留完整
-        朝代名 + 年号 + 帝数，整条可左右滑。 */
+  /* 5) 顶部朝代切换条：手机上每格只剩 ~40px，「隋 581-618」必然压到邻格（旧版靠横向滚动兜），
+        现在直接走格子折行：JS 按实测宽度写 --dyn-cols（手机通常 4 列），13 朝 + 全部 四行铺满，
+        不再需要左右滑，也不会有被切掉的朝代。 */
   .dynasty-switch {
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    justify-content: flex-start;
+    grid-template-columns: repeat(var(--dyn-cols, 4), minmax(0, 1fr));
+    overflow: hidden;
   }
-  .dynasty-switch::-webkit-scrollbar { display: none; }
   .dynasty-btn {
-    flex: 0 0 auto;
-    font-size: 13px;
-    padding: 7px 12px;
+    font-size: 12.5px;
+    padding: 7px 4px;
     letter-spacing: 0;
   }
-  .dynasty-btn[data-d="all"] { flex: 0 0 auto; }
-  .dynasty-btn .dyn-year { font-size: 11px; margin-left: 3px; }
+  .dynasty-btn .dyn-year { font-size: 11px; margin-left: 2px; }
   .dynasty-btn .dyn-sub { font-size: 11px; height: 14px; line-height: 14px; }
 
   /* 6) 侧栏弹层：主定义用 left:calc(侧栏宽+12px) 定位在侧栏右侧；

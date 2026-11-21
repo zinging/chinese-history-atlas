@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261121c';
+const APP_BUILD = '20261121d';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -291,17 +291,17 @@ const DYNASTY_TEXT = {
     footer: '秦是第一个中央集权的统一帝国，废分封、行郡县，书同文、车同轨 · 帝王画像暂以印章占位 · 内容以《史记》秦始皇本纪、六国年表为主要依据',
   },
   xihan: {
-    brand: '大汉西京', dynSub: '十二帝·含孺子婴', mapAria: '西汉示意地图',
+    brand: '大汉西京', dynSub: '汉·西京十二帝', mapAria: '西汉示意地图',
     legendNote: '西汉疆域东抵朝鲜、西通西域，暂无手绘边界，地名与事件据《汉书》系年',
     footer: '西汉承秦制而损益之，黄老休养在前、独尊儒术在后，奠定此后两千年的制度与意识形态 · 帝王画像暂以印章占位 · 内容以《汉书》帝纪、列传为主要依据',
   },
   xin: {
-    brand: '新莽改制', dynSub: '一帝·十五年', mapAria: '新莽示意地图',
+    brand: '新莽改制', dynSub: '两汉之间·十五年', mapAria: '新莽示意地图',
     legendNote: '新莽承西汉疆域，改制频繁而地名多改，暂无手绘边界，事件据《汉书·王莽传》系年',
     footer: '新莽是西汉外戚王莽代汉建立的短命王朝，托古改制、币制屡变，终以绿林赤眉之乱覆亡 · 帝王画像暂以印章占位 · 内容以《汉书》王莽传为主要依据',
   },
   donghan: {
-    brand: '大汉东京', dynSub: '十四帝·光武中兴', mapAria: '东汉示意地图',
+    brand: '大汉东京', dynSub: '汉·东京十四帝', mapAria: '东汉示意地图',
     legendNote: '东汉疆域与西汉大体相当而西域三通三绝，暂无手绘边界，事件据《后汉书》系年',
     footer: '东汉是光武中兴后重建的汉室，外戚宦官交替专权，终于黄巾之乱与群雄割据 · 帝王画像暂以印章占位 · 内容以《后汉书》帝纪、列传为主要依据',
   },
@@ -4090,14 +4090,40 @@ function setBodyData(key, value) {
 /* 顶部朝代条左右扩宽：把 .topbar 从 .module-inner 的 1105px 正文列里放出来——
    左借侧栏与正文列之间的留白，右借右上固定导航胶囊左侧的空间（并避开搜索圆钮）。
    不写死像素：≤1467px 时 .module-inner 会为右胶囊沟槽追加 padding-right，纯 CSS 算不准，
-   这里实测元素矩形后给行内负 margin；窄屏与移动端直接清空，回到原布局。 */
+   这里实测元素矩形后给行内负 margin；窄屏与移动端只算列数、不扩宽。
+
+   左右现在各扩到可用边界（不再「左右同宽、最多 200px」）：13 朝 + 全部 单行要 1400px 以上，
+   同宽对称只能扩到 ~1360，元/明/清 必定被切。让条子真的铺满可用宽度，13 个朝代才全露出来。 */
 function fitTopbar() {
   const bar = document.querySelector('.topbar');
   const inner = document.querySelector('.module-inner');
   if (!bar || !inner) return;
   bar.style.marginLeft = '';
   bar.style.marginRight = '';
-  if (window.innerWidth < 1240) return;
+  const sw = document.querySelector('#dynasty-switch');
+  /* 列数：13 朝 + 全部，按每格至少 104px 折算需要几行，再除回来取列数，
+     保证最后一行的格数与前面接近（14 朝：宽屏 14 列一行；中屏 7 列两行；窄屏 5 列三行）。 */
+  const setCols = (avail) => {
+    if (!sw) return;
+    const n = sw.querySelectorAll('.dynasty-btn').length || 14;
+    // 手机格子太窄时（「五代14帝·十国41主」这类副标题 132px 起），宁可少一列、多一行：
+    // 390px 视口 4 列只剩 84px，字会被切；改成 3 列 130px 就完整了。
+    const minCell = avail > 0 && avail < 520 ? 118 : 104;
+    let cols = n;
+    if (avail > 0) {
+      const rows = Math.max(1, Math.ceil((n * minCell) / avail));
+      cols = Math.ceil(n / rows);
+    }
+    cols = Math.max(3, Math.min(n, cols));
+    if (sw.style.getPropertyValue('--dyn-cols') !== String(cols)) {
+      sw.style.setProperty('--dyn-cols', String(cols));
+    }
+  };
+  if (window.innerWidth < 1240) {
+    // 窄屏/移动端：不扩宽（.topbar 已是整行），但仍按视口宽度折列
+    setCols(bar.getBoundingClientRect().width - 8);
+    return;
+  }
   const bb = bar.getBoundingClientRect();
   const side = document.querySelector('.mega-sidebar');
   const tabs = document.querySelector('.tabs');
@@ -4106,11 +4132,11 @@ function fitTopbar() {
     tabs ? tabs.getBoundingClientRect().left - 14 : window.innerWidth - 16,
     window.innerWidth - 76,
   );
-  // 左右同宽对称扩，避免胶囊条在大屏上偏向一侧（右侧被固定导航胶囊卡住时，左扩也同步收敛）
-  const bleed = Math.max(0, Math.min(bb.left - availL, availR - bb.right, 200));
-  const m = bleed > 0 ? `-${Math.round(bleed)}px` : '0px';
-  if (bar.style.marginLeft !== m) bar.style.marginLeft = m;
-  if (bar.style.marginRight !== m) bar.style.marginRight = m;
+  const bleedL = Math.max(0, bb.left - availL);
+  const bleedR = Math.max(0, availR - bb.right);
+  if (bleedL > 0) bar.style.marginLeft = `-${Math.round(bleedL)}px`;
+  if (bleedR > 0) bar.style.marginRight = `-${Math.round(bleedR)}px`;
+  setCols(bb.width + bleedL + bleedR - 12);
 }
 
 async function switchDynasty(d) {
