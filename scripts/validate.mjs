@@ -29,7 +29,9 @@ function readJson(rel) {
 function checkDate(rel, d, where) {
   // 支持 YYY/YYYY、YY-MM（三年以下月份）、YY-MM-DD、YY-YY（跨年区间，如"618-620"）
   // 年份 3-4 位（唐代 618 年、元代 1271 年均为三位/四位数），月份日各 2 位
-  if (!/^\d{3,4}(-\d{2}){0,2}$/.test(String(d)) && !/^\d{3,4}-\d{3,4}$/.test(String(d))) {
+  // 公元前用负数（"-221"），跨公元前后写成"-202--197"（双负号）
+  // 年份 1-4 位（东汉"25"、新"9"等公元初年只有一两位）
+  if (!/^-?\d{1,4}(-\d{2}){0,2}$/.test(String(d)) && !/^-?\d{1,4}--?\d{1,4}$/.test(String(d))) {
     errors.push(`${rel}: ${where} 日期格式非法 "${d}"`);
   }
 }
@@ -40,8 +42,9 @@ function checkTimeline(rel, timeline) {
   for (const ev of timeline) {
     const d = ev.date;
     checkDate(rel, d, `时间线事件 "${ev.title}"`);
-    // 按起始年份排序比较（兼容 YYYY、YYYY-MM、YYYY-YYYY 区间）
-    const start = parseInt(String(d).slice(0, 4), 10);
+    // 按起始年份排序比较（兼容 YYYY、YYYY-MM、YYYY-YYYY 区间、短年份与负数年份）
+    const m = /^(-?\d{1,4})/.exec(String(d));
+    const start = m ? parseInt(m[1], 10) : NaN;
     if (prev !== null && Number.isFinite(start) && start < prev) {
       errors.push(`${rel}: 时间线未按日期升序（${prev} -> ${start}，事件 "${ev.title}"）`);
     }
@@ -68,6 +71,10 @@ const DYNASTIES = [
   { key: 'qing', dir: 'qing', empDir: 'emperors', events: 'events.json',       people: 'people.json',       cases: 'cases.json',       map: false },
   { key: 'sanguo', dir: 'sanguo', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
   { key: 'jin', dir: 'jin', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
+  { key: 'qin', dir: 'qin', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
+  { key: 'xihan', dir: 'xihan', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
+  { key: 'xin', dir: 'xin', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
+  { key: 'donghan', dir: 'donghan', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
 ];
 
 const d = (key) => (key === 'ming' ? '' : `${key}/`);

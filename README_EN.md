@@ -96,11 +96,11 @@ Send this to your AI client — DSH, Doubao, Cursor, Claude Desktop all work —
 
 ## 🗺️ Five modules
 
-### 🏮 1. Emperor Lineage — power on stage, nine dynasties
+### 🏮 1. Emperor Lineage — power on stage, thirteen dynasties
 
 `Dynasty Lineage` · `Unsolved Cases` · `Territory Maps` · `History Detective`
 
-**9 dynasties, 103 emperors** (Three Kingdoms 11 · Jin 15 · Sui 3 · Tang 14 · Five Dynasties 6 · Song 18 · Yuan 8 · Ming 16 · Qing 12) on a single horizontal card rail spanning 1,600 years. Open any emperor for a full "life on scene", not an encyclopedia stub:
+**13 dynasties, 133 emperors** (Qin 3 · Western Han 12 · Xin 1 · Eastern Han 14 · Three Kingdoms 11 · Jin 15 · Sui 3 · Tang 14 · Five Dynasties 6 · Song 18 · Yuan 8 · Ming 16 · Qing 12) on a single horizontal card rail spanning 2,100 years. The four Qin–Han nodes ship without generated portraits: each shows a vermilion name seal instead, so a placeholder never passes for a painting. Open any emperor for a full "life on scene", not an encyclopedia stub:
 
 - **Dynasty lineage**: a **739-entry life timeline**, ministers / consorts / rivals, fun facts and controversies, with ★ marking the turning points;
 - **Coexisting-regime Gantt**: three rows for the Three Kingdoms, ten for the Five Dynasties / Ten States, eighteen for the Two Jin and Sixteen Kingdoms — every ruler's reign drawn at true year-proportional width on one chart, one block per ruler (rulers reigning under a year get their own block at a minimum visible width); click a block to jump to that emperor's card. Blocks too narrow to carry a name and without an emperor card (most Sixteen Kingdoms and Ten States rulers) pop a hover/tap biography of that one ruler; the regime name at the head of each row carries its own separate regime note (lifespan, ethnic group or fate, founding and fall, line of rulers), so person and polity are never mixed in one card. Neighbouring blocks in different rows are not successors; only within a row do they chain father to son;
@@ -205,7 +205,7 @@ Timeline entries and detective clues cite the *Old/New Book of Tang*, *History o
 
 **🔎 Site-wide search that lands on the exact line**
 
-A magnifier sits at the top right; hover or click and it becomes an input. It searches 1014 entries (103 emperors, 178 map events, 44 unsolved cases, 40 case files, 75 classics, 59 artifacts, 113 beasts, 58 quiz questions, 44 life events, 46 routes, 219 hotspots…) together with body sentences, and groups the results as *entries* and *body hits*. Selecting a result does not merely open a page — it scrolls to the matched sentence and highlights it: body hits jump to the sentence, entries land on their card, map events open in the popup, route places switch to the voyage that contains them, and quiz entries open the named question. The index is the same build artefact the MCP search uses (`npm run build:search`, with a content-signature check); the front end pulls it in five on-demand shards, about 1.1MB total.
+A magnifier sits at the top right; hover or click and it becomes an input. It searches 1087 entries (133 emperors, 213 map events, 52 unsolved cases, 40 case files, 75 classics, 59 artifacts, 113 beasts, 58 quiz questions, 44 life events, 57 routes, 219 hotspots…) together with body sentences, and groups the results as *entries* and *body hits*. Selecting a result does not merely open a page — it scrolls to the matched sentence and highlights it: body hits jump to the sentence, entries land on their card, map events open in the popup, route places switch to the voyage that contains them, and quiz entries open the named question. The index is the same build artefact the MCP search uses (`npm run build:search`, with a content-signature check); the front end pulls it in five on-demand shards, about 1.1MB total.
 
 **🖼️ 906 original artworks, 1147 image files — one style, not a template skin**
 
@@ -222,7 +222,7 @@ Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and card
 
 **⚡ Zero dependencies, instant open, works offline**
 
-Pure vanilla HTML / CSS / JS — no build, no framework, no backend; everything under `data/` is readable, editable JSON; no `npm install`, no database. Map library and fonts are fully localised, so it runs with the network unplugged. The nine dynasties load **concurrently** (a hundred-plus JSON files in one round trip in the "all" view); JSON is sharded per module and fetched on demand; galleries and map cards use thumbnails with automatic fallback.
+Pure vanilla HTML / CSS / JS — no build, no framework, no backend; everything under `data/` is readable, editable JSON; no `npm install`, no database. Map library and fonts are fully localised, so it runs with the network unplugged. The thirteen dynasties load **concurrently** (a hundred-plus JSON files in one round trip in the "all" view); JSON is sharded per module and fetched on demand; galleries and map cards use thumbnails with automatic fallback.
 
 **🤖 An AI guide out of the box, illustrations included**
 
@@ -234,7 +234,7 @@ A built-in zero-dependency MCP server (v1.6.0, 15 read-only tools) plugs into Do
 
 | Module | Content |
 | :--- | :--- |
-| 🏮 Emperor Lineage | 9 dynasties · 103 emperors · 739 timeline entries · 221 major events · 178 map events · 142 figures · 44 cases · 77 critical-choice questions · 46 campaign/voyage routes · 76 ancient places |
+| 🏮 Emperor Lineage | 13 dynasties · 133 emperors · 913 timeline entries · 263 major events · 213 map events · 172 figures · 52 cases · 77 critical-choice questions · 57 campaign/voyage routes · 114 ancient places |
 | 📚 Thought Origins | 5 schools · 27 classics · 63 close readings · 15 cases · 13 inquiry prompts · 24 sage routes (82 waypoints, each with original line / translation / source / significance) · 38 Hundred Schools chronicles · 51 ancient places |
 | 🎋 Poetry Appreciation | 23 poets · 74 close readings · 98 golden lines · 116 chronology entries · 13 poetry cases · 13 routes · 44 life events · 23 inquiry prompts |
 | 🧭 Natural Sciences | 17 classics (6 categories) · 59 artifacts · 12 craft cases · 14 inquiry prompts |
@@ -267,7 +267,7 @@ The project ships a **zero-dependency MCP server** (`web/tools/history-mcp-serve
 - **Starts the server itself**: the MCP probes first and, if nothing is running, launches the site in the background (detached, ready in about 0.8s) and returns a clickable address — no disk scanning, no path guessing.
 - **Fetches the site itself**: when no local site is found, it starts a **background** clone from Gitee into your home directory (about 150MB) and `session_start` **returns immediately**, telling the AI "text search is already usable" — the conversation is never blocked by the install. It starts the server once the clone finishes. This step needs **`git` on PATH**; if it is missing the tool says so precisely and degrades to "text search only" (the plugin carries its own index, so search still works, minus images and deep links).
 - **Illustrations included**: single-object results (emperor / classic / artifact / event) attach a base64 image block; list results do not (dozens would blow up the response) — use the detail call for one item.
-- **Millisecond search**: a built-in uni/bi-gram inverted index over **1014 documents** — about 230ms to build once, then 1–2ms per query. "Tumu Crisis", "Lansuo Temple", "Gao Village", "Kunlun Mound", "Ehu Debate" all land directly on the right event or hotspot.
+- **Millisecond search**: a built-in uni/bi-gram inverted index over **1087 documents** — about 230ms to build once, then 1–2ms per query. "Tumu Crisis", "Lansuo Temple", "Gao Village", "Kunlun Mound", "Ehu Debate" all land directly on the right event or hotspot.
 - **Bundled image subset**: the plugin carries **547 narration images** (152 portraits · 172 artifact thumbnails · 141 map events · 38 Hundred Schools · 44 life events), so "ask who and see who" works before the site is fetched; once the site is ready it switches to the originals and adds the remaining **573** (258 figures · 172 artifact originals · 74 ancient maps · 69 hotspot thumbnails).
 - Full configuration: [`docs/AI集成-本地MCP配置.md`](docs/AI集成-本地MCP配置.md); self-test with `npm run mcp:selftest`.
 

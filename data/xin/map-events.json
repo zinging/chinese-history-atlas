@@ -1,0 +1,98 @@
+{
+ "meta": {
+  "title": "新莽地图事件",
+  "updated": "2026-11-21"
+ },
+ "events": [
+  {
+   "eventId": "xin-event-daihan",
+   "name": "代汉建新",
+   "date": "9",
+   "kind": "coup",
+   "lat": 34.27,
+   "lng": 108.95,
+   "note": "受禅于未央宫",
+   "summary": "王莽受孺子婴禅让，即皇帝位，国号新。",
+   "place": {
+    "name": "常安",
+    "modern": "陕西西安",
+    "note": "未央宫前殿受禅。"
+   }
+  },
+  {
+   "eventId": "xin-event-wangtian",
+   "name": "王田私属",
+   "date": "9",
+   "kind": "reform",
+   "lat": 34.27,
+   "lng": 108.95,
+   "note": "依周礼井田改制",
+   "summary": "诏天下田为王田、奴婢为私属，不得买卖，触动豪强利益。",
+   "place": {
+    "name": "常安",
+    "modern": "陕西西安",
+    "note": "改制诏令自此颁行天下。"
+   }
+  },
+  {
+   "eventId": "xin-event-bizhi",
+   "name": "币制改革",
+   "date": "10",
+   "kind": "reform",
+   "lat": 34.27,
+   "lng": 108.95,
+   "note": "宝货制二十八品",
+   "summary": "废五铢钱，行大泉五十，再行宝货制，货币信用崩溃。",
+   "place": {
+    "name": "常安",
+    "modern": "陕西西安",
+    "note": "钱监与五均官皆在常安。"
+   }
+  },
+  {
+   "eventId": "xin-event-qibing",
+   "name": "绿林赤眉起兵",
+   "date": "17",
+   "kind": "revolt",
+   "lat": 30.95,
+   "lng": 111.65,
+   "note": "荆州饥民入绿林山",
+   "summary": "绿林、赤眉两支起兵，新朝地方控制瓦解。",
+   "place": {
+    "name": "绿林山",
+    "modern": "湖北当阳",
+    "note": "绿林军起事地。"
+   }
+  },
+  {
+   "eventId": "xin-event-kunyang",
+   "name": "昆阳之战",
+   "date": "23",
+   "kind": "war",
+   "lat": 33.62,
+   "lng": 113.35,
+   "note": "四十二万新军溃败",
+   "summary": "刘秀以数千援军破新军四十二万，新朝主力尽丧。",
+   "place": {
+    "name": "昆阳",
+    "modern": "河南叶县",
+    "note": "新军围城数十重，反被内外夹击。"
+   }
+  },
+  {
+   "eventId": "xin-event-changan",
+   "name": "长安陷落",
+   "date": "23",
+   "kind": "fall",
+   "lat": 34.28,
+   "lng": 108.93,
+   "note": "王莽死于渐台",
+   "summary": "绿林军攻入常安，王莽逃至渐台被杀，新亡。",
+   "place": {
+    "name": "渐台",
+    "modern": "陕西西安未央宫",
+    "note": "王莽避火至此，为商人杜吴所杀。"
+   }
+  }
+ ]
+}

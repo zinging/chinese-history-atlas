@@ -1,0 +1,24 @@
+{
+ "meta": {
+  "title": "新莽帝王索引",
+  "description": "王莽一人，自始建国至地皇，共十五年",
+  "updated": "2026-11-21"
+ },
+ "emperors": [
+  {
+   "id": "xin-emp-wangmang",
+   "name": "王莽",
+   "templeName": "新帝",
+   "eraName": [
+    "始建国",
+    "天凤",
+    "地皇"
+   ],
+   "reign": {
+    "start": "9",
+    "end": "23"
+   },
+   "file": "wangmang.json"
+  }
+ ]
+}

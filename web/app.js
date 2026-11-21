@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261121b';
+const APP_BUILD = '20261121c';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -43,13 +43,27 @@ const DATA_CACHE = {};
 // 进行中的朝代加载：快速连点朝代按钮时复用同一个请求，避免并发重复拉取 + 竞态覆盖
 const DATA_PENDING = {};
 
+// 年份解析：公元前用负数表示（「-221」＝前 221 年），后世的纯数字照旧。
+// 早先 eraForYear 把非数字字符一律删掉，于是「-221」被读成 221，秦西汉的事件
+// 会全部落到「三国」之后的皇帝头上；统一走这里。
+function yearNum(str) {
+  const s = String(str ?? '').trim();
+  const m = s.match(/^(-?\d{1,4})/);
+  return m ? parseInt(m[1], 10) : NaN;
+}
+// 年份展示：负数加「前」字，「-221」→「前221」；正整数原样返回
+function fmtYear(str) {
+  const n = yearNum(str);
+  if (!Number.isFinite(n)) return String(str ?? '');
+  return n < 0 ? `前${Math.abs(n)}` : String(n);
+}
 // 把事件年份归到对应朝代
 function eraForYear(yearStr) {
-  const y = parseInt(String(yearStr).replace(/[^0-9]/g, ''), 10);
-  if (!y || !DATA) return null;
+  const y = yearNum(yearStr);
+  if (!Number.isFinite(y) || !DATA) return null;
   for (const e of DATA.emperors) {
-    const s = parseInt(e.reign.start, 10);
-    const en = parseInt(e.reign.end, 10);
+    const s = yearNum(e.reign.start);
+    const en = yearNum(e.reign.end);
     if (y >= s && y <= en) return e.id;
   }
   // 年份超出所有皇帝在位范围：归到边界皇帝
@@ -57,11 +71,11 @@ function eraForYear(yearStr) {
   const first = DATA.emperors[0];
   const last = DATA.emperors[DATA.emperors.length - 1];
   if (first) {
-    const fs = parseInt(first.reign.start, 10);
+    const fs = yearNum(first.reign.start);
     if (y < fs) return first.id;
   }
   if (last) {
-    const le = parseInt(last.reign.end, 10);
+    const le = yearNum(last.reign.end);
     if (y > le) return last.id;
   }
   return null;
@@ -98,7 +112,7 @@ function renderEraStrip() {
   const allBtn = el('button', 'era-btn' + (activeEraId ? '' : ' active'));
   // 「全部」的年号范围按实际首位皇帝取，别再用写死的明朝区间——三国 220 起就要显示 220
   const range = currentDynasty === 'all' && DATA && DATA.emperors && DATA.emperors.length
-    ? `${DATA.emperors[0].reign.start}-${DATA.emperors[DATA.emperors.length - 1].reign.end}`
+    ? `${fmtYear(DATA.emperors[0].reign.start)}-${fmtYear(DATA.emperors[DATA.emperors.length - 1].reign.end)}`
     : (DYNASTY_RANGE[currentDynasty] || '1368-1644');
   allBtn.innerHTML = `<span class="era-name">全部</span><span class="era-years">${range}</span>`;
   allBtn.addEventListener('click', () => {
@@ -120,7 +134,7 @@ function renderEraStrip() {
       curBody = groupBody(mergedView ? (DYNASTY_LABEL[d] || '') : '');
     }
     const btn = el('button', 'era-btn' + (activeEraId === e.id ? ' active' : ''));
-    btn.innerHTML = `<span class="era-name">${e.eraName[0]}</span><span class="era-years">${e.reign.start}-${e.reign.end}</span>`;
+    btn.innerHTML = `<span class="era-name">${e.eraName[0]}</span><span class="era-years">${fmtYear(e.reign.start)}-${fmtYear(e.reign.end)}</span>`;
     btn.addEventListener('click', () => {
       activeEraId = (activeEraId === e.id ? null : e.id);
       // 折叠态跟着年号复位：上一个年号展开过，换年号不应仍保持全展开
@@ -173,7 +187,7 @@ function renderEraInfo() {
   box.classList.remove('hidden');
   // 该年号的事件统一在下方「该年号事件」胶囊面板呈现，此处不再重复列出「地图上的事件」
   box.innerHTML = `
-    <h4>${emp.eraName[0]}年间 · ${emp.name}（${emp.templeName}） ${emp.reign.start}-${emp.reign.end}</h4>
+    <h4>${emp.eraName[0]}年间 · ${emp.name}（${emp.templeName}） ${fmtYear(emp.reign.start)}-${fmtYear(emp.reign.end)}</h4>
     <div class="era-row"><b>核心人物：</b>${people}</div>
   `;
 }
@@ -190,14 +204,24 @@ const DYNASTY_DIRS = {
   wudai: 'wudai/',
   sanguo: 'sanguo/',
   jin: 'jin/',
+  qin: 'qin/',
+  xihan: 'xihan/',
+  xin: 'xin/',
+  donghan: 'donghan/',
 };
 // 地图层开关：有「地图」数据的朝代才去拉 places/routes/map-events 三库。
 // 三国、两晋的并立政权边界没有现成 geojson（见 DYNASTY_HAS_GEO），
 // 但地名、事件、路线都有独立数据，所以这里必须是 true，否则整块舆图是空的。
-const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: true, jin: true };
+// 秦、西汉、新莽、东汉同样没有手绘边界 geojson，走「示意」路径。
+const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: true, jin: true, qin: true, xihan: true, xin: true, donghan: true };
 // 是否有真实边界 geojson（data/boundaries/<朝>.geojson）。没有的朝代回退示意色块，不去发 404 请求。
-const DYNASTY_HAS_GEO = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false, jin: false };
-const DYNASTY_RANGE = { ming: '1368-1644', tang: '618-907', song: '960-1279', yuan: '1271-1368', qing: '1616-1912', sui: '581-618', wudai: '907-960', sanguo: '220-280', jin: '265-420' };
+const DYNASTY_HAS_GEO = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false, jin: false, qin: false, xihan: false, xin: false, donghan: false };
+// 年代范围：公元前用负数（-221 即前 221 年）
+const DYNASTY_RANGE = {
+  ming: '1368-1644', tang: '618-907', song: '960-1279', yuan: '1271-1368', qing: '1616-1912',
+  sui: '581-618', wudai: '907-960', sanguo: '220-280', jin: '265-420',
+  qin: '-221--207', xihan: '-202-8', xin: '9-23', donghan: '25-220',
+};
 // 各朝文件布局：明朝各库在 data/ 根目录下分目录，其他朝在朝代目录内
 const DYNASTY_LAYOUT = {
   ming: { people: 'people/people.json', cases: 'cases/cases.json', events: 'events/events.json', mapEvents: 'events/map-events.json', places: 'places/places.json', routes: 'routes/routes.json' },
@@ -209,6 +233,10 @@ const DYNASTY_LAYOUT = {
   wudai: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   sanguo: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   jin: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  qin: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  xihan: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  xin: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  donghan: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
 };
 // 各朝文案：品牌名、朝代胶囊副标题（帝数）、地图 aria、图例注、页脚
 const DYNASTY_TEXT = {
@@ -257,12 +285,32 @@ const DYNASTY_TEXT = {
     legendNote: '西晋、东晋与十六国政权并立，暂无疆域示意图，相关政权分布见帝王世系页的并立图',
     footer: '晋是三国归晋后西晋短暂统一、东晋南渡与十六国并立的时期 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《晋书》帝载记为主要依据，参校《资治通鉴》《中国通史》',
   },
-  // 「全部」是 103 帝的合并视图，不代表任何一个朝代：不套用任何一朝疆域，
+  qin: {
+    brand: '秦制天下', dynSub: '三帝·二世而亡', mapAria: '秦朝示意地图',
+    legendNote: '秦并六国后的疆域，北起阴山、南至象郡，暂无手绘边界，地名与事件据《史记》系年',
+    footer: '秦是第一个中央集权的统一帝国，废分封、行郡县，书同文、车同轨 · 帝王画像暂以印章占位 · 内容以《史记》秦始皇本纪、六国年表为主要依据',
+  },
+  xihan: {
+    brand: '大汉西京', dynSub: '十二帝·含孺子婴', mapAria: '西汉示意地图',
+    legendNote: '西汉疆域东抵朝鲜、西通西域，暂无手绘边界，地名与事件据《汉书》系年',
+    footer: '西汉承秦制而损益之，黄老休养在前、独尊儒术在后，奠定此后两千年的制度与意识形态 · 帝王画像暂以印章占位 · 内容以《汉书》帝纪、列传为主要依据',
+  },
+  xin: {
+    brand: '新莽改制', dynSub: '一帝·十五年', mapAria: '新莽示意地图',
+    legendNote: '新莽承西汉疆域，改制频繁而地名多改，暂无手绘边界，事件据《汉书·王莽传》系年',
+    footer: '新莽是西汉外戚王莽代汉建立的短命王朝，托古改制、币制屡变，终以绿林赤眉之乱覆亡 · 帝王画像暂以印章占位 · 内容以《汉书》王莽传为主要依据',
+  },
+  donghan: {
+    brand: '大汉东京', dynSub: '十四帝·光武中兴', mapAria: '东汉示意地图',
+    legendNote: '东汉疆域与西汉大体相当而西域三通三绝，暂无手绘边界，事件据《后汉书》系年',
+    footer: '东汉是光武中兴后重建的汉室，外戚宦官交替专权，终于黄巾之乱与群雄割据 · 帝王画像暂以印章占位 · 内容以《后汉书》帝纪、列传为主要依据',
+  },
+  // 「全部」是 133 帝的合并视图，不代表任何一个朝代：不套用任何一朝疆域，
   // 文案也不能借用明朝口径，否则等于暗示这块地是明朝的。
   all: {
-    brand: '中华历史', dynSub: '九朝 · 一百零三帝', mapAria: '全部朝代合并示意地图',
-    legendNote: '「全部」为九朝 103 帝合并视图，只画地名、事件与路线，不套用任何单一朝代的疆域轮廓',
-    footer: '本视图合并九朝 103 位皇帝 · 单朝疆域轮廓据谭其骧《中国历史地图集》示意，非精确边界 · 皇帝画像为 AI 生成工笔风格，仅供示意',
+    brand: '中华历史', dynSub: '十三朝 · 一百三十三帝', mapAria: '全部朝代合并示意地图',
+    legendNote: '「全部」为十三朝 133 帝合并视图，只画地名、事件与路线，不套用任何单一朝代的疆域轮廓',
+    footer: '本视图合并十三朝 133 位皇帝（秦、西汉、新莽、东汉四朝画像暂以印章占位）· 单朝疆域轮廓据谭其骧《中国历史地图集》示意，非精确边界 · 其余画像为 AI 生成工笔风格，仅供示意',
   },
 };
 
@@ -292,7 +340,7 @@ async function loadAll() {
       if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
       return;
     }
-    const dynOrder = ['sanguo','jin','sui','tang','wudai','song','yuan','ming','qing'];
+    const dynOrder = ['qin','xihan','xin','donghan','sanguo','jin','sui','tang','wudai','song','yuan','ming','qing'];
     const allEmperors = [];
     const allEvents = [];
     const allPeople = [];
@@ -550,7 +598,7 @@ function renderCases() {
 
   const cat = cats.find((c) => c.id === activeCaseCat);
   if (!cat) { wrap.innerHTML = '<p>没有可显示的分类。</p>'; return; }
-  const list = cases.filter((c) => c.category === cat.id).sort((a, b) => a.date.localeCompare(b.date));
+  const list = cases.filter((c) => c.category === cat.id).sort((a, b) => yearNum(a.date) - yearNum(b.date));
   wrap.innerHTML = `
     <section class="case-category">
       ${list.map(caseCard).join('')}
@@ -570,7 +618,7 @@ function caseCard(c) {
     <article class="case-card" data-id="${c.id}">
       <div class="case-head">
         <div class="case-title">${c.name}</div>
-        <div class="case-date">${c.date}年</div>
+        <div class="case-date">${fmtYear(c.date)}年</div>
       </div>
       <div class="case-summary">${c.summary}</div>
       <div class="case-section">
@@ -662,7 +710,7 @@ function renderTimeline() {
       ${portrait}
       <div class="name">${e.name}</div>
       <div class="era">${e.templeName} · ${e.eraName[0]}${e.eraName.length > 1 ? '等' + e.eraName.length + '个年号' : ''}</div>
-      <div class="reign">${e.reign.start} - ${e.reign.end}</div>`;
+      <div class="reign">${fmtYear(e.reign.start)} - ${fmtYear(e.reign.end)}</div>`;
     card.addEventListener('click', () => {
       document.querySelectorAll('.emp-card').forEach((c) => c.classList.remove('active'));
       card.classList.add('active');
@@ -1364,6 +1412,13 @@ function isCoreEvent(t) {
   return t.highlight === true;
 }
 
+/* 秦没有年号制度，只有秦王纪年（「秦王政二十六年」），所以标签不能写「年号」。
+   这里按朝代给一个词：秦→纪年，其余→年号。 */
+function eraWord(e) {
+  const dyn = (e && (e._dynasty || e.dynasty)) || currentDynasty;
+  return dyn === 'qin' ? '纪年' : '年号';
+}
+
 function showEmperor(e) {
   stopGuideIfAny();                 // 换皇帝即停：朗读/推进不得跨人物继续
   const d = $('#emperor-detail');
@@ -1386,7 +1441,7 @@ function showEmperor(e) {
       <div class="meta">
         <h3 style="color:#c0392b;font-size:26px">${e.name} <small style="color:#8a7a5c;font-size:16px;font-weight:normal">${e.templeName}</small></h3>
         <div class="intro">${intro}</div>
-        <div class="tags"><b style="color:#333">年号</b> <span class="tag-val" title="${e.eraName.join('、')}">${e.eraName.join('、')}</span> · <b style="color:#333">在位</b> <span class="tag-val">${e.reign.start}-${e.reign.end}</span> · <b style="color:#333">关键人物</b>：<span class="tag-val">${people || '—'}</span></div>
+        <div class="tags"><b style="color:#333">${eraWord(e)}</b> <span class="tag-val" title="${e.eraName.join('、')}">${e.eraName.join('、')}</span> · <b style="color:#333">在位</b> <span class="tag-val">${fmtYear(e.reign.start)}-${fmtYear(e.reign.end)}</span> · <b style="color:#333">关键人物</b>：<span class="tag-val">${people || '—'}</span></div>
       </div>
     </div>
     ${renderRelGraph(e)}
@@ -1395,9 +1450,11 @@ function showEmperor(e) {
       <ul class="timeline">${timeline.map((t) => {
         const isHighlight = isCoreEvent(t);
         const year = t.date || "";
-        const yearHtml = /^\d{3,4}\s*[-—–]\s*\d{3,4}$/.test(year)
-          ? year.replace(/\s*[-—–]\s*/, '<br>-')
-          : year;
+        // 公元前用「前221」展示；跨年区间拆两行（区间两端都要走 fmtYear，避免出现「-221--207」）
+        const years = year.match(/-?\d{3,4}/g) || [];
+        const yearHtml = years.length > 1
+          ? years.map(fmtYear).join('<br>-')
+          : (year ? fmtYear(year) : "");
         return `
         <li class="tl-item ${isHighlight ? "tl-highlight" : ""}">
           <div class="tl-year">${yearHtml}</div>
@@ -1675,6 +1732,17 @@ const LEAFLET_TILES = {
 };
 
 // 各朝历史数据缺失时回退的简化示意（与旧版一致的儿童示意多边形，经纬度坐标）
+// 西汉—新莽—东汉三朝疆域外轮廓大体相同（西域都护、乐浪、交趾三端最突出），
+// 差别只在西域三通三绝，图上用同一条简化轮廓示意，注释里写明差异。
+const HAN_OUTLINE = [
+  [75.0,40.0],[80.0,41.0],[85.0,42.0],[90.0,42.5],[95.0,42.5],[100.0,42.0],
+  [105.0,42.0],[110.0,42.0],[115.0,42.0],[119.0,42.0],[121.5,42.0],[124.0,41.5],
+  [125.0,40.0],[123.0,39.0],[122.0,37.5],[121.5,36.0],[121.0,34.0],[122.0,32.0],
+  [121.0,30.0],[119.0,26.0],[118.0,24.0],[116.0,23.0],[113.0,22.0],[110.0,21.0],
+  [108.0,20.5],[106.0,22.0],[104.0,25.0],[103.0,29.0],[102.0,33.0],[100.0,36.0],
+  [97.0,37.5],[94.0,38.5],[90.0,39.0],[85.0,39.5],[80.0,39.5],[75.0,40.0],
+];
+
 const FALLBACK_SHAPES = {
   // 明朝核心实控区：北以长城为界（九边），据《明史·地理志》+ 谭其骧《中国历史地图集》示意
   ming: [
@@ -1747,6 +1815,20 @@ const FALLBACK_SHAPES = {
     [104.5,34.0],[104.5,36.0],[103.0,36.5],[101.0,37.5],[98.0,38.5],
     [94.5,39.2],[91.0,39.5],[91.0,40.0],
   ],
+  // 秦（前 221-前 207）：
+  // 北以秦长城为界（阴山—燕山，约 41-42°N），西到陇西（约 104°E），东到辽东（约 124°E），
+  // 南置桂林、南海、象郡，抵今越南北部（约 21°N）。据《中国历史地图集·秦时期》示意。
+  qin: [
+    [104.0,38.0],[106.0,39.5],[108.0,40.5],[110.0,41.0],[112.0,41.5],
+    [114.0,41.8],[116.0,41.5],[118.0,41.0],[120.0,40.8],[122.0,41.0],
+    [124.0,40.5],[123.0,39.0],[121.5,38.0],[122.0,36.5],[121.0,35.0],
+    [120.5,33.0],[121.5,31.5],[120.0,29.0],[118.0,25.0],[116.0,23.5],
+    [113.5,22.5],[111.0,21.3],[109.5,21.6],[107.5,21.8],[106.0,22.5],
+    [104.5,25.0],[104.0,29.0],[103.5,33.0],[104.0,36.0],[104.0,38.0],
+  ],
+  xihan: HAN_OUTLINE,
+  xin: HAN_OUTLINE,
+  donghan: HAN_OUTLINE,
   // 五代：中原五代疆域（后周最大范围，据谭其骧《中国历史地图集·五代十国时期》示意）：
   // 北至燕云十六州（石敬瑭割让后到契丹手中，后周实际北界在雁门—白沟一线），
   // 南到淮河-长江（南方十国并立，含后蜀四川），西到陇右（约104°E，河西走廊属回鹘等）
@@ -1881,6 +1963,10 @@ const MAP_VIEW = {
   wudai: { center: [34, 106], zoom: 4 },
   sanguo: { center: [33.5, 108], zoom: 4 },
   jin: { center: [34, 106], zoom: 4 },
+  qin: { center: [34, 108], zoom: 4 },
+  xihan: { center: [35, 105], zoom: 4 },
+  xin: { center: [35, 106], zoom: 4 },
+  donghan: { center: [34, 108], zoom: 4 },
 };
 
 /** 城市标签密度随缩放变化。
@@ -2718,7 +2804,7 @@ function renderMapControls(data) {
   const curEmp = currentEraEmperor();
   const inEra = (r) => {
     if (!curEmp || !r.year) return true;
-    const s = parseInt(curEmp.reign.start, 10);
+    const s = yearNum(curEmp.reign.start);
     const en = parseInt(curEmp.reign.end, 10);
     return r.year >= s && r.year <= en;
   };
@@ -2946,7 +3032,7 @@ function showEventsSummary(opts) {
     return;
   }
   const noteLine = curEmp
-    ? `<div class="route-detail-desc">${curEmp.name}（${curEmp.templeName}）在位 ${curEmp.reign.start}-${curEmp.reign.end} · 点击查看事件详情</div>`
+    ? `<div class="route-detail-desc">${curEmp.name}（${curEmp.templeName}）在位 ${fmtYear(curEmp.reign.start)}-${fmtYear(curEmp.reign.end)} · 点击查看事件详情</div>`
     : `<div class="route-detail-desc">全朝事件汇总 · 点击查看事件详情</div>`;
   // 折叠：默认只渲染前 EVT_SUMMARY_LIMIT 条
   const overflow = list.length > EVT_SUMMARY_LIMIT;
@@ -2958,7 +3044,7 @@ function showEventsSummary(opts) {
     // 事件名为主，地名（今名）跟在后面；若事件名本身就含地名则不重复显示地名
     const placePart = (ev.name && ev.name !== pn) ? `<span class="evt-summary-name">${pn}${modern}</span>` : '';
     return `<button class="evt-summary-chip" data-evt-id="${ev.eventId}">
-      <b>${ev.date}</b> ${ev.name}
+      <b>${fmtYear(ev.date)}</b> ${ev.name}
       ${placePart}
     </button>`;
   }).join('');
@@ -3226,7 +3312,7 @@ window.__guideFlyTo = function (lat, lng) {
   leafletMap.panTo([lat, lng], { animate: true, duration: 1.0 });
 };
 
-const DYN_SHORT = { sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
+const DYN_SHORT = { qin: '秦', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
 const PLACE_KIND = { capital: '都城', regime: '诸国都城', city: '重镇', site: '战场·名胜', overseas: '海外' };
 
 /** 地名弹窗：一城一卡。
@@ -3286,7 +3372,7 @@ function showEventPopup(evs, cluster) {
       const full = (DATA.events || []).find((e) => e.id === ev.eventId);
       const summary = (full && full.summary) || ev.summary || ev.note || '';
       return `<button class="popup-event-row" data-evt-id="${ev.eventId}">
-        <b>${ev.date}年 · ${ev.name}</b>
+        <b>${fmtYear(ev.date)}年 · ${ev.name}</b>
         <span class="popup-event-summ">${summary.slice(0, 40)}${summary.length > 40 ? '…' : ''}</span>
       </button>`;
     }).join('');
@@ -3323,7 +3409,7 @@ function showEventPopup(evs, cluster) {
         onerror="this.closest('.event-fig').remove()"/>
     </figure>`;
   pop.innerHTML = `<button class="close" aria-label="关闭">✕</button>
-    <h4>${ev.name} <small style="color:#8a7a5c">· ${ev.date}年</small></h4>
+    <h4>${ev.name} <small style="color:#8a7a5c">· ${fmtYear(ev.date)}年</small></h4>
     ${fig}
     ${placeTxt ? `<p style="font-size:13px;color:#247bc1;font-weight:600;margin:0 0 4px">${placeTxt}</p>` : ''}
     <p style="font-size:13px;color:#c0392b;font-weight:600;margin:0 0 6px">${place.note || ev.note || ''}</p>
@@ -3629,9 +3715,9 @@ const DETECTIVE_TASKS_BY_DYNASTY = {
   ],
 };
 
-const DYNASTY_LABEL = { sanguo: '三国', jin: '晋', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
+const DYNASTY_LABEL = { qin: '秦朝', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋朝', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
 // 时间线朝代立牌用两字内简称（竖排书脊签高度固定 64px，四字会撑破）
-const DYNASTY_SHORT = { sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
+const DYNASTY_SHORT = { qin: '秦', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
 
 // 切朝代令牌：并发切换时只渲染最后一次
 let _dynastyToken = 0;
@@ -4184,6 +4270,11 @@ const DYNASTY_FILL = {
   wudai: { fill: '#e0b8a0', stroke: '#8a5a3a', title: '五 代 十 国（中原五代与南方十国并立，据《中国历史地图集》简化示意）' },
   sanguo: { fill: '#e6cfa8', stroke: '#7a5a30', title: '三 国 疆 域（魏·蜀·吴三方合计范围，据《中国历史地图集·三国时期》示意）' },
   jin: { fill: '#cfc6e0', stroke: '#57457f', title: '两 晋 疆 域（西晋太康年间极盛范围，据《中国历史地图集》示意）' },
+  // 秦汉四朝没有手绘边界 geojson，这里用简化外轮廓示意；秦尚黑、汉尚赤，配色按五德终始取色。
+  qin: { fill: '#bcb0a4', stroke: '#3f382f', title: '秦 朝 疆 域（前 221 年并六国，北以长城为界，据《中国历史地图集·秦时期》示意）' },
+  xihan: { fill: '#e2a08a', stroke: '#8a3a28', title: '西 汉 疆 域（武帝极盛，西领西域、东置乐浪，据《中国历史地图集·西汉时期》示意）' },
+  xin: { fill: '#e6cf8a', stroke: '#7a6320', title: '新 莽 疆 域（承西汉旧疆而改郡县名，据《中国历史地图集》示意）' },
+  donghan: { fill: '#e0a898', stroke: '#8a3a28', title: '东 汉 疆 域（西域三通三绝，据《中国历史地图集·东汉时期》示意）' },
 };
 
 // ---------- LLM 配置（历史侦探页内卡片） ----------

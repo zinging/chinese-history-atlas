@@ -1,0 +1,194 @@
+{
+ "meta": {
+  "title": "西汉帝王索引",
+  "description": "自高祖称帝至孺子婴废，共十二帝（不含吕后称制）",
+  "updated": "2026-11-21"
+ },
+ "emperors": [
+  {
+   "id": "xihan-emp-gaozu",
+   "name": "刘邦",
+   "templeName": "高祖",
+   "eraName": [
+    "高祖"
+   ],
+   "reign": {
+    "start": "-202",
+    "end": "-195"
+   },
+   "file": "gaozu.json"
+  },
+  {
+   "id": "xihan-emp-huidi",
+   "name": "刘盈",
+   "templeName": "惠帝",
+   "eraName": [
+    "惠帝"
+   ],
+   "reign": {
+    "start": "-195",
+    "end": "-188"
+   },
+   "file": "huidi.json"
+  },
+  {
+   "id": "xihan-emp-wendi",
+   "name": "刘恒",
+   "templeName": "文帝",
+   "eraName": [
+    "文帝"
+   ],
+   "reign": {
+    "start": "-180",
+    "end": "-157"
+   },
+   "file": "wendi.json"
+  },
+  {
+   "id": "xihan-emp-jingdi",
+   "name": "刘启",
+   "templeName": "景帝",
+   "eraName": [
+    "景帝"
+   ],
+   "reign": {
+    "start": "-157",
+    "end": "-141"
+   },
+   "file": "jingdi.json"
+  },
+  {
+   "id": "xihan-emp-wudi",
+   "name": "刘彻",
+   "templeName": "武帝",
+   "eraName": [
+    "建元",
+    "元光",
+    "元朔",
+    "元狩",
+    "元鼎",
+    "元封",
+    "太初",
+    "天汉",
+    "太始",
+    "征和",
+    "后元"
+   ],
+   "reign": {
+    "start": "-141",
+    "end": "-87"
+   },
+   "file": "wudi.json"
+  },
+  {
+   "id": "xihan-emp-zhaodi",
+   "name": "刘弗陵",
+   "templeName": "昭帝",
+   "eraName": [
+    "始元",
+    "元凤",
+    "元平"
+   ],
+   "reign": {
+    "start": "-87",
+    "end": "-74"
+   },
+   "file": "zhaodi.json"
+  },
+  {
+   "id": "xihan-emp-xuandi",
+   "name": "刘询",
+   "templeName": "宣帝",
+   "eraName": [
+    "本始",
+    "地节",
+    "元康",
+    "神爵",
+    "五凤",
+    "甘露",
+    "黄龙"
+   ],
+   "reign": {
+    "start": "-74",
+    "end": "-49"
+   },
+   "file": "xuandi.json"
+  },
+  {
+   "id": "xihan-emp-yuandi",
+   "name": "刘奭",
+   "templeName": "元帝",
+   "eraName": [
+    "初元",
+    "永光",
+    "建昭",
+    "竟宁"
+   ],
+   "reign": {
+    "start": "-49",
+    "end": "-33"
+   },
+   "file": "yuandi.json"
+  },
+  {
+   "id": "xihan-emp-chengdi",
+   "name": "刘骜",
+   "templeName": "成帝",
+   "eraName": [
+    "建始",
+    "河平",
+    "阳朔",
+    "鸿嘉",
+    "永始",
+    "元延",
+    "绥和"
+   ],
+   "reign": {
+    "start": "-33",
+    "end": "-7"
+   },
+   "file": "chengdi.json"
+  },
+  {
+   "id": "xihan-emp-aidi",
+   "name": "刘欣",
+   "templeName": "哀帝",
+   "eraName": [
+    "建平",
+    "元寿"
+   ],
+   "reign": {
+    "start": "-7",
+    "end": "-1"
+   },
+   "file": "aidi.json"
+  },
+  {
+   "id": "xihan-emp-pingdi",
+   "name": "刘衎",
+   "templeName": "平帝",
+   "eraName": [
+    "元始"
+   ],
+   "reign": {
+    "start": "-1",
+    "end": "5"
+   },
+   "file": "pingdi.json"
+  },
+  {
+   "id": "xihan-emp-ruzi",
+   "name": "刘婴",
+   "templeName": "孺子婴",
+   "eraName": [
+    "居摄",
+    "初始"
+   ],
+   "reign": {
+    "start": "6",
+    "end": "8"
+   },
+   "file": "ruzi.json"
+  }
+ ]
+}

@@ -1,0 +1,216 @@
+{
+ "meta": {
+  "title": "东汉帝王索引",
+  "description": "自光武称帝至献帝禅魏，共十四帝（含北乡侯刘懿、少帝刘辩）",
+  "updated": "2026-11-21"
+ },
+ "emperors": [
+  {
+   "id": "donghan-emp-guangwu",
+   "name": "刘秀",
+   "templeName": "光武帝",
+   "eraName": [
+    "建武",
+    "中元"
+   ],
+   "reign": {
+    "start": "25",
+    "end": "57"
+   },
+   "file": "guangwu.json"
+  },
+  {
+   "id": "donghan-emp-mingdi",
+   "name": "刘庄",
+   "templeName": "明帝",
+   "eraName": [
+    "永平"
+   ],
+   "reign": {
+    "start": "57",
+    "end": "75"
+   },
+   "file": "mingdi.json"
+  },
+  {
+   "id": "donghan-emp-zhangdi",
+   "name": "刘炟",
+   "templeName": "章帝",
+   "eraName": [
+    "建初",
+    "元和",
+    "章和"
+   ],
+   "reign": {
+    "start": "75",
+    "end": "88"
+   },
+   "file": "zhangdi.json"
+  },
+  {
+   "id": "donghan-emp-hedi",
+   "name": "刘肇",
+   "templeName": "和帝",
+   "eraName": [
+    "永元",
+    "元兴"
+   ],
+   "reign": {
+    "start": "88",
+    "end": "106"
+   },
+   "file": "hedi.json"
+  },
+  {
+   "id": "donghan-emp-shangdi",
+   "name": "刘隆",
+   "templeName": "殇帝",
+   "eraName": [
+    "延平"
+   ],
+   "reign": {
+    "start": "106",
+    "end": "106"
+   },
+   "file": "shangdi.json"
+  },
+  {
+   "id": "donghan-emp-andi",
+   "name": "刘祜",
+   "templeName": "安帝",
+   "eraName": [
+    "永初",
+    "元初",
+    "永宁",
+    "建光",
+    "延光"
+   ],
+   "reign": {
+    "start": "106",
+    "end": "125"
+   },
+   "file": "andi.json"
+  },
+  {
+   "id": "donghan-emp-yi",
+   "name": "刘懿",
+   "templeName": "北乡侯",
+   "eraName": [
+    "未改元"
+   ],
+   "reign": {
+    "start": "125",
+    "end": "125"
+   },
+   "file": "shao-beixiang.json"
+  },
+  {
+   "id": "donghan-emp-shundi",
+   "name": "刘保",
+   "templeName": "顺帝",
+   "eraName": [
+    "永建",
+    "阳嘉",
+    "永和",
+    "汉安",
+    "建康"
+   ],
+   "reign": {
+    "start": "125",
+    "end": "144"
+   },
+   "file": "shundi.json"
+  },
+  {
+   "id": "donghan-emp-chongdi",
+   "name": "刘炳",
+   "templeName": "冲帝",
+   "eraName": [
+    "永嘉"
+   ],
+   "reign": {
+    "start": "144",
+    "end": "145"
+   },
+   "file": "chongdi.json"
+  },
+  {
+   "id": "donghan-emp-zhidi",
+   "name": "刘缵",
+   "templeName": "质帝",
+   "eraName": [
+    "本初"
+   ],
+   "reign": {
+    "start": "145",
+    "end": "146"
+   },
+   "file": "zhidi.json"
+  },
+  {
+   "id": "donghan-emp-huandi",
+   "name": "刘志",
+   "templeName": "桓帝",
+   "eraName": [
+    "建和",
+    "和平",
+    "元嘉",
+    "永兴",
+    "永寿",
+    "延熹",
+    "永康"
+   ],
+   "reign": {
+    "start": "146",
+    "end": "168"
+   },
+   "file": "huandi.json"
+  },
+  {
+   "id": "donghan-emp-lingdi",
+   "name": "刘宏",
+   "templeName": "灵帝",
+   "eraName": [
+    "建宁",
+    "熹平",
+    "光和",
+    "中平"
+   ],
+   "reign": {
+    "start": "168",
+    "end": "189"
+   },
+   "file": "lingdi.json"
+  },
+  {
+   "id": "donghan-emp-shaodi",
+   "name": "刘辩",
+   "templeName": "少帝",
+   "eraName": [
+    "光熹",
+    "昭宁"
+   ],
+   "reign": {
+    "start": "189",
+    "end": "189"
+   },
+   "file": "shaodi.json"
+  },
+  {
+   "id": "donghan-emp-xiandi",
+   "name": "刘协",
+   "templeName": "献帝",
+   "eraName": [
+    "初平",
+    "兴平",
+    "建安",
+    "延康"
+   ],
+   "reign": {
+    "start": "189",
+    "end": "220"
+   },
+   "file": "xiandi.json"
+  }
+ ]
+}

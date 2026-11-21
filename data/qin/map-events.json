@@ -1,0 +1,113 @@
+{
+ "meta": {
+  "title": "秦朝地图事件",
+  "updated": "2026-11-21"
+ },
+ "events": [
+  {
+   "eventId": "qin-event-mieliu",
+   "name": "秦灭六国",
+   "date": "-230--221",
+   "kind": "war",
+   "lat": 34.35,
+   "lng": 108.71,
+   "note": "自咸阳发兵，十年灭六国",
+   "summary": "前230年至前221年，秦依次灭韩、赵、魏、楚、燕、齐，完成统一。",
+   "place": {
+    "name": "咸阳",
+    "modern": "陕西咸阳",
+    "note": "秦都，统一战争的出发点。"
+   }
+  },
+  {
+   "eventId": "qin-event-junxian",
+   "name": "称皇帝·废分封",
+   "date": "-221",
+   "kind": "politics",
+   "lat": 34.35,
+   "lng": 108.71,
+   "note": "分天下为三十六郡",
+   "summary": "嬴政自号始皇帝，废分封、行郡县，建立中央集权体制。",
+   "place": {
+    "name": "咸阳",
+    "modern": "陕西咸阳",
+    "note": "咸阳宫朝议，李斯与王绾争论封建与郡县。"
+   }
+  },
+  {
+   "eventId": "qin-event-fenshu",
+   "name": "焚书",
+   "date": "-213",
+   "kind": "culture",
+   "lat": 34.35,
+   "lng": 108.71,
+   "note": "咸阳宫议封建引发",
+   "summary": "李斯请烧诗书百家语，禁以古非今，先秦典籍大量散佚。",
+   "place": {
+    "name": "咸阳",
+    "modern": "陕西咸阳",
+    "note": "咸阳宫置酒，博士淳于越主张师古，引发焚书令。"
+   }
+  },
+  {
+   "eventId": "qin-event-shuqiu",
+   "name": "沙丘之变",
+   "date": "-210",
+   "kind": "coup",
+   "lat": 37.07,
+   "lng": 115.14,
+   "note": "始皇崩，赵高李斯矫诏",
+   "summary": "始皇崩于沙丘，赵高、李斯秘不发丧，矫诏立胡亥、赐死扶苏。",
+   "place": {
+    "name": "沙丘",
+    "modern": "河北广宗",
+    "note": "沙丘平台离宫，始皇崩处。"
+   }
+  },
+  {
+   "eventId": "qin-event-dazexiang",
+   "name": "陈胜吴广起义",
+   "date": "-209",
+   "kind": "revolt",
+   "lat": 33.63,
+   "lng": 117.07,
+   "note": "戍卒失期，揭竿而起",
+   "summary": "九百戍卒遇雨失期当斩，于大泽乡起兵，诈称扶苏、项燕。",
+   "place": {
+    "name": "大泽乡",
+    "modern": "安徽宿州",
+    "note": "蕲县大泽乡，起义爆发地。"
+   }
+  },
+  {
+   "eventId": "qin-event-julu",
+   "name": "巨鹿之战",
+   "date": "-207",
+   "kind": "war",
+   "lat": 37.06,
+   "lng": 115.03,
+   "note": "项羽破釜沉舟",
+   "summary": "项羽渡河破釜沉舟，九战破秦军主力，虏王离，章邯降。",
+   "place": {
+    "name": "巨鹿",
+    "modern": "河北平乡",
+    "note": "赵王歇被围于此，诸侯救兵皆壁旁观。"
+   }
+  },
+  {
+   "eventId": "qin-event-qinwang",
+   "name": "秦亡·子婴降汉",
+   "date": "-207",
+   "kind": "fall",
+   "lat": 34.2,
+   "lng": 109.05,
+   "note": "素车白马，降于轵道",
+   "summary": "刘邦破武关入咸阳，子婴出降，秦朝灭亡。",
+   "place": {
+    "name": "霸上",
+    "modern": "陕西西安东",
+    "note": "刘邦驻军霸上，子婴降于轵道旁。"
+   }
+  }
+ ]
+}

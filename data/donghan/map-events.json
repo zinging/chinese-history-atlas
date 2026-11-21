@@ -1,0 +1,203 @@
+{
+ "meta": {
+  "title": "东汉地图事件",
+  "updated": "2026-11-21"
+ },
+ "events": [
+  {
+   "eventId": "donghan-event-chengdi",
+   "name": "鄗南称帝",
+   "date": "25",
+   "kind": "politics",
+   "lat": 37.5,
+   "lng": 114.6,
+   "note": "千秋亭设坛",
+   "summary": "刘秀于鄗即皇帝位，建元建武，定都洛阳，东汉建立。",
+   "place": {
+    "name": "鄗",
+    "modern": "河北柏乡",
+    "note": "鄗南千秋亭，光武即位于此。"
+   }
+  },
+  {
+   "eventId": "donghan-event-kunyang",
+   "name": "昆阳之战",
+   "date": "23",
+   "kind": "war",
+   "lat": 33.62,
+   "lng": 113.35,
+   "note": "以少胜多",
+   "summary": "刘秀以数千援军破新军四十二万。",
+   "place": {
+    "name": "昆阳",
+    "modern": "河南叶县",
+    "note": "新军围城数十重，反被内外夹击。"
+   }
+  },
+  {
+   "eventId": "donghan-event-dufu",
+   "name": "度田令",
+   "date": "39",
+   "kind": "reform",
+   "lat": 34.62,
+   "lng": 112.45,
+   "note": "清查隐田户口",
+   "summary": "诏州郡度田，豪强反抗，终以妥协收场。",
+   "place": {
+    "name": "洛阳",
+    "modern": "河南洛阳",
+    "note": "度田诏令自洛阳颁下。"
+   }
+  },
+  {
+   "eventId": "donghan-event-baiyue",
+   "name": "白虎观会议",
+   "date": "79",
+   "kind": "culture",
+   "lat": 34.62,
+   "lng": 112.45,
+   "note": "论五经异同",
+   "summary": "诸儒论五经于白虎观，班固撰《白虎通义》。",
+   "place": {
+    "name": "洛阳",
+    "modern": "河南洛阳",
+    "note": "白虎观在洛阳北宫。"
+   }
+  },
+  {
+   "eventId": "donghan-event-yanran",
+   "name": "燕然勒石",
+   "date": "89",
+   "kind": "war",
+   "lat": 47.5,
+   "lng": 101,
+   "note": "窦宪破北匈奴",
+   "summary": "窦宪登燕然山刻石纪功，班固作铭。",
+   "place": {
+    "name": "燕然山",
+    "modern": "蒙古国杭爱山",
+    "note": "汉军北征最远的一次刻石。"
+   }
+  },
+  {
+   "eventId": "donghan-event-banchao",
+   "name": "班超定西域",
+   "date": "94",
+   "kind": "diplomacy",
+   "lat": 41.72,
+   "lng": 82.96,
+   "note": "五十余国纳质",
+   "summary": "班超破焉耆、尉犁，西域五十余国归汉。",
+   "place": {
+    "name": "龟兹",
+    "modern": "新疆库车",
+    "note": "西域都护班超居龟兹。"
+   }
+  },
+  {
+   "eventId": "donghan-event-zaozhi",
+   "name": "蔡伦造纸",
+   "date": "105",
+   "kind": "culture",
+   "lat": 34.62,
+   "lng": 112.45,
+   "note": "蔡侯纸奏上",
+   "summary": "蔡伦以树皮麻头造纸，奏上，天下称蔡侯纸。",
+   "place": {
+    "name": "洛阳",
+    "modern": "河南洛阳",
+    "note": "尚方在洛阳宫中，造纸奏上于此。"
+   }
+  },
+  {
+   "eventId": "donghan-event-danggu",
+   "name": "党锢之祸",
+   "date": "166",
+   "kind": "politics",
+   "lat": 34.62,
+   "lng": 112.45,
+   "note": "党人二百余人下狱",
+   "summary": "宦官诬李膺结党，桓帝下诏逮捕党人，禁锢终身。",
+   "place": {
+    "name": "洛阳",
+    "modern": "河南洛阳",
+    "note": "太学与北寺狱皆在洛阳。"
+   }
+  },
+  {
+   "eventId": "donghan-event-huangjin",
+   "name": "黄巾起义",
+   "date": "184",
+   "kind": "revolt",
+   "lat": 37.06,
+   "lng": 115.03,
+   "note": "苍天已死，黄天当立",
+   "summary": "张角以太平道聚众三十六方起兵，八州响应。",
+   "place": {
+    "name": "巨鹿",
+    "modern": "河北平乡",
+    "note": "太平道策源地。"
+   }
+  },
+  {
+   "eventId": "donghan-event-dongzhuo",
+   "name": "董卓入洛",
+   "date": "189",
+   "kind": "coup",
+   "lat": 34.62,
+   "lng": 112.45,
+   "note": "废少帝立献帝",
+   "summary": "董卓入洛阳，废少帝、立献帝，焚洛阳迁长安。",
+   "place": {
+    "name": "洛阳",
+    "modern": "河南洛阳",
+    "note": "董卓纵兵劫掠，焚宫室。"
+   }
+  },
+  {
+   "eventId": "donghan-event-guandu",
+   "name": "官渡之战",
+   "date": "200",
+   "kind": "war",
+   "lat": 34.72,
+   "lng": 114,
+   "note": "曹操烧乌巢",
+   "summary": "曹操以少胜多破袁绍，奠定北方统一。",
+   "place": {
+    "name": "官渡",
+    "modern": "河南中牟",
+    "note": "袁绍粮车屯乌巢，被曹军烧毁。"
+   }
+  },
+  {
+   "eventId": "donghan-event-chibi",
+   "name": "赤壁之战",
+   "date": "208",
+   "kind": "war",
+   "lat": 29.72,
+   "lng": 113.9,
+   "note": "火攻破曹军",
+   "summary": "孙刘联军以火攻破曹操水军，三分之势成形。",
+   "place": {
+    "name": "赤壁",
+    "modern": "湖北赤壁",
+    "note": "黄盖诈降，火船烧连环船。"
+   }
+  },
+  {
+   "eventId": "donghan-event-shanwei",
+   "name": "曹丕篡汉",
+   "date": "220",
+   "kind": "coup",
+   "lat": 34.03,
+   "lng": 113.85,
+   "note": "献帝禅位",
+   "summary": "曹丕逼献帝禅位，改国号魏，东汉亡。",
+   "place": {
+    "name": "许",
+    "modern": "河南许昌",
+    "note": "献帝朝廷在许，禅让诏自此出。"
+   }
+  }
+ ]
+}

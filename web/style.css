@@ -694,7 +694,19 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 }
 /* 头像淡入：先出文字与金色圆占位，图片到了再柔和浮现，不抢文字 */
 .emp-card img.emp-portrait, .detail-portrait { opacity: 0; transition: opacity .35s ease; }
-.emp-card img.emp-portrait.loaded, .detail-portrait.loaded { opacity: 1; }
+.emp-card img.emp-portrait.loaded, img.detail-portrait.loaded { opacity: 1; }
+/* 无画像的皇帝用「朱印」占位：方章、白文、宋体，一眼能认出是待补的印，而不是缺图 */
+.emp-portrait-fallback, div.detail-portrait {
+  border-radius: 6px;
+  background: #a8352a;
+  color: #f7ecd8;
+  font-family: "Songti SC", "SimSun", "STSong", serif;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 3px #a8352a, inset 0 0 0 5px #f2e2c4;
+  opacity: 1;
+}
+.emp-portrait-fallback { font-size: 30px; }
+div.detail-portrait { font-size: 34px; }
 .emp-card .name { font-size: 18px; font-weight: 700; }
 .emp-card .era { color: var(--muted); font-size: 14px; }
 .emp-card .reign { color: var(--muted); font-size: 13px; }

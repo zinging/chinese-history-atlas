@@ -1,0 +1,48 @@
+{
+ "meta": {
+  "title": "秦朝帝王索引",
+  "description": "自秦王政即位至子婴降汉，共三主",
+  "updated": "2026-11-21"
+ },
+ "emperors": [
+  {
+   "id": "qin-emp-shihuang",
+   "name": "嬴政",
+   "templeName": "始皇帝",
+   "eraName": [
+    "始皇"
+   ],
+   "reign": {
+    "start": "-246",
+    "end": "-210"
+   },
+   "file": "shihuang.json"
+  },
+  {
+   "id": "qin-emp-ershi",
+   "name": "胡亥",
+   "templeName": "二世",
+   "eraName": [
+    "二世"
+   ],
+   "reign": {
+    "start": "-210",
+    "end": "-207"
+   },
+   "file": "ershi.json"
+  },
+  {
+   "id": "qin-emp-ziying",
+   "name": "子婴",
+   "templeName": "秦王",
+   "eraName": [
+    "子婴"
+   ],
+   "reign": {
+    "start": "-207",
+    "end": "-207"
+   },
+   "file": "ziying.json"
+  }
+ ]
+}

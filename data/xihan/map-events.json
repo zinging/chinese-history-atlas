@@ -1,0 +1,143 @@
+{
+ "meta": {
+  "title": "西汉地图事件",
+  "updated": "2026-11-21"
+ },
+ "events": [
+  {
+   "eventId": "xihan-event-gaixia",
+   "name": "垓下之战·汉立",
+   "date": "-202",
+   "kind": "war",
+   "lat": 33.63,
+   "lng": 117.57,
+   "note": "四面楚歌，项羽自刎",
+   "summary": "韩信十面埋伏围项羽于垓下，项羽突围自刎乌江，刘邦称帝。",
+   "place": {
+    "name": "垓下",
+    "modern": "安徽灵璧",
+    "note": "项羽兵败处，今有虞姬墓。"
+   }
+  },
+  {
+   "eventId": "xihan-event-baideng",
+   "name": "白登之围",
+   "date": "-200",
+   "kind": "war",
+   "lat": 40.15,
+   "lng": 113.45,
+   "note": "被围七日，和亲之始",
+   "summary": "刘邦轻敌冒进，被冒顿围于白登山七日，用陈平秘计得脱。",
+   "place": {
+    "name": "白登山",
+    "modern": "山西大同东北",
+    "note": "平城东白登山，汉匈首次大规模冲突。"
+   }
+  },
+  {
+   "eventId": "xihan-event-zhulu",
+   "name": "诸吕之乱",
+   "date": "-180",
+   "kind": "coup",
+   "lat": 34.27,
+   "lng": 108.95,
+   "note": "周勃夺北军，诛诸吕",
+   "summary": "吕后崩，周勃、陈平诛诸吕，迎代王刘恒为帝。",
+   "place": {
+    "name": "长安",
+    "modern": "陕西西安",
+    "note": "南北军与未央宫所在，政变核心。"
+   }
+  },
+  {
+   "eventId": "xihan-event-qiguo",
+   "name": "七国之乱",
+   "date": "-154",
+   "kind": "revolt",
+   "lat": 34.26,
+   "lng": 117.19,
+   "note": "吴楚起兵，三月而平",
+   "summary": "吴王刘濞联合六国以「清君侧」反，周亚夫三月平定。",
+   "place": {
+    "name": "彭城",
+    "modern": "江苏徐州",
+    "note": "吴楚联军西向，梁王死守睢阳。"
+   }
+  },
+  {
+   "eventId": "xihan-event-zhangqian",
+   "name": "张骞凿空西域",
+   "date": "-138",
+   "kind": "diplomacy",
+   "lat": 34.27,
+   "lng": 108.95,
+   "note": "自长安出使大月氏",
+   "summary": "张骞出使西域，被匈奴扣留十余年，归汉后凿空丝路。",
+   "place": {
+    "name": "长安",
+    "modern": "陕西西安",
+    "note": "张骞持汉节自此出发。"
+   }
+  },
+  {
+   "eventId": "xihan-event-mobei",
+   "name": "漠北之战",
+   "date": "-119",
+   "kind": "war",
+   "lat": 48.5,
+   "lng": 109,
+   "note": "封狼居胥",
+   "summary": "卫青、霍去病深入漠北，破匈奴主力，漠南无王庭。",
+   "place": {
+    "name": "狼居胥山",
+    "modern": "蒙古国肯特山",
+    "note": "霍去病封禅于此。"
+   }
+  },
+  {
+   "eventId": "xihan-event-wugu",
+   "name": "巫蛊之祸",
+   "date": "-91",
+   "kind": "coup",
+   "lat": 34.27,
+   "lng": 108.95,
+   "note": "太子据兵败自杀",
+   "summary": "江充诬太子以巫蛊，太子起兵杀江充，兵败自杀。",
+   "place": {
+    "name": "长安",
+    "modern": "陕西西安",
+    "note": "太子与丞相战于长安五日，死者数万。"
+   }
+  },
+  {
+   "eventId": "xihan-event-huhanye",
+   "name": "呼韩邪归汉",
+   "date": "-51",
+   "kind": "diplomacy",
+   "lat": 34.72,
+   "lng": 108.44,
+   "note": "甘泉宫受降",
+   "summary": "匈奴呼韩邪单于款塞称臣，汉匈由战转和。",
+   "place": {
+    "name": "甘泉宫",
+    "modern": "陕西淳化",
+    "note": "宣帝受降于此。"
+   }
+  },
+  {
+   "eventId": "xihan-event-wangmang",
+   "name": "王莽代汉",
+   "date": "8",
+   "kind": "coup",
+   "lat": 34.27,
+   "lng": 108.95,
+   "note": "受禅建新",
+   "summary": "王莽受孺子婴禅让，即皇帝位，国号新，西汉亡。",
+   "place": {
+    "name": "长安",
+    "modern": "陕西西安",
+    "note": "未央宫前殿受禅。"
+   }
+  }
+ ]
+}
