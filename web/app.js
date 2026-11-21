@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261121h';
+const APP_BUILD = '20261122a';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -4146,10 +4146,11 @@ function setBodyData(key, value) {
   else b.dataset[key] = value;
 }
 
-/* 顶部朝代条：宽度回到正文列（.module-inner）的宽度，左右对称，不再向两侧出血扩宽。
+/* 顶部朝代条：带框的横滑条吃满正文列（.module-inner）的宽度，两端箭头贴边拼在外面。
    12 个朝代一行装不下，所以条子里是一条不折行的横滑轨道，两端各给一个箭头提示还能往哪边滑。
-   旧实现按实测宽度写 --dyn-cols 折行、并向两侧借留白扩宽，条子会被顶成左右不对称的宽条；
-   这里只负责清掉遗留的扩宽行内样式，并刷新箭头可用态。 */
+   外扩量 --dyn-out 默认取箭头宽度（28px），实测左右留白不够时在这里按「谁先碰到邻居」收紧：
+   左邻居是左侧栏右缘，右邻居是右上导航胶囊（窄屏它变成顶部横条，此时右邻居换成视口右缘）。
+   两侧永远取同一个值，条子因此保持左右对称；旧实现的 --dyn-cols 折行出血在这里一并清掉。 */
 function fitTopbar() {
   const bar = document.querySelector('.topbar');
   if (bar) {
@@ -4157,7 +4158,27 @@ function fitTopbar() {
     bar.style.marginRight = '';
   }
   const sw = document.querySelector('#dynasty-switch');
-  if (sw && sw.style.getPropertyValue('--dyn-cols')) sw.style.removeProperty('--dyn-cols');
+  if (sw) {
+    if (sw.style.getPropertyValue('--dyn-cols')) sw.style.removeProperty('--dyn-cols');
+    sw.style.removeProperty('--dyn-out');
+    if (window.innerWidth >= 700) {
+      const OUT_MAX = 28;   // ＝ .dyn-arrow 宽度：默认把箭头整个推到正文列之外
+      const GAP = 8;        // 与左右邻居至少留 8px，不贴脸
+      // .dynasty-switch 自身始终等于正文列宽（外扩靠箭头的负外边距），左右缘直接取它的框
+      const box = sw.getBoundingClientRect();
+      const colL = box.left;
+      const colR = box.right;
+      const side = document.querySelector('.mega-sidebar');
+      const leftLimit = side ? side.getBoundingClientRect().right : 0;
+      const rail = document.querySelector('.tabs');
+      const railBox = rail ? rail.getBoundingClientRect() : null;
+      const railOnRight = !!railBox && railBox.top > box.bottom;   // 竖排时才是右侧邻居
+      const spareL = colL - leftLimit - GAP;
+      const spareR = (railOnRight ? railBox.left : window.innerWidth) - colR - GAP;
+      const fit = Math.max(0, Math.min(OUT_MAX, Math.floor(spareL), Math.floor(spareR)));
+      sw.style.setProperty('--dyn-out', fit + 'px');
+    }
+  }
   updateDynArrows();
 }
 
