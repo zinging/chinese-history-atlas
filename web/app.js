@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261124a';
+const APP_BUILD = '20261124b';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -1313,6 +1313,14 @@ const PERSON_PORTRAITS = {
   '杨涟': 'yanglian.jpg',
   '左光斗': 'zuoguandou.jpg',
   '高攀龙': 'gaopanlong.jpg',
+  // 多人合称节点里的人物（横向铺开时各自出像）
+  '齐泰': 'qitai.jpg',
+  '黄子澄': 'huangzicheng.jpg',
+  '杨士奇': 'yangshiqi.jpg',
+  '杨荣': 'yangrong.jpg',
+  '杨溥': 'yangpu.jpg',
+  '李东阳': 'lidongyang.jpg',
+  '谢迁': 'xieqian.jpg',
 };
 
 const PERSON_TITLES = {
@@ -1494,9 +1502,10 @@ function renderRelGraph(e) {
       <text x="${mx}" y="${my+5}" text-anchor="middle" font-size="14" fill="#8a6d3b" font-weight="700">${rel}</text>`;
   }).join('');
   // 描述文字按宽度自动换行（SVG text 不会自动折行，手动拆 tspan）
-  const wrapNote = (text) => {
+  const wrapNote = (text, x0 = 50) => {
     if (!text) return '';
-    const maxPerLine = 32; // 14px 字号下，x=50 起可用宽度约 470px，每行约 32 个汉字
+    // x0 右侧可用宽度 → 每行可放几个 14px 汉字
+    const maxPerLine = Math.max(10, Math.floor((W - px - x0 - 16) / 14));
     const lines = [];
     let s = text;
     while (s.length > maxPerLine) {
@@ -1510,15 +1519,44 @@ function renderRelGraph(e) {
     }
     if (s) lines.push(s);
     return lines.map((ln, i) =>
-      `<text x="50" y="${16 + i * 17}" font-size="14" fill="#6f6353">${ln}</text>`
+      `<text x="${x0}" y="${16 + i * 17}" font-size="14" fill="#6f6353">${ln}</text>`
     ).join('');
   };
+  // 合称节点（「齐泰、黄子澄」「杨士奇、杨荣、杨溥（三杨）」）拆成人名列表
+  const splitNames = (name) => String(name || '').split('、')
+    .map((s) => s.replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '').trim())
+    .filter(Boolean);
   const dots = nodes.map((nd) => {
+    const names = splitNames(nd.p.name);
+    const title = PERSON_TITLES[nd.p.name] ? ` · ${PERSON_TITLES[nd.p.name]}` : '';
+    // 多人合称：头像从左到右铺成一行，各自配小字名，正文接在行尾
+    if (names.length > 1) {
+      const n = names.length;
+      const r = n >= 3 ? 24 : 28;
+      const gap = 12;
+      const leftX = -38;
+      const rowW = n * r * 2 + (n - 1) * gap;
+      const textX = leftX + rowW + 14;
+      const faces = names.map((nm, i) => {
+        const x = leftX + r + i * (r * 2 + gap);
+        const portrait = personPortrait(nm);
+        const img = portrait
+          ? `<image x="${x - r}" y="${-r}" width="${r * 2}" height="${r * 2}" href="${portrait}" clip-path="circle(${r}px)" preserveAspectRatio="xMidYMid slice" loading="lazy" />`
+          : `<text x="${x}" y="${Math.round(r * 0.35)}" text-anchor="middle" font-size="${Math.round(r * 0.9)}">人</text>`;
+        return `<circle cx="${x}" cy="0" r="${r}" fill="#fff" stroke="#c9a96a" stroke-width="2.5" />
+          ${img}
+          <text x="${x}" y="${r + 15}" text-anchor="middle" font-size="12" fill="#6f6353">${nm}</text>`;
+      }).join('');
+      return `<g transform="translate(${nd.x},${nd.y})">
+        ${faces}
+        <text x="${textX}" y="-6" text-anchor="start" font-size="17" font-weight="700" fill="#3a2e1f">${nd.p.name}<tspan font-size="14" font-weight="400" fill="#6f6353">${title}</tspan></text>
+        ${wrapNote(nd.p.note || '', textX)}
+      </g>`;
+    }
     const portrait = personPortrait(nd.p.name);
     const img = portrait
       ? `<image x="-36" y="-36" width="72" height="72" href="${portrait}" clip-path="circle(36px)" preserveAspectRatio="xMidYMid slice" loading="lazy" />`
       : `<text x="0" y="12" text-anchor="middle" font-size="26">人</text>`;
-    const title = PERSON_TITLES[nd.p.name] ? ` · ${PERSON_TITLES[nd.p.name]}` : '';
     return `<g transform="translate(${nd.x},${nd.y})">
       <circle r="38" fill="#fff" stroke="#c9a96a" stroke-width="2.5" />
       ${img}

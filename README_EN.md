@@ -207,18 +207,18 @@ Timeline entries and detective clues cite the *Old/New Book of Tang*, *History o
 
 A magnifier sits at the top right; hover or click and it becomes an input. It searches 1087 entries (133 emperors, 213 map events, 52 unsolved cases, 40 case files, 75 classics, 59 artifacts, 113 beasts, 58 quiz questions, 44 life events, 57 routes, 219 hotspots…) together with body sentences, and groups the results as *entries* and *body hits*. Selecting a result does not merely open a page — it scrolls to the matched sentence and highlights it: body hits jump to the sentence, entries land on their card, map events open in the popup, route places switch to the voyage that contains them, and quiz entries open the named question. The index is the same build artefact the MCP search uses (`npm run build:search`, with a content-signature check); the front end pulls it in five on-demand shards, about 1.1MB total.
 
-**🖼️ 1012 original artworks, 1253 image files — one style, not a template skin**
+**🖼️ 1019 original artworks, 1260 image files — one style, not a template skin**
 
-One consistent visual language throughout: rice-paper beige, vermilion seals, gongbi fine-brush colour. **1012 original illustrations**, all generated in the same style:
+One consistent visual language throughout: rice-paper beige, vermilion seals, gongbi fine-brush colour. **1019 original illustrations**, all generated in the same style:
 
-- **543 portraits of people and classics**: 334 relationship-graph portraits (ministers, consorts, rivals) under `people/`, plus 209 paintings of emperors, poets, thinkers and classics-adjacent images in the root folder (30 of them Qin and Han emperors, added last);
+- **550 portraits of people and classics**: 341 relationship-graph portraits (ministers, consorts, rivals) under `people/`, plus 209 paintings of emperors, poets, thinkers and classics-adjacent images in the root folder (30 of them Qin and Han emperors, added last);
 - **172 artifacts and beasts**: 113 beasts and spirits + 59 representative objects;
 - **141 map-event paintings**: gongbi scenes of major events across the dynasties;
 - **74 ancient maps**: 5 top-down base maps + 69 hotspots from the original texts;
 - **38 illustrations of the Hundred Schools chronicles**: key events of thought spreading and schools forming;
 - **44 life-event illustrations**: gongbi scenes of key moments in the poets' lives.
 
-Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and cards fast, bringing the total to **1253 image files**. The ancient maps are checked point by point against the bearings and terrain described in the sources.
+Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and cards fast, bringing the total to **1260 image files**. The ancient maps are checked point by point against the bearings and terrain described in the sources.
 
 **⚡ Zero dependencies, instant open, works offline**
 
@@ -239,7 +239,7 @@ A built-in zero-dependency MCP server (v1.6.0, 15 read-only tools) plugs into Do
 | 🎋 Poetry Appreciation | 23 poets · 74 close readings · 98 golden lines · 116 chronology entries · 13 poetry cases · 13 routes · 44 life events · 23 inquiry prompts |
 | 🧭 Natural Sciences | 17 classics (6 categories) · 59 artifacts · 12 craft cases · 14 inquiry prompts |
 | 🐉 Myth & Legend | 9 classics (4 categories) · 113 beasts · 5 ancient maps with 69 hotspots · 8 inquiry prompts |
-| **Site total** | **84 eight-section case files · 58 inquiry questions · 77 critical-choice questions · 1012 original gongbi artworks (1253 image files including thumbnails)** |
+| **Site total** | **84 eight-section case files · 58 inquiry questions · 77 critical-choice questions · 1019 original gongbi artworks (1260 image files including thumbnails)** |
 
 *Territory outlines are simplified hand-drawn sketches after Tan Qixiang's Historical Atlas of China; portraits follow the ceremonial dress codes and the physical descriptions in the standard histories but remain stylized gongbi images, not historical likenesses; the mythic maps are drawn strictly to the bearings and terrain in the original texts.*
 
@@ -268,7 +268,7 @@ The project ships a **zero-dependency MCP server** (`web/tools/history-mcp-serve
 - **Fetches the site itself**: when no local site is found, it starts a **background** clone from Gitee into your home directory (about 150MB) and `session_start` **returns immediately**, telling the AI "text search is already usable" — the conversation is never blocked by the install. It starts the server once the clone finishes. This step needs **`git` on PATH**; if it is missing the tool says so precisely and degrades to "text search only" (the plugin carries its own index, so search still works, minus images and deep links).
 - **Illustrations included**: single-object results (emperor / classic / artifact / event) attach a base64 image block; list results do not (dozens would blow up the response) — use the detail call for one item.
 - **Millisecond search**: a built-in uni/bi-gram inverted index over **1087 documents** — about 230ms to build once, then 1–2ms per query. "Tumu Crisis", "Lansuo Temple", "Gao Village", "Kunlun Mound", "Ehu Debate" all land directly on the right event or hotspot.
-- **Bundled image subset**: the plugin carries **547 narration images** (152 portraits · 172 artifact thumbnails · 141 map events · 38 Hundred Schools · 44 life events), so "ask who and see who" works before the site is fetched; once the site is ready it switches to the originals and adds the remaining **704** (334 figures · 172 artifact originals · 74 ancient maps · 69 hotspot thumbnails · 30 Qin and Han imperial portraits).
+- **Bundled image subset**: the plugin carries **547 narration images** (152 portraits · 172 artifact thumbnails · 141 map events · 38 Hundred Schools · 44 life events), so "ask who and see who" works before the site is fetched; once the site is ready it switches to the originals and adds the remaining **713** (334 figures · 172 artifact originals · 74 ancient maps · 69 hotspot thumbnails · 30 Qin and Han imperial portraits).
 - Full configuration: [`docs/AI集成-本地MCP配置.md`](docs/AI集成-本地MCP配置.md); self-test with `npm run mcp:selftest`.
 
 ---
