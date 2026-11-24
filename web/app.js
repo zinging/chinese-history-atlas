@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261122e';
+const APP_BUILD = '20261124a';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -1241,7 +1241,6 @@ const PERSON_PORTRAITS = {
   '吕后': 'lvhou.jpg',
   '贾谊': 'jiayi.jpg',
   '晁错': 'chaocuo.jpg',
-  '窦婴': 'chuying.jpg',
   '卫青': 'weiqing.jpg',
   '霍去病': 'huoqubing.jpg',
   '张骞': 'zhangqian.jpg',
@@ -1255,6 +1254,7 @@ const PERSON_PORTRAITS = {
   '刘向': 'liuxiang.jpg',
   '桑弘羊': 'sanghongyang.jpg',
   '史丹': 'shidan.jpg',
+  '师丹': 'shidan.jpg',
   '王凤': 'wangfeng.jpg',
   '王政君': 'wangzhengjun.jpg',
   '赵飞燕': 'zhaofeiyan.jpg',
@@ -1283,6 +1283,36 @@ const PERSON_PORTRAITS = {
   '蔡伦': 'cailun.jpg',
   '李膺': 'liying.jpg',
   '董卓': 'dongzhuo.jpg',
+  '楚王英': 'chuying.jpg',
+  '阎皇后': 'yanhou.jpg',
+  '何进': 'hejin.jpg',
+  '袁绍': 'yuanshao.jpg',
+  '梁商': 'liangshang.jpg',
+  '张衡': 'zhangheng.jpg',
+  '伏皇后': 'fuhou.jpg',
+  '班固': 'bangu.jpg',
+  '第五伦': 'diwwulun.jpg',
+  '李固': 'ligu.jpg',
+  // 帝王像复用（文件在 portraits/ 根目录）
+  '王莽': 'xin-wangmang.jpg',
+  '刘邦': 'xihan-gaozu.jpg',
+  '刘秀': 'donghan-guangwu.jpg',
+  // 南宋人物像
+  '史弥远': 'shimiyuan.jpg',
+  '留正': 'liuzheng.jpg',
+  '童贯': 'tongguan.jpg',
+  '孟珙': 'menggong.jpg',
+  '韩侂胄': 'hantingzhou.jpg',
+  '章惇': 'zhangdun.jpg',
+  '张浚': 'zhangjun.jpg',
+  '陆游': 'luyou.jpg',
+  '韩琦': 'hanqi.jpg',
+  '毕士安': 'bishian.jpg',
+  // 明末人物像
+  '商辂': 'shanglu.jpg',
+  '杨涟': 'yanglian.jpg',
+  '左光斗': 'zuoguandou.jpg',
+  '高攀龙': 'gaopanlong.jpg',
 };
 
 const PERSON_TITLES = {
@@ -1433,7 +1463,7 @@ function personPortrait(name) {
   const f = PERSON_PORTRAITS[name];
   if (!f) return null;
   // 皇帝互相关联的像在 portraits/ 根目录，其他人在 portraits/people/
-  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤','和世㻋','曹操','曹植','诸葛亮','司马炎','司马昱','李克用'].includes(name)) {
+  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤','和世㻋','曹操','曹植','诸葛亮','司马炎','司马昱','李克用','王莽','刘邦','刘秀'].includes(name)) {
     return `../data/portraits/${f}`;
   }
   return `../data/portraits/people/${f}`;
