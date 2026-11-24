@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261124c';
+const APP_BUILD = '20261124d';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -1502,8 +1502,8 @@ function renderRelGraph(e) {
       <text x="${mx}" y="${my+5}" text-anchor="middle" font-size="14" fill="#8a6d3b" font-weight="700">${rel}</text>`;
   }).join('');
   // 描述文字按宽度自动换行（SVG text 不会自动折行，手动拆 tspan）
-  const wrapNote = (text, x0 = 50) => {
-    if (!text) return '';
+  const wrapLines = (text, x0 = 50) => {
+    if (!text) return [];
     // x0 右侧可用宽度 → 每行可放几个 14px 汉字
     const maxPerLine = Math.max(10, Math.floor((W - px - x0 - 16) / 14));
     const lines = [];
@@ -1518,10 +1518,12 @@ function renderRelGraph(e) {
       s = s.slice(cut);
     }
     if (s) lines.push(s);
-    return lines.map((ln, i) =>
+    return lines;
+  };
+  const wrapNote = (text, x0 = 50) =>
+    wrapLines(text, x0).map((ln, i) =>
       `<text x="${x0}" y="${16 + i * 17}" font-size="14" fill="#6f6353">${ln}</text>`
     ).join('');
-  };
   // 合称节点（「齐泰、黄子澄」「杨士奇、杨荣、杨溥（三杨）」）拆成人名列表
   const splitNames = (name) => String(name || '').split('、')
     .map((s) => s.replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '').trim())
@@ -1547,11 +1549,15 @@ function renderRelGraph(e) {
           ${img}
           <text x="${x}" y="${r + 16}" text-anchor="middle" font-size="12.5" fill="#6f6353">${nm}</text>`;
       }).join('');
-      // 合称统一只写人名串（去掉「（三杨）」这类括注与官职后缀），两个三杨节点样式一致
+      // 头像下方已有小字名，行尾不再重复合称，整块空间留给说明文字（垂直居中）
+      const lines = wrapLines(nd.p.note || '', textX);
+      const y0 = 5 - ((lines.length - 1) * 17) / 2;
+      const noteSvg = lines.map((ln, i) =>
+        `<text x="${textX}" y="${y0 + i * 17}" font-size="14" fill="#6f6353">${ln}</text>`
+      ).join('');
       return `<g transform="translate(${nd.x},${nd.y})">
         ${faces}
-        <text x="${textX}" y="-6" text-anchor="start" font-size="16" font-weight="700" fill="#3a2e1f">${names.join('、')}</text>
-        ${wrapNote(nd.p.note || '', textX)}
+        ${noteSvg}
       </g>`;
     }
     const portrait = personPortrait(nd.p.name);
