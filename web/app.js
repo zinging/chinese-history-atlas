@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261124b';
+const APP_BUILD = '20261124c';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -1529,10 +1529,10 @@ function renderRelGraph(e) {
   const dots = nodes.map((nd) => {
     const names = splitNames(nd.p.name);
     const title = PERSON_TITLES[nd.p.name] ? ` · ${PERSON_TITLES[nd.p.name]}` : '';
-    // 多人合称：头像从左到右铺成一行，各自配小字名，正文接在行尾
+    // 多人合称：头像与单人节点同大（直径 76），从左到右铺成一行，各自配小字名，正文接在行尾
     if (names.length > 1) {
       const n = names.length;
-      const r = n >= 3 ? 24 : 28;
+      const r = 38;
       const gap = 12;
       const leftX = -38;
       const rowW = n * r * 2 + (n - 1) * gap;
@@ -1542,14 +1542,15 @@ function renderRelGraph(e) {
         const portrait = personPortrait(nm);
         const img = portrait
           ? `<image x="${x - r}" y="${-r}" width="${r * 2}" height="${r * 2}" href="${portrait}" clip-path="circle(${r}px)" preserveAspectRatio="xMidYMid slice" loading="lazy" />`
-          : `<text x="${x}" y="${Math.round(r * 0.35)}" text-anchor="middle" font-size="${Math.round(r * 0.9)}">人</text>`;
+          : `<text x="${x}" y="${Math.round(r * 0.3)}" text-anchor="middle" font-size="${Math.round(r * 0.8)}">人</text>`;
         return `<circle cx="${x}" cy="0" r="${r}" fill="#fff" stroke="#c9a96a" stroke-width="2.5" />
           ${img}
-          <text x="${x}" y="${r + 15}" text-anchor="middle" font-size="12" fill="#6f6353">${nm}</text>`;
+          <text x="${x}" y="${r + 16}" text-anchor="middle" font-size="12.5" fill="#6f6353">${nm}</text>`;
       }).join('');
+      // 合称统一只写人名串（去掉「（三杨）」这类括注与官职后缀），两个三杨节点样式一致
       return `<g transform="translate(${nd.x},${nd.y})">
         ${faces}
-        <text x="${textX}" y="-6" text-anchor="start" font-size="17" font-weight="700" fill="#3a2e1f">${nd.p.name}<tspan font-size="14" font-weight="400" fill="#6f6353">${title}</tspan></text>
+        <text x="${textX}" y="-6" text-anchor="start" font-size="16" font-weight="700" fill="#3a2e1f">${names.join('、')}</text>
         ${wrapNote(nd.p.note || '', textX)}
       </g>`;
     }
