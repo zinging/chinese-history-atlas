@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261126c';
+const APP_BUILD = '20261127d';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -784,11 +784,17 @@ function renderTimeline() {
     const portrait = e.portrait
       ? `<img class="emp-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" ${lazy} onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')"/>`
       : `<div class="emp-portrait emp-portrait-fallback">${(e.templeName || e.name || '?').slice(0, 1)}</div>`;
+    // 周、商诸王本无年号，eraName 只是异名：去掉与庙号同字者，避免「武王 · 武王」
+    const altEra = (e.eraName || []).filter((x) => x && x !== e.templeName);
+    const eraUnit = ['xia', 'shang', 'zhou'].includes((e.id || '').split('-')[0]) ? '种写法' : '个年号';
+    const eraLine = altEra.length === 0
+      ? (e.templeName || '')
+      : `${e.templeName} · ${altEra[0]}${altEra.length > 1 ? '等' + altEra.length + eraUnit : ''}`;
     card.innerHTML = `
       ${e.lineage ? `<div class="lineage-badge">${LINEAGE_LABEL[e.lineage] || ''}</div>` : ''}
       ${portrait}
       <div class="name">${e.name}</div>
-      <div class="era">${e.templeName} · ${e.eraName[0]}${e.eraName.length > 1 ? '等' + e.eraName.length + '个年号' : ''}</div>
+      <div class="era">${eraLine}</div>
       <div class="reign">${fmtYear(e.reign.start)} - ${fmtYear(e.reign.end)}</div>`;
     card.addEventListener('click', () => {
       document.querySelectorAll('.emp-card').forEach((c) => c.classList.remove('active'));
@@ -1204,6 +1210,98 @@ function enableDragScroll(el) {
 }
 
 const PERSON_PORTRAITS = {
+  // 周帝王：人名/谥号/带朝代前缀三种写法，均取根目录 zhou-*.jpg
+  '姬发': 'zhou-wuwang.jpg',   // 武王
+  '武王': 'zhou-wuwang.jpg',
+  '周武王': 'zhou-wuwang.jpg',
+  '姬诵': 'zhou-chengwang.jpg',   // 成王
+  '成王': 'zhou-chengwang.jpg',
+  '周成王': 'zhou-chengwang.jpg',
+  '姬钊': 'zhou-kangwang.jpg',   // 康王
+  '康王': 'zhou-kangwang.jpg',
+  '周康王': 'zhou-kangwang.jpg',
+  '姬瑕': 'zhou-zhaowang.jpg',   // 昭王
+  '昭王': 'zhou-zhaowang.jpg',
+  '周昭王': 'zhou-zhaowang.jpg',
+  '姬满': 'zhou-muwang.jpg',   // 穆王
+  '穆王': 'zhou-muwang.jpg',
+  '周穆王': 'zhou-muwang.jpg',
+  '姬繄扈': 'zhou-gongwang.jpg',   // 共王
+  '共王': 'zhou-gongwang.jpg',
+  '周共王': 'zhou-gongwang.jpg',
+  '姬囏': 'zhou-yiwang.jpg',   // 懿王
+  '懿王': 'zhou-yiwang.jpg',
+  '周懿王': 'zhou-yiwang.jpg',
+  '姬辟方': 'zhou-xiaowang.jpg',   // 孝王
+  '孝王': 'zhou-xiaowang.jpg',
+  '周孝王': 'zhou-xiaowang.jpg',
+  '姬燮': 'zhou-yiwang2.jpg',   // 夷王
+  '夷王': 'zhou-yiwang2.jpg',
+  '周夷王': 'zhou-yiwang2.jpg',
+  '姬胡': 'zhou-liwang.jpg',   // 厉王
+  '厉王': 'zhou-liwang.jpg',
+  '周厉王': 'zhou-liwang.jpg',
+  '姬静': 'zhou-xuanwang.jpg',   // 宣王
+  '宣王': 'zhou-xuanwang.jpg',
+  '周宣王': 'zhou-xuanwang.jpg',
+  '姬宫湦': 'zhou-youwang.jpg',   // 幽王
+  '幽王': 'zhou-youwang.jpg',
+  '周幽王': 'zhou-youwang.jpg',
+  '姬宜臼': 'zhou-pingwang.jpg',   // 平王
+  '平王': 'zhou-pingwang.jpg',
+  '周平王': 'zhou-pingwang.jpg',
+  '姬林': 'zhou-huanwang.jpg',   // 桓王
+  '桓王': 'zhou-huanwang.jpg',
+  '周桓王': 'zhou-huanwang.jpg',
+  '姬佗': 'zhou-zhuangwang.jpg',   // 庄王
+  '庄王': 'zhou-zhuangwang.jpg',
+  '周庄王': 'zhou-zhuangwang.jpg',
+  '姬阆': 'zhou-huiwang.jpg',   // 惠王
+  '惠王': 'zhou-huiwang.jpg',
+  '周惠王': 'zhou-huiwang.jpg',
+  '姬郑': 'zhou-xiangwang.jpg',   // 襄王
+  '襄王': 'zhou-xiangwang.jpg',
+  '周襄王': 'zhou-xiangwang.jpg',
+  '姬瑜': 'zhou-dingwang.jpg',   // 定王
+  '定王': 'zhou-dingwang.jpg',
+  '周定王': 'zhou-dingwang.jpg',
+  '姬匄': 'zhou-jingwang.jpg',   // 敬王
+  '敬王': 'zhou-jingwang.jpg',
+  '周敬王': 'zhou-jingwang.jpg',
+  '姬午': 'zhou-weiliewang.jpg',   // 威烈王
+  '威烈王': 'zhou-weiliewang.jpg',
+  '周威烈王': 'zhou-weiliewang.jpg',
+  '姬扁': 'zhou-xianwang.jpg',   // 显王
+  '显王': 'zhou-xianwang.jpg',
+  '周显王': 'zhou-xianwang.jpg',
+  '姬延': 'zhou-nanwang.jpg',   // 赧王
+  '赧王': 'zhou-nanwang.jpg',
+  '周赧王': 'zhou-nanwang.jpg',
+  // 商帝王：人名与庙号，均取根目录 shang-*.jpg
+  '成汤': 'shang-tang.jpg',   // 大乙
+  '大乙': 'shang-tang.jpg',
+  '外丙': 'shang-waibing.jpg',   // 卜丙
+  '卜丙': 'shang-waibing.jpg',
+  '太甲': 'shang-taijia.jpg',   // 大甲
+  '大甲': 'shang-taijia.jpg',
+  '太戊': 'shang-taiwu.jpg',   // 中宗
+  '中宗': 'shang-taiwu.jpg',
+  '仲丁': 'shang-zhongding.jpg',   // 中丁
+  '中丁': 'shang-zhongding.jpg',
+  '盘庚': 'shang-pangeng.jpg',   // 盘庚
+  '武丁': 'shang-wuding.jpg',   // 高宗
+  '高宗': 'shang-wuding.jpg',
+  '祖甲': 'shang-zujia.jpg',   // 帝祖甲
+  '帝祖甲': 'shang-zujia.jpg',
+  '廪辛': 'shang-linxin.jpg',   // 且辛
+  '且辛': 'shang-linxin.jpg',
+  '武乙': 'shang-wuyi.jpg',   // 武乙
+  '帝乙': 'shang-diyi.jpg',   // 帝乙
+  '帝辛': 'shang-dixin.jpg',   // 帝辛
+  '仲虺': 'zhonghui.jpg',
+  '吕侯（甫侯）': 'lvhou.jpg',
+  '吕侯': 'lvhou.jpg',
+  '甫侯': 'lvhou.jpg',
   // 夏（帝王像在根目录，人物像在 people/）
   '禹': 'xia-yu.jpg',
   '启': 'xia-qi.jpg',
@@ -1226,9 +1324,9 @@ const PERSON_PORTRAITS = {
   '妹喜': 'meixi.jpg',
   '关龙逄': 'guanlongpang.jpg',
   '羲和': 'xihe.jpg',
-  '费昌': 'xia-feichang.jpg',
-  '刘累': 'xia-liulei.jpg',
-  '终古': 'xia-zhonggu.jpg',
+  '费昌': 'feichang.jpg',
+  '刘累': 'liulei.jpg',
+  '终古': 'zhonggu.jpg',
   // 周（诸子根目录画像沿用既有：data/portraits/<拼音>.jpg，不新增）
   '孔子': 'kongzi.jpg',
   '老子': 'laozi.jpg',
@@ -1664,7 +1762,7 @@ function personPortrait(name) {
   const f = PERSON_PORTRAITS[name];
   if (!f) return null;
   // 皇帝互相关联的像在 portraits/ 根目录，其他人在 portraits/people/
-  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤','和世㻋','曹操','曹植','诸葛亮','司马炎','司马昱','李克用','王莽','刘邦','刘秀','禹','启','太康','仲康','相','少康','杼','槐','孔甲','桀','孔子','老子','孙武','墨子','孟子','庄子','列子','荀子','韩非','苏秦','屈原','公孙龙'].includes(name)) {
+  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤','和世㻋','曹操','曹植','诸葛亮','司马炎','司马昱','李克用','王莽','刘邦','刘秀','禹','启','太康','仲康','相','少康','杼','槐','孔甲','桀','孔子','老子','孙武','墨子','孟子','庄子','列子','荀子','韩非','苏秦','屈原','公孙龙','姬发','武王','周武王','姬诵','成王','周成王','姬钊','康王','周康王','姬瑕','昭王','周昭王','姬满','穆王','周穆王','姬繄扈','共王','周共王','姬囏','懿王','周懿王','姬辟方','孝王','周孝王','姬燮','夷王','周夷王','姬胡','厉王','周厉王','姬静','宣王','周宣王','姬宫湦','幽王','周幽王','姬宜臼','平王','周平王','姬林','桓王','周桓王','姬佗','庄王','周庄王','姬阆','惠王','周惠王','姬郑','襄王','周襄王','姬瑜','定王','周定王','姬匄','敬王','周敬王','姬午','威烈王','周威烈王','姬扁','显王','周显王','姬延','赧王','周赧王','成汤','大乙','外丙','卜丙','太甲','大甲','太戊','中宗','仲丁','中丁','盘庚','武丁','高宗','祖甲','帝祖甲','廪辛','且辛','武乙','帝乙','帝辛'].includes(name)) {
     return `../data/portraits/${f}`;
   }
   return `../data/portraits/people/${f}`;

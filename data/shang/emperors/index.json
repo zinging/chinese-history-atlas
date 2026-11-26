@@ -2,12 +2,13 @@
  "meta": {
   "title": "商朝帝王索引",
   "description": "自汤灭夏至帝辛亡国，历十七世三十王，约前1600—前1046。本节点选列十二王，世系有省略。",
-  "note": "商代王世与年代采《夏商周断代工程》推定值与《史记·殷本纪》、甲骨卜辞互证，具体年份均为推定，不作精确纪年使用。沃丁、太庚、小甲、雍己、外壬、河亶甲、祖乙、祖辛、沃甲、祖丁、南庚、阳甲、小辛、小乙、祖庚、康丁、文丁等王未列。人物画像待补。",
-  "updated": "2026-11-25"
+  "note": "商代王世与年代采《夏商周断代工程》推定值与《史记·殷本纪》、甲骨卜辞互证，具体年份均为推定，不作精确纪年使用。沃丁、太庚、小甲、雍己、外壬、河亶甲、祖乙、祖辛、沃甲、祖丁、南庚、阳甲、小辛、小乙、祖庚、康丁、文丁等王未列。帝王与人物画像均按商式服制绘制（交领长衣、辫发筒冠、青铜与绿松石饰，无周制冕服）。",
+  "updated": "2026-11-27"
  },
  "emperors": [
   {
    "id": "shang-emp-tang",
+   "portrait": "shang-tang.jpg",
    "name": "成汤",
    "templeName": "大乙",
    "eraName": [
@@ -22,6 +23,7 @@
   },
   {
    "id": "shang-emp-waibing",
+   "portrait": "shang-waibing.jpg",
    "name": "外丙",
    "templeName": "卜丙",
    "eraName": [
@@ -36,6 +38,7 @@
   },
   {
    "id": "shang-emp-taijia",
+   "portrait": "shang-taijia.jpg",
    "name": "太甲",
    "templeName": "大甲",
    "eraName": [
@@ -50,6 +53,7 @@
   },
   {
    "id": "shang-emp-taiwu",
+   "portrait": "shang-taiwu.jpg",
    "name": "太戊",
    "templeName": "中宗",
    "eraName": [
@@ -64,6 +68,7 @@
   },
   {
    "id": "shang-emp-zhongding",
+   "portrait": "shang-zhongding.jpg",
    "name": "仲丁",
    "templeName": "中丁",
    "eraName": [
@@ -78,6 +83,7 @@
   },
   {
    "id": "shang-emp-pangeng",
+   "portrait": "shang-pangeng.jpg",
    "name": "盘庚",
    "templeName": "盘庚",
    "eraName": [
@@ -91,6 +97,7 @@
   },
   {
    "id": "shang-emp-wuding",
+   "portrait": "shang-wuding.jpg",
    "name": "武丁",
    "templeName": "高宗",
    "eraName": [
@@ -104,6 +111,7 @@
   },
   {
    "id": "shang-emp-zujia",
+   "portrait": "shang-zujia.jpg",
    "name": "祖甲",
    "templeName": "帝祖甲",
    "eraName": [
@@ -117,6 +125,7 @@
   },
   {
    "id": "shang-emp-linxin",
+   "portrait": "shang-linxin.jpg",
    "name": "廪辛",
    "templeName": "且辛",
    "eraName": [
@@ -131,6 +140,7 @@
   },
   {
    "id": "shang-emp-wuyi",
+   "portrait": "shang-wuyi.jpg",
    "name": "武乙",
    "templeName": "武乙",
    "eraName": [
@@ -144,6 +154,7 @@
   },
   {
    "id": "shang-emp-diyi",
+   "portrait": "shang-diyi.jpg",
    "name": "帝乙",
    "templeName": "帝乙",
    "eraName": [
@@ -157,6 +168,7 @@
   },
   {
    "id": "shang-emp-dixin",
+   "portrait": "shang-dixin.jpg",
    "name": "帝辛",
    "templeName": "帝辛",
    "eraName": [

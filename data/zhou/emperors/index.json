@@ -6,13 +6,14 @@
    "zhouwest": "西周",
    "zhoueast": "东周"
   },
-  "note": "西周年代依《夏商周断代工程》推定（前1046 克商、前771 西周终）；东周依《史记·十二诸侯年表》与《左传》系年。本节点省略元王、贞定王、哀王、思王、考王、安王、烈王、慎靓王等；共和行政（前841—前828）不占王位，记于厉王卡片时间线。具体年份均为学界通行推定，不作精确纪年使用。",
-  "updated": "2026-11-25"
+  "note": "西周年代依《夏商周断代工程》推定（前1046 克商、前771 西周终）；东周依《史记·十二诸侯年表》与《左传》系年。本节点省略元王、贞定王、哀王、思王、考王、安王、烈王、慎靓王等；共和行政（前841—前828）不占王位，记于厉王卡片时间线。具体年份均为学界通行推定，不作精确纪年使用。画像口径：西周十二王着玄衣纁裳冕服，东周十王着委貌玄冠深衣。",
+  "updated": "2026-11-27"
  },
  "emperors": [
   {
    "id": "zhou-emp-wuwang",
    "lineage": "zhouwest",
+   "portrait": "zhou-wuwang.jpg",
    "name": "姬发",
    "templeName": "武王",
    "eraName": [
@@ -27,6 +28,7 @@
   {
    "id": "zhou-emp-chengwang",
    "lineage": "zhouwest",
+   "portrait": "zhou-chengwang.jpg",
    "name": "姬诵",
    "templeName": "成王",
    "eraName": [
@@ -41,6 +43,7 @@
   {
    "id": "zhou-emp-kangwang",
    "lineage": "zhouwest",
+   "portrait": "zhou-kangwang.jpg",
    "name": "姬钊",
    "templeName": "康王",
    "eraName": [
@@ -55,6 +58,7 @@
   {
    "id": "zhou-emp-zhaowang",
    "lineage": "zhouwest",
+   "portrait": "zhou-zhaowang.jpg",
    "name": "姬瑕",
    "templeName": "昭王",
    "eraName": [
@@ -69,6 +73,7 @@
   {
    "id": "zhou-emp-muwang",
    "lineage": "zhouwest",
+   "portrait": "zhou-muwang.jpg",
    "name": "姬满",
    "templeName": "穆王",
    "eraName": [
@@ -83,6 +88,7 @@
   {
    "id": "zhou-emp-gongwang",
    "lineage": "zhouwest",
+   "portrait": "zhou-gongwang.jpg",
    "name": "姬繄扈",
    "templeName": "共王",
    "eraName": [
@@ -98,6 +104,7 @@
   {
    "id": "zhou-emp-yiwang",
    "lineage": "zhouwest",
+   "portrait": "zhou-yiwang.jpg",
    "name": "姬囏",
    "templeName": "懿王",
    "eraName": [
@@ -112,6 +119,7 @@
   {
    "id": "zhou-emp-xiaowang",
    "lineage": "zhouwest",
+   "portrait": "zhou-xiaowang.jpg",
    "name": "姬辟方",
    "templeName": "孝王",
    "eraName": [
@@ -126,6 +134,7 @@
   {
    "id": "zhou-emp-yiwang2",
    "lineage": "zhouwest",
+   "portrait": "zhou-yiwang2.jpg",
    "name": "姬燮",
    "templeName": "夷王",
    "eraName": [
@@ -140,6 +149,7 @@
   {
    "id": "zhou-emp-liwang",
    "lineage": "zhouwest",
+   "portrait": "zhou-liwang.jpg",
    "name": "姬胡",
    "templeName": "厉王",
    "eraName": [
@@ -154,6 +164,7 @@
   {
    "id": "zhou-emp-xuanwang",
    "lineage": "zhouwest",
+   "portrait": "zhou-xuanwang.jpg",
    "name": "姬静",
    "templeName": "宣王",
    "eraName": [
@@ -168,6 +179,7 @@
   {
    "id": "zhou-emp-youwang",
    "lineage": "zhouwest",
+   "portrait": "zhou-youwang.jpg",
    "name": "姬宫湦",
    "templeName": "幽王",
    "eraName": [
@@ -182,6 +194,7 @@
   {
    "id": "zhou-emp-pingwang",
    "lineage": "zhoueast",
+   "portrait": "zhou-pingwang.jpg",
    "name": "姬宜臼",
    "templeName": "平王",
    "eraName": [
@@ -196,6 +209,7 @@
   {
    "id": "zhou-emp-huanwang",
    "lineage": "zhoueast",
+   "portrait": "zhou-huanwang.jpg",
    "name": "姬林",
    "templeName": "桓王",
    "eraName": [
@@ -210,6 +224,7 @@
   {
    "id": "zhou-emp-zhuangwang",
    "lineage": "zhoueast",
+   "portrait": "zhou-zhuangwang.jpg",
    "name": "姬佗",
    "templeName": "庄王",
    "eraName": [
@@ -224,6 +239,7 @@
   {
    "id": "zhou-emp-huiwang",
    "lineage": "zhoueast",
+   "portrait": "zhou-huiwang.jpg",
    "name": "姬阆",
    "templeName": "惠王",
    "eraName": [
@@ -238,6 +254,7 @@
   {
    "id": "zhou-emp-xiangwang",
    "lineage": "zhoueast",
+   "portrait": "zhou-xiangwang.jpg",
    "name": "姬郑",
    "templeName": "襄王",
    "eraName": [
@@ -252,6 +269,7 @@
   {
    "id": "zhou-emp-dingwang",
    "lineage": "zhoueast",
+   "portrait": "zhou-dingwang.jpg",
    "name": "姬瑜",
    "templeName": "定王",
    "eraName": [
@@ -266,6 +284,7 @@
   {
    "id": "zhou-emp-jingwang",
    "lineage": "zhoueast",
+   "portrait": "zhou-jingwang.jpg",
    "name": "姬匄",
    "templeName": "敬王",
    "eraName": [
@@ -280,6 +299,7 @@
   {
    "id": "zhou-emp-weiliewang",
    "lineage": "zhoueast",
+   "portrait": "zhou-weiliewang.jpg",
    "name": "姬午",
    "templeName": "威烈王",
    "eraName": [
@@ -294,6 +314,7 @@
   {
    "id": "zhou-emp-xianwang",
    "lineage": "zhoueast",
+   "portrait": "zhou-xianwang.jpg",
    "name": "姬扁",
    "templeName": "显王",
    "eraName": [
@@ -308,6 +329,7 @@
   {
    "id": "zhou-emp-nanwang",
    "lineage": "zhoueast",
+   "portrait": "zhou-nanwang.jpg",
    "name": "姬延",
    "templeName": "赧王",
    "eraName": [
