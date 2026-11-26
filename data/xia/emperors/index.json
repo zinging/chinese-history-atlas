@@ -1,0 +1,150 @@
+{
+ "meta": {
+  "title": "夏朝帝王索引",
+  "description": "自禹受禅至桀亡国，历十四世十七王，约前2070—前1600。本节点选列十王，世系有省略。",
+  "note": "夏代王世与年代采《夏商周断代工程》推定值与《竹书纪年》《史记·夏本纪》互证，具体年份均为推定，不作精确纪年使用。",
+  "updated": "2026-11-25"
+ },
+ "emperors": [
+  {
+   "id": "xia-emp-yu",
+   "name": "禹",
+   "templeName": "夏后禹",
+   "eraName": [
+    "禹"
+   ],
+   "reign": {
+    "start": "-2070",
+    "end": "-2050"
+   },
+   "portrait": "xia-yu.jpg",
+   "file": "yu.json"
+  },
+  {
+   "id": "xia-emp-qi",
+   "name": "启",
+   "templeName": "夏后启",
+   "eraName": [
+    "启"
+   ],
+   "reign": {
+    "start": "-2050",
+    "end": "-2041"
+   },
+   "portrait": "xia-qi.jpg",
+   "file": "qi.json"
+  },
+  {
+   "id": "xia-emp-taikang",
+   "name": "太康",
+   "templeName": "夏后太康",
+   "eraName": [
+    "太康"
+   ],
+   "reign": {
+    "start": "-2041",
+    "end": "-2019"
+   },
+   "portrait": "xia-taikang.jpg",
+   "file": "taikang.json"
+  },
+  {
+   "id": "xia-emp-zhongkang",
+   "name": "仲康",
+   "templeName": "夏后仲康",
+   "eraName": [
+    "仲康"
+   ],
+   "reign": {
+    "start": "-2019",
+    "end": "-2006"
+   },
+   "portrait": "xia-zhongkang.jpg",
+   "file": "zhongkang.json"
+  },
+  {
+   "id": "xia-emp-xiang",
+   "name": "相",
+   "templeName": "夏后相",
+   "eraName": [
+    "相"
+   ],
+   "reign": {
+    "start": "-2006",
+    "end": "-1990"
+   },
+   "portrait": "xia-xiang.jpg",
+   "file": "xiang.json"
+  },
+  {
+   "id": "xia-emp-shaokang",
+   "name": "少康",
+   "templeName": "夏后少康",
+   "eraName": [
+    "少康"
+   ],
+   "reign": {
+    "start": "-1990",
+    "end": "-1969"
+   },
+   "portrait": "xia-shaokang.jpg",
+   "file": "shaokang.json"
+  },
+  {
+   "id": "xia-emp-zhu",
+   "name": "杼",
+   "templeName": "夏后杼",
+   "eraName": [
+    "杼"
+   ],
+   "reign": {
+    "start": "-1969",
+    "end": "-1952"
+   },
+   "portrait": "xia-zhu.jpg",
+   "file": "zhu.json"
+  },
+  {
+   "id": "xia-emp-huai",
+   "name": "槐",
+   "templeName": "夏后槐",
+   "eraName": [
+    "槐"
+   ],
+   "reign": {
+    "start": "-1952",
+    "end": "-1938"
+   },
+   "portrait": "xia-huai.jpg",
+   "file": "huai.json"
+  },
+  {
+   "id": "xia-emp-kongjia",
+   "name": "孔甲",
+   "templeName": "夏后孔甲",
+   "eraName": [
+    "孔甲"
+   ],
+   "reign": {
+    "start": "-1870",
+    "end": "-1848"
+   },
+   "portrait": "xia-kongjia.jpg",
+   "file": "kongjia.json"
+  },
+  {
+   "id": "xia-emp-jie",
+   "name": "桀",
+   "templeName": "夏后桀",
+   "eraName": [
+    "桀"
+   ],
+   "reign": {
+    "start": "-1652",
+    "end": "-1600"
+   },
+   "portrait": "xia-jie.jpg",
+   "file": "jie.json"
+  }
+ ]
+}

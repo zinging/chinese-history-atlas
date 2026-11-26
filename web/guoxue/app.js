@@ -474,6 +474,70 @@ function scrollBooksToTop() {
   if (wrap) wrap.scrollTo({ left: 0, behavior: "smooth" });
 }
 
+/* ---------- 首次打开「自动慢速左移」----------
+   与帝王谱系 #timeline-scroll 复用同一套行为（四个模块共享同一份实现）：
+   页面首次渲染卡片条时启动一次，轨道以 32px/s 向左匀移；任何人為操作
+   （滚轮、按下、触摸、按键）立即并永久停止，本次页面生命周期内不再重启；
+   滑到末端自然收手；切换流派/朝代导致的重新渲染不会重启（状态单向）。*/
+let _booksDriftState = "idle";      // idle → running → stopped（单向，不回头）
+const BOOK_DRIFT_SPEED = 32;        // px/s，与帝王谱系同一速度，观感统一
+
+function stopBooksAutoDrift() {
+  if (_booksDriftState === "running") _booksDriftState = "stopped";
+}
+
+function startBooksAutoDrift() {
+  if (_booksDriftState !== "idle") return;
+  const wrap = $("#books-scroll");
+  const page = $("#page-books");
+  // 首屏不是典籍长廊（深链到公案/舆图/问典）、或卡片条不可见，都不该动
+  if (!wrap || !page || page.classList.contains("hidden") || !wrap.offsetParent) {
+    _booksDriftState = "stopped";
+    return;
+  }
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    _booksDriftState = "stopped";
+    return;
+  }
+  const maxLeft = () => wrap.scrollWidth - wrap.clientWidth;
+  if (maxLeft() < 24) { _booksDriftState = "stopped"; return; }
+
+  _booksDriftState = "running";
+  // 轨道已去掉 scroll-snap / scroll-behavior，这里再显式关一次吸附，
+  // 防止日后有人把 snap 加回来把逐帧小位移吸掉（停止后不归还，避免回吸突跳）。
+  wrap.style.scrollSnapType = "none";
+  let raf = 0;
+  let last = 0;
+  // 累加器用浮点：scrollLeft 读回来是整数，每帧零点几像素会被抹成 0
+  let pos = wrap.scrollLeft;
+  const tick = (ts) => {
+    if (_booksDriftState !== "running") return;
+    if (!last) last = ts;
+    const dt = Math.min(64, ts - last);     // 切后台再回来时不要一口气跳很远
+    last = ts;
+    if (!document.hidden) {
+      pos += BOOK_DRIFT_SPEED * dt / 1000;
+      if (pos >= maxLeft() - 0.5) {         // 到末端：停住，且不再重启
+        wrap.scrollTo({ left: maxLeft(), behavior: "instant" });
+        _booksDriftState = "stopped";
+        return;
+      }
+      wrap.scrollTo({ left: pos, behavior: "instant" });
+    }
+    raf = requestAnimationFrame(tick);
+  };
+  raf = requestAnimationFrame(tick);
+
+  // 任何「人在动」的信号都收手；不能监听 window 的 scroll（轨道自身横滚会冒泡，第一帧自杀）
+  const KILL_EVENTS = ["wheel", "pointerdown", "mousedown", "touchstart", "keydown"];
+  const onUser = () => {
+    if (_booksDriftState !== "running") return;
+    _booksDriftState = "stopped";
+    cancelAnimationFrame(raf);
+  };
+  KILL_EVENTS.forEach((ev) => window.addEventListener(ev, onUser, { passive: true, once: true }));
+}
+
 function renderBooks() {
   const wrap = $("#books-scroll");
   let books = bookData.books || [];
@@ -486,6 +550,7 @@ function renderBooks() {
   if (!books.length) {
     wrap.innerHTML = `<div style="color:var(--muted);padding:30px;">该流派内容正在整理中…</div>`;
     $("#book-detail").classList.add("hidden");
+    _booksDriftState = "stopped";   // 首次就空：本次打开不再有自动左移
     return;
   }
   wrap.innerHTML = books.map((b, i) => {
@@ -509,17 +574,22 @@ function renderBooks() {
     });
   });
   // 鼠标滚轮横向滚动
+  // 注意：不要把滚轮交给轨道自身的 smooth/snap 机制——两者叠加时每格推进会被动画+吸附
+  // 抵消，表现为「滚不动 / 滚一下就卡住」。这里手工推进 scrollLeft，并按 deltaMode 归一。
   wrap.onwheel = (e) => {
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-      wrap.scrollLeft += e.deltaY;
-      e.preventDefault();
-    }
+    stopBooksAutoDrift();                                   // 用户开始滚：自动左移立即并永久收手
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;   // 触控板横滑交给原生滚动
+    e.preventDefault();
+    const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? wrap.clientWidth : 1;
+    wrap.scrollLeft += e.deltaY * unit;
   };
   // 默认展开第一本
   if (books[0]) {
     wrap.querySelector(".book-card").classList.add("active");
     openBook(books[0]);
   }
+  // 只在「首次渲染」启动自动左移；后续切换流派/朝代的重渲染不再触发
+  startBooksAutoDrift();
 }
 
 /** 打开某本书：详情在分片里则先按需加载（卡片字段清单已具备，先给骨架，再渲染）。 */

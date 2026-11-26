@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261124d';
+const APP_BUILD = '20261126c';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -211,6 +211,9 @@ const DYNASTY_DIRS = {
   wudai: 'wudai/',
   sanguo: 'sanguo/',
   jin: 'jin/',
+  xia: 'xia/',
+  shang: 'shang/',
+  zhou: 'zhou/',
   qin: 'qin/',
   xihan: 'xihan/',
   xin: 'xin/',
@@ -231,14 +234,14 @@ const DYNASTY_SEGS = {
 // 三国、两晋的并立政权边界没有现成 geojson（见 DYNASTY_HAS_GEO），
 // 但地名、事件、路线都有独立数据，所以这里必须是 true，否则整块舆图是空的。
 // 秦、西汉、新莽、东汉同样没有手绘边界 geojson，走「示意」路径。
-const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: true, jin: true, qin: true, han: true, xihan: true, xin: true, donghan: true };
+const DYNASTY_HAS_MAP = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: true, jin: true, qin: true, han: true, xihan: true, xin: true, donghan: true, xia: true, shang: true, zhou: true };
 // 是否有真实边界 geojson（data/boundaries/<朝>.geojson）。没有的朝代回退示意色块，不去发 404 请求。
-const DYNASTY_HAS_GEO = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false, jin: false, qin: false, han: false, xihan: false, xin: false, donghan: false };
+const DYNASTY_HAS_GEO = { ming: true, tang: true, song: true, yuan: true, qing: true, sui: true, wudai: true, sanguo: false, jin: false, qin: false, han: false, xihan: false, xin: false, donghan: false, xia: false, shang: false, zhou: false };
 // 年代范围：公元前用负数（-221 即前 221 年）
 const DYNASTY_RANGE = {
   ming: '1368-1644', tang: '618-907', song: '960-1279', yuan: '1271-1368', qing: '1616-1912',
   sui: '581-618', wudai: '907-960', sanguo: '220-280', jin: '265-420',
-  qin: '-221--207', han: '-202-220', xihan: '-202-8', xin: '9-23', donghan: '25-220',
+  xia: '-2070--1600', shang: '-1600--1046', zhou: '-1046--256', qin: '-221--207', han: '-202-220', xihan: '-202-8', xin: '9-23', donghan: '25-220',
 };
 // 各朝文件布局：明朝各库在 data/ 根目录下分目录，其他朝在朝代目录内
 const DYNASTY_LAYOUT = {
@@ -256,6 +259,9 @@ const DYNASTY_LAYOUT = {
   xihan: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   xin: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
   donghan: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  xia: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  shang: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
+  zhou: { people: 'people.json', cases: 'cases.json', events: 'events.json', mapEvents: 'map-events.json', places: 'places.json', routes: 'routes.json' },
 };
 // 各朝文案：品牌名、朝代胶囊副标题（帝数）、地图 aria、图例注、页脚
 const DYNASTY_TEXT = {
@@ -290,53 +296,68 @@ const DYNASTY_TEXT = {
     footer: '疆域轮廓据谭其骧《中国历史地图集》隋时期示意，非精确边界 · 内容以《隋书》《资治通鉴》为主要依据',
   },
   wudai: {
-    brand: '五代十国', dynSub: '五代14帝·十国41主', mapAria: '五代十国示意地图',
+    brand: '五代十国', dynSub: '14帝', mapAria: '五代十国示意地图',
     legendNote: '疆域据谭其骧《中国历史地图集·五代十国时期》手绘简化示意',
     footer: '五代十国是唐末到宋初的大分裂时期 · 内容以《新五代史》《资治通鉴》为主要依据',
   },
   sanguo: {
-    brand: '三国鼎立', dynSub: '十一帝·魏蜀吴', mapAria: '三国示意地图',
+    brand: '三国鼎立', dynSub: '十一帝', mapAria: '三国示意地图',
     legendNote: '三方疆界据《中国历史地图集·三国时期》示意，魏蜀吴以秦岭—淮河—长江为界',
     footer: '三国是东汉末年后魏、蜀、吴三方并立的时期 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《三国志》及裴松之注为主要依据，参校《资治通鉴》《后汉书》《晋书》',
   },
   jin: {
-    brand: '两晋十六国', dynSub: '十五帝·西晋东晋', mapAria: '两晋示意地图',
+    brand: '两晋十六国', dynSub: '十五帝', mapAria: '两晋示意地图',
     legendNote: '西晋、东晋与十六国政权并立，暂无疆域示意图，相关政权分布见帝王世系页的并立图',
     footer: '晋是三国归晋后西晋短暂统一、东晋南渡与十六国并立的时期 · 皇帝画像为 AI 生成工笔风格，仅供示意 · 内容以《晋书》帝载记为主要依据，参校《资治通鉴》《中国通史》',
   },
+  xia: {
+    brand: '夏后氏', dynSub: '十四世十七王', mapAria: '夏朝示意地图',
+    legendNote: '夏代尚无手绘边界，疆域示意图据《中国历史地图集》与二里头、东下冯等遗址分布推定',
+    footer: '夏代年代采《夏商周断代工程》推定值（约前2070—前1600），王世据《史记·夏本纪》《竹书纪年》互证 · 帝王画像为 AI 生成工笔风格，冠服据《礼记·檀弓》「夏后氏尚黑」推定 · 内容以《史记》《竹书纪年》《左传》《尚书》为主要依据',
+  },
+  shang: {
+    brand: '殷商', dynSub: '十七世三十王', mapAria: '商朝示意地图',
+    legendNote: '王畿与方国分布据《中国历史地图集》与郑州商城、殷墟、吴城等遗址示意，非精确边界',
+    footer: '商代年代采《夏商周断代工程》推定值（约前1600—前1046），王世据《史记·殷本纪》与甲骨卜辞互证，具体年份均为推定 · 帝王画像为 AI 生成工笔风格，冠服据《礼记·檀弓》「殷人尚白」推定 · 内容以《史记》《尚书》《竹书纪年》与甲骨卜辞为主要依据 · 人物画像待补',
+  },
+  zhou: {
+    brand: '周礼天下', dynSub: '三十七王', mapAria: '周朝示意地图',
+    legendNote: '西周王畿在丰镐、东周王畿在洛邑，诸侯与戎狄分布据《中国历史地图集》示意，非精确边界',
+    footer: '周代年代采《夏商周断代工程》推定值（前1046 克商—前771 西周终；东周至前256 秦灭西周），西周王世据《史记·周本纪》与青铜器铭文互证，东周依《左传》系年，具体年份均为推定 · 帝王画像为 AI 生成工笔风格，冠服据《周礼》冕服与《礼记》深衣推定 · 内容以《史记》《尚书》《左传》《国语》《诗经》为主要依据 · 西周帝王与人物画像待补，诸子画像沿用既有',
+  },
   qin: {
-    brand: '秦制天下', dynSub: '三帝·二世而亡', mapAria: '秦朝示意地图',
+    brand: '秦制天下', dynSub: '三帝', mapAria: '秦朝示意地图',
     legendNote: '秦并六国后的疆域，北起阴山、南至象郡，暂无手绘边界，地名与事件据《史记》系年',
     footer: '秦是第一个中央集权的统一帝国，废分封、行郡县，书同文、车同轨 · 皇帝画像为 AI 生成工笔风格，冠服据秦制、相貌据《史记》推定 · 内容以《史记》秦始皇本纪、六国年表为主要依据',
   },
   xihan: {
-    brand: '大汉西京', dynSub: '汉·西京十二帝', mapAria: '西汉示意地图',
+    brand: '大汉西京', dynSub: '十二帝', mapAria: '西汉示意地图',
     legendNote: '西汉疆域东抵朝鲜、西通西域，暂无手绘边界，地名与事件据《汉书》系年',
     footer: '西汉承秦制而损益之，黄老休养在前、独尊儒术在后，奠定此后两千年的制度与意识形态 · 皇帝画像为 AI 生成工笔风格，冠服据汉制、相貌据《汉书》推定 · 内容以《汉书》帝纪、列传为主要依据',
   },
   xin: {
-    brand: '新莽改制', dynSub: '两汉之间·十五年', mapAria: '新莽示意地图',
+    brand: '新莽改制', dynSub: '一帝', mapAria: '新莽示意地图',
     legendNote: '新莽承西汉疆域，改制频繁而地名多改，暂无手绘边界，事件据《汉书·王莽传》系年',
     footer: '新莽是西汉外戚王莽代汉建立的短命王朝，托古改制、币制屡变，终以绿林赤眉之乱覆亡 · 皇帝画像为 AI 生成工笔风格，冠服据新莽土德尚黄、相貌据《汉书》推定 · 内容以《汉书》王莽传为主要依据',
   },
   donghan: {
-    brand: '大汉东京', dynSub: '汉·东京十四帝', mapAria: '东汉示意地图',
+    brand: '大汉东京', dynSub: '十四帝', mapAria: '东汉示意地图',
     legendNote: '东汉疆域与西汉大体相当而西域三通三绝，暂无手绘边界，事件据《后汉书》系年',
     footer: '东汉是光武中兴后重建的汉室，外戚宦官交替专权，终于黄巾之乱与群雄割据 · 皇帝画像为 AI 生成工笔风格，冠服据汉制火德尚赤、相貌据《后汉书》推定 · 内容以《后汉书》帝纪、列传为主要依据',
   },
   // 汉一个节点装三段：西京（西汉）→ 新莽 → 东京（东汉），与「晋＝西晋＋东晋」同一套折法。
   // 段与段之间立彩牌、卡上挂段徽，年号条按段分组，舆图三段数据合绘一张。
   han: {
-    brand: '大汉四百年', dynSub: '二十七帝·三段', mapAria: '汉朝示意地图',
+    brand: '大汉四百年', dynSub: '二十七帝', mapAria: '汉朝示意地图',
     legendNote: '汉分西京（前202-8）、新莽（9-23）、东京（25-220）三段共二十七帝，中间隔十七年无汉帝；疆域按武帝极盛范围示意，暂无手绘边界，地名与事件据《汉书》《后汉书》系年',
     footer: '汉四百年分三段：西京长安、新莽代汉十五年、东京洛阳 · 皇帝画像为 AI 生成工笔风格，三段分别按水德尚黑、土德尚黄、火德尚赤定冠服，相貌据《汉书》《后汉书》推定 · 内容以《汉书》《后汉书》帝纪、列传为主要依据',
   },
-  // 「全部」是 133 帝的合并视图，不代表任何一个朝代：不套用任何一朝疆域，
+  // 「全部」是十四朝 177 帝的合并视图，不代表任何一个朝代：不套用任何一朝疆域，
   // 文案也不能借用明朝口径，否则等于暗示这块地是明朝的。
   all: {
-    brand: '中华历史', dynSub: '十一朝 · 一百三十三帝', mapAria: '全部朝代合并示意地图',
-    legendNote: '「全部」为十一朝 133 帝合并视图（汉含西京、新莽、东京三段），只画地名、事件与路线，不套用任何单一朝代的疆域轮廓',
-    footer: '本视图合并十一朝 133 位皇帝 · 单朝疆域轮廓据谭其骧《中国历史地图集》示意，非精确边界 · 133 幅画像均为 AI 生成工笔风格，冠服据各朝制度、相貌据正史推定，仅供示意',
+    brand: '中华历史', dynSub: '十四朝 · 一百七十七帝', mapAria: '全部朝代合并示意地图',
+    legendNote: '「全部」为十四朝 177 帝合并视图（汉含西京、新莽、东京三段），只画地名、事件与路线，不套用任何单一朝代的疆域轮廓',
+    footer: '本视图合并十四朝 177 位皇帝 · 单朝疆域轮廓据谭其骧《中国历史地图集》示意，非精确边界 · 已绘画像均为 AI 生成工笔风格，冠服据各朝制度、相貌据正史推定，仅供示意',
   },
 };
 
@@ -435,7 +456,7 @@ async function loadAll() {
       if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
       return;
     }
-    const dynOrder = ['qin','han','sanguo','jin','sui','tang','wudai','song','yuan','ming','qing'];
+    const dynOrder = ['xia','shang','zhou','qin','han','sanguo','jin','sui','tang','wudai','song','yuan','ming','qing'];
     const allEmperors = [];
     const allEvents = [];
     const allPeople = [];
@@ -756,12 +777,13 @@ function renderTimeline() {
     prevEmp = e;
     const card = el('div', 'emp-card');
     if (e.lineage) card.classList.add('lineage-' + e.lineage);
+    if (!e.portrait && e.lineage) card.classList.add('emp-no-portrait');   // 无画像朝代（周/商）：顶上多留一条带高，给「西周/东周」徽标让位，避免压住朱印
     if (groupEnd) card.classList.add('tl-group-end');
     // 头像按需加载 + 声明尺寸：首屏只取视口内几张卡片，其余等滚到再取（避免首屏一次性请求十几张画像）
     const lazy = ' loading="lazy" decoding="async" width="84" height="84"';
     const portrait = e.portrait
       ? `<img class="emp-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" ${lazy} onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')"/>`
-      : `<div class="emp-portrait emp-portrait-fallback">${e.name ? e.name.slice(0, 1) : '?'}</div>`;
+      : `<div class="emp-portrait emp-portrait-fallback">${(e.templeName || e.name || '?').slice(0, 1)}</div>`;
     card.innerHTML = `
       ${e.lineage ? `<div class="lineage-badge">${LINEAGE_LABEL[e.lineage] || ''}</div>` : ''}
       ${portrait}
@@ -801,6 +823,91 @@ function renderTimeline() {
   enableDragScroll(wrap);
   // 并立政权甘特图（有 data/<朝>/gantt.json 的朝代才显示）
   renderGantt(currentDynasty);
+}
+
+/* ---------- 纵向滚轮 → 横向滚动 ----------
+   不要依赖轨道 CSS 的 scroll-snap / scroll-behavior:smooth：两者叠加会把逐格推进吞掉，
+   实测连滚 12 格只推进 40px 后就彻底卡住（2026-11-25 用户报障）。
+   这里按 deltaMode 归一后直接改 scrollLeft，一比一跟手。 */
+function bindWheelToHorizontal(el) {
+  if (!el || el._wheelHBound) return;
+  el._wheelHBound = true;
+  el.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;   // 触控板横滑交给原生滚动
+    e.preventDefault();
+    const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientWidth : 1;
+    el.scrollLeft += e.deltaY * unit;
+  }, { passive: false });
+}
+
+/* ---------- 首屏「自动慢速左移」 ----------
+   只在页面刚打开、停在「全部」帝王世系时启动一次：卡片轨道以 32px/s 向左匀移。
+   任何人为操作（滚轮、按下、触摸、按键、页面纵向滚动）立即并永久停止，本次页面生命周期内不再重启；
+   刷新页面即重新判断（状态只存在内存里，不落 localStorage）。
+   自然滑到轨道末端也会收手，且不会因为切换朝代而重新启动。 */
+let _autoDriftState = 'idle';   // idle → running → stopped（单向，不回头）
+const AUTO_DRIFT_SPEED = 32;    // px/s，约 9 秒走完一张卡；比首版 24 快一档，仍不抢注意力
+
+function stopTimelineAutoDrift() {
+  if (_autoDriftState === 'running') _autoDriftState = 'stopped';
+}
+
+function startTimelineAutoDrift() {
+  if (_autoDriftState !== 'idle') return;
+  const wrap = $('#timeline-scroll');
+  const page = $('#page-timeline');
+  // 首屏不是帝王世系（深链到悬案/舆图/探案）、或不是「全部」视图，都不该动
+  if (!wrap || !page || page.classList.contains('hidden') || currentDynasty !== 'all' || !wrap.offsetParent) {
+    _autoDriftState = 'stopped';
+    return;
+  }
+  // 尊重系统的「减少动态效果」设置
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    _autoDriftState = 'stopped';
+    return;
+  }
+  const maxLeft = () => wrap.scrollWidth - wrap.clientWidth;
+  if (maxLeft() < 24) { _autoDriftState = 'stopped'; return; }
+
+  _autoDriftState = 'running';
+  // 轨道带 scroll-snap-type:x mandatory，逐帧的小位移会被立刻吸附回卡片边界（看上去完全不动）。
+  // 动画期间关掉吸附；停止后不再归还 —— 归还的瞬间会把轨道吸回最近的卡片边界，
+  // 用户刚一动就看到几十像素的突跳，比「这次访问不再吸附」更糟。刷新页面自然恢复。
+  wrap.style.scrollSnapType = 'none';
+  let raf = 0;
+  let last = 0;
+  // 累加器必须用浮点自己记：scrollLeft 读回来是整数，每帧零点几像素会被抹成 0，永远推不动
+  let pos = wrap.scrollLeft;
+  const tick = (ts) => {
+    if (_autoDriftState !== 'running') return;
+    if (!last) last = ts;
+    const dt = Math.min(64, ts - last);   // 切后台再回来时不要一口气跳很远
+    last = ts;
+    if (!document.hidden) {
+      pos += AUTO_DRIFT_SPEED * dt / 1000;
+      if (pos >= maxLeft() - 0.5) {     // 滑到末端：停住，且不再重启
+        wrap.scrollTo({ left: maxLeft(), behavior: 'instant' });
+        _autoDriftState = 'stopped';
+        return;
+      }
+      // 轨道 CSS 是 scroll-behavior:smooth，直接改 scrollLeft 会被平滑动画吞掉，
+      // 这里显式用 instant 逐帧推进，避免每帧都在重启一段平滑滚动。
+      wrap.scrollTo({ left: pos, behavior: 'instant' });
+    }
+    raf = requestAnimationFrame(tick);
+  };
+  raf = requestAnimationFrame(tick);
+
+  // 只要出现任何「人在动」的信号就收手；用 once 让监听自己退场，不留垃圾
+  // 注意：不要监听 window 的 scroll —— 轨道自身的横向滚动也会冒到 document，
+  // 动画第一帧就会把自己杀掉（实测 2px 即停）。页面纵向滚动已由 wheel/touchstart/keydown 覆盖。
+  const KILL_EVENTS = ['wheel', 'pointerdown', 'mousedown', 'touchstart', 'keydown'];
+  const onUser = () => {
+    if (_autoDriftState !== 'running') return;
+    _autoDriftState = 'stopped';
+    cancelAnimationFrame(raf);
+  };
+  KILL_EVENTS.forEach((ev) => window.addEventListener(ev, onUser, { passive: true, once: true }));
 }
 
 // ---------- 并立政权甘特图 ----------
@@ -1097,6 +1204,44 @@ function enableDragScroll(el) {
 }
 
 const PERSON_PORTRAITS = {
+  // 夏（帝王像在根目录，人物像在 people/）
+  '禹': 'xia-yu.jpg',
+  '启': 'xia-qi.jpg',
+  '太康': 'xia-taikang.jpg',
+  '仲康': 'xia-zhongkang.jpg',
+  '相': 'xia-xiang.jpg',
+  '少康': 'xia-shaokang.jpg',
+  '杼': 'xia-zhu.jpg',
+  '槐': 'xia-huai.jpg',
+  '孔甲': 'xia-kongjia.jpg',
+  '桀': 'xia-jie.jpg',
+  '伯益': 'boyi.jpg',
+  '皋陶': 'gaoyao.jpg',
+  '女娇': 'nvjiao.jpg',
+  '后羿': 'houyi.jpg',
+  '寒浞': 'hanzhuo.jpg',
+  '寒浇': 'hanjiao.jpg',
+  '靡': 'mi.jpg',
+  '女艾': 'nvai.jpg',
+  '妹喜': 'meixi.jpg',
+  '关龙逄': 'guanlongpang.jpg',
+  '羲和': 'xihe.jpg',
+  '费昌': 'xia-feichang.jpg',
+  '刘累': 'xia-liulei.jpg',
+  '终古': 'xia-zhonggu.jpg',
+  // 周（诸子根目录画像沿用既有：data/portraits/<拼音>.jpg，不新增）
+  '孔子': 'kongzi.jpg',
+  '老子': 'laozi.jpg',
+  '孙武': 'sunwu.jpg',
+  '墨子': 'mozi.jpg',
+  '孟子': 'mengzi.jpg',
+  '庄子': 'zhuangzi.jpg',
+  '列子': 'liezi.jpg',
+  '荀子': 'xunzi.jpg',
+  '韩非': 'hanfei.jpg',
+  '苏秦': 'suqin.jpg',
+  '屈原': 'quyuan.jpg',
+  '公孙龙': 'gongsunlong.jpg',
   // 皇帝互相关联（直接用帝后像）
   '英宗（朱祁镇）': 'yingzong.jpg',
   '朱瞻基': 'xuanzong.jpg',
@@ -1321,6 +1466,54 @@ const PERSON_PORTRAITS = {
   '杨溥': 'yangpu.jpg',
   '李东阳': 'lidongyang.jpg',
   '谢迁': 'xieqian.jpg',
+  // 商
+  '伊尹': 'yiyin.jpg',
+  '巫咸': 'wuxian.jpg',
+  '伊陟': 'yizhi.jpg',
+  '傅说': 'fuyue.jpg',
+  '甘盘': 'ganpan.jpg',
+  '妇好': 'fuhao.jpg',
+  '妇妌': 'fujing.jpg',
+  '祖己': 'zuji.jpg',
+  '比干': 'bigan.jpg',
+  '箕子': 'jizi.jpg',
+  '微子启': 'weizi.jpg',
+  '蜚廉': 'feilian.jpg',
+  '恶来': 'elai.jpg',
+  // 周
+  '周公旦': 'zhougong.jpg',
+  '姜尚（太公望）': 'jiangshang.jpg',
+  '召公奭': 'zhaogong.jpg',
+  '尹吉甫': 'yinjifu.jpg',
+  '共伯和': 'gongbohe.jpg',
+  '毕公高': 'bigonggao.jpg',
+  '祭公谋父': 'jigongmoufu.jpg',
+  '密康公': 'mikanggong.jpg',
+  '非子': 'feizi.jpg',
+  '齐哀公': 'qiaigong.jpg',
+  '荣夷公': 'rongyigong.jpg',
+  '召穆公': 'zhaomugong.jpg',
+  '褒姒': 'baosi.jpg',
+  '申侯': 'shenhou.jpg',
+  '晋文侯': 'jinwenhou.jpg',
+  '郑庄公': 'zhengzhuanggong.jpg',
+  '王子朝': 'wangzichao.jpg',
+  '魏文侯': 'weiwenhou.jpg',
+  '管仲': 'guanzhong.jpg',
+  '齐桓公': 'qihuangong.jpg',
+  '晋文公': 'jinwengong.jpg',
+  '楚庄王': 'chuzhuangwang.jpg',
+  '伍子胥': 'wuzixu.jpg',
+  '范蠡': 'fanli.jpg',
+  '商鞅': 'shangyang.jpg',
+  '张仪': 'zhangyi.jpg',
+  '廉颇': 'lianpo.jpg',
+  '蔺相如': 'linxiangru.jpg',
+  '信陵君': 'xinlingjun.jpg',
+  '孟尝君': 'mengchangjun.jpg',
+  '白起': 'baiqi.jpg',
+  '乐毅': 'yueyi.jpg',
+  '田单': 'tiandan.jpg',
 };
 
 const PERSON_TITLES = {
@@ -1471,7 +1664,7 @@ function personPortrait(name) {
   const f = PERSON_PORTRAITS[name];
   if (!f) return null;
   // 皇帝互相关联的像在 portraits/ 根目录，其他人在 portraits/people/
-  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤','和世㻋','曹操','曹植','诸葛亮','司马炎','司马昱','李克用','王莽','刘邦','刘秀'].includes(name)) {
+  if (['英宗（朱祁镇）','朱瞻基','李世民','武曌','郭威','柴荣','李渊','爱育黎拔力八达','赵匡胤','和世㻋','曹操','曹植','诸葛亮','司马炎','司马昱','李克用','王莽','刘邦','刘秀','禹','启','太康','仲康','相','少康','杼','槐','孔甲','桀','孔子','老子','孙武','墨子','孟子','庄子','列子','荀子','韩非','苏秦','屈原','公孙龙'].includes(name)) {
     return `../data/portraits/${f}`;
   }
   return `../data/portraits/people/${f}`;
@@ -3506,7 +3699,7 @@ window.__guideFlyTo = function (lat, lng) {
   leafletMap.panTo([lat, lng], { animate: true, duration: 1.0 });
 };
 
-const DYN_SHORT = { qin: '秦', han: '汉', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
+const DYN_SHORT = { xia: '夏', shang: '商', zhou: '周', qin: '秦', han: '汉', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
 const PLACE_KIND = { capital: '都城', regime: '诸国都城', city: '重镇', site: '战场·名胜', overseas: '海外' };
 
 /** 地名弹窗：一城一卡。
@@ -3637,6 +3830,99 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
 // queries 用该朝 events.json 的确切事件名 / 皇帝名，保证 search-core 一定命中；
 // open 为没有标准答案的思辨题（附双视角），create 为动手创作。
 const DETECTIVE_TASKS_BY_DYNASTY = {
+  zhou: [
+    {
+      title: '侦探档案 · 周 1', quest: '一个人替七岁的孩子管了七年国，然后交还了钥匙——他是忠臣，还是差一步的篡位者？',
+      queries: ['周公摄政', '三监之乱·周公东征', '周公旦'],
+      open: {
+        question: '周公究竟是「摄政称王」，还是只是「代行王权」？',
+        context: '《尚书·康诰》等篇里，周公以「王若曰」的口吻发号施令；《史记》却说他是「摄行政当国」，最后「北面就臣位」。同一批材料，能读出两种人。',
+        viewpoints: ['有人说是称王：诰命中的「王」若指成王，语气不合；「践阼」二字，本义就是登位。', '有人说是代行：先秦「摄」就是代理，他以王号发令、七年而还政，恰恰证明他没有王心。'],
+      },
+      create: '把《大诰》《康诰》里周公自称的三种说法各抄一句，再判断：要推翻「称王说」，哪一条证据最关键？',
+    },
+    {
+      title: '侦探档案 · 周 2', quest: '一个「点烽火骗诸侯」的故事，为什么在先秦的文献里一句都找不到？',
+      queries: ['犬戎破镐', '申侯', '褒姒'],
+      open: {
+        question: '「烽火戏诸侯」是被后世加上去的，还是真有其事而先秦文献失载？',
+        context: '《诗经》《国语》《竹书纪年》记幽王废申后、立褒姒、申侯引戎，都不及烽火；而「桀宠妹喜」「纣宠妲己」的故事结构，和它几乎一模一样。',
+        viewpoints: ['有人说是层累：同一个「美女亡国」模板的第三次复用，汉代史家采摭传说写入正文。', '有人说有实据：西周或已有烽燧传警之法，「诸侯悉至」被夸大了，但传警本身未必虚构。'],
+      },
+      create: '列出「幽王亡国」的四个已知事实（废后、立庶、申侯、犬戎），再指出：哪一步才是真正不可逆的？',
+    },
+    {
+      title: '侦探档案 · 周 3', quest: '天子亲自带兵去打一个诸侯，结果被对方一箭射中肩膀——礼是从这一箭开始崩的吗？',
+      queries: ['繻葛之战', '郑庄公', '周桓王'],
+      open: {
+        question: '繻葛之败，是桓王指挥失误，还是封建秩序的必然结果？',
+        context: '王师并不弱，败因是陈师先溃、侧翼动摇。但更该问的是：为什么天子的军队，已经打不过诸侯的军队？',
+        viewpoints: ['有人说是战术：把内乱之国编进侧翼，一触即溃，责任在桓王。', '有人说是制度：西六师早已衰败，天子要靠诸侯从征，诸侯不肯死战，王师必败。'],
+      },
+      create: '按「战前—战场—战后」三段各写一条线索，再回答：郑庄公为什么不追、还要派人去「劳王」？',
+    },
+  ],
+  shang: [
+    {
+      title: '侦探档案 · 商 1', quest: '一个王朝搬了五次家，最后一次才不再搬——它在躲什么？',
+      queries: ['盘庚迁殷', '九世之乱', '殷'],
+      open: {
+        question: '迁都是为了避水患、抑制贵族，还是战略重心的转移？',
+        context: '《尚书·盘庚》给的理由是「视民利用迁」，但三篇诰命大量训诫的却是抵制的贵族。',
+        viewpoints: ['有人说是避患：旧都近水，地势低，殷地高而资源稳。', '有人说是抑贵族：每迁一次都，旧贵族的田产与人脉就被切断一次。'],
+      },
+      create: '把「嚣—相—邢—奄—殷」五座都城按时间排好，各写一句「这次搬家最可能的原因」，再指出哪一次是关键转折。',
+    },
+    {
+      title: '侦探档案 · 商 2', quest: '一片甲骨上写着「登妇好三千，登旅万」——她是谁？',
+      queries: ['妇好征鬼方', '武丁中兴', '妇好'],
+      open: {
+        question: '妇好是「王后」还是「统帅」？',
+        viewpoints: ['有人说两者兼有：卜辞记她率军、主祭、受封邑，墓中随葬青铜钺，军权与祭权都在她手里。', '有人说别过度现代化：她的权力来自王的授权，本质仍是王室成员代王行事。'],
+      },
+      create: '根据卜辞的三条线索，判断「妇好出征」是常态还是非常态，并说明你的依据。',
+    },
+    {
+      title: '侦探档案 · 商 3', quest: '纣的罪状，为什么越到后世越多？',
+      queries: ['牧野之战', '帝辛', '比干'],
+      open: {
+        question: '亡国之君的罪状会随时间生长，这是宣传，还是史实累积？',
+        context: '《牧誓》只列四条，战国增「酒池肉林」「炮烙」，汉代再增「剖心」「醢九侯」。',
+        viewpoints: ['有人说是层累：罪名与夏桀高度雷同，是「亡国模板」在起作用。', '有人说有实据：东夷战争与鹿台工程确实透支民力，倒戈就是证据。'],
+      },
+      create: '把罪状按「最早出处」列成一张表，标出哪几条可能是后世加的，并说明判断标准。',
+    },
+  ],
+  xia: [
+    {
+      title: '侦探档案 · 夏 1', quest: '一个没有当时文字的王朝，凭什么说自己存在过？',
+      queries: ['大禹治水', '二里头', '斟鄩'],
+      open: {
+        question: '夏是「信史」，还是后人按需要拼出来的上古？',
+        context: '夏代没有发现当时的成篇文字，二里头遗址的规模与年代都与文献中的夏大致相当，但「是不是夏都」仍是推论。',
+        viewpoints: ['有人说是信史：二里头宫城、铸铜作坊与礼器体系，加上《史记》世系，链条已经够长。', '有人说要留余地：遗址不等于王朝，「夏」这个名字最早见于周人文献，命名本身可能带有后人的政治需要。'],
+      },
+      create: '结合线索，把「考古证据」与「文献证据」各列两条，再说说：你更看重哪一边，为什么。',
+    },
+    {
+      title: '侦探档案 · 夏 2', quest: '一个君主出去打猎一百天，回来时国家已经不是他的了——这中间发生了什么？',
+      queries: ['太康失国', '后羿', '寒浞代羿·夏统中绝'],
+      open: {
+        question: '太康失国，是君主失德，还是东夷崛起下的必然？',
+        viewpoints: ['有人说失德：他离都百日，后羿只是顺手关了门。', '有人说结构：夏的共主本来靠联盟，中央一离开核心区，联盟立刻换盟主。'],
+      },
+      create: '结合线索，按时间顺序排出「太康—后羿—仲康—相—寒浞」五步，再指出哪一步是真正不可逆的。',
+    },
+    {
+      title: '侦探档案 · 夏 3', quest: '夏的衰败，究竟记在孔甲账上，还是记在桀账上？',
+      queries: ['孔甲乱政', '鸣条之战·夏亡', '桀'],
+      open: {
+        question: '一个王朝的灭亡，应该归因于最后一个坏皇帝，还是归因于长期的结构性衰败？',
+        viewpoints: ['有人说记在桀：筑倾宫、杀谏臣、囚汤又放汤，最后一代把账一次结清。', '有人说记在孔甲：「夏后氏德衰，诸侯畔之」——离心从两百年前就开始了。'],
+      },
+      create: '结合线索，把夏亡的原因分成「长期」「短期」两栏各写三条，再判断哪一栏更致命。',
+    },
+  ],
   sanguo: [
     {
       title: '侦探档案 · 三国 1', quest: '曹操打赢了官渡、统一了北方，为什么到死都没能过长江？',
@@ -3909,9 +4195,9 @@ const DETECTIVE_TASKS_BY_DYNASTY = {
   ],
 };
 
-const DYNASTY_LABEL = { qin: '秦朝', han: '汉朝', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋朝', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
+const DYNASTY_LABEL = { xia: '夏朝', shang: '商朝', zhou: '周朝', qin: '秦朝', han: '汉朝', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋朝', sui: '隋朝', tang: '唐朝', wudai: '五代十国', song: '宋朝', yuan: '元朝', ming: '明朝', qing: '清朝' };
 // 时间线朝代立牌用两字内简称（竖排书脊签高度固定 64px，四字会撑破）
-const DYNASTY_SHORT = { qin: '秦', han: '汉', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
+const DYNASTY_SHORT = { xia: '夏', shang: '商', zhou: '周', qin: '秦', han: '汉', xihan: '西汉', xin: '新莽', donghan: '东汉', sanguo: '三国', jin: '晋', sui: '隋', tang: '唐', wudai: '五代', song: '宋', yuan: '元', ming: '明', qing: '清' };
 
 // 切朝代令牌：并发切换时只渲染最后一次
 let _dynastyToken = 0;
@@ -4356,12 +4642,7 @@ function initDynScroll() {
     next.addEventListener('click', () => dynScrollBy(1));
     track.addEventListener('scroll', () => updateDynArrows(), { passive: true });
     // 鼠标纵向滚轮也能横滚（触控板横滑本身走原生滚动）
-    track.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        track.scrollLeft += e.deltaY;
-      }
-    }, { passive: false });
+    bindWheelToHorizontal(track);
     if (window.ResizeObserver) new ResizeObserver(() => updateDynArrows()).observe(track);
   }
   updateDynArrows();
@@ -4525,6 +4806,10 @@ const DYNASTY_FILL = {
   wudai: { fill: '#e0b8a0', stroke: '#8a5a3a', title: '五 代 十 国（中原五代与南方十国并立，据《中国历史地图集》简化示意）' },
   sanguo: { fill: '#e6cfa8', stroke: '#7a5a30', title: '三 国 疆 域（魏·蜀·吴三方合计范围，据《中国历史地图集·三国时期》示意）' },
   jin: { fill: '#cfc6e0', stroke: '#57457f', title: '两 晋 疆 域（西晋太康年间极盛范围，据《中国历史地图集》示意）' },
+  // 夏商周为示意轮廓：夏尚黑、商尚白、周尚赤（《礼记·檀弓》），尚色只作点缀，可读性优先。
+  xia: { fill: '#a9b4bf', stroke: '#43515e', title: '夏 朝 疆 域（豫西·晋南为核，据《中国历史地图集》与二里头遗址分布示意）' },
+  shang: { fill: '#ddd6c6', stroke: '#8a7a5c', title: '商 朝 疆 域（内服王畿·外服方国，据《中国历史地图集》与郑州商城、殷墟示意）' },
+  zhou: { fill: '#e6bcab', stroke: '#8a3f28', title: '周 朝 疆 域（西周王畿丰镐·东周王畿洛邑，诸侯屏周，据《中国历史地图集》示意）' },
   // 秦汉四朝没有手绘边界 geojson，这里用简化外轮廓示意；秦尚黑、汉尚赤，配色按五德终始取色。
   qin: { fill: '#bcb0a4', stroke: '#3f382f', title: '秦 朝 疆 域（前 221 年并六国，北以长城为界，据《中国历史地图集·秦时期》示意）' },
   han: { fill: '#e2a08a', stroke: '#8a3a28', title: '汉 朝 疆 域（西京·新莽·东京三段，取武帝极盛范围，据《中国历史地图集》示意）' },
@@ -4777,27 +5062,9 @@ async function applyDeepLink() {
       if (window.ResizeObserver) new ResizeObserver(relay).observe(document.querySelector('.module-inner'));
     }
     // 鼠标滚轮横向滚动帝王卡片
-    const tsc = $('#timeline-scroll');
-    if (tsc && !tsc._wheelBound) {
-      tsc.addEventListener('wheel', (e) => {
-        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-          e.preventDefault();
-          tsc.scrollLeft += e.deltaY;
-        }
-      }, { passive: false });
-      tsc._wheelBound = true;
-    }
+    bindWheelToHorizontal($('#timeline-scroll'));
     // 地图年号条也支持滚轮横滚
-    const es = $('#era-strip');
-    if (es && !es._wheelBound) {
-      es.addEventListener('wheel', (e) => {
-        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-          e.preventDefault();
-          es.scrollLeft += e.deltaY;
-        }
-      }, { passive: false });
-      es._wheelBound = true;
-    }
+    bindWheelToHorizontal($('#era-strip'));
     // 默认展开第一位皇帝（隋朝即杨坚）的生平时间线，并让卡片呈现选中红底
     if (DATA.emperors && DATA.emperors[0]) {
       document.querySelectorAll('.emp-card').forEach((c) => c.classList.remove('active'));
@@ -4824,6 +5091,8 @@ async function applyDeepLink() {
     })();
     // URL query 深链：定位到具体皇帝/悬案/地图事件
     await applyDeepLink();
+    // 首屏氛围动画：只有「刚打开、停在全部」才启动；之后任何操作都会永久停掉（刷新才重置）
+    startTimelineAutoDrift();
   } catch (e) {
     document.body.innerHTML = `<div style="max-width:600px;margin:80px auto;text-align:center;font-size:18px">
       <h2>数据加载失败</h2>

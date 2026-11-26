@@ -644,9 +644,13 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
   position: relative; display: flex; align-items: center; gap: 8px;
   padding: 6px 0 6px;
 }
+/* 注意：这里不能加 scroll-snap-type / scroll-behavior:smooth。
+   两者叠加会把「滚轮一格 = scrollLeft += 100」吞掉：每格都会先被平滑动画吃掉、
+   再被吸附回同一张卡，实测连滚 12 格只动 40px 后就完全不动（2026-11-25 用户报障）。
+   箭头翻页用的是 JS 的 scrollBy({behavior:'smooth'})，与这两个 CSS 属性无关，
+   去掉后箭头照样有平滑动画、终点也照样对齐到卡片边界。 */
 .timeline-scroll {
   flex: 1; display: flex; gap: 12px; overflow-x: auto;
-  scroll-snap-type: x mandatory; scroll-behavior: smooth;
   scrollbar-width: thin; scrollbar-color: #a8352a #f0e6d2;
   padding-bottom: 4px;
 }
@@ -766,6 +770,21 @@ body.sidebar-collapsed #modules-pop { left: calc(var(--sidebar-w-collapsed) + 12
 .emp-card.lineage-hanwest.active::after { background: #8a3a28; }
 .emp-card.lineage-hanxin.active::after  { background: #7a6320; }
 .emp-card.lineage-haneast.active::after { background: #7c2d3a; }
+/* 周两段：西周王畿在丰镐、东周王畿在洛邑，同为姬姓周室，故仍用同族暖色，
+   西周取深赤（尚赤之正），东周取退色的赭陶（王权下移、礼乐渐弛）。 */
+.tl-lineage-sep.lineage-zhouwest span { background: #8a3f28; }
+.tl-lineage-sep.lineage-zhoueast span { background: #9c6a44; }
+.emp-card.lineage-zhouwest { background: #fbf1eb; border-color: #c99c88; }
+.emp-card.lineage-zhoueast { background: #faf3e9; border-color: #cdb19a; }
+.emp-card.lineage-zhouwest .lineage-badge { background: #8a3f28; }
+.emp-card.lineage-zhoueast .lineage-badge { background: #9c6a44; }
+.emp-card.lineage-zhouwest.active { background: #8a3f28; border-color: #8a3f28; }
+.emp-card.lineage-zhoueast.active { background: #9c6a44; border-color: #9c6a44; }
+/* 无画像的帝王卡（周、商）：徽标钉在顶端留白带里，不压朱印方框 */
+.emp-card.emp-no-portrait { padding-top: 34px; }
+.emp-card.emp-no-portrait .lineage-badge { top: 9px; }
+.emp-card.lineage-zhouwest.active::after { background: #8a3f28; }
+.emp-card.lineage-zhoueast.active::after { background: #9c6a44; }
 .emp-portrait {
   width: 84px; height: 84px; margin: 0 auto 8px;
   border-radius: 50%; background: var(--gold);

@@ -507,13 +507,13 @@ function portraitHref(rel, { thumb = false, thumbDir = null } = {}) {
 }
 
 // ---------- 帝王谱系数据 ----------
-const DYNASTIES = ['qin', 'xihan', 'xin', 'donghan', 'sanguo', 'jin', 'sui', 'tang', 'wudai', 'song', 'yuan', 'ming', 'qing'];
+const DYNASTIES = ['xia', 'shang', 'zhou', 'qin', 'xihan', 'xin', 'donghan', 'sanguo', 'jin', 'sui', 'tang', 'wudai', 'song', 'yuan', 'ming', 'qing'];
 const DYNASTY_LABEL = {
-  qin: '秦', xihan: '西汉', xin: '新莽', donghan: '东汉',
+  xia: '夏', shang: '商', zhou: '周', qin: '秦', xihan: '西汉', xin: '新莽', donghan: '东汉',
   sanguo: '三国', jin: '晋', sui: '隋朝', tang: '唐朝', wudai: '五代', song: '宋朝',
   yuan: '元朝', ming: '明朝', qing: '清朝', all: '全部朝代',
 };
-const DYNASTY_DIR = { ming: '', tang: 'tang/', song: 'song/', yuan: 'yuan/', qing: 'qing/', sui: 'sui/', wudai: 'wudai/', sanguo: 'sanguo/', jin: 'jin/', qin: 'qin/', xihan: 'xihan/', xin: 'xin/', donghan: 'donghan/' };
+const DYNASTY_DIR = { xia: 'xia/', shang: 'shang/', zhou: 'zhou/', ming: '', tang: 'tang/', song: 'song/', yuan: 'yuan/', qing: 'qing/', sui: 'sui/', wudai: 'wudai/', sanguo: 'sanguo/', jin: 'jin/', qin: 'qin/', xihan: 'xihan/', xin: 'xin/', donghan: 'donghan/' };
 
 /** 事件 → 关联路线映射（必须与 web/app.js 的 EVENT_ROUTE_MAP 保持一致）。
  *  讲解员逐句讲解某事件时，命中此处会把路线概述与逐站解说一并纳入 guide。 */

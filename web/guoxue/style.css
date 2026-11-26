@@ -209,10 +209,11 @@ body[data-sect="myth"] {
 .era-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
 /* ---- 典籍卡片：复刻 .emp-card ---- */
+/* 与主站 .timeline-scroll 同理：不要加 scroll-snap-type / scroll-behavior:smooth。
+   两者叠加会把滚轮逐格推进吞掉（实测连滚 12 格只动 40px 后卡死）。 */
 .books-scroll {
   display: flex; gap: 10px; overflow-x: auto; padding: 8px 4px 16px;
   scrollbar-width: thin; scrollbar-color: var(--primary) #f0e6d2;
-  scroll-snap-type: x proximity; scroll-behavior: smooth;
 }
 .books-scroll::-webkit-scrollbar { height: 6px; }
 .books-scroll::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }

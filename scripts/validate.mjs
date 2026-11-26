@@ -75,6 +75,9 @@ const DYNASTIES = [
   { key: 'xihan', dir: 'xihan', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
   { key: 'xin', dir: 'xin', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
   { key: 'donghan', dir: 'donghan', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: false },
+  { key: 'xia', dir: 'xia', empDir: 'emperors', events: 'events.json',   people: 'people.json',       cases: 'cases.json',       map: true },
+  { key: 'shang', dir: 'shang', empDir: 'emperors', events: 'events.json', people: 'people.json',      cases: 'cases.json',       map: true },
+  { key: 'zhou', dir: 'zhou', empDir: 'emperors', events: 'events.json', people: 'people.json', cases: 'cases.json', map: true },
 ];
 
 const d = (key) => (key === 'ming' ? '' : `${key}/`);

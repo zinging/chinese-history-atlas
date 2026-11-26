@@ -1,0 +1,323 @@
+{
+ "meta": {
+  "title": "周朝帝王索引",
+  "description": "自武王克商至赧王献地，历三十七王、八百余年。本节点选列二十二王，分西周十二、东周十，世系有省略。",
+  "lineages": {
+   "zhouwest": "西周",
+   "zhoueast": "东周"
+  },
+  "note": "西周年代依《夏商周断代工程》推定（前1046 克商、前771 西周终）；东周依《史记·十二诸侯年表》与《左传》系年。本节点省略元王、贞定王、哀王、思王、考王、安王、烈王、慎靓王等；共和行政（前841—前828）不占王位，记于厉王卡片时间线。具体年份均为学界通行推定，不作精确纪年使用。",
+  "updated": "2026-11-25"
+ },
+ "emperors": [
+  {
+   "id": "zhou-emp-wuwang",
+   "lineage": "zhouwest",
+   "name": "姬发",
+   "templeName": "武王",
+   "eraName": [
+    "武王"
+   ],
+   "reign": {
+    "start": "-1046",
+    "end": "-1043"
+   },
+   "file": "wuwang.json"
+  },
+  {
+   "id": "zhou-emp-chengwang",
+   "lineage": "zhouwest",
+   "name": "姬诵",
+   "templeName": "成王",
+   "eraName": [
+    "成王"
+   ],
+   "reign": {
+    "start": "-1042",
+    "end": "-1021"
+   },
+   "file": "chengwang.json"
+  },
+  {
+   "id": "zhou-emp-kangwang",
+   "lineage": "zhouwest",
+   "name": "姬钊",
+   "templeName": "康王",
+   "eraName": [
+    "康王"
+   ],
+   "reign": {
+    "start": "-1020",
+    "end": "-996"
+   },
+   "file": "kangwang.json"
+  },
+  {
+   "id": "zhou-emp-zhaowang",
+   "lineage": "zhouwest",
+   "name": "姬瑕",
+   "templeName": "昭王",
+   "eraName": [
+    "昭王"
+   ],
+   "reign": {
+    "start": "-995",
+    "end": "-977"
+   },
+   "file": "zhaowang.json"
+  },
+  {
+   "id": "zhou-emp-muwang",
+   "lineage": "zhouwest",
+   "name": "姬满",
+   "templeName": "穆王",
+   "eraName": [
+    "穆王"
+   ],
+   "reign": {
+    "start": "-976",
+    "end": "-922"
+   },
+   "file": "muwang.json"
+  },
+  {
+   "id": "zhou-emp-gongwang",
+   "lineage": "zhouwest",
+   "name": "姬繄扈",
+   "templeName": "共王",
+   "eraName": [
+    "共王",
+    "恭王"
+   ],
+   "reign": {
+    "start": "-922",
+    "end": "-900"
+   },
+   "file": "gongwang.json"
+  },
+  {
+   "id": "zhou-emp-yiwang",
+   "lineage": "zhouwest",
+   "name": "姬囏",
+   "templeName": "懿王",
+   "eraName": [
+    "懿王"
+   ],
+   "reign": {
+    "start": "-899",
+    "end": "-892"
+   },
+   "file": "yiwang.json"
+  },
+  {
+   "id": "zhou-emp-xiaowang",
+   "lineage": "zhouwest",
+   "name": "姬辟方",
+   "templeName": "孝王",
+   "eraName": [
+    "孝王"
+   ],
+   "reign": {
+    "start": "-891",
+    "end": "-886"
+   },
+   "file": "xiaowang.json"
+  },
+  {
+   "id": "zhou-emp-yiwang2",
+   "lineage": "zhouwest",
+   "name": "姬燮",
+   "templeName": "夷王",
+   "eraName": [
+    "夷王"
+   ],
+   "reign": {
+    "start": "-885",
+    "end": "-878"
+   },
+   "file": "yiwang2.json"
+  },
+  {
+   "id": "zhou-emp-liwang",
+   "lineage": "zhouwest",
+   "name": "姬胡",
+   "templeName": "厉王",
+   "eraName": [
+    "厉王"
+   ],
+   "reign": {
+    "start": "-877",
+    "end": "-841"
+   },
+   "file": "liwang.json"
+  },
+  {
+   "id": "zhou-emp-xuanwang",
+   "lineage": "zhouwest",
+   "name": "姬静",
+   "templeName": "宣王",
+   "eraName": [
+    "宣王"
+   ],
+   "reign": {
+    "start": "-827",
+    "end": "-782"
+   },
+   "file": "xuanwang.json"
+  },
+  {
+   "id": "zhou-emp-youwang",
+   "lineage": "zhouwest",
+   "name": "姬宫湦",
+   "templeName": "幽王",
+   "eraName": [
+    "幽王"
+   ],
+   "reign": {
+    "start": "-781",
+    "end": "-771"
+   },
+   "file": "youwang.json"
+  },
+  {
+   "id": "zhou-emp-pingwang",
+   "lineage": "zhoueast",
+   "name": "姬宜臼",
+   "templeName": "平王",
+   "eraName": [
+    "平王"
+   ],
+   "reign": {
+    "start": "-770",
+    "end": "-720"
+   },
+   "file": "pingwang.json"
+  },
+  {
+   "id": "zhou-emp-huanwang",
+   "lineage": "zhoueast",
+   "name": "姬林",
+   "templeName": "桓王",
+   "eraName": [
+    "桓王"
+   ],
+   "reign": {
+    "start": "-719",
+    "end": "-697"
+   },
+   "file": "huanwang.json"
+  },
+  {
+   "id": "zhou-emp-zhuangwang",
+   "lineage": "zhoueast",
+   "name": "姬佗",
+   "templeName": "庄王",
+   "eraName": [
+    "庄王"
+   ],
+   "reign": {
+    "start": "-696",
+    "end": "-682"
+   },
+   "file": "zhuangwang.json"
+  },
+  {
+   "id": "zhou-emp-huiwang",
+   "lineage": "zhoueast",
+   "name": "姬阆",
+   "templeName": "惠王",
+   "eraName": [
+    "惠王"
+   ],
+   "reign": {
+    "start": "-676",
+    "end": "-652"
+   },
+   "file": "huiwang.json"
+  },
+  {
+   "id": "zhou-emp-xiangwang",
+   "lineage": "zhoueast",
+   "name": "姬郑",
+   "templeName": "襄王",
+   "eraName": [
+    "襄王"
+   ],
+   "reign": {
+    "start": "-651",
+    "end": "-619"
+   },
+   "file": "xiangwang.json"
+  },
+  {
+   "id": "zhou-emp-dingwang",
+   "lineage": "zhoueast",
+   "name": "姬瑜",
+   "templeName": "定王",
+   "eraName": [
+    "定王"
+   ],
+   "reign": {
+    "start": "-606",
+    "end": "-586"
+   },
+   "file": "dingwang.json"
+  },
+  {
+   "id": "zhou-emp-jingwang",
+   "lineage": "zhoueast",
+   "name": "姬匄",
+   "templeName": "敬王",
+   "eraName": [
+    "敬王"
+   ],
+   "reign": {
+    "start": "-519",
+    "end": "-476"
+   },
+   "file": "jingwang.json"
+  },
+  {
+   "id": "zhou-emp-weiliewang",
+   "lineage": "zhoueast",
+   "name": "姬午",
+   "templeName": "威烈王",
+   "eraName": [
+    "威烈王"
+   ],
+   "reign": {
+    "start": "-425",
+    "end": "-402"
+   },
+   "file": "weiliewang.json"
+  },
+  {
+   "id": "zhou-emp-xianwang",
+   "lineage": "zhoueast",
+   "name": "姬扁",
+   "templeName": "显王",
+   "eraName": [
+    "显王"
+   ],
+   "reign": {
+    "start": "-368",
+    "end": "-321"
+   },
+   "file": "xianwang.json"
+  },
+  {
+   "id": "zhou-emp-nanwang",
+   "lineage": "zhoueast",
+   "name": "姬延",
+   "templeName": "赧王",
+   "eraName": [
+    "赧王"
+   ],
+   "reign": {
+    "start": "-314",
+    "end": "-256"
+   },
+   "file": "nanwang.json"
+  }
+ ]
+}

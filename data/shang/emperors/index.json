@@ -1,0 +1,173 @@
+{
+ "meta": {
+  "title": "商朝帝王索引",
+  "description": "自汤灭夏至帝辛亡国，历十七世三十王，约前1600—前1046。本节点选列十二王，世系有省略。",
+  "note": "商代王世与年代采《夏商周断代工程》推定值与《史记·殷本纪》、甲骨卜辞互证，具体年份均为推定，不作精确纪年使用。沃丁、太庚、小甲、雍己、外壬、河亶甲、祖乙、祖辛、沃甲、祖丁、南庚、阳甲、小辛、小乙、祖庚、康丁、文丁等王未列。人物画像待补。",
+  "updated": "2026-11-25"
+ },
+ "emperors": [
+  {
+   "id": "shang-emp-tang",
+   "name": "成汤",
+   "templeName": "大乙",
+   "eraName": [
+    "成汤",
+    "大乙"
+   ],
+   "reign": {
+    "start": "-1600",
+    "end": "-1587"
+   },
+   "file": "tang.json"
+  },
+  {
+   "id": "shang-emp-waibing",
+   "name": "外丙",
+   "templeName": "卜丙",
+   "eraName": [
+    "外丙",
+    "卜丙"
+   ],
+   "reign": {
+    "start": "-1587",
+    "end": "-1585"
+   },
+   "file": "waibing.json"
+  },
+  {
+   "id": "shang-emp-taijia",
+   "name": "太甲",
+   "templeName": "大甲",
+   "eraName": [
+    "太甲",
+    "大甲"
+   ],
+   "reign": {
+    "start": "-1585",
+    "end": "-1557"
+   },
+   "file": "taijia.json"
+  },
+  {
+   "id": "shang-emp-taiwu",
+   "name": "太戊",
+   "templeName": "中宗",
+   "eraName": [
+    "太戊",
+    "大戊"
+   ],
+   "reign": {
+    "start": "-1486",
+    "end": "-1411"
+   },
+   "file": "taiwu.json"
+  },
+  {
+   "id": "shang-emp-zhongding",
+   "name": "仲丁",
+   "templeName": "中丁",
+   "eraName": [
+    "仲丁",
+    "中丁"
+   ],
+   "reign": {
+    "start": "-1411",
+    "end": "-1400"
+   },
+   "file": "zhongding.json"
+  },
+  {
+   "id": "shang-emp-pangeng",
+   "name": "盘庚",
+   "templeName": "盘庚",
+   "eraName": [
+    "盘庚"
+   ],
+   "reign": {
+    "start": "-1300",
+    "end": "-1277"
+   },
+   "file": "pangeng.json"
+  },
+  {
+   "id": "shang-emp-wuding",
+   "name": "武丁",
+   "templeName": "高宗",
+   "eraName": [
+    "武丁"
+   ],
+   "reign": {
+    "start": "-1250",
+    "end": "-1192"
+   },
+   "file": "wuding.json"
+  },
+  {
+   "id": "shang-emp-zujia",
+   "name": "祖甲",
+   "templeName": "帝祖甲",
+   "eraName": [
+    "祖甲"
+   ],
+   "reign": {
+    "start": "-1192",
+    "end": "-1160"
+   },
+   "file": "zujia.json"
+  },
+  {
+   "id": "shang-emp-linxin",
+   "name": "廪辛",
+   "templeName": "且辛",
+   "eraName": [
+    "廪辛",
+    "且辛"
+   ],
+   "reign": {
+    "start": "-1160",
+    "end": "-1150"
+   },
+   "file": "linxin.json"
+  },
+  {
+   "id": "shang-emp-wuyi",
+   "name": "武乙",
+   "templeName": "武乙",
+   "eraName": [
+    "武乙"
+   ],
+   "reign": {
+    "start": "-1147",
+    "end": "-1113"
+   },
+   "file": "wuyi.json"
+  },
+  {
+   "id": "shang-emp-diyi",
+   "name": "帝乙",
+   "templeName": "帝乙",
+   "eraName": [
+    "帝乙"
+   ],
+   "reign": {
+    "start": "-1101",
+    "end": "-1075"
+   },
+   "file": "diyi.json"
+  },
+  {
+   "id": "shang-emp-dixin",
+   "name": "帝辛",
+   "templeName": "帝辛",
+   "eraName": [
+    "帝辛",
+    "纣"
+   ],
+   "reign": {
+    "start": "-1075",
+    "end": "-1046"
+   },
+   "file": "dixin.json"
+  }
+ ]
+}
