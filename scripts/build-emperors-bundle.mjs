@@ -97,6 +97,9 @@ for (const d of dirs) {
 
   let old = null;
   try { old = fs.readFileSync(built.abs, 'utf8'); } catch { /* 还没有 bundle */ }
+  // Windows 上 core.autocrlf=true 会把检出后的文件转成 CRLF，而本脚本写的是 LF。
+  // 直接按字节比对会把「内容没变、只是换行符不同」误判成过期，所以比之前先归一化。
+  const oldNorm = old == null ? null : old.replace(/\r\n/g, '\n');
 
   rows.push({
     label: d.label,
@@ -104,12 +107,12 @@ for (const d of dirs) {
     源: kb(srcBytes),
     包: kb(outBytes),
     省: `${(((srcBytes - outBytes) / srcBytes) * 100).toFixed(1)}%`,
-    状态: old === built.text ? '最新' : (old ? '待更新' : '新建'),
+    状态: oldNorm === built.text ? '最新' : (old ? '待更新' : '新建'),
   });
   srcTotal += srcBytes;
   outTotal += outBytes;
 
-  if (old !== built.text) {
+  if (oldNorm !== built.text) {
     stale.push(d.label);
     if (!CHECK_ONLY) {
       fs.writeFileSync(built.abs, built.text);
