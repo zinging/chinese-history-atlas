@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261127g';
+const APP_BUILD = '20261128a';
 
 // 帝王单文件合并包的回退开关：URL 带 ?nobundle=1 时强制走旧的「index + 逐文件」路径，
 // 用于线上出现问题时一键回退（不必回滚整个发布），也方便对照两种加载方式的耗时。
@@ -204,8 +204,12 @@ function renderEraInfo() {
   const people = (emp.people || []).map((p) => p.name).join('、') || '—';
   box.classList.remove('hidden');
   // 该年号的事件统一在下方「该年号事件」胶囊面板呈现，此处不再重复列出「地图上的事件」
+  // 无年号的朝代（夏商周秦）不能写「禹年间」——那是纪年占位，不是年号；
+  // 改为「禹（夏后禹）在位 前2070-前2050」，与卡片副行「夏后禹」不重复。
+  const empDyn = emp._dynasty || currentDynasty;
+  const noEra = ['qin', 'xia', 'shang', 'zhou'].includes(empDyn);
   box.innerHTML = `
-    <h4>${emp.eraName[0]}年间 · ${emp.name}（${emp.templeName}） ${fmtYear(emp.reign.start)}-${fmtYear(emp.reign.end)}</h4>
+    <h4>${noEra ? `${emp.name}（${emp.templeName}）在位` : `${emp.eraName[0]}年间 · ${emp.name}（${emp.templeName}）`} ${fmtYear(emp.reign.start)}-${fmtYear(emp.reign.end)}</h4>
     <div class="era-row"><b>核心人物：</b>${people}</div>
   `;
 }
@@ -941,8 +945,12 @@ function renderTimeline() {
     const portrait = e.portrait
       ? `<img class="emp-portrait" src="../data/portraits/${e.portrait}" alt="${e.name}" ${lazy} onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')"/>`
       : `<div class="emp-portrait emp-portrait-fallback">${(e.templeName || e.name || '?').slice(0, 1)}</div>`;
-    // 周、商诸王本无年号，eraName 只是异名：去掉与庙号同字者，避免「武王 · 武王」
-    const altEra = (e.eraName || []).filter((x) => x && x !== e.templeName);
+    // 夏、商、周诸王本无年号，eraName 只是「王名代纪年」或异名：
+    // 去掉与称号同字者，避免「武王 · 武王」。
+    // 夏的称号带氏号（templeName「夏后禹」、eraName「禹」），今「不等于」但「以之结尾」，
+    // 只比全等会漏掉，卡片上就出现「夏后禹 · 禹」这种把名字说两遍的写法。
+    const temple = e.templeName || '';
+    const altEra = (e.eraName || []).filter((x) => x && x !== temple && !temple.endsWith(x));
     const eraUnit = ['xia', 'shang', 'zhou'].includes((e.id || '').split('-')[0]) ? '种写法' : '个年号';
     const eraLine = altEra.length === 0
       ? (e.templeName || '')
@@ -2053,10 +2061,10 @@ function isCoreEvent(t) {
 }
 
 /* 秦没有年号制度，只有秦王纪年（「秦王政二十六年」），所以标签不能写「年号」。
-   这里按朝代给一个词：秦→纪年，其余→年号。 */
+   夏、商、周同样没有年号，数据里的 eraName 是以王名代纪年，一并按「纪年」表述。 */
 function eraWord(e) {
   const dyn = (e && (e._dynasty || e.dynasty)) || currentDynasty;
-  return dyn === 'qin' ? '纪年' : '年号';
+  return ['qin', 'xia', 'shang', 'zhou'].includes(dyn) ? '纪年' : '年号';
 }
 
 function showEmperor(e) {
