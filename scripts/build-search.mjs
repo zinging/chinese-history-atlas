@@ -125,7 +125,10 @@ function listJsonFiles() {
       const p = path.join(dir, name);
       const st = fs.statSync(p);
       if (st.isDirectory()) walk(p);
-      else if (name.endsWith('.json') && path.resolve(p) !== INDEX_FILE) out.push(p);
+      // emperors/bundle.json 是前端专用的帝王合并包（scripts/build-emperors-bundle.mjs 生成），
+      // 它只是源文件的派生副本，不是知识层内容：计入签名会让「重建一次包 → 索引过期 →
+      // 分片重算」无端空转，所以这里与查到同一份源文件的原则一致，一律排除。
+      else if (name.endsWith('.json') && name !== 'bundle.json' && path.resolve(p) !== INDEX_FILE) out.push(p);
     }
   })(DATA);
   return out.sort();

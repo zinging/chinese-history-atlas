@@ -222,7 +222,7 @@ Another **241 thumbnails** (172 artifacts + 69 map hotspots) keep lists and card
 
 **⚡ Zero dependencies, instant open, works offline**
 
-Pure vanilla HTML / CSS / JS — no build, no framework, no backend; everything under `data/` is readable, editable JSON; no `npm install`, no database. Map library and fonts are fully localised, so it runs with the network unplugged. The eleven dynasties load **concurrently** (a hundred-plus JSON files in one round trip in the "all" view); JSON is sharded per module and fetched on demand; galleries and map cards use thumbnails with automatic fallback.
+Pure vanilla HTML / CSS / JS — no build, no framework, no backend; everything under `data/` is readable, editable JSON; no `npm install`, no database. Map library and fonts are fully localised, so it runs with the network unplugged. The fourteen dynasties load **concurrently**: all 177 emperors arrive in 16 requests (each dynasty's emperor files are merged into one `bundle.json` by `scripts/build-emperors-bundle.mjs`, while the source stays one file per emperor). JSON is sharded per module and fetched on demand; galleries and map cards use thumbnails with automatic fallback.
 
 **🤖 An AI guide out of the box, illustrations included**
 

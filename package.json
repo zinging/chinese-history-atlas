@@ -13,6 +13,8 @@
     "build:search:check": "node scripts/build-search.mjs --check",
     "build:myth": "node scripts/build-myth-schematic.mjs",
     "build:myth:check": "node scripts/build-myth-schematic.mjs --check",
+    "build:emperors": "node scripts/build-emperors-bundle.mjs",
+    "build:emperors:check": "node scripts/build-emperors-bundle.mjs --check",
     "verify:mobile": "node web/verify-mobile.mjs",
     "mcp": "node web/tools/history-mcp-server.mjs",
     "mcp:selftest": "node web/tools/history-mcp-server.mjs --selftest",

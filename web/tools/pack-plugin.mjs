@@ -18,11 +18,17 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
 const PKG = path.join(ROOT, 'plugin-atlas');
 
+// 只给网页用、插件不需要的文件：见 copyRecursive 里的说明
+const SKIP_PLUGIN_FILES = new Set(['bundle.json']);
+
 function copyRecursive(src, dst) {
   const st = fs.statSync(src);
   if (st.isDirectory()) {
     fs.mkdirSync(dst, { recursive: true });
     for (const name of fs.readdirSync(src)) {
+      // emperors/bundle.json 是前端专用的「帝王合并包」（scripts/build-emperors-bundle.mjs 生成），
+      // MCP 走 index.json + 单帝文件，不需要它；带进安装包只会白占约 720KB。
+      if (SKIP_PLUGIN_FILES.has(name)) continue;
       copyRecursive(path.join(src, name), path.join(dst, name));
     }
   } else {

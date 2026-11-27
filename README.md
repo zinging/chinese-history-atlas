@@ -221,7 +221,7 @@ node web/serve.mjs          # 浏览器打开 http://127.0.0.1:5173/web/
 
 **⚡ 零依赖、秒打开，离线也能用**
 
-纯原生 HTML / CSS / JS，无构建、无框架、无后端，`data/` 全是可读可改的 JSON，无需 `npm install`、无需数据库；地图库与字体全部本地化，断网照常运行。八个朝代的数据**并发加载**，「全部」视图下上百个 JSON 只需一个往返就就绪；JSON 按板块分片、切到才拉；图鉴和舆图卡片走缩略图，缺失自动回退。
+纯原生 HTML / CSS / JS，无构建、无框架、无后端，`data/` 全是可读可改的 JSON，无需 `npm install`、无需数据库；地图库与字体全部本地化，断网照常运行。十四个朝代的数据**并发加载**，「全部」视图下 177 位皇帝只需 16 个请求就就绪（每朝帝王由 `scripts/build-emperors-bundle.mjs` 合成一个 `bundle.json`，源文件仍是一人一档）；JSON 按板块分片、切到才拉；图鉴和舆图卡片走缩略图，缺失自动回退。
 
 **🤖 AI 讲解员开箱即用，图文并茂**
 
@@ -300,6 +300,8 @@ chinese-history-atlas/
 前端回归验证：`npm run verify:mobile`（零依赖，自带静态服务 + 本机 Chrome，实测断点、触屏事件序列、抽屉键盘可达性与触控目标尺寸；加 `--base <父提交的服务地址>` 可追加「桌面端与基线逐元素几何一致」的 A/B）。
 
 搜索索引：`npm run build:search` 由 `data/search-index.json` 派生 `data/search/`（与 MCP 检索同一份内容）；`npm run build:search:check` 校验分片齐全且签名一致。
+
+帝王合并包：`npm run build:emperors` 把每朝 `emperors/index.json` + 单帝文件合成一个 `bundle.json`（顺序、字段与源完全一致，只是把 193 个请求压成 16 个）；`npm run build:emperors:check` 在 CI 里拦住「改了帝王数据却忘了重建」。源文件与 MCP、校验脚本的口径都不变，前端读不到包里会自动退回逐文件加载，URL 加 `?nobundle=1` 可临时走旧路径。
 
 ---
 

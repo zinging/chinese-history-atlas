@@ -5,7 +5,11 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261127f';
+const APP_BUILD = '20261127g';
+
+// 帝王单文件合并包的回退开关：URL 带 ?nobundle=1 时强制走旧的「index + 逐文件」路径，
+// 用于线上出现问题时一键回退（不必回滚整个发布），也方便对照两种加载方式的耗时。
+const NO_BUNDLE = typeof location !== 'undefined' && /[?&]nobundle=1(&|$)/.test((location.search || '') + '&');
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -402,10 +406,24 @@ async function loadSeg(dyn, seg, opts = {}) {
   const tag = (x) => { x._dynasty = dyn; x._seg = seg ? seg.tag : null; };
   try {
     if (mode !== 'rest') {
-      const idx = await loadJSON(p('emperors/index.json'));
-      if (idx.meta && idx.meta.lineages) Object.assign(LINEAGE_LABEL, idx.meta.lineages);
-      if (!idx.emperors || !Array.isArray(idx.emperors)) return bucket;
-      const emps = await Promise.all(idx.emperors.map((e) => loadJSON(p(`emperors/${e.file}`)).catch(() => null)));
+      // 帝王优先从「单文件合并包」取（data/<朝>/emperors/bundle.json，由
+      // scripts/build-emperors-bundle.mjs 生成）：16 个目录 193 个请求 → 16 个。
+      // 包里字段与单帝文件完全一致、顺序与 index 一致，只是换了传输批次；
+      // 包不存在（老数据/本地未生成）或 URL 带 ?nobundle=1 时自动退回逐文件，
+      // 结果与以前一模一样，所以漏生成不会白屏。
+      let emps = null;
+      let meta = null;
+      if (!NO_BUNDLE) {
+        const b = await maybe(p('emperors/bundle.json'));
+        if (b && Array.isArray(b.emperors) && b.emperors.length) { emps = b.emperors; meta = b.meta; }
+      }
+      if (!emps) {
+        const idx = await loadJSON(p('emperors/index.json'));
+        meta = idx.meta;
+        if (!idx.emperors || !Array.isArray(idx.emperors)) return bucket;
+        emps = await Promise.all(idx.emperors.map((e) => loadJSON(p(`emperors/${e.file}`)).catch(() => null)));
+      }
+      if (meta && meta.lineages) Object.assign(LINEAGE_LABEL, meta.lineages);
       emps.filter(Boolean).forEach((emp) => {
         tag(emp);
         if (seg) { emp.lineage = seg.lineage; emp._segLabel = seg.label; }
