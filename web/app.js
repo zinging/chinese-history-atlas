@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261127d';
+const APP_BUILD = '20261127e';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -42,6 +42,13 @@ let currentDynasty = 'all'; // 'all' | 'sui' | 'tang' | 'wudai' | 'song' | 'yuan
 const DATA_CACHE = {};
 // 进行中的朝代加载：快速连点朝代按钮时复用同一个请求，避免并发重复拉取 + 竞态覆盖
 const DATA_PENDING = {};
+/* 分批加载状态（只改请求时机，数据内容与渲染结果都不变）：
+   首屏时间线只需要帝王数据，悬案/舆图/探案三个页签才用得到事件、人物、地点、
+   路线、舆图事件、问典与悬案。所以「全部」视图先只拉帝王，其余等真正要用的
+   页签第一次打开时再补齐；补齐后置真，后续渲染不再等待。 */
+const REST_FULL = {};        // 键：朝代 id 或 'all'；真＝该视图的非帝王数据已就位
+let REST_PENDING = null;     // 补齐中的 Promise（并发调用复用同一个）
+let REST_QUEUE = [];         // 补齐完成后要重跑的回调（多个页签同时请求时按序执行）
 
 // 年份解析：公元前用负数表示（「-221」＝前 221 年），后世的纯数字照旧。
 // 早先 eraForYear 把非数字字符一律删掉，于是「-221」被读成 221，秦西汉的事件
@@ -380,7 +387,12 @@ function hideLoader() {
 /* 读一个数据目录（一个「段」）：朝代节点可能是单目录，也可能由 DYNASTY_SEGS 拼多段。
    返回的每条记录都打上 _dynasty（节点 id）与 _seg（段 tag，单段朝代为 null），
    帝王另外补 _segLabel 与 lineage，供时间线的段牌和年号条分段使用。 */
-async function loadSeg(dyn, seg) {
+async function loadSeg(dyn, seg, opts = {}) {
+  // 分批加载（只影响请求时机，不改数据内容）：
+  //   mode='emperors' → 只取帝王（首屏时间线用的就是这一份）
+  //   mode='rest'     → 只取其余分区（悬案/舆图/探案才会用到）
+  //   默认 'full'     → 旧行为，一次读完
+  const mode = opts.mode || 'full';
   const dir = seg ? seg.dir : (DYNASTY_DIRS[dyn] || '');
   const lay = DYNASTY_LAYOUT[dyn] || DYNASTY_LAYOUT.ming;
   const hasMap = DYNASTY_HAS_MAP[dyn] || false;
@@ -389,15 +401,18 @@ async function loadSeg(dyn, seg) {
   const bucket = { emperors: [], events: [], people: [], places: [], routes: [], mapEvents: [], institutions: [], quiz: [], cases: [], cats: [], sourcesDoc: null };
   const tag = (x) => { x._dynasty = dyn; x._seg = seg ? seg.tag : null; };
   try {
-    const idx = await loadJSON(p('emperors/index.json'));
-    if (idx.meta && idx.meta.lineages) Object.assign(LINEAGE_LABEL, idx.meta.lineages);
-    if (!idx.emperors || !Array.isArray(idx.emperors)) return bucket;
-    const emps = await Promise.all(idx.emperors.map((e) => loadJSON(p(`emperors/${e.file}`)).catch(() => null)));
-    emps.filter(Boolean).forEach((emp) => {
-      tag(emp);
-      if (seg) { emp.lineage = seg.lineage; emp._segLabel = seg.label; }
-      bucket.emperors.push(emp);
-    });
+    if (mode !== 'rest') {
+      const idx = await loadJSON(p('emperors/index.json'));
+      if (idx.meta && idx.meta.lineages) Object.assign(LINEAGE_LABEL, idx.meta.lineages);
+      if (!idx.emperors || !Array.isArray(idx.emperors)) return bucket;
+      const emps = await Promise.all(idx.emperors.map((e) => loadJSON(p(`emperors/${e.file}`)).catch(() => null)));
+      emps.filter(Boolean).forEach((emp) => {
+        tag(emp);
+        if (seg) { emp.lineage = seg.lineage; emp._segLabel = seg.label; }
+        bucket.emperors.push(emp);
+      });
+    }
+    if (mode === 'emperors') return bucket;
     // 其余分区同样要合并：漏掉哪一块，「全部」视图对应面板就是空的
     // （「该朝事件」显示没有事件、人物关系与探案缺内容都是这个原因）。
     const [evDoc, peoDoc, plaDoc, rouDoc, mevDoc, insDoc, quizDoc, casDoc] = await Promise.all([
@@ -427,9 +442,9 @@ async function loadSeg(dyn, seg) {
 }
 
 /* 读一个朝代节点：有分段就逐段读再拼（顺序＝segs 顺序，即时间顺序），没有就是单目录。 */
-async function loadDynasty(dyn) {
+async function loadDynasty(dyn, opts) {
   const segs = DYNASTY_SEGS[dyn];
-  const parts = segs ? await Promise.all(segs.map((s) => loadSeg(dyn, s))) : [await loadSeg(dyn, null)];
+  const parts = segs ? await Promise.all(segs.map((s) => loadSeg(dyn, s, opts))) : [await loadSeg(dyn, null, opts)];
   const out = { emperors: [], events: [], people: [], places: [], routes: [], mapEvents: [], institutions: [], quiz: [], cases: [], caseCategories: [] };
   for (const b of parts) {
     out.emperors.push(...b.emperors);
@@ -482,7 +497,9 @@ async function loadAll() {
         };
         try {
           // 一个节点可能由多段拼成（汉＝西汉＋新莽＋东汉），统一走 loadDynasty
-          const got = await loadDynasty(dyn);
+          // 『全部』首屏只等帝王：事件/人物/地点/路线/舆图事件/问典/悬案留到
+          // 首次打开对应页签时由 ensureRestThen 补齐（见文件头 DATA_PENDING 下方注释）
+          const got = await loadDynasty(dyn, { mode: 'emperors' });
           bucket.emperors.push(...got.emperors);
           bucket.events.push(...got.events);
           bucket.people.push(...got.people);
@@ -529,7 +546,8 @@ async function loadAll() {
     };
     // 兜底：若逐朝循环没拿到任何案件（例如某个朝代目录整批 404），
     // 再单独读一次通用案件库，保证「悬案疑案」不全空。
-    if (!DATA.cases.length) {
+    // 分批加载时案件本就还没取，这里跳过——等 ensureRestThen 补齐后自然会有。
+    if (!DATA.cases.length && REST_FULL['all']) {
       try {
         const casesDoc = await loadJSON('../data/cases/cases.json?v=v1');
         DATA.cases = casesDoc.cases || [];
@@ -537,6 +555,8 @@ async function loadAll() {
       } catch(e) { /* 案件库加载失败不阻塞 */ }
     }
     DATA_CACHE['all'] = DATA;
+    // 帝王已到手，其余分区待补（见 ensureRestThen）
+    REST_FULL['all'] = false;
     // 更新「全部」按钮的帝数
     const allBtn = document.querySelector('.dynasty-btn[data-d="all"] .dyn-sub');
     if (allBtn) allBtn.textContent = `${allEmperors.length}帝`;
@@ -563,6 +583,7 @@ async function loadAll() {
     delete DATA_PENDING[loadToken];
   }
   DATA_CACHE[loadToken] = DATA;
+  REST_FULL[loadToken] = true;   // 单朝是全量读取，无需再补
   // 喂给检索模块（历史侦探/追问框用）
   if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
   } finally {
@@ -594,7 +615,108 @@ async function _fetchDynasty(dyn) {
   };
 }
 
+/* 补齐「全部」视图中被推迟的分区（事件、人物、地点、路线、舆图事件、机构、问典、悬案）。
+   只补一次：补齐后 REST_FULL['all'] 置真，之后所有渲染直接读缓存，行为与一次性加载完全一致。
+   并发安全：多个页签同时请求时共用同一个 Promise，回调排队按序重跑。 */
+async function fillAllRest() {
+  const dynOrder = ['xia','shang','zhou','qin','han','sanguo','jin','sui','tang','wudai','song','yuan','ming','qing'];
+  const D = DATA_CACHE['all'] || DATA;
+  if (!D) throw new Error('DATA 尚未就绪');
+  const parts = await Promise.all(dynOrder.map(async (dyn) => {
+    try { return await loadDynasty(dyn, { mode: 'rest' }); } catch (e) { return null; }
+  }));
+  // 按朝代顺序合并；同 id 只入一次（补齐期间若已有点击带来的重复请求，不会重复渲染）
+  const seen = {
+    people: new Set(D.people.map((x) => x.id)),
+    events: new Set(D.events.map((x) => x.id)),
+    places: new Set(D.places.map((x) => x.id)),
+    routes: new Set((D.routes || []).map((x) => x.id)),
+    mapEvents: new Set((D.mapEvents || []).map((x) => x.id || x.eventId)),
+    institutions: new Set((D.institutions || []).map((x) => x.id)),
+    quiz: new Set((D.quiz || []).map((x) => x.id)),
+    cases: new Set((D.cases || []).map((x) => x.id)),
+  };
+  const catIds = new Set((D.caseCategories || []).map((c) => c.id));
+  for (const b of parts) {
+    if (!b) continue;
+    (b.people || []).forEach((x) => { if (!seen.people.has(x.id)) { seen.people.add(x.id); D.people.push(x); } });
+    (b.events || []).forEach((x) => { if (!seen.events.has(x.id)) { seen.events.add(x.id); D.events.push(x); } });
+    (b.places || []).forEach((x) => { if (!seen.places.has(x.id)) { seen.places.add(x.id); D.places.push(x); } });
+    (b.routes || []).forEach((x) => { if (!seen.routes.has(x.id)) { seen.routes.add(x.id); D.routes.push(x); } });
+    (b.mapEvents || []).forEach((x) => { const k = x.id || x.eventId; if (!seen.mapEvents.has(k)) { seen.mapEvents.add(k); D.mapEvents.push(x); } });
+    (b.institutions || []).forEach((x) => { if (!seen.institutions.has(x.id)) { seen.institutions.add(x.id); D.institutions.push(x); } });
+    (b.quiz || []).forEach((x) => { if (!seen.quiz.has(x.id)) { seen.quiz.add(x.id); D.quiz.push(x); } });
+    (b.cases || []).forEach((x) => { if (!seen.cases.has(x.id)) { seen.cases.add(x.id); D.cases.push(x); } });
+    (b.cats || b.caseCategories || []).forEach((c) => {
+      if (!catIds.has(c.id)) { catIds.add(c.id); D.caseCategories.push(c); }
+    });
+  }
+  DATA = D;
+  DATA_CACHE['all'] = D;
+  // 兜底：某朝案件目录缺失导致分类为空时，读通用案件库的分类，避免「悬案疑案」页签空白
+  if (!D.caseCategories.length) {
+    try {
+      const doc = await loadJSON('../data/cases/cases.json?v=v1');
+      D.caseCategories = doc.categories || [];
+      if (!D.cases.length) D.cases = doc.cases || [];
+    } catch (e) { /* 兜底失败不影响其余区块 */ }
+  }
+  REST_FULL['all'] = true;
+  if (typeof SEARCH !== 'undefined') SEARCH.setData(DATA);
+}
+
+/** 需要补齐时返回 true；渲染函数用 `if (ensureRestThen(renderX)) return;` 自我修复：
+ *  真＝已就绪（继续渲染），假＝正在补（补完会再次调用同一个渲染函数）。 */
+function ensureRestThen(cb) {
+  if (REST_FULL[currentDynasty]) return true;
+  // 只有「全部」视图是分批加载的；单朝一直是全量，理论不会走到这里
+  if (REST_PENDING) {
+    if (cb) REST_QUEUE.push(cb);
+    return false;
+  }
+  if (cb) REST_QUEUE.push(cb);
+  REST_PENDING = fillAllRest()
+    .catch((e) => {
+      // 补齐失败也置真：否则每次渲染都会重试，页面会卡在加载态
+      console.error('补齐分区数据失败', e);
+      REST_FULL['all'] = true;
+    })
+    .then(() => {
+      REST_PENDING = null;
+      const queue = REST_QUEUE;
+      REST_QUEUE = [];
+      queue.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
+    });
+  return false;
+}
+
+/** 返回「补齐完成」的 Promise（已就绪立即 resolve）。深链需要同步读
+ *  DATA.cases / DATA.mapEvents 的地方先 await 它，避免读到还没补的空数组。 */
+function restReady() {
+  if (REST_FULL[currentDynasty]) return Promise.resolve();
+  ensureRestThen(null);
+  return REST_PENDING || Promise.resolve();
+}
+
 // ---------- 界面切换 ----------
+/* 逐句导览脚本按需注入：默认关（页面就是普通静态网页），只有真的要用时才拉这份 38KB。
+   触发点三个：① 上次已开启朗读/文本推进（localStorage）② 地址带 guide=1 或 #s=N 深链
+   ③ 用户打开「导览设置」或拨动开关。 */
+let _guideScriptLoading = null;
+function loadGuideScript() {
+  if (window.__guide) return Promise.resolve();
+  if (_guideScriptLoading) return _guideScriptLoading;
+  _guideScriptLoading = new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'guide-highlight.js?v=gh9';
+    s.async = true;
+    s.onload = () => { _guideScriptLoading = null; resolve(); };
+    s.onerror = () => { _guideScriptLoading = null; console.warn('导览脚本加载失败，导览功能暂不可用'); resolve(); };
+    document.body.appendChild(s);
+  });
+  return _guideScriptLoading;
+}
+
 /** 页面内容切换（朝代/皇帝/页签/模块）时停止逐句朗读与自动推进。
  *  不停止的话，旧内容的播放状态会延续到新内容：hash 里的 #s=N 指向新内容中的
  *  同序号句子，于是朗读"跨页"继续念新内容，看起来像根本停不下来。
@@ -639,6 +761,7 @@ function switchPage(name) {
     }).catch((e) => console.error(e));
   }
   if (name === 'cases') renderCases();
+  if (name === 'detective') renderDetective();
   if (name !== 'map') hideRouteDetail();
 }
 
@@ -646,6 +769,8 @@ function switchPage(name) {
 let activeCaseCat = null;
 
 function renderCases() {
+  // 「全部」视图首屏只拉了帝王：悬案数据没到位时先补，补完自动重跑本函数
+  if (!ensureRestThen(renderCases)) return;
   const wrap = $('#cases-list');
   const tabsEl = $('#case-tabs');
   if (!wrap) return;
@@ -3106,6 +3231,8 @@ function drawZhengheShadow() {
 }
 
 function renderMap() {
+  // 「全部」视图首屏只拉了帝王：地点/路线/舆图事件没到位时先补，补完自动重跑
+  if (!ensureRestThen(renderMap)) return;
   const container = $('#map-leaf');
   if (!container) return;
   const data = buildMapData();
@@ -4315,6 +4442,8 @@ function detectiveTasks() {
   return DETECTIVE_TASKS_BY_DYNASTY[currentDynasty] || DETECTIVE_TASKS_BY_DYNASTY.ming;
 }
 function renderDetective() {
+  // 探案问史依赖问典/事件数据：未补齐时先补，补完自动重跑本函数
+  if (!ensureRestThen(renderDetective)) return;
   const tasks = detectiveTasks();
   detectiveIndex = detectiveIndex % tasks.length;
   const t = tasks[detectiveIndex];
@@ -4768,7 +4897,7 @@ async function switchDynasty(d) {
     await Promise.all([loadAll(), loadBoundaries()]);
     if (token !== _dynastyToken) return;   // 期间又切了朝代，丢弃这次结果
     renderTimeline();
-    renderDetective();
+    if (!$('#page-detective').classList.contains('hidden')) renderDetective();
     // 切换朝代后自动展开第一位皇帝，卡片回到最左
     if (DATA.emperors && DATA.emperors[0]) {
       document.querySelectorAll('.emp-card').forEach((c) => c.classList.remove('active'));
@@ -5071,6 +5200,9 @@ async function applyDeepLink() {
     await switchDynasty(dynasty);
   }
   if (page && ['timeline', 'cases', 'map', 'detective'].includes(page)) {
+    // 悬案/舆图/探案三个页签的数据在「全部」视图下是延后加载的：
+    // 深链后面会同步读 DATA.cases / DATA.mapEvents，这里先等它补齐再切页
+    if (page !== 'timeline') await restReady();
     // 首页默认恢复的是上次停留的 iframe 模块，深链进帝王页必须先切回 history 内联面板
     try { sessionStorage.setItem('dsh-active-module', 'history'); } catch { /* 忽略 */ }
     if (typeof activateModule === 'function') {
@@ -5145,7 +5277,8 @@ async function applyDeepLink() {
     applyDynastyText(currentDynasty);
     setBodyData('era', currentDynasty !== 'all' ? currentDynasty : null);
     renderTimeline();
-    renderDetective();
+    // 探案问史只在当前就停在该页时才渲染：分批加载下首屏不为了一个隐藏页签去补数据
+    if (!$('#page-detective').classList.contains('hidden')) renderDetective();
     initDynScroll();
     fitTopbar();
     // 深链指定了靠后的朝代（?dynasty=ming 等），首屏就把它滑进可视区
@@ -5695,8 +5828,21 @@ function renderModuleManager() {
     renderHint(cur);
   }
 
-  withGuide((g) => {
-    syncUI(g.getSettings());
+  let attached = false;
+  let bound = false;
+  /** 脚本到位后再接管开关：轮询拿到 window.__guide 就同步 UI 并绑事件（只做一次） */
+  function attachGuide() {
+    if (attached) return;
+    withGuide((g) => {
+      if (attached) return;
+      attached = true;
+      syncUI(g.getSettings());
+      bindGuideToggles(g);
+    });
+  }
+  function bindGuideToggles(g) {
+    if (bound) return;
+    bound = true;
     SPEECH.addEventListener('change', () => {
       const next = g.setSettings({ speech: SPEECH.checked });
       // 朗读不可用时退回文本推进
@@ -5710,5 +5856,23 @@ function renderModuleManager() {
     DWELL.addEventListener('change', () => {
       syncUI(g.setSettings({ dwell: DWELL.checked }));
     });
-  });
+  }
+  function guideWantedAtStartup() {
+    try {
+      const s = JSON.parse(localStorage.getItem('dsh-guide-settings') || 'null');
+      if (s && (s.speech || s.dwell)) return true;
+    } catch (e) { /* localStorage 不可用就当没开过 */ }
+    if (new URLSearchParams(location.search).get('guide') === '1') return true;
+    return /^#s=\d+/.test(location.hash);
+  }
+  // 导览脚本按需加载（见文件上半部 loadGuideScript）：
+  // 上次开过 / 深链要求导览 → 启动就拉；否则等用户碰「导览设置」时再拉。
+  const warmGuide = () => { loadGuideScript().then(attachGuide); };
+  const btnGuide = document.getElementById('guide-btn');
+  if (btnGuide) {
+    btnGuide.addEventListener('mouseenter', warmGuide, { once: true });
+    btnGuide.addEventListener('click', warmGuide, { once: true });
+  }
+  [SPEECH, DWELL].forEach((box) => box.addEventListener('change', warmGuide, { once: true }));
+  if (guideWantedAtStartup()) warmGuide();
 })();

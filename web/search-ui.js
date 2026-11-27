@@ -520,9 +520,9 @@
   function init() {
     if (document.getElementById("atlas-search")) return;
     buildDom();
-    // 预取词条索引：空闲时悄悄拿一份，让第一次 hover 就能出结果（失败不打扰）
-    var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1600); };
-    idle(function () { ensureTitle(); });
+    // 词条索引（约 260KB）不再空闲预取：改为用户第一次把鼠标放到放大镜、
+    // 首次聚焦/点击搜索钮时再拉（见 ensureTitle 的各调用点）。
+    // 结果：首屏少一个 260KB 请求，首次搜索仍只多一次网络往返。
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
