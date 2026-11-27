@@ -5,7 +5,7 @@
 'use strict';
 
 // 数据文件构建号：追加到 fetch URL 末尾，避免浏览器缓存旧的 JSON（尤其是新增文件前的 404）
-const APP_BUILD = '20261127e';
+const APP_BUILD = '20261127f';
 
 // ---------- 工具 ----------
 const $ = (sel) => document.querySelector(sel);
@@ -699,6 +699,11 @@ function restReady() {
 }
 
 // ---------- 界面切换 ----------
+/** 某页签是否正显示（mock-DOM 测试环境可能没有该节点，返回 false 不抛错） */
+function pageVisible(name) {
+  const p = document.getElementById(`page-${name}`);
+  return !!p && !p.classList.contains('hidden');
+}
 /* 逐句导览脚本按需注入：默认关（页面就是普通静态网页），只有真的要用时才拉这份 38KB。
    触发点三个：① 上次已开启朗读/文本推进（localStorage）② 地址带 guide=1 或 #s=N 深链
    ③ 用户打开「导览设置」或拨动开关。 */
@@ -770,8 +775,17 @@ let activeCaseCat = null;
 
 function renderCases() {
   // 「全部」视图首屏只拉了帝王：悬案数据没到位时先补，补完自动重跑本函数
-  if (!ensureRestThen(renderCases)) return;
+  if (!ensureRestThen(renderCases)) {
+    const wrapNow = $('#cases-list');
+    // 占位提示只在真实 DOM 上写（mock-DOM 测试环境没有 dataset，跳过即可）
+    if (wrapNow && wrapNow.dataset && !wrapNow.dataset.loadingHint) {
+      wrapNow.dataset.loadingHint = '1';
+      wrapNow.innerHTML = '<p class="rest-loading">正在载入悬案档案…（首屏只取了帝王数据，其余按需加载）</p>';
+    }
+    return;
+  }
   const wrap = $('#cases-list');
+  if (wrap && wrap.dataset) delete wrap.dataset.loadingHint;
   const tabsEl = $('#case-tabs');
   if (!wrap) return;
   const cases = DATA.cases || [];
@@ -4443,7 +4457,11 @@ function detectiveTasks() {
 }
 function renderDetective() {
   // 探案问史依赖问典/事件数据：未补齐时先补，补完自动重跑本函数
-  if (!ensureRestThen(renderDetective)) return;
+  if (!ensureRestThen(renderDetective)) {
+    const weekNow = $('#detective-week');
+    if (weekNow) weekNow.innerHTML = '<p class="rest-loading">正在载入侦探档案…（首次进入按需加载）</p>';
+    return;
+  }
   const tasks = detectiveTasks();
   detectiveIndex = detectiveIndex % tasks.length;
   const t = tasks[detectiveIndex];
@@ -4897,7 +4915,8 @@ async function switchDynasty(d) {
     await Promise.all([loadAll(), loadBoundaries()]);
     if (token !== _dynastyToken) return;   // 期间又切了朝代，丢弃这次结果
     renderTimeline();
-    if (!$('#page-detective').classList.contains('hidden')) renderDetective();
+    // 探案问史只在当前就停在该页时才渲染：分批加载下首屏不为了一个隐藏页签去补数据
+    if (pageVisible('detective')) renderDetective();
     // 切换朝代后自动展开第一位皇帝，卡片回到最左
     if (DATA.emperors && DATA.emperors[0]) {
       document.querySelectorAll('.emp-card').forEach((c) => c.classList.remove('active'));

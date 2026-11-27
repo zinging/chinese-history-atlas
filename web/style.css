@@ -2236,3 +2236,7 @@ body.sidebar-collapsed .mega-area { margin-left: var(--sidebar-w-collapsed); }
   .portrait-card, .person-node { cursor: auto !important; }
   input, textarea { cursor: text; }
 }
+
+/* 分批加载：页签数据补齐期间的占位提示（与正文同色，不抢视觉） */
+.rest-loading{color:#8a7a5c;font-size:15px;padding:28px 6px;text-align:center}
+
